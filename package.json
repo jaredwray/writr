@@ -1,0 +1,34 @@
+{
+  "name": "writr",
+  "version": "0.0.1",
+  "description": "A Markdown Blog for Your Node App",
+  "main": "./dist/index",
+  "types": "./dist/index",
+  "repository": "https://github.com/jaredwray/writr.git",
+  "author": "Jared Wray <me@jaredwray.com>",
+  "license": "MIT",
+  "scripts": {
+    "watch": "tsc -w -p .",
+    "clean": "rm -rf dist",
+    "compile": "yarn run clean && tsc -p .",
+    "prepublishOnly": "yarn run compile",
+    "build": "yarn run test &&  yarn run compile",
+    "test": "mocha -r ts-node/register test/**/*.ts"
+  },
+  "dependencies": {
+    "@types/winston": "^2.3.8",
+    "winston": "^2.4.1"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.2",
+    "@types/mocha": "^5.0.0",
+    "@types/node": "^8.0.0",
+    "chai": "^4.1.2",
+    "mocha": "^5.0.5",
+    "ts-node": "^5.0.1",
+    "typescript": "^2.7.2"
+  },
+  "files": [
+    "dist"
+  ]
+}
