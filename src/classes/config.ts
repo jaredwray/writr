@@ -1,10 +1,6 @@
 export class Config {
-    homeTemplate: string = '';
-    tagTemplate: string = '';
-    articleTemplate: string = '';
     headerTemplate: string = '';
-    discussID: string = '';
-    imagePath: string = './blog/images';
-    articlePath: string = './blog';
-
+    contentPath: string = './blog/content';
+    postPath: string = './blog';
+    templatePath: string = './blog/template';
 }

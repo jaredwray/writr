@@ -1,4 +1,4 @@
-export class Article {
+export class Post {
     title: string = '';
     author: string = '';
     url: string = '';

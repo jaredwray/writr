@@ -1,5 +1,5 @@
 
-import {Article} from './classes/article';
+import {Post} from './classes/post';
 import {Tag} from './classes/tag';
 import {Config} from './classes/config';
 import { Logger, transports } from 'winston';
@@ -17,8 +17,8 @@ export function initExpress(config: Config): void {
 export function init(config: Config) : void {
 
     log.info('Initializing writer...');
-    //loop through the directories creating {Article} objects. 
-        //when you create the article add the tag to cache / memory and list all the articles
+    //loop through the directories creating {Post} objects. 
+        //when you create the post add the tag to cache / memory and list all the posts
 
 }
 
@@ -30,12 +30,12 @@ export function renderTags(tagName:string): void {
 
 }
 
-export function renderArticle(article: Article) : void {
+export function renderArticle(post: Post) : void {
 
 }
 
 //tags
-export function saveTags(article: Article): void {
+export function saveTags(post: Post): void {
     
 }
 
