@@ -30,7 +30,7 @@ export function renderTags(tagName:string): void {
 
 }
 
-export function renderArticle(post: Post) : void {
+export function renderPost(post: Post) : void {
 
 }
 
