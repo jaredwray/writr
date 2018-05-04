@@ -117,4 +117,13 @@ describe('Post', () => {
     expect(post.isPostPublished()).to.equal(false);
   });
 
+  it('generate html from markdown', () => {
+    let postFilePath = __dirname + '/blog/article1.md';
+    let post = new Post(postFilePath);
+
+    post.publishedAt = new Date('12/12/2040');
+
+    expect(post.body).to.equal('<p>My life as a blogger is really cool</p>\n');
+  });
+
 });

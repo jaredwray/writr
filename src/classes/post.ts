@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { Logger, transports } from 'winston';
+import * as MarkDownIt from 'markdown-it';
 
 
 
@@ -12,6 +13,7 @@ export class Post {
     keywords: Array<string> = [];
     tags: Array<string> = [];
     content: string = '';
+    body: string = '';
     header: string = '';
     filePath: string = '';
     log: any;
@@ -38,6 +40,7 @@ export class Post {
                 this.header = this.header.replace('\n', '');
 
                 let parser = require('parse-json');
+
                 //setup the header
                 let headerObj = parser(this.header);
 
@@ -66,6 +69,11 @@ export class Post {
                 if(headerObj.tags) {
                     this.tags = headerObj.tags.toString().split(',');
                 }
+
+                //generate html from markdown
+                let markdown = new MarkDownIt();
+                this.body = markdown.render(this.content);
+
 
             } else {
                 this.log.error('The following post does not exist: '+  filePath);
