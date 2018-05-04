@@ -31,7 +31,8 @@ export class Post {
                 let data = fs.readFileSync(filePath).toString();
 
                 this.header = data.split('}')[0] + '}';
-                this.content = data.split('}')[1];
+
+                this.content = data.substr(data.indexOf('}')+1);
 
                 //clean up header
                 this.header = this.header.replace('\n', '');
