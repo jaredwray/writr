@@ -14,6 +14,11 @@ const config: Config = new Config();
 export function initExpress(url: string, express: express.Application, config: Config): void {
     init(config);
 
+    //handle home
+    express.get('url', function(req: express.Request, res: express.Response){
+
+    });
+
     //handle posts
     express.get(url+ '/:postID', function(req: express.Request, res: express.Response){
 
@@ -32,11 +37,13 @@ export function init(config: Config) : void {
 
     log.info('Initializing writer...');
 
-    //loop through the directories creating {Post} objects. 
-        //when you create the post add the tag to cache / memory and list all the posts
+    config = config;
+
+
 
 }
 
+//render
 export function renderHome(): void {
 
 }
@@ -75,9 +82,29 @@ export function render(source: string, data:object): string {
 //tags
 export function saveTags(post: Post): void {
     
+    post.tags.forEach( tagName => {
+        let tag = getTag(tagName);
+
+        if(tag == null) {
+            tag = new Tag(tagName);
+            Tags.push(tag);
+        }
+
+        let postExists : boolean = false;
+
+        tag.posts.forEach(p => {
+            if(p.title.toLowerCase().trim() == post.title.toLowerCase().trim()) {
+                postExists = true;
+            }
+        })
+
+        if(!postExists) {
+            tag.posts.push(post);
+        }
+    });
 }
 
-export function getTags(): Array<string> {
+export function getTagsAsString(): Array<string> {
     
     let result = new Array<string>();
 
@@ -88,6 +115,34 @@ export function getTags(): Array<string> {
     return result;
 }
 
+export function getTags() : Array<Tag> {
+    return Tags;
+}
+
+export function getTag(name: string) : Tag | null {
+    let result: Tag | null = null;
+
+    Tags.forEach(tag => {
+        if(tag.name.toLowerCase().trim() == name.toLowerCase().trim()) {
+            result = tag;
+        }
+    });
+
+    return result;
+};
+
+export function tagExists(name:string) : Boolean {
+    let result = false;
+
+    if(getTag(name) != null) {
+        result = true;
+    }
+
+    return result;
+};
+
+
+//Templates
 export function getPostTemplate(): string {
     let result = '';
 
@@ -110,4 +165,10 @@ export function getHomeTemplate(): string {
     result = fs.readFileSync(__dirname + config.templatePath + '/home.hjs').toString();
 
     return result;
+}
+
+//Config
+
+export function getConfig() : Config {
+    return config;
 }
