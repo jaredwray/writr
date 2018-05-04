@@ -9,7 +9,7 @@ import * as fs from 'fs';
 
 const log = new Logger({transports:[new transports.Console()]});
 const Tags: Array<Tag> = new Array<Tag>();
-const config: Config = new Config();
+let __config: Config = new Config();
 
 export function initExpress(url: string, express: express.Application, config: Config): void {
     init(config);
@@ -35,17 +35,23 @@ export function initExpress(url: string, express: express.Application, config: C
 
 export function init(config: Config) : void {
 
-    log.info('Initializing writer...');
-
-    config = config;
+    __config = config;
 
 
 
 }
 
 //render
-export function renderHome(): void {
+export function renderHome(): string {
+    let result = '';
 
+    let postList = new Array<Post>(); //TODO: FIX
+    let tagList = getTags();
+
+    let source: string = getPostTemplate();
+    result = render(source, {tags: tagList, posts: postList});
+
+    return result;
 }
 
 export function renderTag(tagName:string): string {
@@ -79,6 +85,25 @@ export function render(source: string, data:object): string {
     return result;
 }
 
+//posts
+export function getPosts() : Array<Post> {
+    let result = new Array<Post>();
+    let directory = __config.postPath;
+
+    if(fs.existsSync(directory)) {
+        let files = fs.readdirSync(directory);
+
+        files.forEach(file => {
+            if(file.indexOf('.md') > 0) {
+                let filePath = directory + '/' + file;
+                result.push(new Post(filePath));
+            }
+        });
+    }
+
+    return result;
+}
+
 //tags
 export function saveTags(post: Post): void {
     
@@ -102,17 +127,6 @@ export function saveTags(post: Post): void {
             tag.posts.push(post);
         }
     });
-}
-
-export function getTagsAsString(): Array<string> {
-    
-    let result = new Array<string>();
-
-    Tags.forEach( (t) => {
-        result.push(t.name)
-    });
-
-    return result;
 }
 
 export function getTags() : Array<Tag> {
@@ -146,7 +160,7 @@ export function tagExists(name:string) : Boolean {
 export function getPostTemplate(): string {
     let result = '';
 
-    result = fs.readFileSync(__dirname + config.templatePath + '/post.hjs').toString();
+    result = fs.readFileSync(__dirname + __config.templatePath + '/post.hjs').toString();
 
     return result;
 }
@@ -154,7 +168,7 @@ export function getPostTemplate(): string {
 export function getTagTemplate(): string {
     let result = '';
 
-    result = fs.readFileSync(__dirname + config.templatePath + '/tag.hjs').toString();
+    result = fs.readFileSync(__dirname + __config.templatePath + '/tag.hjs').toString();
 
     return result;
 }
@@ -162,13 +176,12 @@ export function getTagTemplate(): string {
 export function getHomeTemplate(): string {
     let result = '';
 
-    result = fs.readFileSync(__dirname + config.templatePath + '/home.hjs').toString();
+    result = fs.readFileSync(__dirname + __config.templatePath + '/home.hjs').toString();
 
     return result;
 }
 
 //Config
-
 export function getConfig() : Config {
-    return config;
+    return __config;
 }

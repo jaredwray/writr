@@ -12,7 +12,7 @@ describe('Writr', () => {
 
     wr.saveTags(post); 
 
-    expect(wr.getTagsAsString().length).to.equal(3);
+    expect(wr.getTags().length).to.equal(3);
   });
 
   it('should only have only one post on a tag', () => {
@@ -54,6 +54,20 @@ describe('Writr', () => {
     wr.init(config);
 
     expect(wr.getConfig().contentPath).to.equal(config.contentPath);
+  });
+
+  it('get all of the posts', () => {
+
+    let config : Config = new Config();
+    config.postPath = __dirname + '/blog';
+    config.contentPath = __dirname + '/content';
+    config.templatePath = __dirname + '/templates';
+
+    wr.init(config);
+
+    let posts = wr.getPosts();
+
+    expect(posts.length).to.equal(4);
   });
 
 });
