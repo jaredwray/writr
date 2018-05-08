@@ -1,0 +1,5 @@
+{{#each posts}}{{title}} - {{author}}{{/each}}
+
+<p>Tags: <br />
+{{#each tags}}{{name}}{{/each}}
+</p>

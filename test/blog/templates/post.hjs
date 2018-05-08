@@ -1,0 +1,5 @@
+<h1>Post</h1>
+
+<p>{{title}}</p>
+<p>{{author}}</p>
+<p>{{body}}</p>
