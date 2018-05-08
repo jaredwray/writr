@@ -66,9 +66,8 @@ describe('Writr', () => {
 
     expect(body).to.contain('Article Simple');
   });
-
   it('render a post', () => {
-    let body = wr.renderPost('the-largest-whale');
+    let body = wr.renderPost('article-simple');
 
     expect(body).to.contain('Article Simple');
   });

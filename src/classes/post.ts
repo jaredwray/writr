@@ -52,6 +52,8 @@ export class Post {
 
                 if(headerObj.url) {
                     this.url = headerObj.url;
+                } else {
+                    this.url = this.title.toLowerCase().trim().split(' ').join('-');
                 }
 
                 if(headerObj.createdAt) {
