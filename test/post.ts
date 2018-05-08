@@ -16,7 +16,7 @@ describe('Post', () => {
     let postFilePath = __dirname + '/blog/article1-simple.md';
     let post = new Post(postFilePath);
 
-    expect(post.header).to.equal('{ "title": "Article One" }');
+    expect(post.header).to.equal('{ "title": "Article Simple" }');
   });
 
   it('should return the correct content', () => {

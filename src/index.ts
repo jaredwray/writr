@@ -8,25 +8,49 @@ import * as handlebars from 'handlebars';
 import * as fs from 'fs';
 
 const log = new Logger({transports:[new transports.Console()]});
-const Tags: Array<Tag> = new Array<Tag>();
 let __config: Config = new Config();
+const Posts = new Array<Post>();
 
 export function initExpress(url: string, express: express.Application, config: Config): void {
     init(config);
 
     //handle home
     express.get('url', function(req: express.Request, res: express.Response){
+        let body = renderHome();
 
+        res.send(body);
     });
 
     //handle posts
     express.get(url+ '/:postID', function(req: express.Request, res: express.Response){
+        let postID = req.params.postID;
+
+        if(postID) {
+            let body = renderTag(postID);
+
+            res.send(body);
+
+        } else {
+            res.sendStatus(404);
+            res.end();
+        }
 
     });
 
     //handle tags
     express.get(url + '/tags/:tagID', function(req: express.Request, res: express.Response){
+        
+        let tagID = req.params.tagID;
 
+        if(tagID) {
+            let body = renderTag(tagID);
+
+            res.send(body);
+
+        } else {
+            res.sendStatus(404);
+            res.end();
+        }
     });
 
 
@@ -36,19 +60,16 @@ export function initExpress(url: string, express: express.Application, config: C
 export function init(config: Config) : void {
 
     __config = config;
-
-
-
 }
 
 //render
 export function renderHome(): string {
     let result = '';
 
-    let postList = new Array<Post>(); //TODO: FIX
-    let tagList = getTags();
+    let postList = getPublishedPosts();
+    let tagList = getPublishedTags();
 
-    let source: string = getPostTemplate();
+    let source: string = getHomeTemplate();
     result = render(source, {tags: tagList, posts: postList});
 
     return result;
@@ -57,21 +78,25 @@ export function renderHome(): string {
 export function renderTag(tagName:string): string {
     let result = '';
 
-    Tags.forEach( (t) => {
-        if(t.name.toLowerCase().trim() == tagName.toLowerCase().trim()){
-            let source: string = getTagTemplate();
-            result = render(source, t);
-        }
-    });
+    let tag = getPublishedTag(tagName.toLowerCase().trim());
+
+    if(tag) {
+        let source: string = getTagTemplate();
+        result = render(source, tag);
+    }
 
     return result;
 }
 
-export function renderPost(post: Post) : string {
+export function renderPost(postID:string) : string {
     let result = '';
 
+    let post = getPublishedPost(postID);
+
+    if(post) {
     let source: string = getPostTemplate();
     result = render(source, post);
+    }
 
     return result;
 }
@@ -88,6 +113,30 @@ export function render(source: string, data:object): string {
 //posts
 export function getPosts() : Array<Post> {
     let result = new Array<Post>();
+
+    if(Posts.length == 0) {
+        let directory = __config.postPath;
+
+        if(fs.existsSync(directory)) {
+            let files = fs.readdirSync(directory);
+
+            files.forEach(file => {
+                if(file.indexOf('.md') > 0) {
+                    let filePath = directory + '/' + file;
+                    let post = new Post(filePath);
+                        Posts.push(post);
+                }
+            });
+        }
+    }
+
+    result = Posts;
+
+    return result;
+}
+
+export function getPublishedPosts() : Array<Post> {
+    let result = new Array<Post>();
     let directory = __config.postPath;
 
     if(fs.existsSync(directory)) {
@@ -96,7 +145,10 @@ export function getPosts() : Array<Post> {
         files.forEach(file => {
             if(file.indexOf('.md') > 0) {
                 let filePath = directory + '/' + file;
-                result.push(new Post(filePath));
+                let post = new Post(filePath);
+                if(post.isPostPublished()) {
+                    result.push(post);
+                }
             }
         });
     }
@@ -104,39 +156,81 @@ export function getPosts() : Array<Post> {
     return result;
 }
 
-//tags
-export function saveTags(post: Post): void {
-    
-    post.tags.forEach( tagName => {
-        let tag = getTag(tagName);
+export function getPublishedPost(postID:string): Post | null {
+    let result: Post | null = null;
 
-        if(tag == null) {
-            tag = new Tag(tagName);
-            Tags.push(tag);
-        }
+    let posts = getPublishedPosts();
 
-        let postExists : boolean = false;
+    posts.forEach(post => {
 
-        tag.posts.forEach(p => {
-            if(p.title.toLowerCase().trim() == post.title.toLowerCase().trim()) {
-                postExists = true;
-            }
-        })
+        log.info(post.title);;
+        log.info(post.url.toLowerCase().trim() + ' == ' + postID.toLowerCase().trim());
 
-        if(!postExists) {
-            tag.posts.push(post);
+        if(post.url.toLowerCase().trim() == postID.toLowerCase().trim()) {
+            result = post;
         }
     });
+
+    return result;
+};
+
+//tags
+export function generateTags(posts: Array<Post>): Array<Tag> {
+    
+    let result = new Array<Tag>();
+
+    posts.forEach( post => {
+        post.tags.forEach( tagName => {
+            
+            let tag = null;
+
+            result.forEach(t => {
+                if(t.name.toLowerCase().trim() == tagName.toLowerCase().trim()) {
+                    tag = t;
+                }
+            });
+
+            if(tag == null) {
+                tag = new Tag(tagName);
+                result.push(tag);
+            }
+
+            let postExists : boolean = false;
+
+            tag.posts.forEach(p => {
+                if(p.title.toLowerCase().trim() == post.title.toLowerCase().trim()) {
+                    postExists = true;
+                }
+            })
+
+            if(!postExists) {
+                tag.posts.push(post);
+            }
+        
+        });
+    });
+
+    return result;
 }
 
 export function getTags() : Array<Tag> {
-    return Tags;
+    let posts = getPosts();
+
+    return generateTags(posts);
+}
+
+export function getPublishedTags() : Array<Tag> {
+    let posts = getPublishedPosts();
+
+    return generateTags(posts);
 }
 
 export function getTag(name: string) : Tag | null {
     let result: Tag | null = null;
 
-    Tags.forEach(tag => {
+    let tags = getTags();
+
+    tags.forEach(tag => {
         if(tag.name.toLowerCase().trim() == name.toLowerCase().trim()) {
             result = tag;
         }
@@ -145,22 +239,25 @@ export function getTag(name: string) : Tag | null {
     return result;
 };
 
-export function tagExists(name:string) : Boolean {
-    let result = false;
+export function getPublishedTag(name: string) : Tag | null {
+    let result: Tag | null = null;
 
-    if(getTag(name) != null) {
-        result = true;
-    }
+    let tags = getPublishedTags();
+
+    tags.forEach(tag => {
+        if(tag.name.toLowerCase().trim() == name.toLowerCase().trim()) {
+            result = tag;
+        }
+    });
 
     return result;
 };
-
 
 //Templates
 export function getPostTemplate(): string {
     let result = '';
 
-    result = fs.readFileSync(__dirname + __config.templatePath + '/post.hjs').toString();
+    result = fs.readFileSync(__config.templatePath + '/post.hjs').toString();
 
     return result;
 }
@@ -168,7 +265,7 @@ export function getPostTemplate(): string {
 export function getTagTemplate(): string {
     let result = '';
 
-    result = fs.readFileSync(__dirname + __config.templatePath + '/tag.hjs').toString();
+    result = fs.readFileSync(__config.templatePath + '/tag.hjs').toString();
 
     return result;
 }
@@ -176,7 +273,7 @@ export function getTagTemplate(): string {
 export function getHomeTemplate(): string {
     let result = '';
 
-    result = fs.readFileSync(__dirname + __config.templatePath + '/home.hjs').toString();
+    result = fs.readFileSync(__config.templatePath + '/home.hjs').toString();
 
     return result;
 }

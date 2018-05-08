@@ -6,20 +6,45 @@ import 'mocha';
 
 describe('Writr', () => {
 
-  it('should save a tag', () => {
-    let postFilePath = __dirname + '/blog/article1.md';
-    let post = new Post(postFilePath);
+  beforeEach(() => {
 
-    wr.saveTags(post); 
+    let config : Config = new Config();
+    config.postPath = __dirname + '/blog';
+    config.contentPath = __dirname + '/blog/content';
+    config.templatePath = __dirname + '/blog/templates';
 
-    expect(wr.getTags().length).to.equal(3);
+    wr.init(config);
+
   });
 
-  it('should only have only one post on a tag', () => {
+  it('config gets setup in init', () => {
 
-    let tags = wr.getTags();
+    let config = __dirname + '/blog/content';
 
-    expect(tags[0].posts.length).to.equal(1);
+    expect(wr.getConfig().contentPath).to.equal(config);
+  });
+
+  it('get all of the posts', () => {
+
+    let posts = wr.getPosts();
+
+    expect(posts.length).to.equal(4);
+  });
+
+  it('get all of the posts to be published', () => {
+
+    let posts = wr.getPublishedPosts();
+
+    expect(posts.length).to.equal(3);
+  });
+
+  it('should generate the tags', () => {
+
+    let posts = wr.getPosts();
+
+    let tags = wr.generateTags(posts);
+
+    expect(tags.length).to.be.greaterThan(0);
   });
 
   it('tag whale should exists', () => {
@@ -29,45 +54,23 @@ describe('Writr', () => {
     expect(tag).not.equal(null);
   });
 
-  it('tag tesla should not exists yet', () => {
+  it('tag candle should not exists yet', () => {
 
-    let tag = wr.getTag('tesla');
+    let tag = wr.getPublishedTag('candle');
 
     expect(tag).to.equal(null);
   });
 
-  it('should have two posts on a single tag', () => {
-    let postFilePath = __dirname + '/blog/article2.md';
-    let post = new Post(postFilePath);
+  it('render the home page', () => {
+    let body = wr.renderHome();
 
-    wr.saveTags(post);
-
-    let tag = wr.getTag('whale')
-
-    expect(tag.posts.length).to.equal(2);
+    expect(body).to.contain('Article Simple');
   });
 
-  it('config gets setup in init', () => {
+  it('render a post', () => {
+    let body = wr.renderPost('the-largest-whale');
 
-    let config : Config = new Config();
-
-    wr.init(config);
-
-    expect(wr.getConfig().contentPath).to.equal(config.contentPath);
-  });
-
-  it('get all of the posts', () => {
-
-    let config : Config = new Config();
-    config.postPath = __dirname + '/blog';
-    config.contentPath = __dirname + '/content';
-    config.templatePath = __dirname + '/templates';
-
-    wr.init(config);
-
-    let posts = wr.getPosts();
-
-    expect(posts.length).to.equal(4);
+    expect(body).to.contain('Article Simple');
   });
 
 });
