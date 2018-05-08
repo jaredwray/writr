@@ -162,10 +162,7 @@ export function getPublishedPost(postID:string): Post | null {
     let posts = getPublishedPosts();
 
     posts.forEach(post => {
-
-        log.info(post.title);;
-        log.info(post.url.toLowerCase().trim() + ' == ' + postID.toLowerCase().trim());
-
+        
         if(post.url.toLowerCase().trim() == postID.toLowerCase().trim()) {
             result = post;
         }
