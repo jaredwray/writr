@@ -3,5 +3,7 @@ export class Config {
     postPath: string = './blog';
     templatePath: string = './blog/template';
     cacheProvider: string = 'memory';
+    cacheProviderConnection: string = '';
+    cacheTTL: number = 60;
 
 }

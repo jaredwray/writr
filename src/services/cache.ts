@@ -9,20 +9,26 @@ export class Cache implements CacheProvider {
         this.__config = config;
     }
 
-    get(name:string) : object | null{
+    get(name:string) : object | undefined{
         let provider = this.getProvider(this.__config.cacheProvider);
+
+        this.formatName(name);
 
         return provider.get(name);
     }
 
-    set(name:string, obj:object, ttl:Date | null) {
+    set(name:string, obj:object, ttl:Date | undefined) {
         let provider = this.getProvider(this.__config.cacheProvider);
+
+        name = this.formatName(name);
 
         provider.set(name, obj, ttl);
     }
 
     delete(name:string) {
         let provider = this.getProvider(this.__config.cacheProvider);
+
+        name = this.formatName(name);
 
         provider.delete(name);
     }
@@ -34,6 +40,8 @@ export class Cache implements CacheProvider {
     getProvider(name:string) : CacheProvider {
         let result: CacheProvider;
 
+        name = this.formatName(name);
+
         switch(name) {
             default: //memory
                 result = new MemoryCache();
@@ -43,5 +51,9 @@ export class Cache implements CacheProvider {
         result.setConfig(this.__config);
 
         return result;
+    }
+
+    formatName(name:string) : string {
+        return name.toLowerCase().trim();
     }
 }
