@@ -16,6 +16,7 @@ export class Post {
     body: string = '';
     header: string = '';
     filePath: string = '';
+    previewKey?: string = undefined;
     log: any;
 
     constructor(filePath: string) {
@@ -24,6 +25,10 @@ export class Post {
         this.filePath = filePath;
 
         this.parse(this.filePath);
+    }
+
+    get id(): string {
+        return this.url;
     }
 
     parse(filePath: string) {
@@ -70,6 +75,10 @@ export class Post {
 
                 if(headerObj.tags) {
                     this.tags = headerObj.tags.toString().split(',');
+                }
+
+                if(headerObj.previewKey) {
+                    this.previewKey = headerObj.previewKey;
                 }
 
                 //generate html from markdown
