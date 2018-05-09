@@ -17,6 +17,14 @@ export class Cache implements CacheProvider {
         return provider.get(name);
     }
 
+    has(name:string): boolean {
+        let provider = this.getProvider(this.__config.cacheProvider);
+
+        this.formatName(name);
+
+        return provider.has(name);
+    }
+
     set(name:string, obj:object, ttl:Date | undefined) {
         let provider = this.getProvider(this.__config.cacheProvider);
 

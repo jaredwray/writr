@@ -28,8 +28,8 @@ export class MemoryCacheItem {
 
 export class MemoryCache implements CacheProvider {
 
-    __store = new Map<string, MemoryCacheItem>();
-    __config = new Config();
+    private __store = new Map<string, MemoryCacheItem>();
+    private __config = new Config();
 
     get(name:string) : object | undefined {
         let result: object | undefined;
@@ -56,6 +56,16 @@ export class MemoryCache implements CacheProvider {
 
     delete(name:string) {
         this.__store.delete(name);
+    }
+
+    has(name:string): boolean {
+        let result = false;
+        
+        if(this.get(name)) {
+            result = true;
+        }
+
+        return result;
     }
 
     setConfig(config:Config) : void {

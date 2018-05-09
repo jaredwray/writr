@@ -5,4 +5,5 @@ export interface CacheProvider {
     get(name:string): object | undefined;
     set(name:string, obj:object, ttl:Date | undefined): void;
     delete(name:string): void;
+    has(name:string): boolean;
 }
