@@ -146,7 +146,7 @@ export function getPublishedPosts() : Array<Post> {
             if(file.indexOf('.md') > 0) {
                 let filePath = directory + '/' + file;
                 let post = new Post(filePath);
-                if(post.isPostPublished()) {
+                if(post.isPublished()) {
                     result.push(post);
                 }
             }
