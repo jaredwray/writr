@@ -48,7 +48,7 @@ export class DataStore {
 
         result = <Post>this.__cache.get(cacheKey);
 
-        if(!result.isPostPublished()) {
+        if(!result.isPublished()) {
             result = undefined;
         }
 
@@ -126,6 +126,10 @@ export class DataStore {
         } 
 
         result = <Tag>this.__cache.get(cacheKey);
+
+        if(!result.isPublished()) {
+            result = undefined;
+        }
 
         return result;
     }

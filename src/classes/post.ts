@@ -97,7 +97,7 @@ export class Post {
         
     }
 
-    isPostPublished(): Boolean {
+    isPublished(): Boolean {
         let result = false;
         
         if(!this.publishedAt) {

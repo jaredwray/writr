@@ -7,4 +7,16 @@ export class Tag {
     constructor(name: string) {
         this.name = name;
     }
+
+    isPublished() : boolean {
+        let result = false;
+
+        this.posts.forEach(post => {
+            if(post.isPublished()) {
+                result = true;
+            }
+        });
+
+        return result;
+    }
 }
