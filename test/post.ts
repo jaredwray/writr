@@ -105,7 +105,7 @@ describe('Post', () => {
     let postFilePath = __dirname + '/blog/article1-simple.md';
     let post = new Post(postFilePath);
 
-    expect(post.isPostPublished()).to.equal(true);
+    expect(post.isPublished()).to.equal(true);
   });
 
   it('if published date is in the future then it should say no', () => {
@@ -114,7 +114,7 @@ describe('Post', () => {
 
     post.publishedAt = new Date('12/12/2040');
 
-    expect(post.isPostPublished()).to.equal(false);
+    expect(post.isPublished()).to.equal(false);
   });
 
   it('generate html from markdown', () => {
