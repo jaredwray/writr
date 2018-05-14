@@ -71,7 +71,7 @@ export class FileDataStore implements DataStoreProvider {
         let result = new Array<Post>();
 
         this.getPosts().forEach(post => {
-            if(post.isPostPublished()) {
+            if(post.isPublished()) {
                 result.push(post);
             }
         });
