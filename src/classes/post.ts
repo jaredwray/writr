@@ -105,7 +105,7 @@ export class Post {
         }
 
         if(this.publishedAt) {
-            if(this.publishedAt <= new Date()) {
+            if(this.publishedAt.getTime() <= new Date().getTime()) {
                 result = true;
             }
         }
