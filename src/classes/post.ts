@@ -15,16 +15,15 @@ export class Post {
     content: string = '';
     body: string = '';
     header: string = '';
-    filePath: string = '';
     previewKey?: string = undefined;
     log: any;
 
-    constructor(filePath: string) {
+    constructor(filePath: string | undefined = undefined) {
         this.log = new Logger({transports:[new transports.Console()]});
         
-        this.filePath = filePath;
-
-        this.parse(this.filePath);
+        if(filePath) {
+            this.parse(filePath);
+        }
     }
 
     get id(): string {
