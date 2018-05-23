@@ -3,14 +3,17 @@ import {Post} from '../classes/post';
 import {Tag} from '../classes/tag';
 import {DataProviderInterface}  from './dataProviderInterface';
 import * as fs from 'fs';
+import * as MarkDownIt from 'markdown-it';
+import { Logger, transports } from 'winston';
 
 
 export class FileDataProvider implements DataProviderInterface {
     __config: Config = new Config();
-    __posts = new Array<Post>();
+    __posts: Array<Post> = new Array<Post>();
+    __log: any;
 
     constructor() {
-
+       this.__log = new Logger({transports:[new transports.Console()]});
     }
 
     getPost(id:string): Post | undefined {
@@ -159,6 +162,74 @@ export class FileDataProvider implements DataProviderInterface {
 
     formatToKey(key:string): string {
         return key.toLowerCase().trim();
+    }
+
+    parsePost(filePath:string): Post {
+        let result: Post = new Post();
+
+        try {
+            if(fs.existsSync(filePath)) {
+                let data = fs.readFileSync(filePath).toString();
+
+                result.header = data.split('}')[0] + '}';
+
+                result.content = data.substr(data.indexOf('}')+1);
+
+                //clean up header
+                result.header = result.header.replace('\n', '');
+
+                let parser = require('parse-json');
+
+                //setup the header
+                let headerObj = parser(result.header);
+
+                result.title = headerObj.title;
+
+                if(headerObj.author) {
+                    result.author = headerObj.author;
+                }
+
+                if(headerObj.url) {
+                    result.url = headerObj.url;
+                } else {
+                    result.url = result.title.toLowerCase().trim().split(' ').join('-');
+                }
+
+                if(headerObj.createdAt) {
+                    result.createdAt = new Date(headerObj.createdAt);
+                }
+                
+                if(headerObj.publishedAt) {
+                    result.publishedAt = new Date(headerObj.publishedAt);
+                }
+
+                if(headerObj.keywords) {
+                    result.keywords = headerObj.keywords.toString().split(',');
+                }
+
+                if(headerObj.tags) {
+                    result.tags = headerObj.tags.toString().split(',');
+                }
+
+                if(headerObj.previewKey) {
+                    result.previewKey = headerObj.previewKey;
+                }
+
+                //generate html from markdown
+                let markdown = new MarkDownIt();
+                result.body = markdown.render(result.content);
+
+
+            } else {
+                this.__log.error('The following post does not exist: '+  filePath);
+            }
+        }
+        catch(error) {
+            this.__log.error(error);
+            throw new Error(error);
+        }
+
+        return result;
     }
 
 }

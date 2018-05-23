@@ -3,34 +3,124 @@ import { Config } from '../src/classes/config';
 import { FileDataProvider } from '../src/providers/fileDataProvider'; 
 import 'mocha';
 
-describe('Writr', () => {
 
-  beforeEach(() => {
+describe('fileDataProvider', () => {
 
-    let config : Config = new Config();
+  let config : Config = new Config();
+
+  before(() => {
+
     config.postPath = __dirname + '/blog';
     config.contentPath = __dirname + '/blog/content';
     config.templatePath = __dirname + '/blog/templates';
 
+
   });
 
   it('config gets setup in init', () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
 
-
-
-    expect(1).to.equal(1);
+    expect(fileProvider.__config.postPath).to.equal(config.postPath);
   });
-/*
-  it('render the home page', () => {
-    let body = wr.renderHome();
 
-    expect(body).to.contain('Article Simple');
-  });
- 
-  it('render a post', () => {
-    let body = wr.renderPost('article-simple');
+  it('should get the posts from the file system', () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
 
-    expect(body).to.contain('Article Simple');
+    let posts = fileProvider.getPosts();
+
+    expect(posts.length).to.equal(4);
   });
-*/ 
+
+  it('should get a valid post', () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    let post = fileProvider.getPost('article-simple');
+
+    expect(post.title).to.equal('Article Simple');
+  });
+
+  it('should not get a valid post', () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    let post = fileProvider.getPost('article');
+
+    expect(post).to.equal(undefined);
+  });
+
+  it('should get a valid published post', () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    let post = fileProvider.getPublishedPost('all-about-the-tesla-model-3');
+
+    expect(post.title).to.equal('Tesla Model 3');
+  });
+
+  it('should not get a valid published post', () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    let post = fileProvider.getPublishedPost('the-largest-whale');
+
+    expect(post).to.equal(undefined);
+  });
+
+  it('should published posts', () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    let posts = fileProvider.getPublishedPosts();
+
+    expect(posts.length).to.equal(3);
+  });
+
+  it('should have a valid tag', () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    let tag = fileProvider.getTag('whale');
+
+    expect(tag.name).to.equal('whale');
+  });
+
+  it('should have a valid tag and multiple posts', () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    let tag = fileProvider.getTag('whale');
+
+    expect(tag.posts.length).to.equal(2);
+  });
+
+  it('should have a invalid tag', () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    let tag = fileProvider.getTag('snoopy');
+
+    expect(tag).to.equal(undefined);
+  });
+
+  it('should have a valid tag and is published', () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    let tag = fileProvider.getTag('whale');
+
+    expect(tag.isPublished()).to.equal(true);
+  });
+
+  it('should have a tag that is not publshed', () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    let tag = fileProvider.getTag('whale');
+
+    expect(tag.isPublished()).to.equal(true);
+  });
+
 });
