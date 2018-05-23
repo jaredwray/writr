@@ -1,8 +1,8 @@
-import {CacheProvider} from '../providers/cache/cacheProvider';
-import {MemoryCache} from '../providers/cache/memory';
+import {CacheProviderInterface} from '../providers/cacheProviderInterface';
+import {MemoryCache} from '../providers/memoryCacheProvider';
 import {Config} from '../classes/config';
 
-export class Cache implements CacheProvider {
+export class Cache implements CacheProviderInterface {
     __config: Config;
 
     constructor(config: Config) {
@@ -45,8 +45,8 @@ export class Cache implements CacheProvider {
         this.__config = config;
     }
 
-    getProvider(name:string) : CacheProvider {
-        let result: CacheProvider;
+    getProvider(name:string) : CacheProviderInterface {
+        let result: CacheProviderInterface;
 
         name = this.formatName(name);
 

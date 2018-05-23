@@ -2,8 +2,8 @@ import {Cache} from './cache';
 import {Config} from '../classes/config';
 import {Post} from '../classes/post';
 import {Tag} from '../classes/tag';
-import {DataStoreProvider} from '../providers/dataStore/dataStoreProvider';
-import {FileDataStore} from '../providers/dataStore/file';
+import {DataProviderInterface} from '../providers/dataProviderInterface';
+import {FileDataProvider} from '../providers/fileDataProvider';
 
 export class DataStore {
     private __cache: Cache;
@@ -177,8 +177,8 @@ export class DataStore {
     }
     
 
-    getProvider() : DataStoreProvider {
-        let result: DataStoreProvider = new FileDataStore();
+    getProvider() : DataProviderInterface {
+        let result: DataProviderInterface = new FileDataProvider();
 
         result.init(this.__config);
 

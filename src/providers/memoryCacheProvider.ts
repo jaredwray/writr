@@ -1,5 +1,5 @@
-import {CacheProvider} from './cacheProvider';
-import {Config} from '../../classes/config';
+import {CacheProviderInterface} from './cacheProviderInterface';
+import {Config} from '../classes/config';
 import * as moment from 'moment';
 
 export class MemoryCacheItem {
@@ -26,7 +26,7 @@ export class MemoryCacheItem {
     }
 }
 
-export class MemoryCache implements CacheProvider {
+export class MemoryCache implements CacheProviderInterface {
 
     private __store = new Map<string, MemoryCacheItem>();
     private __config = new Config();

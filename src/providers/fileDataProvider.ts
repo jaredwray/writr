@@ -1,11 +1,11 @@
-import { Config } from "../../classes/config";
-import {Post} from '../../classes/post';
-import {Tag} from '../../classes/tag';
-import {DataStoreProvider}  from './DataStoreProvider';
+import { Config } from "../classes/config";
+import {Post} from '../classes/post';
+import {Tag} from '../classes/tag';
+import {DataProviderInterface}  from './dataProviderInterface';
 import * as fs from 'fs';
 
 
-export class FileDataStore implements DataStoreProvider {
+export class FileDataProvider implements DataProviderInterface {
     __config: Config = new Config();
     __posts = new Array<Post>();
 

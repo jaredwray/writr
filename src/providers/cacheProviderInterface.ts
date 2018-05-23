@@ -1,6 +1,6 @@
-import {Config} from '../../classes/config';
+import {Config} from '../classes/config';
 
-export interface CacheProvider {
+export interface CacheProviderInterface {
     setConfig(config:Config): void;
     get(name:string): object | undefined;
     set(name:string, obj:object, ttl:Date | undefined): void;

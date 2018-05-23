@@ -1,9 +1,8 @@
-import {Config} from '../../classes/config';
-import {Post} from '../../classes/post';
-import {Tag} from '../../classes/tag';
-import { getPublishedPost, getPublishedTag } from '../..';
+import {Config} from '../classes/config';
+import {Post} from '../classes/post';
+import {Tag} from '../classes/tag';
 
-export interface DataStoreProvider {
+export interface DataProviderInterface {
     getPost(id:string) : Post | undefined;
     getPublishedPost(id:string): Post | undefined;
     getPosts(): Array<Post>;
