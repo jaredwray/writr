@@ -23,53 +23,17 @@ describe('Writr', () => {
 
     expect(wr.getConfig().contentPath).to.equal(config);
   });
-
-  it('get all of the posts', () => {
-
-    let posts = wr.getPosts();
-
-    expect(posts.length).to.equal(4);
-  });
-
-  it('get all of the posts to be published', () => {
-
-    let posts = wr.getPublishedPosts();
-
-    expect(posts.length).to.equal(3);
-  });
-
-  it('should generate the tags', () => {
-
-    let posts = wr.getPosts();
-
-    let tags = wr.generateTags(posts);
-
-    expect(tags.length).to.be.greaterThan(0);
-  });
-
-  it('tag whale should exists', () => {
-
-    let tag = wr.getTag('whale');
-
-    expect(tag).not.equal(null);
-  });
-
-  it('tag candle should not exists yet', () => {
-
-    let tag = wr.getPublishedTag('candle');
-
-    expect(tag).to.equal(null);
-  });
-
+/*
   it('render the home page', () => {
     let body = wr.renderHome();
 
     expect(body).to.contain('Article Simple');
   });
+ 
   it('render a post', () => {
     let body = wr.renderPost('article-simple');
 
     expect(body).to.contain('Article Simple');
   });
-
+*/ 
 });
