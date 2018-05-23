@@ -4,14 +4,14 @@ import * as moment from 'moment';
 import 'mocha';
 
 describe('Post', () => {
-
+/*
   it('should return the filePath name', () => {
     let postFilePath = __dirname + '/blog/article1.md';
     let post = new Post(postFilePath);
 
     expect(post.filePath).to.equal(postFilePath);
   });
-/*
+
   it('should return the correct header', () => {
     let postFilePath = __dirname + '/blog/article1-simple.md';
     let post = new Post(postFilePath);
