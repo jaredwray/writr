@@ -26,7 +26,7 @@ export class MemoryCacheItem {
     }
 }
 
-export class MemoryCache implements CacheProviderInterface {
+export class MemoryCacheProvider implements CacheProviderInterface {
 
     private __store = new Map<string, MemoryCacheItem>();
     private __config = new Config();

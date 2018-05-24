@@ -1,5 +1,5 @@
 import {CacheProviderInterface} from '../providers/cacheProviderInterface';
-import {MemoryCache} from '../providers/memoryCacheProvider';
+import {MemoryCacheProvider} from '../providers/memoryCacheProvider';
 import {Config} from '../classes/config';
 
 export class CacheService implements CacheProviderInterface {
@@ -52,7 +52,7 @@ export class CacheService implements CacheProviderInterface {
 
         switch(name) {
             default: //memory
-                result = new MemoryCache();
+                result = new MemoryCacheProvider();
                 break;
         }
 
