@@ -1,17 +1,17 @@
-import {Cache} from './cache';
+import {CacheService} from './cacheService';
 import {Config} from '../classes/config';
 import {Post} from '../classes/post';
 import {Tag} from '../classes/tag';
 import {DataProviderInterface} from '../providers/dataProviderInterface';
 import {FileDataProvider} from '../providers/fileDataProvider';
 
-export class DataStore {
-    private __cache: Cache;
+export class DataService {
+    private __cache: CacheService;
     private __config : Config;
 
     constructor(config:Config) {
         this.__config = config;
-        this.__cache = new Cache(this.__config);
+        this.__cache = new CacheService(this.__config);
     }
 
     //posts

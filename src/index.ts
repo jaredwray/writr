@@ -2,7 +2,7 @@
 import {Post} from './classes/post';
 import {Tag} from './classes/tag';
 import {Config} from './classes/config';
-import {DataStore} from './services/dataStore';
+import {DataService} from './services/dataService';
 import { Logger, transports } from 'winston';
 import * as express from "express";
 import * as handlebars from 'handlebars';
@@ -11,7 +11,7 @@ import * as fs from 'fs';
 const log = new Logger({transports:[new transports.Console()]});
 let __config: Config = new Config();
 const Posts = new Array<Post>();
-let __dataStore : DataStore = new DataStore(__config);
+let __dataStore : DataService = new DataService(__config);
 
 export function initExpress(url: string, express: express.Application, config: Config): void {
     init(config);
@@ -60,7 +60,7 @@ export function init(config: Config) : void {
 
     __config = config;
 
-    __dataStore = new DataStore(__config);
+    __dataStore = new DataService(__config);
 }
 
 //render

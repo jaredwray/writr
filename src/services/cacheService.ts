@@ -2,7 +2,7 @@ import {CacheProviderInterface} from '../providers/cacheProviderInterface';
 import {MemoryCache} from '../providers/memoryCacheProvider';
 import {Config} from '../classes/config';
 
-export class Cache implements CacheProviderInterface {
+export class CacheService implements CacheProviderInterface {
     __config: Config;
 
     constructor(config: Config) {
