@@ -9,7 +9,7 @@ export class CacheService implements CacheProviderInterface {
         this.__config = config;
     }
 
-    get(name:string) : object | undefined{
+    get(name:string) : object | undefined {
         let provider = this.getProvider(this.__config.cacheProvider);
 
         this.formatName(name);
