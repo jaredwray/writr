@@ -118,9 +118,29 @@ describe('fileDataProvider', () => {
     let fileProvider = new FileDataProvider();
     fileProvider.init(config);
 
-    let tag = fileProvider.getTag('whale');
+    let tag = fileProvider.getPublishedTag('large');
 
-    expect(tag.isPublished()).to.equal(true);
+    expect(tag).to.equal(undefined);
+  });
+
+  it('should have a all tags that are published', () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    let tags = fileProvider.getPublishedTags();
+
+    expect(tags.length).to.equal(6);
+  });
+
+  it('should generate the correct amount of tags', () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    let posts = fileProvider.getPosts();
+
+    let tags = fileProvider.generateTags(posts)
+
+    expect(tags.length).to.equal(9);
   });
 
 });
