@@ -2,8 +2,8 @@ import {Config} from '../classes/config';
 
 export interface CacheProviderInterface {
     setConfig(config:Config): void;
-    get(name:string): object | undefined;
-    set(name:string, obj:object, ttl:Date | undefined): void;
+    get(name:string): any | undefined;
+    set(name:string, obj:any, ttl:Date | undefined): void;
     delete(name:string): void;
     has(name:string): boolean;
 }

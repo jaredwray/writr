@@ -3,11 +3,12 @@ import {Config} from '../classes/config';
 import * as moment from 'moment';
 
 export class MemoryCacheItem {
-    obj:object = {};
+    obj:any = {};
     ttl:Date | undefined = moment().add(1, 'h').toDate();
 
-    constructor(obj:object, ttl?:Date) {
+    constructor(obj:any, ttl?:Date) {
         this.obj = obj;
+        
         if(ttl) {
         this.ttl = ttl;
         }
@@ -31,8 +32,8 @@ export class MemoryCacheProvider implements CacheProviderInterface {
     private __store = new Map<string, MemoryCacheItem>();
     private __config = new Config();
 
-    get(name:string) : object | undefined {
-        let result: object | undefined;
+    get(name:string) : any | undefined {
+        let result: any = undefined;
         
         if(this.__store.has(name)) {
         
@@ -45,7 +46,7 @@ export class MemoryCacheProvider implements CacheProviderInterface {
         return result;
     }
 
-    set(name:string, obj:object, ttl?:Date) {
+    set(name:string, obj:any, ttl?:Date) {
 
         if(!ttl) {
             ttl = moment().add(this.__config.cacheTTL, 'm').toDate();
@@ -69,6 +70,6 @@ export class MemoryCacheProvider implements CacheProviderInterface {
     }
 
     setConfig(config:Config) : void {
-        this.__config;
+        this.__config = config;
     }
 }
