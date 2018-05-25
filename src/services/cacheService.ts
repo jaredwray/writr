@@ -3,10 +3,12 @@ import {MemoryCacheProvider} from '../providers/memoryCacheProvider';
 import {Config} from '../classes/config';
 
 export class CacheService implements CacheProviderInterface {
-    __config: Config;
+    private __config: Config;
+    private __cache: CacheProviderInterface;
 
     constructor(config: Config) {
         this.__config = config;
+        this.__cache = this.getProvider(this.__config.cacheProvider);
     }
 
     get(name:string) : object | undefined {
@@ -25,7 +27,7 @@ export class CacheService implements CacheProviderInterface {
         return provider.has(name);
     }
 
-    set(name:string, obj:object, ttl:Date | undefined) {
+    set(name:string, obj:object, ttl:Date | undefined = undefined): void {
         let provider = this.getProvider(this.__config.cacheProvider);
 
         name = this.formatName(name);
@@ -33,7 +35,7 @@ export class CacheService implements CacheProviderInterface {
         provider.set(name, obj, ttl);
     }
 
-    delete(name:string) {
+    delete(name:string) : void {
         let provider = this.getProvider(this.__config.cacheProvider);
 
         name = this.formatName(name);
@@ -46,18 +48,19 @@ export class CacheService implements CacheProviderInterface {
     }
 
     getProvider(name:string) : CacheProviderInterface {
-        let result: CacheProviderInterface;
+        let result: CacheProviderInterface = this.__cache;
 
-        name = this.formatName(name);
+        if(!result) {
+            name = this.formatName(name);
 
-        switch(name) {
-            default: //memory
-                result = new MemoryCacheProvider();
-                break;
+            switch(name) {
+                default: //memory
+                    result = new MemoryCacheProvider();
+                    break;
+            }
+
+            result.setConfig(this.__config);
         }
-
-        result.setConfig(this.__config);
-
         return result;
     }
 

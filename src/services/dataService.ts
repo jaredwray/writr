@@ -65,10 +65,11 @@ export class DataService {
         let cacheKey = this.generatePostKey(id);
 
         if(!this.__cache.has(cacheKey)) {
+            
             let posts = this.getProvider().getPosts();
             
-            this.__cache.set(cacheKey, posts, undefined);
-        } 
+            this.__cache.set(cacheKey, posts);
+        }
 
         result = <Post[]>this.__cache.get(cacheKey);
 
@@ -103,7 +104,7 @@ export class DataService {
 
         if(!this.__cache.has(cacheKey)) {
             let tag = this.getProvider().getTag(name);
-            
+
             if(tag) {
                 this.__cache.set(cacheKey, tag!, undefined);
             }
