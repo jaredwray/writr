@@ -86,6 +86,7 @@ export class FileDataProvider implements DataProviderInterface {
         let result;
 
         this.getTags().forEach(tag => {
+
             if(this.formatToKey(tag.name) == this.formatToKey(name)) {
                 result = tag;
             }
@@ -134,7 +135,7 @@ export class FileDataProvider implements DataProviderInterface {
                 });
     
                 if(tag == null) {
-                    tag = new Tag(tagName);
+                    tag = new Tag(this.formatToKey(tagName));
                     result.push(tag);
                 }
     
