@@ -9,15 +9,14 @@ import * as handlebars from 'handlebars';
 import * as fs from 'fs';
 
 const log = new Logger({transports:[new transports.Console()]});
-let __config: Config = new Config();
-const Posts = new Array<Post>();
-let __dataStore : DataService = new DataService(__config);
+let __config: Config;
+let __dataStore : DataService;
 
 export function initExpress(url: string, express: express.Application, config: Config): void {
     init(config);
 
     //handle home
-    express.get('url', function(req: express.Request, res: express.Response){
+    express.get('/', function(req: express.Request, res: express.Response){
         let body = renderHome();
 
         res.send(body);
@@ -56,7 +55,7 @@ export function initExpress(url: string, express: express.Application, config: C
     });
 }
 
-export function init(config: Config) : void {
+export function init(config: Config = new Config()) : void {
 
     __config = config;
 
