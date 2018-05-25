@@ -58,7 +58,7 @@ export class FileDataProvider implements DataProviderInterface {
                 files.forEach(file => {
                     if(file.indexOf('.md') > 0) {
                         let filePath = directory + '/' + file;
-                        let post = new Post(filePath);
+                        let post = this.parsePost(filePath);
                             this.__posts.push(post);
                     }
                 });
