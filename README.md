@@ -57,5 +57,5 @@ To learn more about Markdown go here: https://guides.github.com/features/masteri
 
 There are three templates that are part of every instance of Writr:
 * home: This is the main template that lists all of the latest blogs or what you want to add. 
-* article: The article itself and usually supporting items around that such as what is next to look at and tags. 
+* post: The post itself and usually supporting items around that such as what is next to look at and tags. 
 * tags: Showing articles by tag filtering.
