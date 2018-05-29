@@ -17,6 +17,7 @@ We will default to the `blog/` folder unless you configure the custom path in th
     "createdAt": "",
     "publishedAt": "",
     "keywords": "",
+    "previewKey": "",
     "tags": ""
 }
 ```
@@ -48,8 +49,6 @@ writer.initExpress('/blog', app, {
 });
 ```
 
-
-
 ### Markdown
 To learn more about Markdown go here: https://guides.github.com/features/mastering-markdown/
 
@@ -59,3 +58,8 @@ There are three templates that are part of every instance of Writr:
 * home: This is the main template that lists all of the latest blogs or what you want to add. 
 * post: The post itself and usually supporting items around that such as what is next to look at and tags. 
 * tags: Showing articles by tag filtering.
+
+## Features
+
+### Preview Key
+At some point you will want to show the post before it is live. In that case you can set a secret key in the post meta information called `previewKey`. Once you have set this and saved the post you can browse to your blog with the url of the post adding `?previewKey=YOUR_SECRET` at the end. 

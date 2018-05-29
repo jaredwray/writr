@@ -25,9 +25,10 @@ export function initExpress(url: string, express: express.Application, config: C
     //handle posts
     express.get(url+ '/:postID', function(req: express.Request, res: express.Response){
         let postID = req.params.postID;
+        let previewKey = req.params.previewKey;
 
         if(postID) {
-            let body = renderTag(postID);
+            let body = renderPost(postID, previewKey);
 
             res.send(body);
 
@@ -88,14 +89,25 @@ export function renderTag(tagName:string): string {
     return result;
 }
 
-export function renderPost(postID:string) : string {
+export function renderPost(postID:string, previewKey?:string) : string {
     let result = '';
-
-    let post = __dataStore.getPublishedPost(postID);
+    let post = __dataStore.getPost(postID);
 
     if(post) {
-    let source: string = getPostTemplate();
-    result = render(source, post);
+        if(!post.isPublished()){
+            if(previewKey) {
+                if(post.previewKey != previewKey) {
+                    post = undefined;
+                }
+            } else {
+                post = undefined;
+            }
+        } 
+    }
+
+    if(post) {
+        let source: string = getPostTemplate();
+        result = render(source, post);
     }
 
     return result;
