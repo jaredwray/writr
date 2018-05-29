@@ -22,6 +22,7 @@
     "markdown-it": "^8.4.1",
     "moment": "^2.22.1",
     "parse-json": "^4.0.0",
+    "promisify": "^0.0.3",
     "winston": "^2.4.1"
   },
   "devDependencies": {

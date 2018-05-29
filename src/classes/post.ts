@@ -11,7 +11,6 @@ export class Post {
     body: string = '';
     header: string = '';
     previewKey?: string = undefined;
-    log: any;
 
     constructor() {
     }
