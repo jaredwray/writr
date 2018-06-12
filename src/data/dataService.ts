@@ -2,32 +2,30 @@ import {Config} from '../config';
 import {Post} from '../post';
 import {Tag} from '../tag';
 import {DataProviderInterface} from './dataProviderInterface';
-import {FileDataProvider} from '../data/fileDataProvider';
-
-import Keyv = require('keyv');
+import {FileDataProvider} from './fileDataProvider';
+import {DataCacheService} from './dataCacheService';
 
 export class DataService {
-    private __postCache: Keyv;
-    private __tagCache: Keyv;
-    private __config: Config;
+
+    config: Config;
+    cache: DataCacheService;
 
     constructor(config:Config) {
-        this.__config = config;
-        this.__postCache = new Keyv({ttl: this.__config.cacheTTL, namespace: 'data-post'});
-        this.__tagCache = new Keyv({ttl: this.__config.cacheTTL, namespace: 'data-tag'});
+        this.config = config;
+        this.cache = new DataCacheService(this.config);
     }
 
     //posts
     async getPost(id:string) : Promise<Post | undefined> {
         let result = undefined;
 
-        result = await this.getCachedPost(id);
+        result = await this.cache.getPost(id);
 
         if(!result) {
             result = await this.getProvider().getPost(id);
             
             if(result) {
-                await this.setCachedPost(id, result);
+                await this.cache.setPost(id, result);
             }
         } 
 
@@ -37,14 +35,14 @@ export class DataService {
     async getPublishedPost(id:string) : Promise<Post | undefined> {
         let result = undefined;
 
-        result = await this.getCachedPost(id);
+        result = await this.cache.getPost(id);
 
         if(!result) {
 
             result = await this.getProvider().getPublishedPost(id);
 
             if(result) {
-                await this.setCachedPost(id, result);
+                await this.cache.setPost(id, result);
             }
         }
 
@@ -61,14 +59,14 @@ export class DataService {
         let result = new Array<Post>();
 
         let cacheKey = 'get-posts';
-        let posts = await this.getCachedPosts(cacheKey);
+        let posts = await this.cache.getPosts(cacheKey);
 
         if(!posts) {
             
             result = await this.getProvider().getPosts();
 
             if(result) {
-                await this.setCachedPosts(cacheKey, result);
+                await this.cache.setPosts(cacheKey, result);
             }
             
         } else {
@@ -83,14 +81,14 @@ export class DataService {
         let result = new Array<Post>();
 
         let cacheKey = 'get-published-posts';
-        let posts = await this.getCachedPosts(cacheKey);
+        let posts = await this.cache.getPosts(cacheKey);
 
         if(!posts) {
             
             result = await this.getProvider().getPublishedPosts();
 
             if(result) {
-                await this.setCachedPosts(cacheKey, result);
+                await this.cache.setPosts(cacheKey, result);
             }
             
         } else {
@@ -104,13 +102,13 @@ export class DataService {
     async getTag(name:string) : Promise<Tag | undefined> {
         let result = undefined;
 
-        result = await this.getCachedTag(name);
+        result = await this.cache.getTag(name);
 
         if(!result) {
             result = await this.getProvider().getTag(name);
 
             if(result) {
-                await this.setCacheTag(name, result);
+                await this.cache.setTag(name, result);
             }
         } 
 
@@ -120,13 +118,13 @@ export class DataService {
     async getPublishedTag(name:string) : Promise<Tag | undefined> {
         let result = undefined;
 
-        result = await this.getCachedTag(name);
+        result = await this.cache.getTag(name);
 
         if(!result) {
             result = await this.getProvider().getPublishedTag(name);
             
             if(result) {
-                await this.setCacheTag(name, result);
+                await this.cache.setTag(name, result);
             }
         } 
 
@@ -144,13 +142,13 @@ export class DataService {
 
         let cacheKey = 'get-tags';
 
-        let tags = await this.getCachedTags(cacheKey);
+        let tags = await this.cache.getTags(cacheKey);
 
         if(!tags) {
             result = await this.getProvider().getTags();
 
             if(result) {
-                await this.setCacheTags(cacheKey, result);
+                await this.cache.setTags(cacheKey, result);
             }
         } else {
             result = tags;
@@ -164,13 +162,13 @@ export class DataService {
 
         let cacheKey = 'get-published-tags';
 
-        let tags = await this.getCachedTags(cacheKey);
+        let tags = await this.cache.getTags(cacheKey);
 
         if(!tags) {
             result = await this.getProvider().getPublishedTags();
 
             if(result) {
-                await this.setCacheTags(cacheKey, result);
+                await this.cache.setTags(cacheKey, result);
             }
         } else {
             result = tags;
@@ -179,96 +177,13 @@ export class DataService {
         return result;
     }
 
-    //cache
-    async getCachedPost(key:string) : Promise<Post | undefined> {
-        key = this.formatName(key);
-
-        let result = await this.__postCache.get(key);
-
-        if(result) {
-            result = Post.create(result);
-        }
-
-        return result;
-    }
-
-    async setCachedPost(key:string, post:Post) : Promise<boolean | undefined> {
-        return await this.__postCache.set(this.formatName(key), post);
-    }
-
-    async getCachedPosts(key:string) : Promise<Array<Post> | undefined> {
-        key = this.formatName(key);
-
-        let result = await this.__postCache.get(key);
-
-        if(result) {
-            let posts = new Array<Post>();
-
-            for(let i=0;i<result.length;i++)
-            {
-                posts.push(Post.create(result[i]));
-            }
-
-            result = posts;
-        }
-
-        return result;
-    }
-
-    async setCachedPosts(key:string, posts:Array<Post>) : Promise<boolean | undefined> {
-        return await this.__postCache.set(this.formatName(key), posts);
-    }
-
-    async getCachedTag(key:string) : Promise<Tag | undefined> {
-        key = this.formatName(key);
-
-        let result = await this.__tagCache.get(key);
-
-        if(result) {
-            result = Tag.create(result);
-        }
-
-        return result;
-    }
-
-    async setCacheTag(key:string, tag:Tag) : Promise<boolean | undefined> {
-        return await this.__tagCache.set(this.formatName(key), tag);
-    }
-
-    async getCachedTags(key:string) : Promise<Array<Tag> | undefined> {
-        key = this.formatName(key);
-
-        let result = await this.__tagCache.get(key);
-
-        if(result) {
-            let tags = new Array<Tag>();
-
-            for(let i=0;i<result.length;i++)
-            {
-                tags.push(Tag.create(result[i]));
-            }
-
-            result = tags;
-        }
-
-        return result;
-    }
-
-    async setCacheTags(key:string, tags:Array<Tag>) : Promise<boolean | undefined> {
-        return await this.__tagCache.set(this.formatName(key), tags);
-    }
-    
-
-
     getProvider() : DataProviderInterface {
         let result: DataProviderInterface = new FileDataProvider();
 
-        result.init(this.__config);
+        result.init(this.config);
 
         return result;
     }
 
-    formatName(name:string) : string {
-        return name.toLowerCase().trim();
-    }
+
 }
