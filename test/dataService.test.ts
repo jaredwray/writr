@@ -155,12 +155,6 @@ describe('Data Service', async () => {
         expect(result.keywords.length).to.equal(2);
     });
 
-
-
-    
-
-
-
     it('caching a tag and retrieving it', async () => {
 
         let tag = new Tag('foo');
