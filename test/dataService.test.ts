@@ -3,7 +3,6 @@ import 'mocha';
 
 import {Config} from '../src/classes/config';
 import {DataService} from '../src/services/dataService'
-import * as moment from 'moment';
 
 describe('Data Service', async () => {
 

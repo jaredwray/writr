@@ -13,7 +13,7 @@ export class DataService {
 
     constructor(config:Config) {
         this.__config = config;
-        this.__cache = new Keyv();
+        this.__cache = new Keyv({ttl: this.__config.cacheTTL});
     }
 
     //posts
@@ -22,13 +22,13 @@ export class DataService {
 
         let cacheKey = this.generatePostKey(id);
 
-        result = <Post> await this.__cache.get(cacheKey);
+        //let cacheItem = await this.__cache.get(cacheKey);
 
         if(!result) {
-            result = this.getProvider().getPost(id);
+            result = await this.getProvider().getPost(id);
 
             if(result) {
-                await this.__cache.set(cacheKey, result!, this.__config.cacheTTL);
+                await this.__cache.set(cacheKey, result);
             }
         } 
 
@@ -40,14 +40,15 @@ export class DataService {
 
         let cacheKey = this.generatePostKey(id);
 
-        //result = <Post> await this.__cache.get(cacheKey);
+        //let cacheItem = await this.__cache.get(cacheKey);
 
         if(!result) {
 
             result = await this.getProvider().getPublishedPost(id);
 
             if(result) {
-                await this.__cache.set(cacheKey, result, this.__config.cacheTTL);
+
+                await this.__cache.set(cacheKey, result);
             }
         }
 
@@ -67,14 +68,14 @@ export class DataService {
 
         let cacheKey = this.generatePostKey(id);
 
-        result = <Post[]>await this.__cache.get(cacheKey);
+        //result = <Post[]>await this.__cache.get(cacheKey);
 
-        if(!result) {
+        if(result.length === 0) {
             
             result = await this.getProvider().getPosts();
 
             if(result) {
-                await this.__cache.set(cacheKey, result, this.__config.cacheTTL); 
+                await this.__cache.set(cacheKey, result); 
             }
         }
 
@@ -89,13 +90,13 @@ export class DataService {
 
         let cacheKey = this.generatePostKey(id);
 
-        result = <Post[]> await this.__cache.get(cacheKey);
+        //result = <Post[]> await this.__cache.get(cacheKey);
 
-        if(!result) {
+        if(result.length === 0) {
             result = await this.getProvider().getPublishedPosts();
             
             if(result) {
-                await this.__cache.set(cacheKey, result, this.__config.cacheTTL);
+                await this.__cache.set(cacheKey, result);
             }
         } 
 
@@ -108,13 +109,13 @@ export class DataService {
 
         let cacheKey = this.generateTagKey(name);
 
-        //result = <Tag> await this.__cache.get(cacheKey);
+        //let cacheItem = await this.__cache.get(cacheKey);
 
         if(!result) {
             result = this.getProvider().getTag(name);
 
             if(result) {
-                await this.__cache.set(cacheKey, result!, this.__config.cacheTTL);
+                await this.__cache.set(cacheKey, result);
             }
         } 
 
@@ -126,13 +127,13 @@ export class DataService {
 
         let cacheKey = this.generateTagKey(name);
 
-        result = <Tag> await this.__cache.get(cacheKey);
+        //result = <Tag> await this.__cache.get(cacheKey);
 
         if(!result) {
             result = await this.getProvider().getPublishedTag(name);
             
             if(result) {
-                await this.__cache.set(cacheKey, result!, this.__config.cacheTTL);
+                await this.__cache.set(cacheKey, result);
             }
         } 
 
@@ -152,13 +153,13 @@ export class DataService {
 
         let cacheKey = this.generateTagKey(id);
 
-        result = <Tag[]> await this.__cache.get(cacheKey);
+        //result = <Tag[]> await this.__cache.get(cacheKey);
 
-        if(!result) {
+        if(result.length === 0) {
             result = await this.getProvider().getTags();
             
             if(result) {
-                await this.__cache.set(cacheKey, result, this.__config.cacheTTL);
+                await this.__cache.set(cacheKey, result);
             }
         } 
 
@@ -172,13 +173,13 @@ export class DataService {
 
         let cacheKey = this.generateTagKey(id);
 
-        result = <Tag[]>await this.__cache.get(cacheKey);
+        //result = <Tag[]>await this.__cache.get(cacheKey);
 
-        if(!result) {
+        if(result.length === 0) {
             result = await this.getProvider().getPublishedTags();
             
             if(result) {
-                await this.__cache.set(cacheKey, result, this.__config.cacheTTL);
+                await this.__cache.set(cacheKey, result);
             }
         } 
 
