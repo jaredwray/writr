@@ -1,4 +1,4 @@
-import {Config} from '../classes/config';
+import {Config} from '../config';
 
 export interface CacheProviderInterface {
     setConfig(config:Config): void;

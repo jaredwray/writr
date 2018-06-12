@@ -1,5 +1,5 @@
 import {CacheProviderInterface} from './cacheProviderInterface';
-import {Config} from '../classes/config';
+import {Config} from '../config';
 import * as moment from 'moment';
 
 export class MemoryCacheItem {

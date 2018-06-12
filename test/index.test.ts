@@ -1,6 +1,5 @@
 import * as wr from '../src/index';
-import { Post } from '../src/classes/post';
-import { Config } from '../src/classes/config'
+import { Config } from '../src/config'
 import { expect } from 'chai';
 import 'mocha';
 

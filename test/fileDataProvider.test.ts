@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Config } from '../src/classes/config';
+import { Config } from '../src/config';
 import { FileDataProvider } from '../src/providers/fileDataProvider'; 
 import 'mocha';
 

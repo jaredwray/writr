@@ -1,7 +1,7 @@
 import {CacheService} from './cacheService';
-import {Config} from '../classes/config';
-import {Post} from '../classes/post';
-import {Tag} from '../classes/tag';
+import {Config} from '../config';
+import {Post} from '../post';
+import {Tag} from '../tag';
 import {DataProviderInterface} from '../providers/dataProviderInterface';
 import {FileDataProvider} from '../providers/fileDataProvider';
 

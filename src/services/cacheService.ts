@@ -1,6 +1,6 @@
 import {CacheProviderInterface} from '../providers/cacheProviderInterface';
 import {MemoryCacheProvider} from '../providers/memoryCacheProvider';
-import {Config} from '../classes/config';
+import {Config} from '../config';
 
 export class CacheService implements CacheProviderInterface {
     private __config: Config;

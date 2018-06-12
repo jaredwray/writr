@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import 'mocha';
 
-import {Config} from '../src/classes/config';
+import {Config} from '../src/config';
 import {DataService} from '../src/services/dataService'
 
 describe('Data Service', async () => {

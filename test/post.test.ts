@@ -1,4 +1,4 @@
-import { Post } from '../src/classes/post';
+import { Post } from '../src/post';
 import { expect } from 'chai';
 import * as moment from 'moment';
 import 'mocha';

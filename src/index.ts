@@ -1,7 +1,4 @@
-
-import {Post} from './classes/post';
-import {Tag} from './classes/tag';
-import {Config} from './classes/config';
+import {Config} from './config';
 import {DataService} from './services/dataService';
 import { Logger, transports } from 'winston';
 import * as express from "express";

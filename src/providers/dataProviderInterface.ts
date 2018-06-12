@@ -1,6 +1,6 @@
-import {Config} from '../classes/config';
-import {Post} from '../classes/post';
-import {Tag} from '../classes/tag';
+import {Config} from '../config';
+import {Post} from '../post';
+import {Tag} from '../tag';
 
 export interface DataProviderInterface {
     getPost(id:string) : Promise<Post | undefined>;

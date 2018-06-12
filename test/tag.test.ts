@@ -1,7 +1,7 @@
-import { Tag } from '../src/classes/tag';
+import { Tag } from '../src/tag';
 import { expect } from 'chai';
 import 'mocha';
-import { Post } from '../src/classes/post';
+import { Post } from '../src/post';
 
 describe('Tag', () => {
 
@@ -20,7 +20,7 @@ describe('Tag', () => {
   it('tag should should be published', () => {
     let tag = new Tag('cow');
     let postFilePath = __dirname + '/blog/article1.md';
-    let post = new Post(postFilePath);
+    let post = new Post(); //TODO
 
     post.publishedAt = new Date('12/12/2001');
 
