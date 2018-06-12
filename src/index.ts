@@ -1,5 +1,5 @@
 import {Config} from './config';
-import {DataService} from './services/dataService';
+import {DataService} from './data/dataService';
 import { Logger, transports } from 'winston';
 import * as express from "express";
 import * as handlebars from 'handlebars';

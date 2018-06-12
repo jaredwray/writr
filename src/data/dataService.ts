@@ -1,9 +1,8 @@
-import {CacheService} from './cacheService';
 import {Config} from '../config';
 import {Post} from '../post';
 import {Tag} from '../tag';
-import {DataProviderInterface} from '../providers/dataProviderInterface';
-import {FileDataProvider} from '../providers/fileDataProvider';
+import {DataProviderInterface} from './dataProviderInterface';
+import {FileDataProvider} from '../data/fileDataProvider';
 
 import Keyv = require('keyv');
 
