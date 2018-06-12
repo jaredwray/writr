@@ -34,4 +34,13 @@ export class Post {
 
         return result;
     }
+
+    static create(obj:any) : Post {
+        let result = Object.assign(new Post(), obj);
+
+        result.createdAt = new Date(obj.createdAt);
+        result.publishedAt = new Date(obj.publishedAt);
+
+        return result;
+    }
 }

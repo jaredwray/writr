@@ -19,4 +19,19 @@ export class Tag {
 
         return result;
     }
+
+    static create(obj:any): Tag {
+        let result = new Tag(obj.name);
+
+        if(obj.posts) {
+            for(let i=0;i<obj.posts.length;i++)
+            {
+                let p = Post.create(obj.posts[i]);
+
+                result.posts.push(p);
+            };
+        }
+
+        return result;
+    }
 }

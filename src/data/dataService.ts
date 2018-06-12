@@ -193,7 +193,7 @@ export class DataService {
         let result = await this.__postCache.get(key);
 
         if(result) {
-            result = Object.assign(new Post(), result);
+            result = Post.create(result);
         }
 
         return result;
@@ -209,13 +209,13 @@ export class DataService {
         let result = await this.__tagCache.get(key);
 
         if(result) {
-            result = Object.assign(new Tag(result.name), result);
+            result = Tag.create(result);
         }
 
         return result;
     }
 
-    async setCachedTag(key:string, tag:Tag) : Promise<boolean | undefined> {
+    async setCacheTag(key:string, tag:Tag) : Promise<boolean | undefined> {
         return await this.__tagCache.set(this.formatName(key), tag);
     }
     
