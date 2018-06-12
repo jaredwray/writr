@@ -4,6 +4,6 @@ export class Config {
     templatePath: string = './blog/template';
     cacheProvider: string = 'memory';
     cacheProviderConnection: string = '';
-    cacheTTL: number = 60;
+    cacheTTL: number = 60000;
 
 }

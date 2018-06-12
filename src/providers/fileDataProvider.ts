@@ -2,7 +2,7 @@ import { Config } from "../classes/config";
 import {Post} from '../classes/post';
 import {Tag} from '../classes/tag';
 import {DataProviderInterface}  from './dataProviderInterface';
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import * as MarkDownIt from 'markdown-it';
 import { Logger, transports } from 'winston';
 
@@ -16,10 +16,10 @@ export class FileDataProvider implements DataProviderInterface {
        this.__log = new Logger({transports:[new transports.Console()]});
     }
 
-    getPost(id:string): Post | undefined {
+    async getPost(id:string): Promise<Post | undefined> {
         let result: Post | undefined;
 
-        let posts = this.getPosts();
+        let posts = await this.getPosts();
     
         posts.forEach(post => {
             
@@ -31,37 +31,43 @@ export class FileDataProvider implements DataProviderInterface {
         return result;
     }
 
-    getPublishedPost(id:string): Post | undefined {
+    async getPublishedPost(id:string): Promise<Post | undefined> {
         let result: Post | undefined;
 
-        let posts = this.getPublishedPosts();
-    
-        posts.forEach(post => {
-            
+        let posts = await this.getPublishedPosts();
+
+        for(let i=0;i<posts.length;i++)
+        {
+            let post = posts[i];
+
             if(post.id == this.formatToKey(id)) {
                 result = post;
             }
-        });
-    
+
+        }
+
         return result;
     }
 
-    getPosts(): Array<Post> {
+    async getPosts(): Promise<Array<Post>> {
         let result = new Array<Post>();
 
         if(this.__posts.length == 0) {
             let directory = this.__config.postPath;
 
-            if(fs.existsSync(directory)) {
-                let files = fs.readdirSync(directory);
+            if(await fs.existsSync(directory)) {
+                let files = await fs.readdirSync(directory);
 
-                files.forEach(file => {
+                for(let i=0;i<files.length;i++)
+                {
+                    let file = files[i];
+
                     if(file.indexOf('.md') > 0) {
                         let filePath = directory + '/' + file;
-                        let post = this.parsePost(filePath);
+                        let post = await this.parsePost(filePath);
                             this.__posts.push(post);
                     }
-                });
+                }
             }
         }
 
@@ -70,51 +76,66 @@ export class FileDataProvider implements DataProviderInterface {
         return result;
     }
 
-    getPublishedPosts(): Array<Post> {
+    async getPublishedPosts(): Promise<Array<Post>> {
         let result = new Array<Post>();
 
-        this.getPosts().forEach(post => {
+        let posts = await this.getPosts();
+
+        for(let i=0;i<posts.length;i++)
+        {
+            let post = posts[i];
+
             if(post.isPublished()) {
                 result.push(post);
             }
-        });
+        }
 
         return result;
     }
 
-    getTag(name:string) : Tag | undefined {
+    async getTag(name:string) : Promise<Tag | undefined> {
         let result;
 
-        this.getTags().forEach(tag => {
+        let tags = await this.getTags();
+
+        for(let i=0;i<tags.length;i++)
+        {
+            let tag = tags[i];
 
             if(this.formatToKey(tag.name) == this.formatToKey(name)) {
                 result = tag;
             }
-        });
+        }
 
         return result;
     }
     
-    getPublishedTag(name:string): Tag | undefined {
+    async getPublishedTag(name:string): Promise<Tag | undefined> {
         let result;
 
-        this.getPublishedTags().forEach(tag => {
+        let tags = await this.getPublishedTags();
+
+        for(let i=0;i<tags.length;i++)
+        {
+            let tag = tags[i];
+
             if(this.formatToKey(tag.name) == this.formatToKey(name)) {
                 result = tag;
             }
-        });
+
+        }
 
         return result;
     }
 
-    getTags(): Array<Tag> {
-        let posts = this.getPosts();
+    async getTags(): Promise<Array<Tag>> {
+        let posts = await this.getPosts();
 
         return this.generateTags(posts);
     }
 
-    getPublishedTags(): Array<Tag> {
-        let posts = this.getPublishedPosts();
+    async getPublishedTags(): Promise<Array<Tag>> {
+        let posts = await this.getPublishedPosts();
 
         return this.generateTags(posts);
     }
@@ -165,12 +186,14 @@ export class FileDataProvider implements DataProviderInterface {
         return key.toLowerCase().trim();
     }
 
-    parsePost(filePath:string): Post {
+    async parsePost(filePath:string): Promise<Post> {
         let result: Post = new Post();
 
         try {
             if(fs.existsSync(filePath)) {
-                let data = fs.readFileSync(filePath).toString();
+                let buff = await fs.readFile(filePath);
+                
+                let data = buff.toString();
 
                 result.header = data.split('}')[0] + '}';
 
