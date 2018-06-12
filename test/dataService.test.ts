@@ -27,16 +27,6 @@ describe('Data Service', async () => {
         expect(ds.formatName('blAh ')).to.equal(`blah`);
     });
 
-    it('generate format post key', () => {
-
-        expect(ds.generatePostKey('blAh ')).to.equal(`post::blah`);
-    });
-
-    it('generate format tag key', () => {
-
-        expect(ds.generateTagKey(' blAh ')).to.equal(`tag::blah`);
-    });
-
     it('get posts', async () => {
 
         let posts = await ds.getPosts();
