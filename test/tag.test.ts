@@ -20,7 +20,7 @@ describe('Tag', () => {
   it('tag should should be published', () => {
     let tag = new Tag('cow');
     let postFilePath = __dirname + '/blog/article1.md';
-    let post = new Post(); //TODO
+    let post = new Post();
 
     post.publishedAt = new Date('12/12/2001');
 
