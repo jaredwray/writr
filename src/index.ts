@@ -16,19 +16,19 @@ export function initExpress(url: string, express: express.Application, config: C
     init(config);
 
     //handle home
-    express.get('/', function(req: express.Request, res: express.Response){
-        let body = renderHome();
+    express.get('/', async function(req: express.Request, res: express.Response){
+        let body = await renderHome();
 
         res.send(body);
     });
 
     //handle posts
-    express.get(url+ '/:postID', function(req: express.Request, res: express.Response){
+    express.get(url+ '/:postID', async function(req: express.Request, res: express.Response) {
         let postID = req.params.postID;
         let previewKey = req.params.previewKey;
 
         if(postID) {
-            let body = renderPost(postID, previewKey);
+            let body = await renderPost(postID, previewKey);
 
             res.send(body);
 
@@ -40,12 +40,12 @@ export function initExpress(url: string, express: express.Application, config: C
     });
 
     //handle tags
-    express.get(url + '/tags/:tagID', function(req: express.Request, res: express.Response){
+    express.get(url + '/tags/:tagID', async function(req: express.Request, res: express.Response) {
         
         let tagID = req.params.tagID;
 
         if(tagID) {
-            let body = renderTag(tagID);
+            let body = await renderTag(tagID);
 
             res.send(body);
 
@@ -64,11 +64,11 @@ export function init(config: Config = new Config()) : void {
 }
 
 //render
-export function renderHome(): string {
+export async function renderHome(): Promise<string> {
     let result = '';
 
-    let postList = __dataStore.getPublishedPosts();
-    let tagList = __dataStore.getPublishedTags();
+    let postList = await __dataStore.getPublishedPosts();
+    let tagList = await __dataStore.getPublishedTags();
 
     let source: string = getHomeTemplate();
     result = render(source, {tags: tagList, posts: postList});
@@ -76,10 +76,10 @@ export function renderHome(): string {
     return result;
 }
 
-export function renderTag(tagName:string): string {
+export async function renderTag(tagName:string): Promise<string> {
     let result = '';
 
-    let tag = __dataStore.getPublishedTag(tagName.toLowerCase().trim());
+    let tag = await __dataStore.getPublishedTag(tagName.toLowerCase().trim());
 
     if(tag) {
         let source: string = getTagTemplate();
@@ -89,9 +89,9 @@ export function renderTag(tagName:string): string {
     return result;
 }
 
-export function renderPost(postID:string, previewKey?:string) : string {
+export async function renderPost(postID:string, previewKey?:string) : Promise<string> {
     let result = '';
-    let post = __dataStore.getPost(postID);
+    let post = await __dataStore.getPost(postID);
 
     if(post) {
         if(!post.isPublished()){

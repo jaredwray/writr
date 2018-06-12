@@ -22,7 +22,7 @@ export class DataService {
 
         let cacheKey = this.generatePostKey(id);
 
-        //let cacheItem = await this.__cache.get(cacheKey);
+        let cacheItem = await this.__cache.get(cacheKey);
 
         if(!result) {
             result = await this.getProvider().getPost(id);
