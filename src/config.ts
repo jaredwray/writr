@@ -5,5 +5,4 @@ export class Config {
     cacheProvider: string = 'memory';
     cacheProviderConnection: string = '';
     cacheTTL: number = 60000;
-
 }
