@@ -9,8 +9,8 @@ export class DataCacheService {
     private __tagCache: Keyv;
 
     constructor(config:Config) {
-        this.__postCache = new Keyv({ttl: config.cacheTTL, namespace: 'data-post'});
-        this.__tagCache = new Keyv({ttl: config.cacheTTL, namespace: 'data-tag'});
+        this.__postCache = new Keyv({ttl: config.cache.ttl, namespace: 'data-post'});
+        this.__tagCache = new Keyv({ttl: config.cache.ttl, namespace: 'data-tag'});
     }
 
 
