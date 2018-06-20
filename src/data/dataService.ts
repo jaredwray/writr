@@ -8,12 +8,10 @@ import { DataCacheService } from "./dataCacheService";
 export class DataService {
   config: Config;
   cache: DataCacheService;
-  providers: Array<DataProviderInterface>;
 
   constructor(config: Config) {
     this.config = config;
     this.cache = new DataCacheService(this.config);
-    this.providers = new Array<DataProviderInterface>();
   }
 
   //posts
@@ -173,9 +171,15 @@ export class DataService {
   }
 
   getProvider(): DataProviderInterface {
-    let result: DataProviderInterface = new FileDataProvider();
+    let result = undefined;
 
-    result.init(this.config);
+    switch (this.config.data.type) {
+      default:
+        result = new FileDataProvider();
+        break;
+    }
+
+    result.init(this.config.data);
 
     return result;
   }

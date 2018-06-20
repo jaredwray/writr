@@ -1,83 +1,70 @@
-import { expect } from 'chai';
-import 'mocha';
+import { expect } from "chai";
+import "mocha";
 
-import {Config} from '../src/config';
-import {DataService} from '../src/data/dataService'
-import { Post } from '../src/post';
-import { Tag } from '../src/tag';
+import { Config } from "../src/config";
+import { DataService } from "../src/data/dataService";
 
-describe('Data Service', async () => {
+describe("Data Service", async () => {
+  let config: Config = new Config();
+  let ds: DataService;
 
-    let config : Config = new Config();
-    let ds: DataService;
+  before(async () => {
+    config.data.type = "file";
+    config.data.postPath = __dirname + "/blog";
+    config.data.contentPath = __dirname + "/blog/content";
+    config.data.templatePath = __dirname + "/blog/templates";
+    ds = new DataService(config);
+  });
 
-    before( async () => {
+  it("get a provider based on the config", () => {
+    expect(ds.getProvider()).to.not.equal(undefined);
+  });
 
-        config.postPath = __dirname + '/blog';
-        config.contentPath = __dirname + '/blog/content';
-        config.templatePath = __dirname + '/blog/templates';
-        ds = new DataService(config);
+  it("get posts", async () => {
+    let posts = await ds.getPosts();
 
-    });
+    expect(posts.length).to.equal(4);
+  });
 
-    it('get a provider based on the config', () => {
-        expect(ds.getProvider()).to.not.equal(undefined);
-    });
+  it("get post", async () => {
+    let post = await ds.getPost("article-simple");
 
-    it('get posts', async () => {
+    expect(post.title).to.equal("Article Simple");
+  });
 
-        let posts = await ds.getPosts();
+  it("get published post", async () => {
+    let post = await ds.getPublishedPost("article-simple");
 
-        expect(posts.length).to.equal(4);
-    });
+    expect(post.title).to.equal("Article Simple");
+  });
 
-    it('get post', async () => {
+  it("should not get a valid post as it is unpublished", async () => {
+    let post = await ds.getPublishedPost("the-largest-whale");
 
-        let post = await ds.getPost('article-simple');
+    expect(post).to.equal(undefined);
+  });
 
-        expect(post.title).to.equal('Article Simple');
-    });
+  it("get published posts", async () => {
+    let posts = await ds.getPublishedPosts();
 
-    it('get published post', async () => {
+    expect(posts.length).to.equal(3);
+  });
 
-        let post = await ds.getPublishedPost('article-simple');
+  it("get tags", async () => {
+    let tags = await ds.getTags();
 
-        expect(post.title).to.equal('Article Simple');
-    });
+    expect(tags.length).to.equal(9);
+  });
 
-    
-    it('should not get a valid post as it is unpublished', async () => {
+  it("get published tags", async () => {
+    let tags = await ds.getPublishedTags();
 
-        let post = await ds.getPublishedPost('the-largest-whale');
+    expect(tags.length).to.equal(6);
+  });
 
-        expect(post).to.equal(undefined);
-    });
+  it("get tag that is unpublished", async () => {
+    let tag = await ds.getTag("blast");
 
-    it('get published posts', async () => {
-        
-        let posts = await ds.getPublishedPosts();
-
-        expect(posts.length).to.equal(3);
-    });
-
-    it('get tags', async () => {
-
-        let tags = await ds.getTags();
-
-        expect(tags.length).to.equal(9);
-    });
-
-    it('get published tags', async () => {
-
-        let tags = await ds.getPublishedTags();
-
-        expect(tags.length).to.equal(6);
-    });
-
-    it('get tag that is unpublished', async () => {
-
-        let tag = await ds.getTag('blast');
-
-        expect(tag.isPublished()).to.equal(false);
-    });
+    expect(tag.isPublished()).to.equal(false);
+  });
 });
