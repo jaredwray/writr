@@ -47,10 +47,7 @@ export class DataCacheService {
     return result;
   }
 
-  async setPosts(
-    key: string,
-    posts: Array<Post>
-  ): Promise<boolean | undefined> {
+  async setPosts(key: string, posts: Array<Post>): Promise<boolean | undefined> {
     return await this.__postCache.set(this.formatName(key), posts);
   }
 
