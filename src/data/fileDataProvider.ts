@@ -4,6 +4,7 @@ import { DataProviderInterface } from "./dataProviderInterface";
 import * as fs from "fs-extra";
 import * as MarkDownIt from "markdown-it";
 import { Logger, transports } from "winston";
+import * as matter from 'gray-matter';
 
 export class FileDataProvider implements DataProviderInterface {
   __postPath: string = "";
@@ -184,26 +185,33 @@ export class FileDataProvider implements DataProviderInterface {
 
         let data = buff.toString();
 
-        result.header = data.split("}")[0] + "}";
+        let m;
 
-        result.content = data.substr(data.indexOf("}") + 1);
+        if(data.indexOf("}}}") > 0) {
+          m = matter(data, {delimiters: ["{{{", "}}}"]});
+        } else {
+          m = matter(data);
+        }
+
+        let mData: any = m.data;
+
+        result.header = "";
+
+        result.content = m.content;
 
         //clean up header
         result.header = result.header.replace("\n", "");
 
-        let parser = require("parse-json");
-
-        //setup the header
-        let headerObj = parser(result.header);
-
-        result.title = headerObj.title;
-
-        if (headerObj.author) {
-          result.author = headerObj.author;
+        if(mData.title) {
+          result.title = mData.title;
         }
 
-        if (headerObj.url) {
-          result.url = headerObj.url;
+        if (mData.author) {
+          result.author = mData.author;
+        }
+
+        if (mData.url) {
+          result.url = mData.url;
         } else {
           result.url = result.title
             .toLowerCase()
@@ -212,24 +220,24 @@ export class FileDataProvider implements DataProviderInterface {
             .join("-");
         }
 
-        if (headerObj.createdAt) {
-          result.createdAt = new Date(headerObj.createdAt);
+        if (mData.createdAt) {
+          result.createdAt = new Date(mData.createdAt);
         }
 
-        if (headerObj.publishedAt) {
-          result.publishedAt = new Date(headerObj.publishedAt);
+        if (mData.publishedAt) {
+          result.publishedAt = new Date(mData.publishedAt);
         }
 
-        if (headerObj.keywords) {
-          result.keywords = headerObj.keywords.toString().split(",");
+        if (mData.keywords) {
+          result.keywords = mData.keywords.toString().split(",");
         }
 
-        if (headerObj.tags) {
-          result.tags = headerObj.tags.toString().split(",");
+        if (mData.tags) {
+          result.tags = mData.tags.toString().split(",");
         }
 
-        if (headerObj.previewKey) {
-          result.previewKey = headerObj.previewKey;
+        if (mData.previewKey) {
+          result.previewKey = mData.previewKey;
         }
 
         //generate html from markdown
