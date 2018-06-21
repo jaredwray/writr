@@ -1,6 +1,6 @@
 
 export class Post {
-    title: string = '';
+    title: string = "";
     author: string = '';
     url: string = '';
     createdAt: Date = new Date();
