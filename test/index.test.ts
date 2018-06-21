@@ -8,9 +8,9 @@ describe('Writr', () => {
   beforeEach(() => {
 
     let config : Config = new Config();
-    config.postPath = __dirname + '/blog';
-    config.contentPath = __dirname + '/blog/content';
-    config.templatePath = __dirname + '/blog/templates';
+    config.data.postPath = __dirname + '/blog';
+    config.data.contentPath = __dirname + '/blog/content';
+    config.data.templatePath = __dirname + '/blog/templates';
 
     wr.init(config);
 
@@ -20,7 +20,7 @@ describe('Writr', () => {
 
     let config = __dirname + '/blog/content';
 
-    expect(wr.getConfig().contentPath).to.equal(config);
+    expect(wr.getConfig().data.contentPath).to.equal(config);
   });
 /*
   it('render the home page', () => {
