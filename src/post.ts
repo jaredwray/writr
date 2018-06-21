@@ -1,15 +1,15 @@
 
 export class Post {
     title: string = "";
-    author: string = '';
-    url: string = '';
+    author: string = "";
+    url: string = "";
     createdAt: Date = new Date();
     publishedAt: Date = new Date() ;
     keywords: Array<string> = [];
     tags: Array<string> = [];
-    content: string = '';
-    body: string = '';
-    header: string = '';
+    content: string = "";
+    body: string = "";
+    header: string = "";
     previewKey?: string = undefined;
 
     constructor() {
