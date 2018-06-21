@@ -1,4 +1,3 @@
-import { Config } from "../config";
 import { Post } from "../post";
 import { Tag } from "../tag";
 import { DataProviderInterface } from "./dataProviderInterface";

@@ -1,150 +1,145 @@
-import {Config} from './config';
-import {DataService} from './data/dataService';
-import { Logger, transports } from 'winston';
+import { Config } from "./config";
+import { DataService } from "./data/dataService";
+import { Logger, transports } from "winston";
 import * as express from "express";
-import * as handlebars from 'handlebars';
-import * as fs from 'fs';
+import * as handlebars from "handlebars";
+import * as fs from "fs";
 
-const log = new Logger({transports:[new transports.Console()]});
+const log = new Logger({ transports: [new transports.Console()] });
 let __config: Config;
-let __dataStore : DataService;
+let __dataStore: DataService;
 
 export function initExpress(url: string, express: express.Application, config: Config): void {
-    init(config);
+  init(config);
 
-    //handle home
-    express.get('/', async function(req: express.Request, res: express.Response){
-        let body = await renderHome();
+  //handle home
+  express.get("/", async function(req: express.Request, res: express.Response) {
+    let body = await renderHome();
 
-        res.send(body);
-    });
+    res.send(body);
+  });
 
-    //handle posts
-    express.get(url+ '/:postID', async function(req: express.Request, res: express.Response) {
-        let postID = req.params.postID;
-        let previewKey = req.params.previewKey;
+  //handle posts
+  express.get(url + "/:postID", async function(req: express.Request, res: express.Response) {
+    let postID = req.params.postID;
+    let previewKey = req.params.previewKey;
 
-        if(postID) {
-            let body = await renderPost(postID, previewKey);
+    if (postID) {
+      let body = await renderPost(postID, previewKey);
 
-            res.send(body);
+      res.send(body);
+    } else {
+      res.sendStatus(404);
+      res.end();
+    }
+  });
 
-        } else {
-            res.sendStatus(404);
-            res.end();
-        }
+  //handle tags
+  express.get(url + "/tags/:tagID", async function(req: express.Request, res: express.Response) {
+    let tagID = req.params.tagID;
 
-    });
+    if (tagID) {
+      let body = await renderTag(tagID);
 
-    //handle tags
-    express.get(url + '/tags/:tagID', async function(req: express.Request, res: express.Response) {
-        
-        let tagID = req.params.tagID;
-
-        if(tagID) {
-            let body = await renderTag(tagID);
-
-            res.send(body);
-
-        } else {
-            res.sendStatus(404);
-            res.end();
-        }
-    });
+      res.send(body);
+    } else {
+      res.sendStatus(404);
+      res.end();
+    }
+  });
 }
 
-export function init(config: Config = new Config()) : void {
+export function init(config: Config = new Config()): void {
+  __config = config;
 
-    __config = config;
-
-    __dataStore = new DataService(__config);
+  __dataStore = new DataService(__config);
 }
 
 //render
 export async function renderHome(): Promise<string> {
-    let result = '';
+  let result = "";
 
-    let postList = await __dataStore.getPublishedPosts();
-    let tagList = await __dataStore.getPublishedTags();
+  let postList = await __dataStore.getPublishedPosts();
+  let tagList = await __dataStore.getPublishedTags();
 
-    let source: string = getHomeTemplate();
-    result = render(source, {tags: tagList, posts: postList});
+  let source: string = getHomeTemplate();
+  result = render(source, { tags: tagList, posts: postList });
 
-    return result;
+  return result;
 }
 
-export async function renderTag(tagName:string): Promise<string> {
-    let result = '';
+export async function renderTag(tagName: string): Promise<string> {
+  let result = "";
 
-    let tag = await __dataStore.getPublishedTag(tagName.toLowerCase().trim());
+  let tag = await __dataStore.getPublishedTag(tagName.toLowerCase().trim());
 
-    if(tag) {
-        let source: string = getTagTemplate();
-        result = render(source, tag);
-    }
+  if (tag) {
+    let source: string = getTagTemplate();
+    result = render(source, tag);
+  }
 
-    return result;
+  return result;
 }
 
-export async function renderPost(postID:string, previewKey?:string) : Promise<string> {
-    let result = '';
-    let post = await __dataStore.getPost(postID);
+export async function renderPost(postID: string, previewKey?: string): Promise<string> {
+  let result = "";
+  let post = await __dataStore.getPost(postID);
 
-    if(post) {
-        if(!post.isPublished()){
-            if(previewKey) {
-                if(post.previewKey != previewKey) {
-                    post = undefined;
-                }
-            } else {
-                post = undefined;
-            }
-        } 
+  if (post) {
+    if (!post.isPublished()) {
+      if (previewKey) {
+        if (post.previewKey != previewKey) {
+          post = undefined;
+        }
+      } else {
+        post = undefined;
+      }
     }
+  }
 
-    if(post) {
-        let source: string = getPostTemplate();
-        result = render(source, post);
-    }
+  if (post) {
+    let source: string = getPostTemplate();
+    result = render(source, post);
+  }
 
-    return result;
+  return result;
 }
 
-export function render(source: string, data:object): string {
-    let result = '';
+export function render(source: string, data: object): string {
+  let result = "";
 
-    let template: handlebars.Template = handlebars.compile(source);
-    result = template(data);
+  let template: handlebars.Template = handlebars.compile(source);
+  result = template(data);
 
-    return result;
+  return result;
 }
 
 //Templates
 export function getPostTemplate(): string {
-    let result = '';
+  let result = "";
 
-    result = fs.readFileSync(__config.templatePath + '/post.hjs').toString();
+  result = fs.readFileSync(__config.data.templatePath + "/post.hjs").toString();
 
-    return result;
+  return result;
 }
 
 export function getTagTemplate(): string {
-    let result = '';
+  let result = "";
 
-    result = fs.readFileSync(__config.templatePath + '/tag.hjs').toString();
+  result = fs.readFileSync(__config.data.templatePath + "/tag.hjs").toString();
 
-    return result;
+  return result;
 }
 
 export function getHomeTemplate(): string {
-    let result = '';
+  let result = "";
 
-    result = fs.readFileSync(__config.templatePath + '/home.hjs').toString();
+  result = fs.readFileSync(__config.data.templatePath + "/home.hjs").toString();
 
-    return result;
+  return result;
 }
 
 //Config
-export function getConfig() : Config {
-    return __config;
+export function getConfig(): Config {
+  return __config;
 }
