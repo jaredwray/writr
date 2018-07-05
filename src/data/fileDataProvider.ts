@@ -8,7 +8,7 @@ import * as matter from 'gray-matter';
 
 export class FileDataProvider implements DataProviderInterface {
   __postPath: string = "";
-  __posts: Array<Post> = new Array<Post>();
+  __posts: Array<Post> = [];
   __log: any;
 
   constructor() {
@@ -142,26 +142,14 @@ export class FileDataProvider implements DataProviderInterface {
 
     posts.forEach(post => {
       post.tags.forEach(tagName => {
-        let tag = null;
-
-        result.forEach(t => {
-          if (this.formatToKey(t.name) == this.formatToKey(tagName)) {
-            tag = t;
-          }
-        });
+        let tag = result.find(t => this.formatToKey(t.name) === this.formatToKey(tagName));
 
         if (tag == null) {
           tag = new Tag(this.formatToKey(tagName));
           result.push(tag);
         }
 
-        let postExists: boolean = false;
-
-        tag.posts.forEach(p => {
-          if (this.formatToKey(p.title) == this.formatToKey(post.title)) {
-            postExists = true;
-          }
-        });
+        let postExists = tag.posts.find(p => this.formatToKey(p.title) === this.formatToKey(post.title)) != null;
 
         if (!postExists) {
           tag.posts.push(post);
