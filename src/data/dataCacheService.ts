@@ -8,6 +8,9 @@ export class DataCacheService {
   private __tagCache: Keyv;
 
   constructor(config: Config) {
+
+    config = new Config();
+
     this.__postCache = new Keyv({ttl: config.cache.ttl, namespace: "data-post"});
     this.__tagCache = new Keyv({ttl: config.cache.ttl, namespace: "data-tag"});
   }

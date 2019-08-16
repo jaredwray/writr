@@ -13,9 +13,9 @@ describe('Data Cache Service', async () => {
 
     before( async () => {
 
-        config.postPath = __dirname + '/blog';
-        config.contentPath = __dirname + '/blog/content';
-        config.templatePath = __dirname + '/blog/templates';
+        config.data.postPath = __dirname + '/blog';
+        config.data.contentPath = __dirname + '/blog/content';
+        config.data.templatePath = __dirname + '/blog/templates';
         cache = new DataCacheService(config);
 
     });
