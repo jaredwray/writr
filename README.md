@@ -1,8 +1,7 @@
 ![Writr](logo.png)
 
-## Writr - A Markdown Blog for Your Node App [![Build Status](https://travis-ci.org/jaredwray/writr.svg?branch=master)](https://travis-ci.org/jaredwray/writr)
 
----
+## A Markdown Blog for Your Node App [![Build Status](https://travis-ci.org/jaredwray/writr.svg?branch=master)](https://travis-ci.org/jaredwray/writr)
 
 ## Initial Setup and Structure
 * Setup your content in a directory like so:
