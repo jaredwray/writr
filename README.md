@@ -2,7 +2,15 @@
 
 ---
 
-## A Markdown Blog for Your Node App [![Build Status](https://travis-ci.org/jaredwray/writr.svg?branch=master)](https://travis-ci.org/jaredwray/writr)
+### A Markdown Blog for Your Node App [![Build Status](https://travis-ci.org/jaredwray/writr.svg?branch=master)](https://travis-ci.org/jaredwray/writr)
+
+## Getting Started 
+
+> npm install writr
+
+or 
+
+> yarn add writr
 
 * Setup your content in a directory like so:
 ```
