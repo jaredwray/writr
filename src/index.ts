@@ -21,8 +21,8 @@ export function initExpress(url: string, express: express.Application, config: C
 
   //handle posts
   express.get(url + "/:postID", async function(req: express.Request, res: express.Response) {
-    let postID = req.params.postID;
-    let previewKey = req.params.previewKey;
+    let postID = req.query.postID;
+    let previewKey = req.query.previewKey;
 
     if (postID) {
       let body = await renderPost(postID, previewKey);
@@ -36,7 +36,7 @@ export function initExpress(url: string, express: express.Application, config: C
 
   //handle tags
   express.get(url + "/tags/:tagID", async function(req: express.Request, res: express.Response) {
-    let tagID = req.params.tagID;
+    let tagID = req.query.tagID;
 
     if (tagID) {
       let body = await renderTag(tagID);
