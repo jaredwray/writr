@@ -1,4 +1,6 @@
-# Writr - A Markdown Blog for Your Node App [![CircleCI](https://circleci.com/gh/jaredwray/writr.svg?style=svg&circle-token=be83600aa05416b6ceb6baae9cb1f272f41a03aa)](https://circleci.com/gh/jaredwray/writr)
+# Writr - A Markdown Blog for Your Node App [![Build Status](https://travis-ci.org/jaredwray/writr.svg?branch=master)](https://travis-ci.org/jaredwray/writr)
+
+![Writr](logo.png)
 
 ## Initial Setup and Structure
 * Setup your content in a directory like so:
