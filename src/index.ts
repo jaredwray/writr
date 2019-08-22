@@ -1,58 +1,22 @@
 import { Config } from "./config";
 import { DataService } from "./data/dataService";
 import { Logger, transports } from "winston";
-import * as express from "express";
 import * as handlebars from "handlebars";
 import * as fs from "fs";
+import * as writrExpress from "../express/index";
 
 const log = new Logger({ transports: [new transports.Console()] });
 let __config: Config;
 let __dataStore: DataService;
 
-export function initExpress(url: string, express: express.Application, config: Config): void {
-  init(config);
-
-  //handle home
-  express.get("/", async function(req: express.Request, res: express.Response) {
-    let body = await renderHome();
-
-    res.send(body);
-  });
-
-  //handle posts
-  express.get(url + "/:postID", async function(req: express.Request, res: express.Response) {
-    let postID = req.query.postID;
-    let previewKey = req.query.previewKey;
-
-    if (postID) {
-      let body = await renderPost(postID, previewKey);
-
-      res.send(body);
-    } else {
-      res.sendStatus(404);
-      res.end();
-    }
-  });
-
-  //handle tags
-  express.get(url + "/tags/:tagID", async function(req: express.Request, res: express.Response) {
-    let tagID = req.query.tagID;
-
-    if (tagID) {
-      let body = await renderTag(tagID);
-
-      res.send(body);
-    } else {
-      res.sendStatus(404);
-      res.end();
-    }
-  });
-}
-
 export function init(config: Config = new Config()): void {
   __config = config;
 
   __dataStore = new DataService(__config);
+}
+
+export function express() {
+  return writrExpress;
 }
 
 //render
@@ -134,7 +98,7 @@ export function getTagTemplate(): string {
 export function getHomeTemplate(): string {
   let result = "";
 
-  result = fs.readFileSync(__config.data.templatePath + "/home.hjs").toString();
+  result = fs.readFileSync(__config.data.templatePath + "/index.hjs").toString();
 
   return result;
 }
