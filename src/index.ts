@@ -19,6 +19,10 @@ export function express() {
   return writrExpress;
 }
 
+export function dataStore() {
+  return __dataStore;
+}
+
 //render
 export async function renderHome(): Promise<string> {
   let result = "";
