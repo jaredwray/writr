@@ -3,7 +3,6 @@ import { DataService } from "./data/dataService";
 import { Logger, transports } from "winston";
 import * as handlebars from "handlebars";
 import * as fs from "fs";
-import * as writrExpress from "./express/index";
 
 const log = new Logger({ transports: [new transports.Console()] });
 let __config: Config;
@@ -13,10 +12,6 @@ export function init(config: Config = new Config()): void {
   __config = config;
 
   __dataStore = new DataService(__config);
-}
-
-export function express() {
-  return writrExpress;
 }
 
 export function dataStore() {
