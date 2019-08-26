@@ -3,7 +3,7 @@ import { DataService } from "./data/dataService";
 import { Logger, transports } from "winston";
 import * as handlebars from "handlebars";
 import * as fs from "fs";
-import * as writrExpress from "../express/index";
+import * as writrExpress from "./express/index";
 
 const log = new Logger({ transports: [new transports.Console()] });
 let __config: Config;

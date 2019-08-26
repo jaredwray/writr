@@ -1,6 +1,6 @@
 
 import * as express from "express";
-import { Config } from "../src/config";
+import { Config } from "../config";
 
 export function init(writr: any, url: string, express: express.Application, config: Config): void {
   
