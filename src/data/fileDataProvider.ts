@@ -175,8 +175,8 @@ export class FileDataProvider implements DataProviderInterface {
 
         let m;
 
-        if(data.indexOf("}}}") > 0) {
-          m = matter(data, {delimiters: ["{{{", "}}}"]});
+        if (data.indexOf("}}}") > 0) {
+          m = matter(data, { delimiters: ["{{{", "}}}"] });
         } else {
           m = matter(data);
         }
@@ -190,7 +190,7 @@ export class FileDataProvider implements DataProviderInterface {
         //clean up header
         result.header = result.header.replace("\n", "");
 
-        if(mData.title) {
+        if (mData.title) {
           result.title = mData.title;
         }
 

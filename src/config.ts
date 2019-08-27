@@ -12,10 +12,10 @@ export class Config {
     }
   }
 
-  load(filePath: string) : Boolean {
+  load(filePath: string): Boolean {
     let result: Boolean = false;
 
-    if(fs.existsSync(filePath)) {
+    if (fs.existsSync(filePath)) {
       let buff = fs.readFileSync(filePath);
 
       let obj = JSON.parse(buff.toString());
@@ -63,7 +63,7 @@ export class Config {
 }
 
 export class ConfigData {
-  constructor() {}
+  constructor() { }
 
   type: string = "file";
   contentPath: string = "./blog/images";
@@ -72,7 +72,7 @@ export class ConfigData {
 }
 
 export class ConfigCache {
-  constructor() {}
+  constructor() { }
 
   connection: string = "";
   ttl: number = 6000;

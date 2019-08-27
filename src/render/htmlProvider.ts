@@ -24,10 +24,10 @@ export class HtmlProvider {
     async render(output: string): Promise<Boolean | undefined> {
         let result: Boolean | undefined;
 
-        if(fs.existsSync(output)){
+        if (fs.existsSync(output)) {
             del.sync(output);
         }
-        
+
         fs.ensureDirSync(output);
 
         //home

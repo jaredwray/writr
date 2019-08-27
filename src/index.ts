@@ -14,12 +14,12 @@ let __dataStore: DataService;
 
 program.option('-c, --config <path>', 'custom configuration path');
 program.option('-o, --output <path>', 'path to output generated files');
- 
+
 program.parse(process.argv);
- 
+
 
 //get configuration
-if(program.config) {
+if (program.config) {
   __configPath = program.config;
 }
 

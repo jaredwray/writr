@@ -1,4 +1,4 @@
 
 export interface renderProviderInterface {
-    render() : Promise<Boolean | undefined>;
+    render(): Promise<Boolean | undefined>;
 }

@@ -20,12 +20,12 @@ export class Tag {
     return result;
   }
 
-  getUrlName() : string {
+  getUrlName(): string {
     let result = "";
 
     let simpleUrl = this.name.replace(" ", "-").toLowerCase();
     result = simpleUrl;
-    
+
 
     return result;
   }

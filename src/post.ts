@@ -11,7 +11,7 @@ export class Post {
   header: string = "";
   previewKey: string | undefined = undefined;
 
-  constructor() {}
+  constructor() { }
 
   get id(): string {
     return this.url;
@@ -33,10 +33,10 @@ export class Post {
     return result;
   }
 
-  getUrlName() : string {
+  getUrlName(): string {
     let result = "";
 
-    if(this.url) {
+    if (this.url) {
       result = this.url;
     } else {
       let simpleUrl = this.title.replace(" ", "-").toLowerCase();
