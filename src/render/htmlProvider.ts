@@ -1,6 +1,8 @@
 import * as handlebars from "handlebars";
 import * as fs from "fs-extra";
 import { Logger, transports } from "winston";
+import * as del from "del";
+
 import { DataService } from "../data/dataService";
 import { Config } from "../config";
 import { Post } from "../post";
@@ -23,7 +25,7 @@ export class HtmlProvider {
         let result: Boolean | undefined;
 
         if(fs.existsSync(output)){
-            fs.rmdirSync(output);
+            del.sync(output);
         }
         
         fs.ensureDirSync(output);

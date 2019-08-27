@@ -32,10 +32,9 @@ __dataStore = new DataService(__config);
 
 let htmlProvider = new HtmlProvider(__dataStore, __config);
 
-
-
 htmlProvider.render(program.output).then(() => {
   process.exit();
+  log.info("Done!");
 });
 
 
