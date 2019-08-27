@@ -9,7 +9,8 @@
   "license": "MIT",
   "scripts": {
     "watch": "tsc -w -p .",
-    "clean": "rm -rf dist",
+    "clean-all": "yarn clean && rm -rf node_modules",
+    "clean": "rm -rf dist && rm -rf out",
     "compile": "yarn clean && tsc -p .",
     "build": "yarn test && yarn compile",
     "test": "yarn && mocha -r ts-node/register test/**/*.ts"

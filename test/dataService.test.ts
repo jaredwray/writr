@@ -23,7 +23,7 @@ describe("Data Service", async () => {
   it("get posts", async () => {
     let posts = await ds.getPosts();
 
-    expect(posts.length).to.equal(4);
+    expect(posts.length).to.equal(5);
   });
 
   it("get post", async () => {
@@ -47,19 +47,19 @@ describe("Data Service", async () => {
   it("get published posts", async () => {
     let posts = await ds.getPublishedPosts();
 
-    expect(posts.length).to.equal(3);
+    expect(posts.length).to.equal(4);
   });
 
   it("get tags", async () => {
     let tags = await ds.getTags();
 
-    expect(tags.length).to.equal(9);
+    expect(tags.length).to.equal(12);
   });
 
   it("get published tags", async () => {
     let tags = await ds.getPublishedTags();
 
-    expect(tags.length).to.equal(6);
+    expect(tags.length).to.equal(9);
   });
 
   it("get tag that is unpublished", async () => {

@@ -27,7 +27,7 @@ describe("fileDataProvider", () => {
 
     let posts = await fileProvider.getPosts();
 
-    expect(posts.length).to.equal(4);
+    expect(posts.length).to.equal(5);
   });
 
   it("should get a valid post", async () => {
@@ -74,7 +74,7 @@ describe("fileDataProvider", () => {
 
     let posts = await fileProvider.getPublishedPosts();
 
-    expect(posts.length).to.equal(3);
+    expect(posts.length).to.equal(4);
   });
 
   it("should have a valid tag", async () => {
@@ -128,7 +128,7 @@ describe("fileDataProvider", () => {
 
     let tags = await fileProvider.getPublishedTags();
 
-    expect(tags.length).to.equal(6);
+    expect(tags.length).to.equal(9);
   });
 
   it("should generate the correct amount of tags", async () => {
@@ -139,6 +139,6 @@ describe("fileDataProvider", () => {
 
     let tags = await fileProvider.generateTags(posts);
 
-    expect(tags.length).to.equal(9);
+    expect(tags.length).to.equal(12);
   });
 });
