@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Config } from "../src/config";
+import { Config, ConfigData } from "../src/config";
 import { FileDataProvider } from "../src/data/fileDataProvider";
 import "mocha";
 
@@ -7,7 +7,7 @@ describe("fileDataProvider", () => {
   let config: Config = new Config();
 
   before(() => {
-    config.data = {};
+    config.data = new ConfigData();
     config.data.type = "file";
     config.data.postPath = __dirname + "/blog";
     config.data.contentPath = __dirname + "/blog/content";

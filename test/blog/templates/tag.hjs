@@ -1,0 +1,9 @@
+
+
+<p>Tag: 
+{{name}}<br /></p>
+
+<ul>
+{{#each posts}}
+<li>{{title}} - {{author}}</li>{{/each}}
+</ul>
