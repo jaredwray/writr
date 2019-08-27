@@ -24,3 +24,5 @@ if(program.config) {
 __log.info("using configation file: " + __configPath);
 
 __config = new Config();
+__config.load(__configPath);
+console.log(__config.data.contentPath);

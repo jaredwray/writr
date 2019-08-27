@@ -12,13 +12,15 @@ export class Config {
     }
   }
 
-  async load(filePath: string) : Promise<Boolean> {
+  load(filePath: string) : Boolean {
     let result: Boolean = false;
 
     if(fs.existsSync(filePath)) {
-      let buff = await fs.readFile(filePath);
+      let buff = fs.readFileSync(filePath);
 
       let obj = JSON.parse(buff.toString());
+
+      console.log(obj);
 
       this.parse(obj);
 
