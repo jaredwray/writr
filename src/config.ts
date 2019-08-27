@@ -20,8 +20,6 @@ export class Config {
 
       let obj = JSON.parse(buff.toString());
 
-      console.log(obj);
-
       this.parse(obj);
 
       result = true;
