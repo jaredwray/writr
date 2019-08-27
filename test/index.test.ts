@@ -5,23 +5,6 @@ import 'mocha';
 
 describe('Writr', () => {
 
-  beforeEach(() => {
-
-    let config : Config = new Config();
-    config.data.postPath = __dirname + '/blog';
-    config.data.contentPath = __dirname + '/blog/content';
-    config.data.templatePath = __dirname + '/blog/templates';
-
-    wr.init(config);
-
-  });
-
-  it('config gets setup in init', () => {
-
-    let config = __dirname + '/blog/content';
-
-    expect(wr.getConfig().data.contentPath).to.equal(config);
-  });
 /*
   it('render the home page', () => {
     let body = wr.renderHome();

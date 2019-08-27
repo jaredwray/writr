@@ -1,11 +1,34 @@
+import * as fs from "fs-extra";
+import { Logger, transports } from "winston";
+
 export class Config {
   data: ConfigData = new ConfigData();
   cache: ConfigCache = new ConfigCache();
+  log = new Logger({ transports: [new transports.Console()] });
 
   constructor(config: any = undefined) {
     if (config) {
       this.parse(config);
     }
+  }
+
+  async load(filePath: string) : Promise<Boolean> {
+    let result: Boolean = false;
+
+    if(fs.existsSync(filePath)) {
+      let buff = await fs.readFile(filePath);
+
+      let obj = JSON.parse(buff.toString());
+
+      this.parse(obj);
+
+      result = true;
+
+    } else {
+      this.log.info("the config file does not exist: " + filePath);
+    }
+
+    return result;
   }
 
   parse(obj: any) {
