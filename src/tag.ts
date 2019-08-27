@@ -20,6 +20,16 @@ export class Tag {
     return result;
   }
 
+  getUrlName() : string {
+    let result = "";
+
+    let simpleUrl = this.name.replace(" ", "-").toLowerCase();
+    result = simpleUrl;
+    
+
+    return result;
+  }
+
   static create(obj: any): Tag {
     let result = new Tag(obj.name);
 

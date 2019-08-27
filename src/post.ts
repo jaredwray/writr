@@ -33,6 +33,19 @@ export class Post {
     return result;
   }
 
+  getUrlName() : string {
+    let result = "";
+
+    if(this.url) {
+      result = this.url;
+    } else {
+      let simpleUrl = this.title.replace(" ", "-").toLowerCase();
+      result = simpleUrl;
+    }
+
+    return result;
+  }
+
   static create(obj: any): Post {
     let result = Object.assign(new Post(), obj);
 
