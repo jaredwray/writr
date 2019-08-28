@@ -91,6 +91,10 @@ export class HtmlProvider {
 
         if (post) {
             let source: string = this.getPostTemplate();
+
+            //fix to handle the body variable from markdown.
+            source = source.replace("{{body}}", post.body);
+
             result = this.renderTemplate(source, post);
         }
 
