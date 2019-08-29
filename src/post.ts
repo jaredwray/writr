@@ -8,7 +8,7 @@ export class Post {
   content: string = "";
   body: string = "";
   header: string = "";
-  previewKey: string | undefined = undefined;
+  metaData: { [key: string]: any } = {};
 
   constructor() { }
 

@@ -129,6 +129,8 @@ export class FileDataProvider implements DataProviderInterface {
 
         let mData: any = m.data;
 
+        result.metaData = m.data;
+
         result.header = "";
 
         result.content = m.content;
@@ -158,10 +160,6 @@ export class FileDataProvider implements DataProviderInterface {
 
         if (mData.tags) {
           result.tags = mData.tags.toString().split(",");
-        }
-
-        if (mData.previewKey) {
-          result.previewKey = mData.previewKey;
         }
 
         //generate html from markdown

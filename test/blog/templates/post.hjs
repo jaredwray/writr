@@ -3,3 +3,5 @@
 <p>{{title}}</p>
 <p>{{author}}</p>
 <p>{{body}}</p>
+
+<p>{{metaData.featured_image}}</p>
