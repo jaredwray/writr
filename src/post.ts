@@ -53,9 +53,12 @@ export class Post {
   }
 
   get body() {
-    //generate html from markdown
-    let markdown = new MarkDownIt();
-    return markdown.render(this.content);
+
+    if(!this.metaData.body) {
+      this.metaData.body = new MarkDownIt().render(this.content);
+    }
+
+    return this.metaData.body;
   }
 
   generateUrl() {
