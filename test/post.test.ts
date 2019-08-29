@@ -34,4 +34,21 @@ describe('Post', () => {
 
     expect(post.id).to.equal("the-largest-whale");
   });
+
+  it('post with slug should override', () => {
+    let post = new Post();
+    post.metaData.slug = "slug";
+    post.title = "Wowz! This is amazing:: Next Chapter's 23";
+
+    expect(post.id).to.equal("slug");
+  });
+
+  it('post with permalink should override', () => {
+    let post = new Post();
+    post.metaData.slug = "slug";
+    post.metaData.permalink = "permalink";
+    post.title = "Wowz! This is amazing:: Next Chapter's 23";
+
+    expect(post.id).to.equal("permalink");
+  });
 });

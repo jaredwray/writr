@@ -1,12 +1,10 @@
+import * as MarkDownIt from "markdown-it";
+
 export class Post {
-  __title: string = "";
-  author: string = "";
-  url: string = "";
-  createdAt: Date = new Date();
+  createdDate: Date = new Date();
   keywords: Array<string> = [];
   tags: Array<string> = [];
   content: string = "";
-  body: string = "";
   metaData: { [key: string]: any } = {};
 
   constructor() { }
@@ -18,21 +16,62 @@ export class Post {
     return this.url;
   }
 
+  get title(): string {
+    return this.metaData.title;
+  }
   set title(val: string) {
 
-    this.__title = val;
+    this.metaData.title = val;
 
     this.generateUrl();
   }
 
-  get title(): string {
-    return this.__title;
+  get author(): string {
+    return this.metaData.author;
+  }
+
+  set author(val: string) {
+    this.metaData.author = val;
+  }
+
+  get url() {
+    if(!this.metaData.url) {
+      this.generateUrl();
+    } 
+    return this.metaData.url;
+  }
+
+  set url(val: string) {
+    this.metaData.url = val;
+  }
+
+  get date(): Date {
+    return this.createdDate;
+  }
+  set date(val: Date) {
+    this.createdDate = val;
+  }
+
+  get body() {
+    //generate html from markdown
+    let markdown = new MarkDownIt();
+    return markdown.render(this.content);
   }
 
   generateUrl() {
-    if(!this.url) {
-      this.url = this.__title.toLowerCase().replace(/[^a-z0-9+]+/gi, " ").trim();
-      this.url = this.url.split(" ").join("-");
+
+    if(!this.metaData.url) {
+      if(this.metaData.permalink) {
+        this.metaData.url = this.metaData.permalink;
+      } else if(this.metaData.slug) {
+        this.metaData.url = this.metaData.slug;
+      }
+
+      if(!this.metaData.url) {
+        let url = this.metaData.title.toLowerCase().replace(/[^a-z0-9+]+/gi, " ").trim();
+        url = url.split(" ").join("-");
+        this.metaData.url = url;
+      }
     }
   }
 

@@ -114,7 +114,7 @@ export class FileDataProvider implements DataProviderInterface {
     let result: Post = new Post();
 
     try {
-      if (fs.existsSync(filePath)) {
+      if (await fs.pathExists(filePath)) {
         let buff = await fs.readFile(filePath);
 
         let data = buff.toString();
@@ -133,20 +133,8 @@ export class FileDataProvider implements DataProviderInterface {
 
         result.content = m.content;
 
-        if (mData.title) {
-          result.title = mData.title;
-        }
-
-        if (mData.author) {
-          result.author = mData.author;
-        }
-
-        if (mData.url) {
-          result.url = mData.url;
-        }
-
         if (mData.createdAt) {
-          result.createdAt = new Date(mData.createdAt);
+          result.createdDate = new Date(mData.date);
         }
 
         if (mData.keywords) {
@@ -156,10 +144,6 @@ export class FileDataProvider implements DataProviderInterface {
         if (mData.tags) {
           result.tags = mData.tags.toString().split(",");
         }
-
-        //generate html from markdown
-        let markdown = new MarkDownIt();
-        result.body = markdown.render(result.content);
       } else {
         this.__log.error("The following post does not exist: " + filePath);
       }
