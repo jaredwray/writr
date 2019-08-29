@@ -2,7 +2,6 @@ import { Post } from "../post";
 import { Tag } from "../tag";
 import { DataProviderInterface } from "./dataProviderInterface";
 import * as fs from "fs-extra";
-import * as MarkDownIt from "markdown-it";
 import { Logger, transports } from "winston";
 import * as matter from 'gray-matter';
 
