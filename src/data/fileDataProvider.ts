@@ -131,12 +131,7 @@ export class FileDataProvider implements DataProviderInterface {
 
         result.metaData = m.data;
 
-        result.header = "";
-
         result.content = m.content;
-
-        //clean up header
-        result.header = result.header.replace("\n", "");
 
         if (mData.title) {
           result.title = mData.title;

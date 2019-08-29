@@ -7,7 +7,6 @@ export class Post {
   tags: Array<string> = [];
   content: string = "";
   body: string = "";
-  header: string = "";
   metaData: { [key: string]: any } = {};
 
   constructor() { }
