@@ -8,22 +8,11 @@ export class Tag {
     this.name = name;
   }
 
-  isPublished(): boolean {
-    let result = false;
-
-    this.posts.forEach(post => {
-      if (post.isPublished()) {
-        result = true;
-      }
-    });
-
-    return result;
-  }
-
-  getUrlName(): string {
+  get id(): string {
     let result = "";
 
-    let simpleUrl = this.name.replace(" ", "-").toLowerCase();
+    let simpleUrl = this.name.toLowerCase().replace(/[^a-z0-9+]+/gi, " ").trim();
+    simpleUrl = simpleUrl.split(" ").join("-");
     result = simpleUrl;
 
 

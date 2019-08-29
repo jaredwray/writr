@@ -5,20 +5,33 @@ import { Post } from '../src/post';
 
 describe('Post', () => {
 
-  it('post should should be published', () => {
+  it('post should handle a correct id', () => {
     let post = new Post();
+    post.title = "Wowz! This is amazing: Next Chapter";
 
-    post.publishedAt = new Date('12/12/2001');
-
-    expect(post.isPublished()).to.equal(true);
+    expect(post.id).to.equal("wowz-this-is-amazing-next-chapter");
   });
 
-
-  it('post should not be published', () => {
+  it('post should handle a correct id with double space', () => {
     let post = new Post();
+    post.title = "Wowz! This is amazing:: Next Chapter's 23";
 
-    post.publishedAt = new Date('12/12/2100');
+    expect(post.id).to.equal("wowz-this-is-amazing-next-chapter-s-23");
+  });
 
-    expect(post.isPublished()).to.equal(false);
+  it('post should not generate an id from title if the url is set', () => {
+    let post = new Post();
+    post.url = "the-largest-whale";
+    post.title = "Wowz! This is amazing:: Next Chapter's 23";
+
+    expect(post.id).to.equal("the-largest-whale");
+  });
+
+  it('post should not generate an id from title if the url is after', () => {
+    let post = new Post();
+    post.title = "Wowz! This is amazing:: Next Chapter's 23";
+    post.url = "the-largest-whale";
+
+    expect(post.id).to.equal("the-largest-whale");
   });
 });

@@ -62,13 +62,12 @@ describe('Data Cache Service', async () => {
         let post = new Post();
         post.title = 'foo';
         post.createdAt = new Date();
-        post.publishedAt = new Date();
 
         await cache.setPost('foo',post);
 
         let result = await cache.getPost('foo');
 
-        expect(result.isPublished()).to.equal(true);
+        expect(result.title).to.equal("foo");
     });
 
     it('caching a post and retrieving it with correct values', async () => {
@@ -76,7 +75,6 @@ describe('Data Cache Service', async () => {
         let post = new Post();
         post.title = 'foo';
         post.createdAt = new Date();
-        post.publishedAt = new Date();
 
         post.keywords = new Array<string>();
         post.keywords.push('cat');
@@ -116,7 +114,6 @@ describe('Data Cache Service', async () => {
         let post = new Post();
         post.title = 'foo';
         post.createdAt = new Date();
-        post.publishedAt = new Date();
 
         let tag = new Tag('foo');
         tag.posts.push(post);
@@ -125,7 +122,7 @@ describe('Data Cache Service', async () => {
 
         let result = await cache.getTag('foo');
 
-        expect(result.isPublished()).to.equal(true);
+        expect(result.name).to.equal("foo");
     });
 
     it('caching a tag with post and retrieving it with correct values', async () => {
@@ -133,7 +130,6 @@ describe('Data Cache Service', async () => {
         let post = new Post();
         post.title = 'foo';
         post.createdAt = new Date();
-        post.publishedAt = new Date();
 
         let tag = new Tag('foo');
         tag.posts.push(post);
@@ -142,7 +138,7 @@ describe('Data Cache Service', async () => {
 
         let result = await cache.getTag('foo');
 
-        expect(result.posts[0].isPublished()).to.equal(true);
+        expect(result.posts[0].title).to.equal("foo");
     });   
     
     it('caching a tag and a post and then clearing', async () => {
@@ -150,7 +146,6 @@ describe('Data Cache Service', async () => {
         let post = new Post();
         post.title = 'foo';
         post.createdAt = new Date();
-        post.publishedAt = new Date();
 
         let tag = new Tag('foo');
         tag.posts.push(post);

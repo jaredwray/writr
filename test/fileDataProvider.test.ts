@@ -48,33 +48,22 @@ describe("fileDataProvider", () => {
     expect(post).to.equal(undefined);
   });
 
-  it("should get a valid published post", async () => {
+  it("should get a post", async () => {
     let fileProvider = new FileDataProvider();
     fileProvider.init(config.data);
 
-    let post = await fileProvider.getPublishedPost(
-      "all-about-the-tesla-model-3"
-    );
+    let post = await fileProvider.getPost("all-about-the-tesla-model-3");
 
     expect(post.title).to.equal("Tesla Model 3");
-  });
-
-  it("should not get a valid published post", async () => {
-    let fileProvider = new FileDataProvider();
-    fileProvider.init(config.data);
-
-    let post = await fileProvider.getPublishedPost("the-largest-whale");
-
-    expect(post).to.equal(undefined);
   });
 
   it("should published posts", async () => {
     let fileProvider = new FileDataProvider();
     fileProvider.init(config.data);
 
-    let posts = await fileProvider.getPublishedPosts();
+    let posts = await fileProvider.getPosts();
 
-    expect(posts.length).to.equal(4);
+    expect(posts.length).to.equal(5);
   });
 
   it("should have a valid tag", async () => {
@@ -102,33 +91,6 @@ describe("fileDataProvider", () => {
     let tag = await fileProvider.getTag("snoopy");
 
     expect(tag).to.equal(undefined);
-  });
-
-  it("should have a valid tag and is published", async () => {
-    let fileProvider = new FileDataProvider();
-    fileProvider.init(config.data);
-
-    let tag = await fileProvider.getTag("whale");
-
-    expect(tag.isPublished()).to.equal(true);
-  });
-
-  it("should have a tag that is not publshed", async () => {
-    let fileProvider = new FileDataProvider();
-    fileProvider.init(config.data);
-
-    let tag = await fileProvider.getPublishedTag("large");
-
-    expect(tag).to.equal(undefined);
-  });
-
-  it("should have a all tags that are published", async () => {
-    let fileProvider = new FileDataProvider();
-    fileProvider.init(config.data);
-
-    let tags = await fileProvider.getPublishedTags();
-
-    expect(tags.length).to.equal(9);
   });
 
   it("should generate the correct amount of tags", async () => {

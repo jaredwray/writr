@@ -1,9 +1,8 @@
 export class Post {
-  title: string = "";
+  __title: string = "";
   author: string = "";
   url: string = "";
   createdAt: Date = new Date();
-  publishedAt: Date = new Date();
   keywords: Array<string> = [];
   tags: Array<string> = [];
   content: string = "";
@@ -14,43 +13,34 @@ export class Post {
   constructor() { }
 
   get id(): string {
+    if(!this.url) {
+      this.generateUrl();
+    }
     return this.url;
   }
 
-  isPublished(): Boolean {
-    let result = false;
+  set title(val: string) {
 
-    if (!this.publishedAt) {
-      result = true;
-    }
+    this.__title = val;
 
-    if (this.publishedAt) {
-      if (this.publishedAt.getTime() <= new Date().getTime()) {
-        result = true;
-      }
-    }
-
-    return result;
+    this.generateUrl();
   }
 
-  getUrlName(): string {
-    let result = "";
+  get title(): string {
+    return this.__title;
+  }
 
-    if (this.url) {
-      result = this.url;
-    } else {
-      let simpleUrl = this.title.replace(" ", "-").toLowerCase();
-      result = simpleUrl;
+  generateUrl() {
+    if(!this.url) {
+      this.url = this.__title.toLowerCase().replace(/[^a-z0-9+]+/gi, " ").trim();
+      this.url = this.url.split(" ").join("-");
     }
-
-    return result;
   }
 
   static create(obj: any): Post {
     let result = Object.assign(new Post(), obj);
 
     result.createdAt = new Date(obj.createdAt);
-    result.publishedAt = new Date(obj.publishedAt);
 
     return result;
   }

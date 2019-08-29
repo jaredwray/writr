@@ -39,7 +39,7 @@ export class HtmlProvider {
         posts.forEach(async post => {
             let postHtml = await this.renderPost(post);
 
-            let postPath = output + "/" + post.getUrlName();
+            let postPath = output + "/" + post.id;
             fs.ensureDirSync(postPath);
 
             fs.writeFileSync(postPath + "/index.html", postHtml);
@@ -53,7 +53,7 @@ export class HtmlProvider {
         tags.forEach(async tag => {
             let tagHtml = await this.renderTag(tag);
 
-            let tagPath = output + "/tags/" + tag.getUrlName();
+            let tagPath = output + "/tags/" + tag.id;
 
             fs.ensureDirSync(tagPath);
 
@@ -67,8 +67,8 @@ export class HtmlProvider {
     async renderHome(): Promise<string> {
         let result = "";
 
-        let postList = await this.dataStore.getPublishedPosts();
-        let tagList = await this.dataStore.getPublishedTags();
+        let postList = await this.dataStore.getPosts();
+        let tagList = await this.dataStore.getTags();
 
         let source: string = this.getHomeTemplate();
         result = this.renderTemplate(source, { tags: tagList, posts: postList });

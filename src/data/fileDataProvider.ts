@@ -15,6 +15,12 @@ export class FileDataProvider implements DataProviderInterface {
     this.__log = new Logger({ transports: [new transports.Console()] });
   }
 
+  init(config: any) {
+    if (config.postPath) {
+      this.__postPath = config.postPath;
+    }
+  }
+
   async getPost(id: string): Promise<Post | undefined> {
     let result: Post | undefined;
 
@@ -25,22 +31,6 @@ export class FileDataProvider implements DataProviderInterface {
         result = post;
       }
     });
-
-    return result;
-  }
-
-  async getPublishedPost(id: string): Promise<Post | undefined> {
-    let result: Post | undefined;
-
-    let posts = await this.getPublishedPosts();
-
-    for (let i = 0; i < posts.length; i++) {
-      let post = posts[i];
-
-      if (post.id == this.formatToKey(id)) {
-        result = post;
-      }
-    }
 
     return result;
   }
@@ -71,22 +61,6 @@ export class FileDataProvider implements DataProviderInterface {
     return result;
   }
 
-  async getPublishedPosts(): Promise<Array<Post>> {
-    let result = new Array<Post>();
-
-    let posts = await this.getPosts();
-
-    for (let i = 0; i < posts.length; i++) {
-      let post = posts[i];
-
-      if (post.isPublished()) {
-        result.push(post);
-      }
-    }
-
-    return result;
-  }
-
   async getTag(name: string): Promise<Tag | undefined> {
     let result;
 
@@ -103,38 +77,10 @@ export class FileDataProvider implements DataProviderInterface {
     return result;
   }
 
-  async getPublishedTag(name: string): Promise<Tag | undefined> {
-    let result;
-
-    let tags = await this.getPublishedTags();
-
-    for (let i = 0; i < tags.length; i++) {
-      let tag = tags[i];
-
-      if (this.formatToKey(tag.name) == this.formatToKey(name)) {
-        result = tag;
-      }
-    }
-
-    return result;
-  }
-
   async getTags(): Promise<Array<Tag>> {
     let posts = await this.getPosts();
 
     return this.generateTags(posts);
-  }
-
-  async getPublishedTags(): Promise<Array<Tag>> {
-    let posts = await this.getPublishedPosts();
-
-    return this.generateTags(posts);
-  }
-
-  init(config: any) {
-    if (config.postPath) {
-      this.__postPath = config.postPath;
-    }
   }
 
   generateTags(posts: Array<Post>): Array<Tag> {
@@ -200,20 +146,10 @@ export class FileDataProvider implements DataProviderInterface {
 
         if (mData.url) {
           result.url = mData.url;
-        } else {
-          result.url = result.title
-            .toLowerCase()
-            .trim()
-            .split(" ")
-            .join("-");
         }
 
         if (mData.createdAt) {
           result.createdAt = new Date(mData.createdAt);
-        }
-
-        if (mData.publishedAt) {
-          result.publishedAt = new Date(mData.publishedAt);
         }
 
         if (mData.keywords) {

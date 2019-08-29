@@ -11,21 +11,10 @@ describe('Tag', () => {
     expect(tag.name).to.equal('cow');
   });
 
-  it('tag should not be published', () => {
-    let tag = new Tag('cow');
+  it('tag should have a valid id', () => {
+    let tag = new Tag("How's now: brown cow! -");
 
-    expect(tag.isPublished()).to.equal(false);
+    expect(tag.id).to.equal("how-s-now-brown-cow");
   });
 
-  it('tag should should be published', () => {
-    let tag = new Tag('cow');
-    let postFilePath = __dirname + '/blog/article1.md';
-    let post = new Post();
-
-    post.publishedAt = new Date('12/12/2001');
-
-    tag.posts.push(post);
-
-    expect(tag.isPublished()).to.equal(true);
-  });
 });

@@ -1,5 +1,10 @@
-{{#each posts}}{{title}} - {{author}}{{/each}}
+{{#each posts}}
+<p><a href="{{url}}">{{title}} - {{author}}</a></p>
+{{/each}}
 
 <p>Tags: <br />
-{{#each tags}}{{name}}{{/each}}
+<ul>
+{{#each tags}}
+<li><a href="{{id}}">{{name}}</a></li>{{/each}}
+</ul>
 </p>
