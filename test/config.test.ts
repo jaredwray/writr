@@ -2,6 +2,7 @@ import { Tag } from '../src/tag';
 import { expect } from 'chai';
 import 'mocha';
 import { Config, ConfigCache, ConfigData } from '../src/config';
+import winston = require('winston');
 
 describe('Config', () => {
 
@@ -31,6 +32,27 @@ describe('Config', () => {
         config = new Config(obj);
 
         expect(config.data.type).to.equal("blah");
+    });
+
+    it('config should load via the file path', () => {
+
+        config = new Config();
+        config.load("./test/blog/config.json");
+
+        expect(config.data.contentPath).to.equal("./test/blog/images");
+    });
+
+
+    it('config should load via the file path', () => {
+
+        config = new Config();
+
+        //only log on error
+        config.log = new winston.Logger({ transports: [new winston.transports.Console({ level: 'error' })] });
+
+        let valid = config.load("./test/blog/blah.json");
+
+        expect(valid).to.equal(false);
     });
 
     it('config constructor should parse data contentPath', () => {
