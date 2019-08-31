@@ -2,7 +2,10 @@
 
 ---
 
-### A Markdown Blog for Your Node App [![Build Status](https://travis-ci.org/jaredwray/writr.svg?branch=master)](https://travis-ci.org/jaredwray/writr)
+### A Markdown Blog for Your Node App 
+[![Build Status](https://travis-ci.org/jaredwray/writr.svg?branch=master)](https://travis-ci.org/jaredwray/writr)
+[![GitHub license](https://img.shields.io/github/license/jaredwray/writr)](https://github.com/jaredwray/writr/blob/master/LICENSE)
+[![codecov](https://codecov.io/gh/jaredwray/writr/branch/master/graph/badge.svg)](https://codecov.io/gh/jaredwray/writr)
 
 ## Getting Started 
 
@@ -15,62 +18,44 @@ or
 * Setup your content in a directory like so:
 ```
 blog/... << Articles go here>>
-blog/content... << Images and other content that you link to go here>>
+blog/images... << Images and other content that you link to go here>>
 ```
 We will default to the `blog/` folder unless you configure the custom path in the configuration.
 
-* Create your Markdown Documents with the following `Meta Header`
-```javascript
-{
-    "title": "",
-    "author": "",
-    "url": "",
-    "createdAt": "",
-    "publishedAt": "",
-    "keywords": "",
-    "previewKey": "",
-    "tags": ""
-}
+* Create your Markdown Documents with the following `Meta Header` example. 
+```yaml
+---
+title:  'Docula: Persistent Links and Styles!'
+tags:
+- Github
+- Open Source
+- Docula
+date: 2017-03-07 19:49:09
+featured_image: Docula_%20Persistent%20Links%20and%20Styles%201.jpeg
+---
 ```
 
-## How to use with Express
+## CLI
 
-* Instal the module `yarn add writr` or if using Typescript do `yarn add @types/writr`
-* Add it to your `Express` app such as the following code example:
+> writr -c blog/writr.config -o ./blog_output
+
+Then in express map your `blog_output` via static files:
+
 ```javascript
-var express = require('express');
-var app = express();
 
-var writr = require('writr');
+app.use("/blog/*/images", express.static(path.join(__dirname, "blog/images")))
+app.use("/blog/images", express.static(path.join(__dirname, "blog/images")))
+app.use("/blog", express.static(path.join(__dirname, "blog_output")))
 
-writer.initExpress('/blog', app);
-```
 
-## Express with Configuration
-```javascript
-var express = require('express');
-var app = express();
-
-var writr = require('writr');
-
-writer.initExpress('/blog', app, {
-    contentPath: './public/content',
-    postPath: './_posts',
-    templatePath: './views/blog'
-});
 ```
 
 ### Markdown
-To learn more about Markdown go here: https://guides.github.com/features/mastering-markdown/
+To learn more about Markdown go here: https://markdownguide.org
 
 ## Templates
 
 There are three templates that are part of every instance of Writr:
-* home: This is the main template that lists all of the latest blogs or what you want to add. 
+* index: This is the main template that lists all of the latest blogs or what you want to add. 
 * post: The post itself and usually supporting items around that such as what is next to look at and tags. 
 * tags: Showing articles by tag filtering.
-
-## Features
-
-### Preview Key
-At some point you will want to show the post before it is live. In that case you can set a secret key in the post meta information called `previewKey`. Once you have set this and saved the post you can browse to your blog with the url of the post adding `?previewKey=YOUR_SECRET` at the end. 
