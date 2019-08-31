@@ -69,9 +69,15 @@ describe('Post', () => {
 
   it('post get body', () => {
     let post = new Post();
+    post.metaData.body = "foo";
     post.content = "*HOW*";
-    let body = post.body;
-    console.log(body);
+
+    expect(post.body).to.equal("foo");
+  });
+
+  it('post get body / generate', () => {
+    let post = new Post();
+    post.content = "*HOW*";
 
     expect(post.body).to.equal("<p><em>HOW</em></p>\n");
   });
