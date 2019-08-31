@@ -10,10 +10,11 @@
   "scripts": {
     "watch": "tsc -w -p .",
     "clean-all": "clean && rm -rf node_modules",
-    "clean": "rm -rf dist && rm -rf out",
+    "clean": "rm -rf ./dist && rm -rf ./out",
     "compile": "yarn clean && tsc -p .",
     "build": "yarn test && yarn compile",
     "test": "yarn nyc mocha",
+    "test-output": "yarn compile && node ./dist/index.js -c ./test/blog/config.json -o ./out",
     "coverage": "nyc report --reporter=json && codecov -f coverage/*.json -t 62b3983c-08a1-425f-99b9-71e84fef74bc"
   },
   "dependencies": {
