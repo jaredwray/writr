@@ -27,6 +27,13 @@ describe('Post', () => {
     expect(post.id).to.equal("the-largest-whale");
   });
 
+  it('post get author', () => {
+    let post = new Post();
+    post.author = "foo";
+
+    expect(post.author).to.equal("foo");
+  });
+
   it('post should not generate an id from title if the url is after', () => {
     let post = new Post();
     post.title = "Wowz! This is amazing:: Next Chapter's 23";
@@ -51,4 +58,22 @@ describe('Post', () => {
 
     expect(post.id).to.equal("permalink");
   });
+
+  it('post date', () => {
+    let post = new Post();
+    let date = new Date;
+    post.date = date;
+
+    expect(post.date).to.equal(date);
+  });
+
+  it('post get body', () => {
+    let post = new Post();
+    post.content = "*HOW*";
+    let body = post.body;
+    console.log(body);
+
+    expect(post.body).to.equal("<p><em>HOW</em></p>\n");
+  });
+
 });

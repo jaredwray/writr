@@ -10,9 +10,6 @@ export class Post {
   constructor() { }
 
   get id(): string {
-    if(!this.url) {
-      this.generateUrl();
-    }
     return this.url;
   }
 
