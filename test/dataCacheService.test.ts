@@ -24,7 +24,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.createdAt = new Date();
+        post.date = new Date();
 
         let result = await cache.setPost('foo',post);
 
@@ -35,7 +35,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.createdAt = new Date();
+        post.date = new Date();
 
         await cache.setPost('foo',post);
 
@@ -48,7 +48,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.createdAt = new Date();
+        post.date = new Date();
 
         await cache.setPost('foo',post);
 
@@ -61,7 +61,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.createdAt = new Date();
+        post.date = new Date();
 
         await cache.setPost('foo',post);
 
@@ -74,7 +74,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.createdAt = new Date();
+        post.date = new Date();
 
         post.keywords = new Array<string>();
         post.keywords.push('cat');
@@ -113,7 +113,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.createdAt = new Date();
+        post.date = new Date();
 
         let tag = new Tag('foo');
         tag.posts.push(post);
@@ -129,7 +129,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.createdAt = new Date();
+        post.date = new Date();
 
         let tag = new Tag('foo');
         tag.posts.push(post);
@@ -145,7 +145,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.createdAt = new Date();
+        post.date = new Date();
 
         let tag = new Tag('foo');
         tag.posts.push(post);
