@@ -17,4 +17,15 @@ describe('Tag', () => {
     expect(tag.id).to.equal("how-s-now-brown-cow");
   });
 
+  it('tag clone', () => {
+    let tag = new Tag("How's now: brown cow! -");
+
+    tag.posts.push(new Post());
+
+    let obj = Tag.create(tag);
+
+    expect(obj.id).to.equal("how-s-now-brown-cow");
+    expect(obj.posts.length).to.equal(1);
+  });
+
 });
