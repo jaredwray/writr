@@ -4,22 +4,20 @@ import { Tag } from "../tag";
 import Keyv = require("keyv");
 
 export class DataCacheService {
-  private __postCache: Keyv;
-  private __tagCache: Keyv;
+  cache: Keyv;
 
   constructor(config: Config) {
 
     config = new Config();
 
-    this.__postCache = new Keyv({ ttl: config.cache.ttl, namespace: "data-post" });
-    this.__tagCache = new Keyv({ ttl: config.cache.ttl, namespace: "data-tag" });
+    this.cache = new Keyv({ ttl: config.cache.ttl, namespace: "data-cache" });
   }
 
   //cache
   async getPost(key: string): Promise<Post | undefined> {
-    key = this.formatName(key);
+    key = this.formatName(key, "post");
 
-    let result = await this.__postCache.get(key);
+    let result = await this.cache.get(key);
 
     if (result) {
       result = Post.create(result);
@@ -29,13 +27,13 @@ export class DataCacheService {
   }
 
   async setPost(key: string, post: Post): Promise<boolean | undefined> {
-    return await this.__postCache.set(this.formatName(key), post);
+    return await this.cache.set(this.formatName(key, "post"), post);
   }
 
   async getPosts(key: string): Promise<Array<Post> | undefined> {
-    key = this.formatName(key);
+    key = this.formatName(key, "post");
 
-    let result = await this.__postCache.get(key);
+    let result = await this.cache.get(key);
 
     if (result) {
       let posts = new Array<Post>();
@@ -51,13 +49,13 @@ export class DataCacheService {
   }
 
   async setPosts(key: string, posts: Array<Post>): Promise<boolean | undefined> {
-    return await this.__postCache.set(this.formatName(key), posts);
+    return await this.cache.set(this.formatName(key, "post"), posts);
   }
 
   async getTag(key: string): Promise<Tag | undefined> {
-    key = this.formatName(key);
+    key = this.formatName(key, "tag");
 
-    let result = await this.__tagCache.get(key);
+    let result = await this.cache.get(key);
 
     if (result) {
       result = Tag.create(result);
@@ -67,13 +65,13 @@ export class DataCacheService {
   }
 
   async setTag(key: string, tag: Tag): Promise<boolean | undefined> {
-    return await this.__tagCache.set(this.formatName(key), tag);
+    return await this.cache.set(this.formatName(key, "tag"), tag);
   }
 
   async getTags(key: string): Promise<Array<Tag> | undefined> {
-    key = this.formatName(key);
+    key = this.formatName(key, "tag");
 
-    let result = await this.__tagCache.get(key);
+    let result = await this.cache.get(key);
 
     if (result) {
       let tags = new Array<Tag>();
@@ -89,15 +87,17 @@ export class DataCacheService {
   }
 
   async setTags(key: string, tags: Array<Tag>): Promise<boolean | undefined> {
-    return await this.__tagCache.set(this.formatName(key), tags);
+    return await this.cache.set(this.formatName(key, "tag"), tags);
   }
 
   async clear(): Promise<void> {
-    await this.__postCache.clear();
-    await this.__tagCache.clear();
+    await this.cache.clear();
   }
 
-  formatName(name: string): string {
-    return name.toLowerCase().trim();
+  formatName(name: string, type: string): string {
+    let result =  type.trim() + "-" + name.trim();
+    result = result.toLowerCase();
+
+    return result;
   }
 }

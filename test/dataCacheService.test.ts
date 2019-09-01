@@ -162,6 +162,11 @@ describe('Data Cache Service', async () => {
 
     it('format name correctly', () => {
 
-        expect(cache.formatName('blAh ')).to.equal(`blah`);
+        expect(cache.formatName('blAh ', "post")).to.equal(`post-blah`);
+    });
+
+    it('format name correctly and type', () => {
+
+        expect(cache.formatName('blAh ', "poSt ")).to.equal(`post-blah`);
     });
 });
