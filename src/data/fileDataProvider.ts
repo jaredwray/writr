@@ -49,7 +49,9 @@ export class FileDataProvider implements DataProviderInterface {
           if (file.indexOf(".md") > 0) {
             let filePath = directory + "/" + file;
             let post = await this.parsePost(filePath);
+            if(post) {
             this.__posts.push(post);
+            }
           }
         }
       }
