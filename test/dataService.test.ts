@@ -26,16 +26,34 @@ describe("Data Service", async () => {
     expect(posts.length).to.equal(5);
   });
 
-  it("get post", async () => {
-    let post = await ds.getPost("article-simple");
+  it("get posts from cache", async () => {
+    await ds.getPosts();
 
-    expect(post.title).to.equal("Article Simple");
+    let posts2 = await ds.getPosts();
+
+    expect(posts2.length).to.equal(5);
+  });
+
+  it("get posts with a miss", async () => {
+
+    let config2 = new Config();
+    let ds2 = new DataService(config2);
+
+    let posts = await ds2.getPosts();
+
+    expect(posts.length).to.equal(0);
   });
 
   it("get post", async () => {
     let post = await ds.getPost("article-simple");
 
     expect(post.title).to.equal("Article Simple");
+  });
+
+  it("get post with a miss", async () => {
+    let post = await ds.getPost("sdfsfsdfsddfsd");
+
+    expect(post).to.equal(undefined);
   });
 
 
@@ -43,6 +61,33 @@ describe("Data Service", async () => {
     let tags = await ds.getTags();
 
     expect(tags.length).to.equal(12);
+  });
+
+  it("get tags from cache", async () => {
+    await ds.getTags();
+
+    let tags = await ds.getTags();
+
+    expect(tags.length).to.equal(12);
+  });
+
+  it("get tag with a miss", async () => {
+    let tag = await ds.getTag("sdfkjslfkjse");
+
+    expect(tag).to.equal(undefined);
+  });
+
+  it("get tag", async () => {
+    let tag = await ds.getTag("tesla");
+
+    expect(tag.id).to.equal("tesla");
+  });
+
+  it("get tag from cache", async () => {
+    await ds.getTag("tesla");
+    let tag = await ds.getTag("tesla");
+
+    expect(tag.id).to.equal("tesla");
   });
 
 });
