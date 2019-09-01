@@ -1,4 +1,3 @@
-import { Tag } from '../src/tag';
 import { expect } from 'chai';
 import 'mocha';
 import { Post } from '../src/post';
