@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { Config, ConfigData } from "../src/config";
 import { FileDataProvider } from "../src/data/fileDataProvider";
+import winston = require('winston');
 import "mocha";
 
 describe("fileDataProvider", () => {
@@ -102,5 +103,15 @@ describe("fileDataProvider", () => {
     let tags = await fileProvider.generateTags(posts);
 
     expect(tags.length).to.equal(12);
+  });
+
+  it("parse bad file path post", async () => {
+    let fileProvider = new FileDataProvider();
+    //set the logging level
+    fileProvider.__log = new winston.Logger({ transports: undefined });
+
+    let post = await fileProvider.parsePost("../foo.md")
+
+    expect(post).to.equal(undefined);
   });
 });

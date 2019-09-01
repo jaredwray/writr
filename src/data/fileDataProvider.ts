@@ -109,46 +109,36 @@ export class FileDataProvider implements DataProviderInterface {
     return key.toLowerCase().trim();
   }
 
-  async parsePost(filePath: string): Promise<Post> {
-    let result: Post = new Post();
+  async parsePost(filePath: string): Promise<Post | undefined> {
+    let result: Post | undefined = new Post();
 
-    try {
-      if (await fs.pathExists(filePath)) {
-        let buff = await fs.readFile(filePath);
+    if (await fs.pathExists(filePath)) {
+      let buff = await fs.readFile(filePath);
 
-        let data = buff.toString();
+      let data = buff.toString();
 
-        let m;
+      let m = matter(data);
 
-        if (data.indexOf("}}}") > 0) {
-          m = matter(data, { delimiters: ["{{{", "}}}"] });
-        } else {
-          m = matter(data);
-        }
+      let mData: any = m.data;
 
-        let mData: any = m.data;
+      result.metaData = m.data;
 
-        result.metaData = m.data;
+      result.content = m.content;
 
-        result.content = m.content;
-
-        if (mData.createdAt) {
-          result.createdDate = new Date(mData.date);
-        }
-
-        if (mData.keywords) {
-          result.keywords = mData.keywords.toString().split(",");
-        }
-
-        if (mData.tags) {
-          result.tags = mData.tags.toString().split(",");
-        }
-      } else {
-        this.__log.error("The following post does not exist: " + filePath);
+      if (mData.createdAt) {
+        result.createdDate = new Date(mData.date);
       }
-    } catch (error) {
-      this.__log.error(error);
-      throw new Error(error);
+
+      if (mData.keywords) {
+        result.keywords = mData.keywords.toString().split(",");
+      }
+
+      if (mData.tags) {
+        result.tags = mData.tags.toString().split(",");
+      }
+    } else {
+      this.__log.error("The following post does not exist: " + filePath);
+      result = undefined;
     }
 
     return result;
