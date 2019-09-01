@@ -87,6 +87,38 @@ describe('Data Cache Service', async () => {
         expect(result.keywords.length).to.equal(2);
     });
 
+    it('caching posts and retrieving it with correct values', async () => {
+
+        let key = "multipost"
+        let posts = Array<Post>();
+
+        let fooPost = new Post();
+        fooPost.title = 'foo';
+        fooPost.date = new Date();
+
+        fooPost.keywords = new Array<string>();
+        fooPost.keywords.push('cat');
+        fooPost.keywords.push('dog');
+        
+        posts.push(fooPost);
+
+        let coolPost = new Post();
+        coolPost.title = 'cool';
+        coolPost.date = new Date();
+
+        coolPost.keywords = new Array<string>();
+        coolPost.keywords.push('meow');
+        coolPost.keywords.push('woof');
+        
+        posts.push(coolPost);
+
+        await cache.setPosts(key, posts);
+
+        let result = await cache.getPosts(key);
+
+        expect(result.length).to.equal(2);
+    });
+
     it('caching a tag and retrieving it', async () => {
 
         let tag = new Tag('foo');
@@ -123,6 +155,35 @@ describe('Data Cache Service', async () => {
         let result = await cache.getTag('foo');
 
         expect(result.name).to.equal("foo");
+    });
+
+    it('caching a tags and retrieving it with functions', async () => {
+
+        let key = "multitags"
+        let tags = new Array<Tag>();
+
+        let post = new Post();
+        post.title = 'foo';
+        post.date = new Date();
+
+        let tag = new Tag('foo');
+        tag.posts.push(post);
+
+        let post2 = new Post();
+        post2.title = 'foo2';
+        post2.date = new Date();
+
+        let tag2 = new Tag('foo2');
+        tag2.posts.push(post2);
+
+        tags.push(tag);
+        tags.push(tag2);
+
+        await cache.setTags(key,tags);
+
+        let result = await cache.getTags(key);
+
+        expect(result.length).to.equal(2);
     });
 
     it('caching a tag with post and retrieving it with correct values', async () => {
