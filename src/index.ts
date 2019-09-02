@@ -14,6 +14,7 @@ let __dataStore: DataService;
 
 program.option('-c, --config <path>', 'custom configuration path');
 program.option('-o, --output <path>', 'path to output generated files');
+program.option('-json, --json <file_name>', 'out put writr.json (Default) file of all posts and tags');
 
 program.parse(process.argv);
 
@@ -27,12 +28,13 @@ log.info("using configation file: " + __configPath);
 
 __config = new Config();
 __config.load(__configPath);
+__config.program = program;
 
 __dataStore = new DataService(__config);
 
-let htmlProvider = new HtmlProvider(__dataStore, __config);
+let htmlProvider = new HtmlProvider();
 
-htmlProvider.render(program.output).then(() => {
+htmlProvider.render(__dataStore, __config).then(() => {
   process.exit();
   log.info("Done!");
 });

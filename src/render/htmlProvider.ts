@@ -7,22 +7,19 @@ import { DataService } from "../data/dataService";
 import { Config } from "../config";
 import { Post } from "../post";
 import { Tag } from "../tag";
+import { RenderProviderInterface } from "./renderProviderInterface";
 
-export class HtmlProvider {
+export class HtmlProvider implements RenderProviderInterface {
     log: any;
 
-    config: Config;
-    dataStore: DataService;
-
-    constructor(dataStore: DataService, config: Config) {
+    constructor() {
         this.log = new Logger({ transports: [new transports.Console()] });
-
-        this.dataStore = dataStore;
-        this.config = config;
     }
 
-    async render(output: string): Promise<Boolean | undefined> {
+    async render(dataStore: DataService, config: Config): Promise<Boolean | undefined> {
         let result: Boolean | undefined;
+
+        let output = config.program.output;
 
         if (fs.existsSync(output)) {
             del.sync(output);
@@ -31,13 +28,13 @@ export class HtmlProvider {
         fs.ensureDirSync(output);
 
         //home
-        fs.writeFileSync(output + "/index.html", await this.renderHome());
+        fs.writeFileSync(output + "/index.html", await this.renderHome(dataStore, config));
 
         //posts
-        let posts = await this.dataStore.getPosts();
+        let posts = await dataStore.getPosts();
 
         posts.forEach(async post => {
-            let postHtml = await this.renderPost(post);
+            let postHtml = await this.renderPost(post, config);
 
             let postPath = output + "/" + post.id;
             fs.ensureDirSync(postPath);
@@ -48,10 +45,10 @@ export class HtmlProvider {
         //tags
         fs.ensureDirSync(output + "/tags/");
 
-        let tags = await this.dataStore.getTags();
+        let tags = await dataStore.getTags();
 
         tags.forEach(async tag => {
-            let tagHtml = await this.renderTag(tag);
+            let tagHtml = await this.renderTag(tag, config);
 
             let tagPath = output + "/tags/" + tag.id;
 
@@ -64,33 +61,33 @@ export class HtmlProvider {
     }
 
     //render
-    async renderHome(): Promise<string> {
+    async renderHome(dataStore: DataService, config:Config): Promise<string> {
         let result = "";
 
-        let postList = await this.dataStore.getPosts();
-        let tagList = await this.dataStore.getTags();
+        let postList = await dataStore.getPosts();
+        let tagList = await dataStore.getTags();
 
-        let source: string = this.getHomeTemplate();
+        let source: string = this.getHomeTemplate(config);
         result = this.renderTemplate(source, { tags: tagList, posts: postList });
 
         return result;
     }
 
-    async renderTag(tag: Tag): Promise<string> {
+    async renderTag(tag: Tag, config:Config): Promise<string> {
         let result = "";
         if (tag) {
-            let source = this.getTagTemplate();
+            let source = this.getTagTemplate(config);
 
             result = this.renderTemplate(source, tag);
         }
         return result;
     }
 
-    async renderPost(post: Post): Promise<string> {
+    async renderPost(post: Post, config:Config): Promise<string> {
         let result = "";
 
         if (post) {
-            let source: string = this.getPostTemplate();
+            let source: string = this.getPostTemplate(config);
 
             //fix to handle the body variable from markdown.
             source = source.replace("{{body}}", post.body);
@@ -111,26 +108,26 @@ export class HtmlProvider {
     }
 
     //Templates
-    getPostTemplate(): string {
+    getPostTemplate(config: Config): string {
         let result = "";
 
-        result = fs.readFileSync(this.config.data.templatePath + "/post.hjs").toString();
+        result = fs.readFileSync(config.data.templatePath + "/post.hjs").toString();
 
         return result;
     }
 
-    getTagTemplate(): string {
+    getTagTemplate(config: Config): string {
         let result = "";
 
-        result = fs.readFileSync(this.config.data.templatePath + "/tag.hjs").toString();
+        result = fs.readFileSync(config.data.templatePath + "/tag.hjs").toString();
 
         return result;
     }
 
-    getHomeTemplate(): string {
+    getHomeTemplate(config: Config): string {
         let result = "";
 
-        result = fs.readFileSync(this.config.data.templatePath + "/index.hjs").toString();
+        result = fs.readFileSync(config.data.templatePath + "/index.hjs").toString();
 
         return result;
     }

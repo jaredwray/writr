@@ -5,6 +5,7 @@ export class Config {
   data: ConfigData = new ConfigData();
   cache: ConfigCache = new ConfigCache();
   log = new Logger({ transports: [new transports.Console()] });
+  program: any = {};
 
   constructor(config: any = undefined) {
     if (config) {
