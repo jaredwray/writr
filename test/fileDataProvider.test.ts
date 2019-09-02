@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import { Post } from "../src/post";
 import { Config, ConfigData } from "../src/config";
 import { FileDataProvider } from "../src/data/fileDataProvider";
 import winston = require('winston');
