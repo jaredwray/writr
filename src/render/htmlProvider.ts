@@ -17,7 +17,7 @@ export class HtmlProvider implements RenderProviderInterface {
     }
 
     async render(dataStore: DataService, config: Config): Promise<Boolean | undefined> {
-        let result: Boolean | undefined;
+        let result: Boolean  = true;
 
         let output = config.program.output;
 
@@ -67,7 +67,7 @@ export class HtmlProvider implements RenderProviderInterface {
         let postList = await dataStore.getPosts();
         let tagList = await dataStore.getTags();
 
-        let source: string = this.getHomeTemplate(config);
+        let source = this.getHomeTemplate(config);
         result = this.renderTemplate(source, { tags: tagList, posts: postList });
 
         return result;
