@@ -16,8 +16,8 @@ export class HtmlProvider implements RenderProviderInterface {
         this.log = new Logger({ transports: [new transports.Console()] });
     }
 
-    async render(dataStore: DataService, config: Config): Promise<Boolean | undefined> {
-        let result: Boolean  = true;
+    async render(dataStore: DataService, config: Config): Promise<boolean | undefined> {
+        let result: boolean  = true;
 
         let output = config.program.output;
 
