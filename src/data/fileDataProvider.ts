@@ -1,5 +1,6 @@
 import { Post } from "../post";
 import { Tag } from "../tag";
+import { Config, ConfigData} from "../config";
 import { DataProviderInterface } from "./dataProviderInterface";
 import * as fs from "fs-extra";
 import { Logger, transports } from "winston";
@@ -14,9 +15,9 @@ export class FileDataProvider implements DataProviderInterface {
     this.__log = new Logger({ transports: [new transports.Console()] });
   }
 
-  init(config: any) {
-    if (config.postPath) {
-      this.__postPath = config.postPath;
+  init(config: Config) {
+    if (config.data.postPath) {
+      this.__postPath = config.data.postPath;
     }
   }
 
@@ -39,7 +40,7 @@ export class FileDataProvider implements DataProviderInterface {
 
     if (this.__posts.length == 0) {
       let directory = this.__postPath;
-
+      
       if (await fs.existsSync(directory)) {
         let files = await fs.readdirSync(directory);
 

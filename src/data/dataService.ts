@@ -96,7 +96,7 @@ export class DataService {
         break;
     }
 
-    result.init(this.config.data);
+    result.init(this.config);
 
     return result;
   }

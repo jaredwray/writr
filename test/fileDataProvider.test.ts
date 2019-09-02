@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { Post } from "../src/post";
 import { Config, ConfigData } from "../src/config";
 import { FileDataProvider } from "../src/data/fileDataProvider";
 import winston = require('winston');
@@ -7,7 +8,7 @@ import "mocha";
 describe("fileDataProvider", () => {
   let config: Config = new Config();
 
-  before(() => {
+  beforeEach(() => {
     config.data = new ConfigData();
     config.data.type = "file";
     config.data.postPath = __dirname + "/blog";
@@ -17,14 +18,35 @@ describe("fileDataProvider", () => {
 
   it("config gets setup in init", () => {
     let fileProvider = new FileDataProvider();
-    fileProvider.init(config.data);
+    fileProvider.init(config);
+
+    expect(fileProvider.__postPath).to.equal(config.data.postPath);
+  });
+
+  it("config gets no config.data.postPath in init", () => {
+    let fileProvider = new FileDataProvider();
+
+    config.data.postPath = "";
+
+    fileProvider.init(config);
 
     expect(fileProvider.__postPath).to.equal(config.data.postPath);
   });
 
   it("should get the posts from the file system", async () => {
     let fileProvider = new FileDataProvider();
-    fileProvider.init(config.data);
+    fileProvider.init(config);
+
+    let posts = await fileProvider.getPosts();
+
+    expect(posts.length).to.equal(5);
+  });
+
+  it("should get the posts from memory", async () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    await fileProvider.getPosts();
 
     let posts = await fileProvider.getPosts();
 
@@ -33,7 +55,7 @@ describe("fileDataProvider", () => {
 
   it("should get a valid post", async () => {
     let fileProvider = new FileDataProvider();
-    fileProvider.init(config.data);
+    fileProvider.init(config);
 
     let post = await fileProvider.getPost("article-simple");
 
@@ -42,7 +64,7 @@ describe("fileDataProvider", () => {
 
   it("should not get a valid post", async () => {
     let fileProvider = new FileDataProvider();
-    fileProvider.init(config.data);
+    fileProvider.init(config);
 
     let post = await fileProvider.getPost("article");
 
@@ -51,7 +73,7 @@ describe("fileDataProvider", () => {
 
   it("should get a post", async () => {
     let fileProvider = new FileDataProvider();
-    fileProvider.init(config.data);
+    fileProvider.init(config);
 
     let post = await fileProvider.getPost("all-about-the-tesla-model-3");
 
@@ -60,7 +82,7 @@ describe("fileDataProvider", () => {
 
   it("should published posts", async () => {
     let fileProvider = new FileDataProvider();
-    fileProvider.init(config.data);
+    fileProvider.init(config);
 
     let posts = await fileProvider.getPosts();
 
@@ -69,7 +91,7 @@ describe("fileDataProvider", () => {
 
   it("should have a valid tag", async () => {
     let fileProvider = new FileDataProvider();
-    fileProvider.init(config.data);
+    fileProvider.init(config);
 
     let tag = await fileProvider.getTag("whale");
 
@@ -78,7 +100,7 @@ describe("fileDataProvider", () => {
 
   it("should have a valid tag and multiple posts", async () => {
     let fileProvider = new FileDataProvider();
-    fileProvider.init(config.data);
+    fileProvider.init(config);
 
     let tag = await fileProvider.getTag("whale");
 
@@ -87,7 +109,7 @@ describe("fileDataProvider", () => {
 
   it("should have a invalid tag", async () => {
     let fileProvider = new FileDataProvider();
-    fileProvider.init(config.data);
+    fileProvider.init(config);
 
     let tag = await fileProvider.getTag("snoopy");
 
@@ -96,7 +118,7 @@ describe("fileDataProvider", () => {
 
   it("should generate the correct amount of tags", async () => {
     let fileProvider = new FileDataProvider();
-    fileProvider.init(config.data);
+    fileProvider.init(config);
 
     let posts = await fileProvider.getPosts();
 
