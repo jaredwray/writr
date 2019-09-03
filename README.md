@@ -39,7 +39,7 @@ featured_image: Docula_%20Persistent%20Links%20and%20Styles%201.jpeg
 
 > writr -c blog/writr.config -o ./blog_output
 
-## CLI with 
+## CLI with JSON (data.json) Output
 
 > writr -c blog/writr.config -o ./blog_output --json
 
