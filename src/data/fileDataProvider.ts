@@ -128,9 +128,15 @@ export class FileDataProvider implements DataProviderInterface {
 
       result.content = m.content;
 
-      if (mData.createdAt) {
-        result.createdDate = new Date(mData.date);
+      //handle categories to tags
+      if(mData.categories) {
+        if( typeof mData.categories === 'string' ) {
+          result.addTags(mData.categories.toString().split(","));
+        } else {
+          result.addTags(mData.categories);
+        }
       }
+
 
       if (mData.keywords) {
         result.keywords = mData.keywords.toString().split(",");

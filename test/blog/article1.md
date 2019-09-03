@@ -2,8 +2,9 @@
     title: Article One
     author: John Smith
     url: the-largest-whale
-    createdAt: 1/15/2017
+    date: 1/15/2017
     keywords: large, whale
+    categories: ["foo", "mouse"]
     tags: whale,ocean,candle,blast
 ---
 

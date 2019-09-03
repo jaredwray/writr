@@ -81,4 +81,36 @@ describe('Post', () => {
     expect(post.body).to.equal("<p><em>HOW</em></p>\n");
   });
 
+  it('post add tag with same name', () => {
+    let post = new Post();
+    post.tags.push("foo");
+
+    post.addTag("foo");
+
+    expect(post.tags.length).to.equal(1);
+  });
+
+  it('post add tag with same name', () => {
+    let post = new Post();
+    post.tags.push("foo");
+
+    post.addTag("foo1");
+
+    expect(post.tags.length).to.equal(2);
+  });
+
+  it('post add tags with same name', () => {
+    let post = new Post();
+    post.tags.push("foo");
+
+    let tags = new Array<string>();
+    tags.push("foo");
+    tags.push("bar");
+    tags.push("crazy");
+
+    post.addTags(tags);
+
+    expect(post.tags.length).to.equal(3);
+  });
+
 });

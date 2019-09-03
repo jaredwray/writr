@@ -58,6 +58,26 @@ export class Post {
     return this.metaData.body;
   }
 
+  addTag(name: string) {
+    let exists = false;
+
+    this.tags.forEach((tag) => {
+      if(tag === name) {
+        exists = true;
+      }
+    });
+
+    if(!exists) {
+      this.tags.push(name);
+    }
+  }
+
+  addTags(names: Array<string>) {
+    names.forEach((name) =>{
+      this.addTag(name);
+    });
+  }
+
   generateUrl() {
 
     if(!this.metaData.url) {
