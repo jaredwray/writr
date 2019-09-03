@@ -1,7 +1,6 @@
 import * as handlebars from "handlebars";
 import * as fs from "fs-extra";
 import { Logger, transports } from "winston";
-import * as del from "del";
 
 import { DataService } from "../data/dataService";
 import { Config } from "../config";
@@ -20,10 +19,6 @@ export class HtmlProvider implements RenderProviderInterface {
         let result: boolean  = true;
 
         let output = config.program.output;
-
-        if (fs.existsSync(output)) {
-            del.sync(output);
-        }
 
         fs.ensureDirSync(output);
 
