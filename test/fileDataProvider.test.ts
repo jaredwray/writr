@@ -123,13 +123,13 @@ describe("fileDataProvider", () => {
 
     let tags = await fileProvider.generateTags(posts);
 
-    expect(tags.length).to.equal(12);
+    expect(tags.length).to.equal(16);
   });
 
   it("parse bad file path post", async () => {
     let fileProvider = new FileDataProvider();
     //set the logging level
-    fileProvider.__log = new winston.Logger({ transports: undefined });
+    fileProvider.log = new winston.Logger({ transports: undefined });
 
     let post = await fileProvider.parsePost("../foo.md")
 

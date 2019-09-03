@@ -9,10 +9,10 @@ import * as matter from 'gray-matter';
 export class FileDataProvider implements DataProviderInterface {
   __postPath: string = "";
   __posts: Array<Post> = [];
-  __log: any;
+  log: any;
 
   constructor() {
-    this.__log = new Logger({ transports: [new transports.Console()] });
+    this.log = new Logger({ transports: [new transports.Console()] });
   }
 
   init(config: Config) {
@@ -143,10 +143,10 @@ export class FileDataProvider implements DataProviderInterface {
       }
 
       if (mData.tags) {
-        result.tags = mData.tags.toString().split(",");
+        result.addTags(mData.tags.toString().split(","));
       }
     } else {
-      this.__log.error("The following post does not exist: " + filePath);
+      this.log.error("The following post does not exist: " + filePath);
       result = undefined;
     }
 

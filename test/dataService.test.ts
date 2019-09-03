@@ -60,7 +60,7 @@ describe("Data Service", async () => {
   it("get tags", async () => {
     let tags = await ds.getTags();
 
-    expect(tags.length).to.equal(12);
+    expect(tags.length).to.equal(16);
   });
 
   it("get tags from cache", async () => {
@@ -68,7 +68,7 @@ describe("Data Service", async () => {
 
     let tags = await ds.getTags();
 
-    expect(tags.length).to.equal(12);
+    expect(tags.length).to.equal(16);
   });
 
   it("get tag with a miss", async () => {
