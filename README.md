@@ -39,6 +39,12 @@ featured_image: Docula_%20Persistent%20Links%20and%20Styles%201.jpeg
 
 > writr -c blog/writr.config -o ./blog_output
 
+## CLI with 
+
+> writr -c blog/writr.config -o ./blog_output --json
+
+## Express Integration
+
 Then in express map your `blog_output` via static files:
 
 ```javascript
