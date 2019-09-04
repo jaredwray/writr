@@ -21,7 +21,7 @@ describe('Config', () => {
         expect(config.cache.type).to.equal("memory");
     });
 
-    it('config should load via the file path', () => {
+    it('config should load via the config file path', () => {
 
         config = new Config();
         config.loadConfig("./blog_example/config.json");
@@ -29,6 +29,41 @@ describe('Config', () => {
         expect(config.output).to.equal("./blog_output");
     });
 
+    it('config should load via the file path', () => {
+
+        config = new Config();
+        config.loadPath("./blog_example");
+
+        expect(config.path).to.equal("./blog_example");
+    });
+
+    it('config should load via the program', () => {
+
+        config = new Config();
+        config.loadPath("./blog_example");
+
+        let obj = {
+            output: "foo"
+        }
+
+        config.loadProgram(obj)
+
+        expect(config.output).to.equal("foo");
+    });
+
+    it('config should load via the program on render', () => {
+
+        config = new Config();
+        config.loadPath("./blog_example");
+
+        let obj = {
+            render: "foo,foo2,foo3"
+        }
+
+        config.loadProgram(obj)
+
+        expect(config.render.length).to.equal(3);
+    });
 
     it('config should error on load via the file path', () => {
 

@@ -45,11 +45,21 @@ export class Config {
     return result;
   }
 
+  loadProgram(program: any) {
+    this.program = program;
+
+    this.parse(this.program);
+  }
+
   parse(obj: any) {
     if (obj) {
 
       if(obj.render) {
-        this.render = obj.render;
+        if(typeof obj.render === "string") {
+          this.render = obj.render.split(",");
+        } else {
+          this.render = obj.render;
+        }
       }
 
       if(obj.output) {

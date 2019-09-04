@@ -30,18 +30,21 @@ describe('Writr', () => {
     let writr = new Writr();
   
     let process: any = {};
-    process.argv = [ '-c', './test/blog/config-test2.json', '-o', './out' ]
+    process.argv = [ '-c', './blog_example/config.json' ]
 
     writr.parseCLI(process);
 
     writr.config = config;
     writr.dataStore = new DataService(config);
 
+    //create directory
+    fs.ensureDirSync(config.output);
+
     let val = await writr.runCLI();
 
     //cleanup
-    if (fs.existsSync(config.program.output)) {
-      del.sync(config.program.output);
+    if (fs.existsSync(config.output)) {
+      del.sync(config.output);
     }
 
     expect(val).to.equal(true);

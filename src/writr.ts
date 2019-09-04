@@ -26,7 +26,6 @@ export class Writr {
         program.parse(process.argv);
 
         this.config = new Config();
-        this.config.program = program;
 
         if(program.config) {
             this.config.loadConfig(program.config);
@@ -36,6 +35,8 @@ export class Writr {
             this.config.loadPath(program.path);
         }
 
+        this.config.loadProgram(program);
+
         this.dataStore = new DataService(this.config);
     }
 
@@ -43,18 +44,21 @@ export class Writr {
         let result = true;
 
         if(this.dataStore !== undefined && this.config !== undefined) {
-            let htmlProvider = new HtmlProvider();
 
-            let output = this.config.program.output;
-
-            if (fs.existsSync(output)) {
-                del.sync(output);
+            if (fs.existsSync(this.config.output)) {
+                del.sync(this.config.output);
             }
 
-            let render = await htmlProvider.render(this.dataStore, this.config);
+            let render: boolean | undefined = true;
 
-            if(this.config.program.json) {
-                await new JSONProvider().render(this.dataStore, this.config);
+            for(let i=0; i < this.config.render.length; i++) {
+                let type = this.config.render[i];
+                if(type === "html") {
+                    render = await new HtmlProvider().render(this.dataStore, this.config);
+                }
+                if(type === "json") {
+                    render = await new JSONProvider().render(this.dataStore, this.config);
+                }
             }
 
             if(render) {
