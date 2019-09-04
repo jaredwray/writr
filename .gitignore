@@ -60,4 +60,4 @@ typings/
 package-lock.json
 
 #test-output
-out
+blog_output

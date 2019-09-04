@@ -23,7 +23,7 @@ export class Config {
 
   loadPath(path: string) : boolean {
     this.path = path;
-    return this.loadConfig(this.path + "config.json");
+    return this.loadConfig(this.path + "/config.json");
   }
 
   loadConfig(filePath: string): boolean {
