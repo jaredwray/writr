@@ -22,6 +22,10 @@ export class HtmlProvider implements RenderProviderInterface {
 
         fs.ensureDirSync(output);
 
+        //images
+        fs.ensureDirSync(output + "/images");
+        fs.copy(config.path + "/images" , output + "/images");
+
         //home
         fs.writeFileSync(output + "/index.html", await this.renderHome(dataStore, config));
 
