@@ -18,11 +18,13 @@ export class Writr {
 
     parseCLI(process: NodeJS.Process) {
         const program = require("commander");
-
-        program.option('-c, --config <path>', 'custom configuration path');
-        program.option('-o, --output <path>', 'path to output generated files');
-        program.option('-p, --path <path>', 'out put writr.json (Default) file of all posts and tags');
-
+        
+        program.option("-p, --path <path>", "Path of where the blog, config, and template are located");
+        program.option("-o, --output <path>", "Path of where to output the generated blog");
+        program.option("-r, --render <list>", "What do you want rendered such as html or json (example --render html,json)");
+        program.option("-t, --template <name>", "The template you want to use in the /templates directory");
+        program.option("-c, --config <path>", "custom configuration path");
+        
         program.parse(process.argv);
 
         this.config = new Config();
