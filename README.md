@@ -2,16 +2,20 @@
 
 ---
 
-### A Markdown Blog for Your Node App 
+### A Simple to Use Markdown Blog 
 [![Build Status](https://travis-ci.org/jaredwray/writr.svg?branch=master)](https://travis-ci.org/jaredwray/writr)
 [![GitHub license](https://img.shields.io/github/license/jaredwray/writr)](https://github.com/jaredwray/writr/blob/master/LICENSE)
 [![codecov](https://codecov.io/gh/jaredwray/writr/branch/master/graph/badge.svg)](https://codecov.io/gh/jaredwray/writr)
 
+---
+
 ## Getting Started 
+
+## 1. Install Writr
 
 > npm install -g writr 
 
-## Setup your directory (look at /blog_example for how to do this)
+## 2. Setup your directory (look at /blog_example for how to do this)
 
 ```
 blog/*.md           //markdown files in the folder root
@@ -19,14 +23,11 @@ blog/images         //images for the blog
 blog/config.json    //config file 
 ```
 
-## Run Writr on it with defaults
+## 3. Run Writr on it with defaults. This will output everything to ./blog_output
 
 > writr --path ./blog
 
-## This will output everything to ./blog_output
-
-
-## Express Integration
+## 4. Express Integration
 
 Then in express map your `blog_output` via static files:
 
@@ -36,16 +37,16 @@ app.use("/blog/images", express.static(path.join(__dirname, "blog_output/images"
 app.use("/blog", express.static(path.join(__dirname, "blog_output")))
 ```
 
+---
+
 ## CLI
 
-> writr -p ./blog -o ./blog_output
-
-## CLI with JSON (data.json) Output
-
-> writr -p ./blog -o ./blog_output --json
-
-### Markdown
-To learn more about Markdown go here: https://markdownguide.org
+* -h, --help: Output usage information
+* -p, --path: Path of where the blog, config, and template are located
+* -o, --output: Path of where to output the generated blog
+* -r, --render: What do you want rendered such as html or json (example --render html,json)
+* -t, --template: The template you want to use in the /templates directory
+* -c, --config: Configuration file location if different than 'path'
 
 ## Templates
 
@@ -53,3 +54,6 @@ There are three templates that are part of every instance of Writr:
 * index: This is the main template that lists all of the latest blogs or what you want to add. 
 * post: The post itself and usually supporting items around that such as what is next to look at and tags. 
 * tags: Showing articles by tag filtering.
+
+## Markdown
+To learn more about Markdown go here: https://markdownguide.org

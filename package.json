@@ -1,7 +1,7 @@
 {
   "name": "writr",
-  "version": "0.3.3",
-  "description": "A Markdown Blog for Your Node App",
+  "version": "0.3.4",
+  "description": "A Simple to Use Markdown Blog",
   "main": "./dist/index",
   "types": "./dist/index",
   "repository": "https://github.com/jaredwray/writr.git",
