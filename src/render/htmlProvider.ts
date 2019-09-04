@@ -18,7 +18,7 @@ export class HtmlProvider implements RenderProviderInterface {
     async render(dataStore: DataService, config: Config): Promise<boolean | undefined> {
         let result: boolean  = true;
 
-        let output = config.program.output;
+        let output = config.output;
 
         fs.ensureDirSync(output);
 
@@ -106,7 +106,7 @@ export class HtmlProvider implements RenderProviderInterface {
     getPostTemplate(config: Config): string {
         let result = "";
 
-        result = fs.readFileSync(config.data.templatePath + "/post.hjs").toString();
+        result = fs.readFileSync(config.path + "/templates/" + config.template + "/post.hjs").toString();
 
         return result;
     }
@@ -114,7 +114,7 @@ export class HtmlProvider implements RenderProviderInterface {
     getTagTemplate(config: Config): string {
         let result = "";
 
-        result = fs.readFileSync(config.data.templatePath + "/tag.hjs").toString();
+        result = fs.readFileSync(config.path + "/templates/" + config.template + "/tag.hjs").toString();
 
         return result;
     }
@@ -122,7 +122,7 @@ export class HtmlProvider implements RenderProviderInterface {
     getHomeTemplate(config: Config): string {
         let result = "";
 
-        result = fs.readFileSync(config.data.templatePath + "/index.hjs").toString();
+        result = fs.readFileSync(config.path + "/templates/" + config.template + "/index.hjs").toString();
 
         return result;
     }

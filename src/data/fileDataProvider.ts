@@ -1,6 +1,6 @@
 import { Post } from "../post";
 import { Tag } from "../tag";
-import { Config, ConfigData} from "../config";
+import { Config } from "../config";
 import { DataProviderInterface } from "./dataProviderInterface";
 import * as fs from "fs-extra";
 import { Logger, transports } from "winston";
@@ -16,8 +16,8 @@ export class FileDataProvider implements DataProviderInterface {
   }
 
   init(config: Config) {
-    if (config.data.postPath) {
-      this.__postPath = config.data.postPath;
+    if (config.path) {
+      this.__postPath = config.path;
     }
   }
 

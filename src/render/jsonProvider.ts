@@ -19,8 +19,8 @@ export class JSONProvider implements RenderProviderInterface {
         data.posts = await dataStore.getPosts();
         data.tags = await dataStore.getTags();
 
-        fs.ensureDirSync(config.program.output);
-        fs.writeFileSync(config.program.output + "/data.json", JSON.stringify(data));
+        fs.ensureDirSync(config.output);
+        fs.writeFileSync(config.output + "/data.json", JSON.stringify(data));
         result = true;
 
         return result;

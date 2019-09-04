@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Config, ConfigData } from "../src/config";
+import { Config } from "../src/config";
 import { HtmlProvider } from "../src/render/htmlProvider";
 import "mocha";
 import { Tag } from "../src/tag";
@@ -12,12 +12,7 @@ describe("htmlProvider", () => {
   let config: Config = new Config();
 
   beforeEach(() => {
-    config.data = new ConfigData();
-    config.data.type = "file";
-    config.data.postPath = __dirname + "/blog";
-    config.data.contentPath = __dirname + "/blog/content";
-    config.data.templatePath = __dirname + "/blog/templates";
-    config.program.output = "./out"
+    config.loadConfig("./blog_example/config.json");
   });
 
   it("get home template", () => {
@@ -107,8 +102,8 @@ describe("htmlProvider", () => {
     let val = await htmlProvider.render(ds, config);
 
     //cleanup
-    if (fs.existsSync(config.program.output)) {
-        del.sync(config.program.output);
+    if (fs.existsSync(config.output)) {
+        del.sync(config.output);
     }
 
     expect(val).to.equal(true);

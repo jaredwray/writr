@@ -13,9 +13,7 @@ describe('Data Cache Service', async () => {
 
     before( async () => {
 
-        config.data.postPath = __dirname + '/blog';
-        config.data.contentPath = __dirname + '/blog/content';
-        config.data.templatePath = __dirname + '/blog/templates';
+        config.loadConfig("./blog_example/config.json");
         cache = new DataCacheService(config);
 
     });

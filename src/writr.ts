@@ -21,7 +21,7 @@ export class Writr {
 
         program.option('-c, --config <path>', 'custom configuration path');
         program.option('-o, --output <path>', 'path to output generated files');
-        program.option('--json', 'out put writr.json (Default) file of all posts and tags');
+        program.option('-p, --path <path>', 'out put writr.json (Default) file of all posts and tags');
 
         program.parse(process.argv);
 
@@ -29,7 +29,11 @@ export class Writr {
         this.config.program = program;
 
         if(program.config) {
-            this.config.load(program.config);
+            this.config.loadConfig(program.config);
+        }
+
+        if(program.path) {
+            this.config.loadPath(program.path);
         }
 
         this.dataStore = new DataService(this.config);

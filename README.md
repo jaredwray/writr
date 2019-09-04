@@ -9,52 +9,40 @@
 
 ## Getting Started 
 
-> npm install writr
+> npm install -g writr 
 
-or 
+## Setup your directory (look at /blog_example for how to do this)
 
-> yarn add writr
-
-* Setup your content in a directory like so:
 ```
-blog/... << Articles go here>>
-blog/images... << Images and other content that you link to go here>>
-```
-We will default to the `blog/` folder unless you configure the custom path in the configuration.
-
-* Create your Markdown Documents with the following `Meta Header` example. 
-```yaml
----
-title:  'Docula: Persistent Links and Styles!'
-tags:
-- Github
-- Open Source
-- Docula
-date: 2017-03-07 19:49:09
-featured_image: Docula_%20Persistent%20Links%20and%20Styles%201.jpeg
----
+blog/*.md           //markdown files in the folder root
+blog/images         //images for the blog
+blog/config.json    //config file 
 ```
 
-## CLI
+## Run Writr on it with defaults
 
-> writr -c blog/writr.config -o ./blog_output
+> writr --path ./blog
 
-## CLI with JSON (data.json) Output
+## This will output everything to ./blog_output
 
-> writr -c blog/writr.config -o ./blog_output --json
 
 ## Express Integration
 
 Then in express map your `blog_output` via static files:
 
 ```javascript
-
-app.use("/blog/*/images", express.static(path.join(__dirname, "blog/images")))
-app.use("/blog/images", express.static(path.join(__dirname, "blog/images")))
+app.use("/blog/*/images", express.static(path.join(__dirname, "blog_output/images")))
+app.use("/blog/images", express.static(path.join(__dirname, "blog_output/images")))
 app.use("/blog", express.static(path.join(__dirname, "blog_output")))
-
-
 ```
+
+## CLI
+
+> writr -p ./blog -o ./blog_output
+
+## CLI with JSON (data.json) Output
+
+> writr -p ./blog -o ./blog_output --json
 
 ### Markdown
 To learn more about Markdown go here: https://markdownguide.org

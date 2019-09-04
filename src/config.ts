@@ -2,19 +2,32 @@ import * as fs from "fs-extra";
 import { Logger, transports } from "winston";
 
 export class Config {
-  data: ConfigData = new ConfigData();
   cache: ConfigCache = new ConfigCache();
   log = new Logger({ transports: [new transports.Console()] });
   program: any = {};
+  provider: any = {};
+  render: Array<string> = ["html", "json"];
+  output: string = "./blog_output";
+  template: string = "basic_html";
+  path: string = "./blog";
 
   constructor(config: any = undefined) {
+    
+    //set default for fileProvider
+    this.provider.name = "file";
+    
     if (config) {
       this.parse(config);
     }
   }
 
-  load(filePath: string): Boolean {
-    let result: Boolean = false;
+  loadPath(path: string) : boolean {
+    this.path = path;
+    return this.loadConfig(this.path + "config.json");
+  }
+
+  loadConfig(filePath: string): boolean {
+    let result: boolean = false;
 
     if (fs.existsSync(filePath)) {
       let buff = fs.readFileSync(filePath);
@@ -34,20 +47,23 @@ export class Config {
 
   parse(obj: any) {
     if (obj) {
-      if (obj.data) {
-        if (obj.data.type) {
-          this.data.type = obj.data.type;
-        }
-        if (obj.data.contentPath) {
-          this.data.contentPath = obj.data.contentPath;
-        }
-        if (obj.data.postPath) {
-          this.data.postPath = obj.data.postPath;
-        }
-        if (obj.data.templatePath) {
-          this.data.templatePath = obj.data.templatePath;
-        }
+
+      if(obj.render) {
+        this.render = obj.render;
       }
+
+      if(obj.output) {
+        this.output = obj.output;
+      }
+
+      if(obj.template) {
+        this.template = obj.template;
+      }
+
+      if(obj.path) {
+        this.path = obj.path;
+      }
+
       if (obj.cache) {
         if (obj.cache.connection) {
           this.cache.connection = obj.cache.connection;
@@ -61,15 +77,6 @@ export class Config {
       }
     }
   }
-}
-
-export class ConfigData {
-  constructor() { }
-
-  type: string = "file";
-  contentPath: string = "./blog/images";
-  postPath: string = "./blog";
-  templatePath: string = "./blog/template";
 }
 
 export class ConfigCache {

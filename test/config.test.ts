@@ -1,7 +1,7 @@
 import { Tag } from '../src/tag';
 import { expect } from 'chai';
 import 'mocha';
-import { Config, ConfigCache, ConfigData } from '../src/config';
+import { Config } from '../src/config';
 import winston = require('winston');
 
 describe('Config', () => {
@@ -21,77 +21,58 @@ describe('Config', () => {
         expect(config.cache.type).to.equal("memory");
     });
 
-    it('config constructor should parse data type', () => {
-
-        let obj = {
-            data: {
-                type: "blah"
-            }
-        }
-
-        config = new Config(obj);
-
-        expect(config.data.type).to.equal("blah");
-    });
-
     it('config should load via the file path', () => {
 
         config = new Config();
-        config.load("./test/blog/config.json");
+        config.loadConfig("./blog_example/config.json");
 
-        expect(config.data.contentPath).to.equal("./test/blog/images");
+        expect(config.output).to.equal("./blog_output");
     });
 
 
-    it('config should load via the file path', () => {
+    it('config should error on load via the file path', () => {
 
         config = new Config();
 
         //only log on error
         config.log = new winston.Logger({ transports: [new winston.transports.Console({ level: 'error' })] });
 
-        let valid = config.load("./test/blog/blah.json");
+        let valid = config.loadConfig("../blog_example/blah.json");
 
         expect(valid).to.equal(false);
     });
 
-    it('config constructor should parse data contentPath', () => {
+    it('config constructor should parse render', () => {
 
         let obj = {
-            data: {
-                contentPath: "blah"
-            }
+            render: ["html", "json"]
         }
 
         config = new Config(obj);
 
-        expect(config.data.contentPath).to.equal("blah");
+        expect(config.render.length).to.equal(2);
     });
 
-    it('config constructor should parse data postPath', () => {
+    it('config constructor should parse output', () => {
 
         let obj = {
-            data: {
-                postPath: "blah"
-            }
+            output: "./blog1"
         }
 
         config = new Config(obj);
 
-        expect(config.data.postPath).to.equal("blah");
+        expect(config.output).to.equal("./blog1");
     });
 
-    it('config constructor should parse data templatePath', () => {
+    it('config constructor should parse template', () => {
 
         let obj = {
-            data: {
-                templatePath: "blah"
-            }
+            template: "basic_foo"
         }
 
         config = new Config(obj);
 
-        expect(config.data.templatePath).to.equal("blah");
+        expect(config.template).to.equal("basic_foo");
     });
 
     it('config constructor should parse cache connection', () => {
@@ -135,22 +116,12 @@ describe('Config', () => {
 
     it('config should have default data type', () => {
 
-        expect(config.data.type).to.equal("file");
-    });
-
-    it('config should have default data contentPath', () => {
-
-        expect(config.data.contentPath).to.equal("./blog/images");
+        expect(config.provider.name).to.equal("file");
     });
 
     it('config should have default data postPath', () => {
 
-        expect(config.data.postPath).to.equal("./blog");
-    });
-
-    it('config should have default data templatePath', () => {
-
-        expect(config.data.templatePath).to.equal("./blog/template");
+        expect(config.path).to.equal("./blog");
     });
 
     it('config should have default cache connection', () => {

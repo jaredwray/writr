@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Config, ConfigData } from "../src/config";
+import { Config } from "../src/config";
 import { FileDataProvider } from "../src/data/fileDataProvider";
 import winston = require('winston');
 import "mocha";
@@ -8,28 +8,24 @@ describe("fileDataProvider", () => {
   let config: Config = new Config();
 
   beforeEach(() => {
-    config.data = new ConfigData();
-    config.data.type = "file";
-    config.data.postPath = __dirname + "/blog";
-    config.data.contentPath = __dirname + "/blog/content";
-    config.data.templatePath = __dirname + "/blog/templates";
+    config.loadConfig("./blog_example/config.json");
   });
 
   it("config gets setup in init", () => {
     let fileProvider = new FileDataProvider();
     fileProvider.init(config);
 
-    expect(fileProvider.__postPath).to.equal(config.data.postPath);
+    expect(fileProvider.__postPath).to.equal(config.path);
   });
 
   it("config gets no config.data.postPath in init", () => {
     let fileProvider = new FileDataProvider();
 
-    config.data.postPath = "";
+    config.path = "";
 
     fileProvider.init(config);
 
-    expect(fileProvider.__postPath).to.equal(config.data.postPath);
+    expect(fileProvider.__postPath).to.equal(config.path);
   });
 
   it("should get the posts from the file system", async () => {

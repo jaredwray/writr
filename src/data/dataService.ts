@@ -90,7 +90,7 @@ export class DataService {
   getProvider(): DataProviderInterface {
     let result = undefined;
 
-    switch (this.config.data.type) {
+    switch (this.config.provider.name) {
       default:
         result = new FileDataProvider();
         break;

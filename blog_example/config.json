@@ -1,0 +1,6 @@
+{
+    "output" : "./blog_output",
+    "template": "basic_html",
+    "render": [ "html" , "json"],
+    "path": "./blog_example"
+}

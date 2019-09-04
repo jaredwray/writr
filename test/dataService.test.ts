@@ -9,10 +9,7 @@ describe("Data Service", async () => {
   let ds: DataService;
 
   before(async () => {
-    config.data.type = "file";
-    config.data.postPath = __dirname + "/blog";
-    config.data.contentPath = __dirname + "/blog/content";
-    config.data.templatePath = __dirname + "/blog/templates";
+    config.loadConfig("./blog_example/config.json");
     ds = new DataService(config);
   });
 

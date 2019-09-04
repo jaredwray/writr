@@ -1,7 +1,0 @@
-{
-    "data": {
-        "contentPath": "./test/blog/images",
-        "postPath": "./test/blog",
-        "templatePath": "./test/blog/templates"
-    }
-}

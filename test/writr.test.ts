@@ -1,5 +1,5 @@
 import { Writr } from "../src/writr";
-import { Config, ConfigData } from "../src/config";
+import { Config } from "../src/config";
 import { DataService } from "../src/data/dataService";
 import { expect } from "chai";
 import "mocha";
@@ -12,12 +12,7 @@ describe('Writr', () => {
   let config: Config = new Config();
 
   beforeEach(() => {
-    config.data = new ConfigData();
-    config.data.type = "file";
-    config.data.postPath = __dirname + "/blog";
-    config.data.contentPath = __dirname + "/blog/content";
-    config.data.templatePath = __dirname + "/blog/templates";
-    config.program.output = "./out"
+    config.loadConfig("./blog_example/config.json");
   });
 
   it("parse CLI", () => {
