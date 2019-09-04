@@ -1,6 +1,6 @@
 {
   "name": "writr",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "A Markdown Blog for Your Node App",
   "main": "./dist/index",
   "types": "./dist/index",
