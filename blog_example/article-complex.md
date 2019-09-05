@@ -4,7 +4,7 @@ tags:
 - Github
 - Open Source
 - Docula
-date: 2017-03-07 19:49:09
+date: 2017-03-07
 featured_image: Docula_%20Persistent%20Links%20and%20Styles%201.jpeg
 ---
 

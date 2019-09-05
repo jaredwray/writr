@@ -22,7 +22,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.date = new Date();
+        post.metaData.date = new Date();
 
         let result = await cache.setPost('foo',post);
 
@@ -33,7 +33,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.date = new Date();
+        post.metaData.date = new Date();
 
         await cache.setPost('foo',post);
 
@@ -46,7 +46,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.date = new Date();
+        post.metaData.date = new Date();
 
         await cache.setPost('foo',post);
 
@@ -59,7 +59,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.date = new Date();
+        post.metaData.date = new Date();
 
         await cache.setPost('foo',post);
 
@@ -72,7 +72,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.date = new Date();
+        post.metaData.date = new Date();
 
         post.keywords = new Array<string>();
         post.keywords.push('cat');
@@ -92,7 +92,7 @@ describe('Data Cache Service', async () => {
 
         let fooPost = new Post();
         fooPost.title = 'foo';
-        fooPost.date = new Date();
+        fooPost.metaData.date = new Date();
 
         fooPost.keywords = new Array<string>();
         fooPost.keywords.push('cat');
@@ -102,7 +102,7 @@ describe('Data Cache Service', async () => {
 
         let coolPost = new Post();
         coolPost.title = 'cool';
-        coolPost.date = new Date();
+        coolPost.metaData.date = new Date();
 
         coolPost.keywords = new Array<string>();
         coolPost.keywords.push('meow');
@@ -143,7 +143,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.date = new Date();
+        post.metaData.date = new Date();
 
         let tag = new Tag('foo');
         tag.posts.push(post);
@@ -162,14 +162,14 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.date = new Date();
+        post.metaData.date = new Date();
 
         let tag = new Tag('foo');
         tag.posts.push(post);
 
         let post2 = new Post();
         post2.title = 'foo2';
-        post2.date = new Date();
+        post2.metaData.date = new Date();
 
         let tag2 = new Tag('foo2');
         tag2.posts.push(post2);
@@ -188,7 +188,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.date = new Date();
+        post.metaData.date = new Date();
 
         let tag = new Tag('foo');
         tag.posts.push(post);
@@ -204,7 +204,7 @@ describe('Data Cache Service', async () => {
 
         let post = new Post();
         post.title = 'foo';
-        post.date = new Date();
+        post.metaData.date = new Date();
 
         let tag = new Tag('foo');
         tag.posts.push(post);

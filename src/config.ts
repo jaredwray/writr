@@ -14,6 +14,7 @@ export class Config {
   url: string = "";
   authorName: string = "";
   authorEmail: string = "";
+  indexCount: number = 20;
 
   constructor(config: any = undefined) {
     
@@ -92,6 +93,10 @@ export class Config {
 
       if(obj.authorEmail) {
         this.authorEmail = obj.authorEmail;
+      }
+
+      if(obj.indexCount) {
+        this.indexCount = obj.indexCount;
       }
 
       if (obj.cache) {

@@ -3,6 +3,7 @@ import { DataService } from "../data/dataService";
 import { Config } from "../config";
 import { RenderProviderInterface } from "./renderProviderInterface";
 import * as fs from "fs-extra";
+import { Feed } from "feed";
 
 export class AtomProvider implements RenderProviderInterface{
     log: any;
@@ -12,8 +13,6 @@ export class AtomProvider implements RenderProviderInterface{
 
     async render(dataStore: DataService, config: Config): Promise<boolean> {
         let result = true;
-
-        let AtomFeed = require("feed").Feed;
 
         fs.ensureDirSync(config.output);
 
@@ -47,10 +46,10 @@ export class AtomProvider implements RenderProviderInterface{
 
         feedConfig.copyright = new Date().getFullYear().toString() + " All Rights Reserved";
 
-        let atomFeed = new AtomFeed(feedConfig);
+        let atomFeed = new Feed(feedConfig);
 
         //add in the posts
-        let posts = await dataStore.getPosts();
+        let posts = await dataStore.getPostsByCount(config.indexCount);
 
         posts.forEach((post) => {
 
@@ -62,6 +61,7 @@ export class AtomProvider implements RenderProviderInterface{
             feedPost.content = post.body;
             feedPost.author = feedConfig.author;
             feedPost.date = post.date;
+            feedPost.published = post.date;
 
             atomFeed.addItem(feedPost);
         });

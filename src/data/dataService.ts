@@ -41,6 +41,10 @@ export class DataService {
       result = await this.getProvider().getPosts();
 
       if (result) {
+        //sort
+        let arraySort = require("array-sort");
+        result = new arraySort(result, "date", { reverse: true })
+        //cache
         await this.cache.setPosts(cacheKey, result);
       }
     } else {
@@ -48,6 +52,24 @@ export class DataService {
     }
 
     return result;
+  }
+
+  async getPostsByCount(count: number): Promise<Array<Post>> {
+    let result = await this.getPosts();
+
+      let list = new Array<Post>();
+      let currentCount = 0;
+
+      result.forEach((post) => {
+        if(currentCount < count) {
+          list.push(post);
+          currentCount++;
+        }
+      });
+
+      result = list;
+
+      return result;
   }
 
   //tags

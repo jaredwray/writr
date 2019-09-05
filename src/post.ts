@@ -1,7 +1,6 @@
 import * as MarkDownIt from "markdown-it";
 
 export class Post {
-  date: Date = new Date();
   keywords: Array<string> = [];
   tags: Array<string> = [];
   content: string = "";
@@ -11,6 +10,12 @@ export class Post {
 
   get id(): string {
     return this.url;
+  }
+
+  get date(): Date {
+    let moment = require("moment");
+    let newDate = moment(this.metaData.date).toDate();
+    return newDate;
   }
 
   get title(): string {
@@ -90,8 +95,6 @@ export class Post {
 
   static create(obj: any): Post {
     let result = Object.assign(new Post(), obj);
-
-    result.date = new Date(obj.date);
 
     return result;
   }

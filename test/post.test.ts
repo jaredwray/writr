@@ -60,10 +60,9 @@ describe('Post', () => {
 
   it('post date', () => {
     let post = new Post();
-    let date = new Date;
-    post.date = date;
+    post.metaData.date = "2019-01-01";
 
-    expect(post.date).to.equal(date);
+    expect(post.date.getFullYear()).to.equal(2019);
   });
 
   it('post get body', () => {

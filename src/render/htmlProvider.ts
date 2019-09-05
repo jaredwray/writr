@@ -63,7 +63,7 @@ export class HtmlProvider implements RenderProviderInterface {
     async renderHome(dataStore: DataService, config:Config): Promise<string> {
         let result = "";
 
-        let postList = await dataStore.getPosts();
+        let postList = await dataStore.getPostsByCount(config.indexCount);
         let tagList = await dataStore.getTags();
 
         let source = this.getHomeTemplate(config);
