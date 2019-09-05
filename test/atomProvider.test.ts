@@ -28,5 +28,25 @@ describe("atomProvider", () => {
     expect(val).to.equal(true);
   });
 
+  it("render without config defined", async () => {
+    let atomProvider = new AtomProvider();
+    
+    let ds = new DataService(config);
+
+    config.title = undefined;
+    config.url = undefined;
+    config.authorName = undefined;
+    config.authorEmail = undefined;
+
+    let val = await atomProvider.render(ds, config);
+
+    //cleanup
+    if (fs.existsSync(config.output)) {
+        del.sync(config.output);
+    }
+
+    expect(val).to.equal(true);
+  });
+
   
 });
