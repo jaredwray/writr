@@ -5,6 +5,7 @@ import { HtmlProvider } from "./render/htmlProvider";
 import * as del from "del";
 import * as fs from "fs-extra";
 import { JSONProvider } from "./render/jsonProvider";
+import { AtomProvider } from "./render/atomProvider";
 
 export class Writr {
     log: any;
@@ -60,6 +61,9 @@ export class Writr {
                 }
                 if(type === "json") {
                     render = await new JSONProvider().render(this.dataStore, this.config);
+                }
+                if(type === "atom") {
+                    render = await new AtomProvider().render(this.dataStore, this.config);
                 }
             }
 

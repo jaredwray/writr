@@ -1,6 +1,10 @@
 {
     "output" : "./blog_output",
     "template": "basic_html",
-    "render": [ "html" , "json"],
-    "path": "./blog_example"
+    "render": [ "html" , "json", "atom"],
+    "path": "./blog_example",
+    "title": "Example Blog",
+    "url": "https://writr.io/blog",
+    "authorName": "Jared Wray",
+    "authorEmail": "me@jaredwray.com"
 }

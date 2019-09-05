@@ -10,6 +10,10 @@ export class Config {
   output: string = "./blog_output";
   template: string = "basic_html";
   path: string = "./blog";
+  title: string = "";
+  url: string = "";
+  authorName: string = "";
+  authorEmail: string = "";
 
   constructor(config: any = undefined) {
     
@@ -72,6 +76,22 @@ export class Config {
 
       if(obj.path) {
         this.path = obj.path;
+      }
+
+      if(obj.title) {
+        this.title = obj.title;
+      }
+
+      if(obj.url) {
+        this.url = obj.url;
+      }
+
+      if(obj.authorName) {
+        this.authorName = obj.authorName;
+      }
+
+      if(obj.authorEmail) {
+        this.authorEmail = obj.authorEmail;
       }
 
       if (obj.cache) {

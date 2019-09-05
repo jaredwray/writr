@@ -20,6 +20,7 @@
   "dependencies": {
     "commander": "^3.0.0",
     "del": "^5.1.0",
+    "feed": "^4.0.0",
     "fs-extra": "^6.0.1",
     "gray-matter": "^4.0.2",
     "handlebars": "^4.0.11",
