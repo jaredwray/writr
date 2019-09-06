@@ -29,11 +29,13 @@ export class HtmlProvider implements RenderProviderInterface {
         //home
         fs.writeFileSync(output + "/index.html", await this.renderHome(dataStore, config));
 
-        //posts
         let posts = await dataStore.getPosts();
+        let tags = await dataStore.getTags();
+
+        //posts
 
         posts.forEach(async post => {
-            let postHtml = await this.renderPost(post, config);
+            let postHtml = await this.renderPost(post, tags, config);
 
             let postPath = output + "/" + post.id;
             fs.ensureDirSync(postPath);
@@ -44,7 +46,7 @@ export class HtmlProvider implements RenderProviderInterface {
         //tags
         fs.ensureDirSync(output + "/tags/");
 
-        let tags = await dataStore.getTags();
+        
 
         tags.forEach(async tag => {
             let tagHtml = await this.renderTag(tag, config);
@@ -67,7 +69,7 @@ export class HtmlProvider implements RenderProviderInterface {
         let tagList = await dataStore.getTags();
 
         let source = this.getHomeTemplate(config);
-        result = this.renderTemplate(source, { tags: tagList, posts: postList });
+        result = this.renderTemplate(source, { tags: tagList, posts: postList }, config);
 
         return result;
     }
@@ -77,24 +79,27 @@ export class HtmlProvider implements RenderProviderInterface {
         if (tag) {
             let source = this.getTagTemplate(config);
 
-            result = this.renderTemplate(source, tag);
+            result = this.renderTemplate(source, tag, config);
         }
         return result;
     }
 
-    async renderPost(post: Post, config:Config): Promise<string> {
+    async renderPost(post: Post, tags: Array<Tag>, config:Config): Promise<string> {
         let result = "";
 
         if (post) {
             let source: string = this.getPostTemplate(config);
-            result = this.renderTemplate(source, post);
+            result = this.renderTemplate(source, { post: post, tags: tags }, config);
         }
 
         return result;
     }
 
-    renderTemplate(source: string, data: object): string {
+    renderTemplate(source: string, data: any, config: Config): string {
         let result = "";
+
+        data.writr = config;
+        data.today = new Date();
 
         let template: handlebars.Template = handlebars.compile(source);
         result = template(data);

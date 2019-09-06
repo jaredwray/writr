@@ -41,7 +41,7 @@ describe("htmlProvider", () => {
     let source = htmlProvider.getTagTemplate(config);
     let tag = new Tag("FOO");
 
-    let val = htmlProvider.renderTemplate(source, tag);
+    let val = htmlProvider.renderTemplate(source, tag, config);
 
     expect(val).to.contain("FOO");
   });
@@ -53,15 +53,20 @@ describe("htmlProvider", () => {
     post.title = "The John Doe Diary 1";
     post.content = "The long journy is real";
 
-    let val = await htmlProvider.renderPost(post, config);
+    let tag = new Tag("FOO");
+    let tags = [tag];
+
+    let val = await htmlProvider.renderPost(post, tags, config);
 
     expect(val).to.contain("John Doe");
   });
 
   it("render post without data", async () => {
     let htmlProvider = new HtmlProvider();
+    let tag = new Tag("FOO");
+    let tags = [tag];
 
-    let val = await htmlProvider.renderPost(undefined, config);
+    let val = await htmlProvider.renderPost(undefined, tags, config);
 
     expect(val).to.equal("");
   });

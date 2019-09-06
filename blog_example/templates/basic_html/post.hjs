@@ -1,7 +1,7 @@
 <h1>Post</h1>
 
-<p>{{title}}</p>
-<p>{{author}}</p>
-<p>{{{body}}}</p>
+<p>{{post.title}}</p>
+<p>{{post.author}}</p>
+<p>{{{post.body}}}</p>
 
-<p>{{metaData.featured_image}}</p>
+<p>{{post.metaData.featured_image}}</p>
