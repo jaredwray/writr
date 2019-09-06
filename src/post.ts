@@ -50,7 +50,7 @@ export class Post {
   get body() {
 
     if(!this.metaData.body) {
-      this.metaData.body = new MarkDownIt().render(this.content);
+      this.metaData.body = new MarkDownIt({html: true}).render(this.content);
     }
 
     return this.metaData.body;
