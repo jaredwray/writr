@@ -97,9 +97,17 @@ export class HtmlProvider implements RenderProviderInterface {
 
     renderTemplate(source: string, data: any, config: Config): string {
         let result = "";
+        let date = new Date();
 
         data.writr = config;
-        data.today = new Date();
+        data.today = {
+            time: date.getTime(),
+            month: date.getMonth(),
+            day: date.getDay(),
+            date: date.getDate(),
+            year: date.getFullYear(),
+            timezone: date.getTimezoneOffset()
+        }
 
         let template: handlebars.Template = handlebars.compile(source);
         result = template(data);

@@ -5,3 +5,4 @@
 <p>{{{post.body}}}</p>
 
 <p>{{post.metaData.featured_image}}</p>
+<p>{{today.year}}</p>
