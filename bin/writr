@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+
+"use strict";
+
+const Writr = require("../dist/index").Writr;
+
+const writr = new Writr;
+
+writr.parseCLI(process);
+writr.runCLI().then(() => {
+    process.exit();
+    log.info("Done!");
+});
