@@ -1,6 +1,6 @@
 {
   "name": "writr",
-  "version": "0.4.8",
+  "version": "0.5.0",
   "description": "A Simple to Use Markdown Blog",
   "main": "./dist/index",
   "types": "./dist/index",
@@ -14,7 +14,7 @@
     "compile": "yarn clean && tsc -p .",
     "build": "yarn test && yarn compile",
     "test": "yarn nyc mocha",
-    "test-output": "yarn compile && node ./dist/index.js -p ./blog_example",
+    "test-output": "yarn compile && node ./bin/writr -p ./blog_example",
     "coverage": "nyc report --reporter=json && codecov -f coverage/*.json -t 62b3983c-08a1-425f-99b9-71e84fef74bc"
   },
   "bin": {
