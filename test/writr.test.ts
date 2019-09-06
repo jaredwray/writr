@@ -1,4 +1,4 @@
-import { Writr } from "../src/writr";
+import { Writr } from "../src/index";
 import { Config } from "../src/config";
 import { DataService } from "../src/data/dataService";
 import { expect } from "chai";
