@@ -26,7 +26,7 @@ describe("htmlProvider", () => {
     
     let val = new HtmlProvider().getTagTemplate(config);
 
-    expect(val).to.contain("\n\n<p>Tag: \n{{name}}<br /></p>");
+    expect(val).to.contain("\n\n<p>Tag: \n{{tag.name}}<br /></p>");
   });
 
   it("get post template", () => {
@@ -40,8 +40,9 @@ describe("htmlProvider", () => {
     let htmlProvider = new HtmlProvider();
     let source = htmlProvider.getTagTemplate(config);
     let tag = new Tag("FOO");
+    let tags = [tag];
 
-    let val = htmlProvider.renderTemplate(source, tag, config);
+    let val = htmlProvider.renderTemplate(source, {tag: tag, tags: tags}, config);
 
     expect(val).to.contain("FOO");
   });
@@ -74,8 +75,9 @@ describe("htmlProvider", () => {
   it("render tag", async () => {
     let htmlProvider = new HtmlProvider();
     let tag = new Tag("FOO");
+    let tags = [tag];
 
-    let val = await htmlProvider.renderTag(tag, config);
+    let val = await htmlProvider.renderTag(tag, tags, config);
 
     expect(val).to.contain("FOO");
   });
@@ -83,8 +85,9 @@ describe("htmlProvider", () => {
   it("render tag without data", async () => {
     let htmlProvider = new HtmlProvider();
     let tag = undefined;
+    let tags = [tag];
 
-    let val = await htmlProvider.renderTag(tag, config);
+    let val = await htmlProvider.renderTag(tag, tags, config);
 
     expect(val).to.equal("");
   });

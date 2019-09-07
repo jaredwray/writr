@@ -26,9 +26,6 @@ export class HtmlProvider implements RenderProviderInterface {
         fs.ensureDirSync(output + "/images");
         fs.copySync(config.path + "/images" , output + "/images");
 
-        //home
-        fs.writeFileSync(output + "/index.html", await this.renderHome(dataStore, config));
-
         let posts = await dataStore.getPosts();
         let tags = await dataStore.getTags();
 
@@ -46,10 +43,8 @@ export class HtmlProvider implements RenderProviderInterface {
         //tags
         fs.ensureDirSync(output + "/tags/");
 
-        
-
         tags.forEach(async tag => {
-            let tagHtml = await this.renderTag(tag, config);
+            let tagHtml = await this.renderTag(tag, tags, config);
 
             let tagPath = output + "/tags/" + tag.id;
 
@@ -57,6 +52,9 @@ export class HtmlProvider implements RenderProviderInterface {
 
             fs.writeFileSync(tagPath + "/index.html", tagHtml);
         });
+
+        //home
+        fs.writeFileSync(output + "/index.html", await this.renderHome(dataStore, config));
 
         return result;
     }
@@ -74,12 +72,12 @@ export class HtmlProvider implements RenderProviderInterface {
         return result;
     }
 
-    async renderTag(tag: Tag, config:Config): Promise<string> {
+    async renderTag(tag: Tag, tags: Array<Tag>, config:Config): Promise<string> {
         let result = "";
         if (tag) {
             let source = this.getTagTemplate(config);
 
-            result = this.renderTemplate(source, tag, config);
+            result = this.renderTemplate(source, {tag: tag, tags: tags}, config);
         }
         return result;
     }
