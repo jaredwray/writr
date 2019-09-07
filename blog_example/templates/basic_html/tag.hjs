@@ -1,9 +1,9 @@
 
 
 <p>Tag: 
-{{name}}<br /></p>
+{{tag.name}}<br /></p>
 
 <ul>
-{{#each posts}}
+{{#each tag.posts}}
 <li>{{title}} - {{author}}</li>{{/each}}
 </ul>
