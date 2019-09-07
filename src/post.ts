@@ -56,6 +56,18 @@ export class Post {
     return this.metaData.body;
   }
 
+  get summary() {
+
+    if(!this.metaData.summary) {
+      let body = this.body;
+      let cheerio = require("cheerio");
+      let html = cheerio.load(body);
+      this.metaData.summary = "<p>" + html("p").html() + "</p>";
+    }
+
+    return this.metaData.summary;
+  }
+
   addTag(name: string) {
     let exists = false;
 

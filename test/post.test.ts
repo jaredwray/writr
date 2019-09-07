@@ -73,6 +73,13 @@ describe('Post', () => {
     expect(post.body).to.equal("foo");
   });
 
+  it('post get summary', () => {
+    let post = new Post();
+    post.content = "*HOW*\n\n*COW*";
+
+    expect(post.summary).to.equal("<p><em>HOW</em></p>");
+  });
+
   it('post get body / generate', () => {
     let post = new Post();
     post.content = "*HOW*";
