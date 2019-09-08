@@ -105,6 +105,23 @@ export class Post {
     }
   }
 
+  toObject(): any {
+    let result: any = {};
+    result.keywords = this.keywords;
+    result.tags = this.tags;
+    result.content = this.content;
+    result.id = this.id;
+    result.date = this.date;
+    result.title = this.title;
+    result.author = this.author;
+    result.url = this.url;
+    result.body = this.body;
+    result.summary = this.summary;
+    result.metaData = this.metaData;
+    
+    return result;
+  }
+
   static create(obj: any): Post {
     let result = Object.assign(new Post(), obj);
 

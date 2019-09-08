@@ -3,6 +3,8 @@ import { DataService } from "../data/dataService";
 import { Config } from "../config";
 import { Logger, transports } from "winston";
 import * as fs from "fs-extra";
+import { Post } from "../post";
+import { Tag } from "../tag";
 
 export class JSONProvider implements RenderProviderInterface {
     log: any;
@@ -15,14 +17,24 @@ export class JSONProvider implements RenderProviderInterface {
         let result: boolean = false;
 
         let data: any = {};
+        data.posts = new Array<Post>();
+        data.tags = new Array<Tag>();
 
-        data.posts = await dataStore.getPosts();
-        data.tags = await dataStore.getTags();
+        let posts = await dataStore.getPosts();
+        let tags = await dataStore.getTags();
+
+        posts.forEach((post) => {
+            data.posts.push(post.toObject());
+        });
+
+        tags.forEach((tag) => {
+            data.tags.push(tag.toObject());
+        });
 
         fs.ensureDirSync(config.output);
         fs.writeFileSync(config.output + "/data.json", JSON.stringify(data));
         result = true;
-
+        
         return result;
     }
 }

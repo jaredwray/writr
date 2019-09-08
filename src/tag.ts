@@ -19,6 +19,19 @@ export class Tag {
     return result;
   }
 
+  toObject(): any {
+    let result: any = {};
+    result.name = this.name;
+    result.id = this.id;
+    result.posts = [];
+
+    this.posts.forEach((post) => {
+      result.posts.push(post.toObject());
+    });
+    
+    return result;
+  }
+
   static create(obj: any): Tag {
     let result = new Tag(obj.name);
 
