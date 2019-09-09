@@ -22,10 +22,6 @@ export class HtmlProvider implements RenderProviderInterface {
 
         fs.ensureDirSync(output);
 
-        //images
-        fs.ensureDirSync(output + "/images");
-        fs.copySync(config.path + "/images" , output + "/images");
-
         let posts = await dataStore.getPosts();
         let tags = await dataStore.getTags();
 
