@@ -27,8 +27,24 @@ export class HtmlProvider implements RenderProviderInterface {
 
         //posts
 
-        posts.forEach(async post => {
-            let postHtml = await this.renderPost(post, tags, config);
+        let previousPost: Post;
+        let nextPost: Post;
+
+        posts.forEach(async (post, index) => {
+
+            if(index === 0) {
+                previousPost = posts[posts.length];
+            } else {
+                previousPost = posts[index-1];
+            }
+
+            if(index === posts.length) {
+                nextPost = posts[0];
+            } else {
+                nextPost = posts[index+1]
+            }
+
+            let postHtml = await this.renderPost(post, previousPost, nextPost, tags, config);
 
             let postPath = output + "/" + post.id;
             fs.ensureDirSync(postPath);
@@ -78,12 +94,12 @@ export class HtmlProvider implements RenderProviderInterface {
         return result;
     }
 
-    async renderPost(post: Post, tags: Array<Tag>, config:Config): Promise<string> {
+    async renderPost(post: Post, previousPost: Post, nextPost: Post, tags: Array<Tag>, config:Config): Promise<string> {
         let result = "";
 
         if (post) {
             let source: string = this.getPostTemplate(config);
-            result = this.renderTemplate(source, { post: post, tags: tags }, config);
+            result = this.renderTemplate(source, { post: post, previousPost: previousPost, nextPost: nextPost, tags: tags }, config);
         }
 
         return result;

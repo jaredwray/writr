@@ -6,3 +6,6 @@
 
 <p>{{post.metaData.featured_image}}</p>
 <p>{{today.year}}</p>
+
+<p>{{previousPost.id}}</p>
+<p>{{nextPost.id}}</p>

@@ -57,7 +57,7 @@ describe("htmlProvider", () => {
     let tag = new Tag("FOO");
     let tags = [tag];
 
-    let val = await htmlProvider.renderPost(post, tags, config);
+    let val = await htmlProvider.renderPost(post, undefined, undefined, tags, config);
 
     expect(val).to.contain("John Doe");
   });
@@ -67,7 +67,7 @@ describe("htmlProvider", () => {
     let tag = new Tag("FOO");
     let tags = [tag];
 
-    let val = await htmlProvider.renderPost(undefined, tags, config);
+    let val = await htmlProvider.renderPost(undefined, undefined, undefined, tags, config);
 
     expect(val).to.equal("");
   });
