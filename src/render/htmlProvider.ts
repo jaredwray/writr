@@ -33,12 +33,12 @@ export class HtmlProvider implements RenderProviderInterface {
         posts.forEach(async (post, index) => {
 
             if(index === 0) {
-                previousPost = posts[posts.length];
+                previousPost = posts[posts.length-1];
             } else {
                 previousPost = posts[index-1];
             }
 
-            if(index === posts.length) {
+            if(index === posts.length-1) {
                 nextPost = posts[0];
             } else {
                 nextPost = posts[index+1]
