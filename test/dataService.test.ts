@@ -20,7 +20,7 @@ describe("Data Service", async () => {
   it("get posts", async () => {
     let posts = await ds.getPosts();
 
-    expect(posts.length).to.equal(5);
+    expect(posts.length).to.equal(6);
   });
 
   it("get posts from cache", async () => {
@@ -28,7 +28,7 @@ describe("Data Service", async () => {
 
     let posts2 = await ds.getPosts();
 
-    expect(posts2.length).to.equal(5);
+    expect(posts2.length).to.equal(6);
   });
 
   it("get posts with a miss", async () => {

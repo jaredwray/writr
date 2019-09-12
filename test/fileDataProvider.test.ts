@@ -34,7 +34,7 @@ describe("fileDataProvider", () => {
 
     let posts = await fileProvider.getPosts();
 
-    expect(posts.length).to.equal(5);
+    expect(posts.length).to.equal(6);
   });
 
   it("should get the posts from memory", async () => {
@@ -45,7 +45,7 @@ describe("fileDataProvider", () => {
 
     let posts = await fileProvider.getPosts();
 
-    expect(posts.length).to.equal(5);
+    expect(posts.length).to.equal(6);
   });
 
   it("should get a valid post", async () => {
@@ -81,7 +81,7 @@ describe("fileDataProvider", () => {
 
     let posts = await fileProvider.getPosts();
 
-    expect(posts.length).to.equal(5);
+    expect(posts.length).to.equal(6);
   });
 
   it("should have a valid tag", async () => {
