@@ -6,7 +6,7 @@ export class Config {
   log = new Logger({ transports: [new transports.Console()] });
   program: any = {};
   provider: any = {};
-  render: Array<string> = ["html", "json"];
+  render: Array<string> = ["html", "json", "atom"];
   output: string = "./blog_output";
   template: string = "basic_html";
   path: string = "./blog";
