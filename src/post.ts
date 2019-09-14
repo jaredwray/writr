@@ -62,7 +62,18 @@ export class Post {
       let body = this.body;
       let cheerio = require("cheerio");
       let html = cheerio.load(body);
-      this.metaData.summary = "<p>" + html("p").html() + "</p>";
+
+      let summaryLength = 3;
+
+      this.metaData.summary = "";
+
+      html("p").each((i: number, elem: any) => {
+
+        if(i < summaryLength) {
+          this.metaData.summary = this.metaData.summary + html.html(elem);
+        }
+        
+      });
     }
 
     return this.metaData.summary;
