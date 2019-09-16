@@ -63,6 +63,20 @@ export class FileDataProvider implements DataProviderInterface {
     return result;
   }
 
+  async getPublishedPosts(): Promise<Array<Post>> {
+    let result = new Array<Post>();
+
+    let posts = await this.getPosts();
+
+    posts.forEach((post) => {
+      if(post.published) {
+        result.push(post);
+      }
+    });
+
+    return result;
+  }
+
   async getTag(name: string): Promise<Tag | undefined> {
     let result;
 
@@ -81,6 +95,12 @@ export class FileDataProvider implements DataProviderInterface {
 
   async getTags(): Promise<Array<Tag>> {
     let posts = await this.getPosts();
+
+    return this.generateTags(posts);
+  }
+
+  async getPublishedTags(): Promise<Array<Tag>> {
+    let posts = await this.getPublishedPosts();
 
     return this.generateTags(posts);
   }

@@ -75,13 +75,22 @@ describe("fileDataProvider", () => {
     expect(post.title).to.equal("Tesla Model 3");
   });
 
-  it("should published posts", async () => {
+  it("should get posts", async () => {
     let fileProvider = new FileDataProvider();
     fileProvider.init(config);
 
     let posts = await fileProvider.getPosts();
 
     expect(posts.length).to.equal(7);
+  });
+
+  it("should get published posts", async () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    let posts = await fileProvider.getPublishedPosts();
+
+    expect(posts.length).to.equal(6);
   });
 
   it("should have a valid tag", async () => {
@@ -109,6 +118,15 @@ describe("fileDataProvider", () => {
     let tag = await fileProvider.getTag("snoopy");
 
     expect(tag).to.equal(undefined);
+  });
+
+  it("should get published tags", async () => {
+    let fileProvider = new FileDataProvider();
+    fileProvider.init(config);
+
+    let tags = await fileProvider.getPublishedTags();
+
+    expect(tags.length).to.equal(16);
   });
 
   it("should generate the correct amount of tags", async () => {

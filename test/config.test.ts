@@ -51,6 +51,30 @@ describe('Config', () => {
         expect(config.output).to.equal("foo");
     });
 
+    it('config should load via the index count', () => {
+
+        config = new Config();
+        config.loadPath("./blog_example");
+
+        let obj = {
+            indexCount: 10
+        }
+
+        config.loadProgram(obj)
+
+        expect(config.indexCount).to.equal(10);
+    });
+
+    it('config should not load', () => {
+
+        config = new Config();
+        config.loadPath("./blog_example");
+
+        config.loadProgram(undefined)
+
+        expect(config.indexCount).to.equal(20);
+    });
+
     it('config should load via the program on render', () => {
 
         config = new Config();

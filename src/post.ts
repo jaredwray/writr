@@ -56,6 +56,18 @@ export class Post {
     return this.metaData.body;
   }
 
+  get published() {
+
+    if(this.metaData.published === undefined) {
+      this.metaData.published = true;
+    }
+    return this.metaData.published;
+  }
+
+  set published(val: boolean) {
+    this.metaData.published = val;
+  }
+
   get summary() {
 
     if(!this.metaData.summary) {
@@ -129,6 +141,7 @@ export class Post {
     result.body = this.body;
     result.summary = this.summary;
     result.metaData = this.metaData;
+    result.published = this.published;
     
     return result;
   }
