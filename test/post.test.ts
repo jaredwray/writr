@@ -73,6 +73,20 @@ describe('Post', () => {
     expect(post.body).to.equal("foo");
   });
 
+  it('post get metaData', () => {
+    let post = new Post();
+    post.matter.cover = "foo";
+
+    expect(post.metaData.cover).to.equal("foo");
+  });
+
+  it('post set metaData', () => {
+    let post = new Post();
+    post.metaData = { tree: true}
+
+    expect(post.metaData.tree).to.equal(true);
+  });
+
   it('post get matter', () => {
     let post = new Post();
     post.matter.cover = "foo";
