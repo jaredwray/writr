@@ -4,7 +4,7 @@
 <p>{{post.author}}</p>
 <p>{{{post.body}}}</p>
 
-<p>{{post.metaData.featured_image}}</p>
+<p>{{post.matter.featured_image}}</p>
 <p>{{today.year}}</p>
 
 <p>{{previousPost.id}}</p>

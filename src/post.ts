@@ -4,7 +4,7 @@ export class Post {
   keywords: Array<string> = [];
   tags: Array<string> = [];
   content: string = "";
-  metaData: { [key: string]: any } = {};
+  private _matter: { [key: string]: any } = {};
 
   constructor() { }
 
@@ -14,89 +14,101 @@ export class Post {
 
   get date(): Date {
     let moment = require("moment");
-    let newDate = moment(this.metaData.date).toDate();
+    let newDate = moment(this.matter.date).toDate();
     return newDate;
   }
 
   get title(): string {
-    return this.metaData.title;
+    return this.matter.title;
   }
   set title(val: string) {
 
-    this.metaData.title = val;
+    this.matter.title = val;
 
     this.generateUrl();
   }
 
   get author(): string {
-    return this.metaData.author;
+    return this.matter.author;
   }
 
   set author(val: string) {
-    this.metaData.author = val;
+    this.matter.author = val;
   }
 
   get url() {
-    if(!this.metaData.url) {
+    if(!this.matter.url) {
       this.generateUrl();
     } 
-    return this.metaData.url;
+    return this.matter.url;
   }
 
   set url(val: string) {
-    this.metaData.url = val;
+    this.matter.url = val;
   }
 
   get matter() {
-    return this.metaData;
+    return this._matter;
+  }
+
+  set matter(val: any) {
+    this._matter = val;
+  }
+
+  get metaData() {
+    return this._matter;
+  }
+
+  set metaData(val: { [key: string]: any }) {
+    this._matter = val;
   }
 
   get body() {
 
-    if(!this.metaData.body) {
-      this.metaData.body = new MarkDownIt({html: true}).render(this.content);
+    if(!this.matter.body) {
+      this.matter.body = new MarkDownIt({html: true}).render(this.content);
     }
 
-    return this.metaData.body;
+    return this.matter.body;
   }
 
   get published() {
 
-    if(this.metaData.published === undefined) {
-      this.metaData.published = true;
+    if(this.matter.published === undefined) {
+      this.matter.published = true;
     }
-    return this.metaData.published;
+    return this.matter.published;
   }
 
   set published(val: boolean) {
-    this.metaData.published = val;
+    this.matter.published = val;
   }
 
   get summary() {
 
-    if(this.metaData.description) {
-      this.metaData.summary = this.metaData.description;
+    if(this.matter.description) {
+      this.matter.summary = this.matter.description;
     }
 
-    if(!this.metaData.summary) {
+    if(!this.matter.summary) {
       let body = this.body;
       let cheerio = require("cheerio");
       let html = cheerio.load(body);
 
       let summaryLength = 3;
 
-      this.metaData.summary = "";
+      this.matter.summary = "";
 
       html("p").each((i: number, elem: any) => {
 
         if(i < summaryLength) {
-          this.metaData.summary = this.metaData.summary + html.html(elem);
+          this.matter.summary = this.matter.summary + html.html(elem);
         }
         
       });
     }
 
-    return this.metaData.summary;
+    return this.matter.summary;
   }
 
   addTag(name: string) {
@@ -117,23 +129,25 @@ export class Post {
 
   addTags(names: Array<string>) {
     names.forEach((name) =>{
-      this.addTag(name);
+      if(name){
+        this.addTag(name);
+      }
     });
   }
 
   generateUrl() {
 
-    if(!this.metaData.url) {
-      if(this.metaData.permalink) {
-        this.metaData.url = this.metaData.permalink;
-      } else if(this.metaData.slug) {
-        this.metaData.url = this.metaData.slug;
+    if(!this.matter.url) {
+      if(this.matter.permalink) {
+        this.matter.url = this.matter.permalink;
+      } else if(this.matter.slug) {
+        this.matter.url = this.matter.slug;
       }
 
-      if(!this.metaData.url) {
-        let url = this.metaData.title.toLowerCase().replace(/[^a-z0-9+]+/gi, " ").trim();
+      if(!this.matter.url) {
+        let url = this.matter.title.toLowerCase().replace(/[^a-z0-9+]+/gi, " ").trim();
         url = url.split(" ").join("-");
-        this.metaData.url = url;
+        this.matter.url = url;
       }
     }
   }
@@ -150,8 +164,8 @@ export class Post {
     result.url = this.url;
     result.body = this.body;
     result.summary = this.summary;
-    result.metaData = this.metaData;
-    result.matter = this.metaData;
+    result.metaData = this._matter;
+    result.matter = this._matter;
     result.published = this.published;
     
     return result;

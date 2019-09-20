@@ -144,7 +144,7 @@ export class FileDataProvider implements DataProviderInterface {
 
       let mData: any = m.data;
 
-      result.metaData = m.data;
+      result.matter = m.data;
 
       result.content = m.content;
 
