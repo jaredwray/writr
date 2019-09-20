@@ -19,6 +19,7 @@ export class Writr {
     }
 
     parseCLI(process: NodeJS.Process) {
+
         const program = require("commander");
         
         program.option("-p, --path <path>", "Path of where the blog, config, and template are located");

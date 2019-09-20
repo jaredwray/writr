@@ -18,8 +18,7 @@ describe('Writr', () => {
   it("parse CLI", () => {
     let writr = new Writr();
   
-    let process: any = {};
-    process.argv = [ '-c', './test/blog/config-test2.json', '-o', './out' ]
+    process.argv = [ '-c', './test/blog/config-test2.json', '-o', './out' ];
 
     writr.parseCLI(process);
 
@@ -29,9 +28,6 @@ describe('Writr', () => {
   it("cli run", async () => {
     let writr = new Writr();
   
-    let process: any = {};
-    process.argv = [ '--config', './blog_example/config.json' ]
-
     writr.parseCLI(process);
 
     writr.config = config;
@@ -53,34 +49,26 @@ describe('Writr', () => {
   it("cli run on path", async () => {
     let writr = new Writr();
   
-    let process: any = {};
-    process.argv = [ '--path', './blog_example' ]
+    let p: any = {};
+    p.argv = [ '',
+    '',
+    '-p',
+    './blog_example' ];
 
-    writr.parseCLI(process);
+    writr.parseCLI(p);
 
-    writr.config = config;
-    writr.dataStore = new DataService(config);
-
-    //create directory
-    fs.ensureDirSync(config.output);
-
-    let val = await writr.runCLI();
-
-    //cleanup
-    if (fs.existsSync(config.output)) {
-      del.sync(config.output);
-    }
-
-    expect(val).to.equal(true);
+    expect(writr.config.path).to.equal("./blog_example");
   });
 
   it("cli run with no datastore or config", async () => {
     let writr = new Writr();
   
-    let process: any = {};
-    process.argv = [ '-c', './test/blog/config.json', '-o', './out' ]
+    let p: any = {};
+    p.argv = [ '',
+    '',
+    '-c', './blog_example/config.json', '-o', './out' ];
 
-    writr.parseCLI(process);
+    writr.parseCLI(p);
 
     writr.config = undefined;
     writr.dataStore = undefined;
