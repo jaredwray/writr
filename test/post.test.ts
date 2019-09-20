@@ -73,11 +73,26 @@ describe('Post', () => {
     expect(post.body).to.equal("foo");
   });
 
+  it('post get matter', () => {
+    let post = new Post();
+    post.metaData.cover = "foo";
+
+    expect(post.matter.cover).to.equal("foo");
+  });
+
   it('post get summary', () => {
     let post = new Post();
     post.content = "*HOW*\n\n*COW*";
 
     expect(post.summary).to.equal("<p><em>HOW</em></p><p><em>COW</em></p>");
+  });
+
+  it('post get summary by description', () => {
+    let post = new Post();
+    post.content = "*HOW*\n\n*COW*";
+    post.metaData.description = "foo";
+
+    expect(post.summary).to.equal("foo");
   });
 
   it('post get body / generate', () => {
@@ -94,6 +109,22 @@ describe('Post', () => {
     post.addTag("foo");
 
     expect(post.tags.length).to.equal(1);
+  });
+
+  it('post add tag that is blank', () => {
+    let post = new Post();
+
+    post.addTag("");
+
+    expect(post.tags.length).to.equal(0);
+  });
+
+  it('post add tag that is undefined', () => {
+    let post = new Post();
+
+    post.addTag(undefined);
+
+    expect(post.tags.length).to.equal(0);
   });
 
   it('post add tag with same name', () => {

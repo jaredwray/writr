@@ -47,6 +47,10 @@ export class Post {
     this.metaData.url = val;
   }
 
+  get matter() {
+    return this.metaData;
+  }
+
   get body() {
 
     if(!this.metaData.body) {
@@ -69,6 +73,10 @@ export class Post {
   }
 
   get summary() {
+
+    if(this.metaData.description) {
+      this.metaData.summary = this.metaData.description;
+    }
 
     if(!this.metaData.summary) {
       let body = this.body;
@@ -94,14 +102,16 @@ export class Post {
   addTag(name: string) {
     let exists = false;
 
-    this.tags.forEach((tag) => {
-      if(tag === name) {
-        exists = true;
-      }
-    });
+    if(name) {
+      this.tags.forEach((tag) => {
+        if(tag === name) {
+          exists = true;
+        }
+      });
 
-    if(!exists) {
-      this.tags.push(name);
+      if(!exists) {
+        this.tags.push(name);
+      }
     }
   }
 
@@ -141,6 +151,7 @@ export class Post {
     result.body = this.body;
     result.summary = this.summary;
     result.metaData = this.metaData;
+    result.matter = this.metaData;
     result.published = this.published;
     
     return result;
