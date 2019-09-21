@@ -1,6 +1,5 @@
 {
     "output" : "./blog_output",
-    "template": "basic_html",
     "render": [ "html" , "json", "atom", "images"],
     "path": "./blog_example",
     "title": "Example Blog",
