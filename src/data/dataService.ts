@@ -98,6 +98,9 @@ export class DataService {
 
     if (!tags) {
       result = await this.getProvider().getTags();
+      //sort
+      let arraySort = require("array-sort");
+      result = new arraySort(result, "name", { reverse: false })
 
       if (result) {
         await this.cache.setTags(cacheKey, result);
