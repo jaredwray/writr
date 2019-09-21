@@ -123,17 +123,6 @@ describe('Config', () => {
         expect(config.output).to.equal("./blog1");
     });
 
-    it('config constructor should parse template', () => {
-
-        let obj = {
-            template: "basic_foo"
-        }
-
-        config = new Config(obj);
-
-        expect(config.template).to.equal("basic_foo");
-    });
-
     it('config constructor should parse cache connection', () => {
 
         let obj = {

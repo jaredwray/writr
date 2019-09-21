@@ -8,7 +8,6 @@ export class Config {
   provider: any = {};
   render: Array<string> = ["html", "json", "atom"];
   output: string = "./blog_output";
-  template: string = "basic_html";
   path: string = "./blog";
   title: string = "";
   url: string = "";
@@ -69,10 +68,6 @@ export class Config {
 
       if(obj.output) {
         this.output = obj.output;
-      }
-
-      if(obj.template) {
-        this.template = obj.template;
       }
 
       if(obj.path) {

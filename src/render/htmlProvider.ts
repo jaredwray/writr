@@ -129,7 +129,7 @@ export class HtmlProvider implements RenderProviderInterface {
     getPostTemplate(config: Config): string {
         let result = "";
 
-        result = fs.readFileSync(config.path + "/templates/" + config.template + "/post.hjs").toString();
+        result = fs.readFileSync(config.path + "/templates/post.hjs").toString();
 
         return result;
     }
@@ -137,7 +137,7 @@ export class HtmlProvider implements RenderProviderInterface {
     getTagTemplate(config: Config): string {
         let result = "";
 
-        result = fs.readFileSync(config.path + "/templates/" + config.template + "/tag.hjs").toString();
+        result = fs.readFileSync(config.path + "/templates/tag.hjs").toString();
 
         return result;
     }
@@ -145,7 +145,7 @@ export class HtmlProvider implements RenderProviderInterface {
     getHomeTemplate(config: Config): string {
         let result = "";
 
-        result = fs.readFileSync(config.path + "/templates/" + config.template + "/index.hjs").toString();
+        result = fs.readFileSync(config.path + "/templates/index.hjs").toString();
 
         return result;
     }
