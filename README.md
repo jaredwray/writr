@@ -21,7 +21,8 @@
 ```
 blog/*.md           //markdown files in the folder root
 blog/images         //images for the blog
-blog/config.json    //config file 
+blog/config.json    //config file
+blog/templates      //template directory for your index, post, and tag
 ```
 
 ## 3. Run Writr on it with defaults. This will output everything to ./blog_output
@@ -43,18 +44,17 @@ app.use("/blog", express.static(path.join(__dirname, "blog_output")))
 ## CLI
 
 * -h, --help: Output usage information
-* -p, --path: Path of where the blog, config, and template are located
+* -p, --path: Path of where the blog, and config are located
 * -o, --output: Path of where to output the generated blog
 * -r, --render: What do you want rendered such as html or json (example --render html,json)
-* -t, --template: The template you want to use in the /templates directory
 * -c, --config: Configuration file location if different than 'path'
 
 ## Templates
 
-There are three templates that are part of every instance of Writr:
-* index: This is the main template that lists all of the latest blogs or what you want to add. 
-* post: The post itself and usually supporting items around that such as what is next to look at and tags. 
-* tags: Showing articles by tag filtering.
+There are three templates that are part of every instance of Writr. By default it goes in the `/blog/templates` directory. Here are the files and are in `Handlebars` format:
+* index.hjs: This is the main template that lists all of the latest blogs or what you want to add. 
+* post.hjs: The post itself and usually supporting items around that such as what is next to look at and tags. 
+* tag.hjs: Showing articles by tag filtering.
 
 ## Markdown
 To learn more about Markdown go here: https://markdownguide.org
