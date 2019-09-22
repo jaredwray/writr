@@ -1,17 +1,17 @@
 import { expect } from 'chai';
 import 'mocha';
 
-import {Config} from '../src/config';
-import {DataCacheService} from '../src/data/dataCacheService'
+import { Config } from '../src/config';
+import { DataCacheService } from '../src/data/dataCacheService'
 import { Post } from '../src/post';
 import { Tag } from '../src/tag';
 
 describe('Data Cache Service', async () => {
 
-    let config : Config = new Config();
+    let config: Config = new Config();
     let cache: DataCacheService;
 
-    before( async () => {
+    before(async () => {
 
         config.loadConfig("./blog_example/config.json");
         cache = new DataCacheService(config);
@@ -24,7 +24,7 @@ describe('Data Cache Service', async () => {
         post.title = 'foo';
         post.matter.date = new Date();
 
-        let result = await cache.setPost('foo',post);
+        let result = await cache.setPost('foo', post);
 
         expect(result).to.equal(true);
     });
@@ -35,7 +35,7 @@ describe('Data Cache Service', async () => {
         post.title = 'foo';
         post.matter.date = new Date();
 
-        await cache.setPost('foo',post);
+        await cache.setPost('foo', post);
 
         let result = await cache.getPost('foo');
 
@@ -48,7 +48,7 @@ describe('Data Cache Service', async () => {
         post.title = 'foo';
         post.matter.date = new Date();
 
-        await cache.setPost('foo',post);
+        await cache.setPost('foo', post);
 
         let result = await cache.getPost('bar');
 
@@ -61,7 +61,7 @@ describe('Data Cache Service', async () => {
         post.title = 'foo';
         post.matter.date = new Date();
 
-        await cache.setPost('foo',post);
+        await cache.setPost('foo', post);
 
         let result = await cache.getPost('foo');
 
@@ -77,8 +77,8 @@ describe('Data Cache Service', async () => {
         post.keywords = new Array<string>();
         post.keywords.push('cat');
         post.keywords.push('dog');
-        
-        await cache.setPost('foo',post);
+
+        await cache.setPost('foo', post);
 
         let result = await cache.getPost('foo');
 
@@ -97,7 +97,7 @@ describe('Data Cache Service', async () => {
         fooPost.keywords = new Array<string>();
         fooPost.keywords.push('cat');
         fooPost.keywords.push('dog');
-        
+
         posts.push(fooPost);
 
         let coolPost = new Post();
@@ -107,7 +107,7 @@ describe('Data Cache Service', async () => {
         coolPost.keywords = new Array<string>();
         coolPost.keywords.push('meow');
         coolPost.keywords.push('woof');
-        
+
         posts.push(coolPost);
 
         await cache.setPosts(key, posts);
@@ -121,7 +121,7 @@ describe('Data Cache Service', async () => {
 
         let tag = new Tag('foo');
 
-        await cache.setTag('foo',tag);
+        await cache.setTag('foo', tag);
 
         let result = await cache.getTag('foo');
 
@@ -132,7 +132,7 @@ describe('Data Cache Service', async () => {
 
         let tag = new Tag('foo');
 
-        await cache.setTag('foo',tag);
+        await cache.setTag('foo', tag);
 
         let result = await cache.getTag('bar');
 
@@ -148,7 +148,7 @@ describe('Data Cache Service', async () => {
         let tag = new Tag('foo');
         tag.posts.push(post);
 
-        await cache.setTag('foo',tag);
+        await cache.setTag('foo', tag);
 
         let result = await cache.getTag('foo');
 
@@ -177,7 +177,7 @@ describe('Data Cache Service', async () => {
         tags.push(tag);
         tags.push(tag2);
 
-        await cache.setTags(key,tags);
+        await cache.setTags(key, tags);
 
         let result = await cache.getTags(key);
 
@@ -193,13 +193,13 @@ describe('Data Cache Service', async () => {
         let tag = new Tag('foo');
         tag.posts.push(post);
 
-        await cache.setTag('foo',tag);
+        await cache.setTag('foo', tag);
 
         let result = await cache.getTag('foo');
 
         expect(result.posts[0].title).to.equal("foo");
-    });   
-    
+    });
+
     it('caching a tag and a post and then clearing', async () => {
 
         let post = new Post();
@@ -209,7 +209,7 @@ describe('Data Cache Service', async () => {
         let tag = new Tag('foo');
         tag.posts.push(post);
 
-        await cache.setTag('foo',tag);
+        await cache.setTag('foo', tag);
         await cache.setPost('fff', post);
 
         await cache.clear();
@@ -217,7 +217,7 @@ describe('Data Cache Service', async () => {
         let result = await cache.getTag('foo');
 
         expect(result).to.equal(undefined);
-    }); 
+    });
 
     it('format name correctly', () => {
 

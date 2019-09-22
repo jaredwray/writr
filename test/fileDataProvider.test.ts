@@ -99,7 +99,7 @@ describe("fileDataProvider", () => {
 
     let tag = await fileProvider.getTag("whale");
 
-    expect(tag.name).to.equal("whale");
+    expect(tag.name).to.equal("Whale");
   });
 
   it("should have a valid tag and multiple posts", async () => {

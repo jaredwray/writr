@@ -139,8 +139,7 @@ export class DataService {
       result = await this.getProvider().getTags();
       //sort
       let arraySort = require("array-sort");
-      result = new arraySort(result, "name", { reverse: false })
-      
+      result = new arraySort(result, "id", { reverse: false })
       await this.cache.setTags(cacheKey, result);
       
     } else {
@@ -161,7 +160,7 @@ export class DataService {
       result = await this.getProvider().getPublishedTags();
       //sort
       let arraySort = require("array-sort");
-      result = new arraySort(result, "name", { reverse: false })
+      result = new arraySort(result, "id", { reverse: false })
 
       
       await this.cache.setTags(cacheKey, result);

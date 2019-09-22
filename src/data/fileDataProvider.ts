@@ -110,10 +110,10 @@ export class FileDataProvider implements DataProviderInterface {
 
     posts.forEach(post => {
       post.tags.forEach(tagName => {
-        let tag = result.find(t => this.formatToKey(t.name) === this.formatToKey(tagName));
+        let tag = result.find(t => t.id === new Tag(tagName).id);
 
         if (tag == null) {
-          tag = new Tag(this.formatToKey(tagName));
+          tag = new Tag(tagName);
           result.push(tag);
         }
 
