@@ -3,9 +3,9 @@
     author: John Smith
     url: the-largest-whale
     date: 2019-03-12
-    keywords: large, whale
+    keywords: large, Whale
     categories: ["foo", "mouse"]
-    tags: whale,ocean,candle,blast
+    tags: Whale,ocean,Candle,blast
 ---
 
 My life as a blogger is really cool

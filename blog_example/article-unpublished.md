@@ -4,7 +4,7 @@
     date: 2016-08-12
     keywords: tesla, model 3, elon, musk
     categories: muskified, nice3
-    tags: tesla, model 3,whale,cool, unpublished
+    tags: tesla, model 3,Whale,cool, unpublished
     published: false
 ---
 
