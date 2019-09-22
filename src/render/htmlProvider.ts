@@ -22,14 +22,17 @@ export class HtmlProvider implements RenderProviderInterface {
 
         fs.ensureDirSync(output);
 
-        let posts = await dataStore.getPosts();
-        let tags = await dataStore.getTags();
+        let posts = await dataStore.getPublishedPosts();
+        let unpublishedPosts = await dataStore.getPosts();
+        let tags = await dataStore.getPublishedTags();
+        let unpublishedTags = await dataStore.getTags();
 
         //posts
 
         let previousPost: Post;
         let nextPost: Post;
 
+        //published posts
         posts.forEach(async (post, index) => {
 
             if(index === 0) {
@@ -50,6 +53,31 @@ export class HtmlProvider implements RenderProviderInterface {
             fs.ensureDirSync(postPath);
 
             fs.writeFileSync(postPath + "/index.html", postHtml);
+        });
+
+        //unpublished posts
+        unpublishedPosts.forEach(async (post, index) => {
+
+            if(index === 0) {
+                previousPost = posts[posts.length-1];
+            } else {
+                previousPost = posts[index-1];
+            }
+
+            if(index === posts.length-1) {
+                nextPost = posts[0];
+            } else {
+                nextPost = posts[index+1]
+            }
+
+            if(post.published === false) {
+                let postHtml = await this.renderPost(post, previousPost, nextPost, unpublishedTags, config);
+
+                let postPath = output + "/" + post.id;
+                fs.ensureDirSync(postPath);
+
+                fs.writeFileSync(postPath + "/index.html", postHtml);
+            }
         });
 
         //tags
@@ -75,8 +103,8 @@ export class HtmlProvider implements RenderProviderInterface {
     async renderHome(dataStore: DataService, config:Config): Promise<string> {
         let result = "";
 
-        let postList = await dataStore.getPostsByCount(config.indexCount);
-        let tagList = await dataStore.getTags();
+        let postList = await dataStore.getPublishedPostsByCount(config.indexCount);
+        let tagList = await dataStore.getPublishedTags();
 
         let source = this.getHomeTemplate(config);
         result = this.renderTemplate(source, { tags: tagList, posts: postList }, config);

@@ -17,6 +17,24 @@ describe("Data Service", async () => {
     expect(ds.getProvider()).to.not.equal(undefined);
   });
 
+  it("get published posts", async () => {
+    let posts = await ds.getPublishedPosts();
+
+    expect(posts.length).to.equal(6);
+  });
+
+  it("get posts by count", async () => {
+    let posts = await ds.getPostsByCount(2);
+
+    expect(posts.length).to.equal(2);
+  });
+
+  it("get published posts by count", async () => {
+    let posts = await ds.getPublishedPostsByCount(7);
+
+    expect(posts.length).to.equal(6);
+  });
+
   it("get posts", async () => {
     let posts = await ds.getPosts();
 
@@ -53,11 +71,17 @@ describe("Data Service", async () => {
     expect(post).to.equal(undefined);
   });
 
+  it("get published tags", async () => {
+    let tags = await ds.getPublishedTags();
+
+    expect(tags.length).to.equal(16);
+  });
+
 
   it("get tags", async () => {
     let tags = await ds.getTags();
 
-    expect(tags.length).to.equal(16);
+    expect(tags.length).to.equal(17);
   });
 
   it("get tags from cache", async () => {
@@ -65,7 +89,7 @@ describe("Data Service", async () => {
 
     let tags = await ds.getTags();
 
-    expect(tags.length).to.equal(16);
+    expect(tags.length).to.equal(17);
   });
 
   it("get tag with a miss", async () => {

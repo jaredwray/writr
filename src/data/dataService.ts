@@ -40,13 +40,34 @@ export class DataService {
     if (!posts) {
       result = await this.getProvider().getPosts();
 
-      if (result) {
-        //sort
-        let arraySort = require("array-sort");
-        result = new arraySort(result, "date", { reverse: true })
-        //cache
-        await this.cache.setPosts(cacheKey, result);
-      }
+      //sort
+      let arraySort = require("array-sort");
+      result = new arraySort(result, "date", { reverse: true })
+      //cache
+      await this.cache.setPosts(cacheKey, result);
+      
+    } else {
+      result = posts;
+    }
+
+    return result;
+  }
+
+  async getPublishedPosts(): Promise<Array<Post>> {
+    let result = new Array<Post>();
+
+    let cacheKey = "get-published-posts";
+    let posts = await this.cache.getPosts(cacheKey);
+
+    if (!posts) {
+      result = await this.getProvider().getPublishedPosts();
+
+      //sort
+      let arraySort = require("array-sort");
+      result = new arraySort(result, "date", { reverse: true })
+      //cache
+      await this.cache.setPosts(cacheKey, result);
+      
     } else {
       result = posts;
     }
@@ -56,6 +77,24 @@ export class DataService {
 
   async getPostsByCount(count: number): Promise<Array<Post>> {
     let result = await this.getPosts();
+
+      let list = new Array<Post>();
+      let currentCount = 0;
+
+      result.forEach((post) => {
+        if(currentCount < count) {
+          list.push(post);
+          currentCount++;
+        }
+      });
+
+      result = list;
+
+      return result;
+  }
+
+  async getPublishedPostsByCount(count: number): Promise<Array<Post>> {
+    let result = await this.getPublishedPosts();
 
       let list = new Array<Post>();
       let currentCount = 0;
@@ -101,10 +140,32 @@ export class DataService {
       //sort
       let arraySort = require("array-sort");
       result = new arraySort(result, "name", { reverse: false })
+      
+      await this.cache.setTags(cacheKey, result);
+      
+    } else {
+      result = tags;
+    }
 
-      if (result) {
-        await this.cache.setTags(cacheKey, result);
-      }
+    return result;
+  }
+
+  async getPublishedTags(): Promise<Array<Tag>> {
+    let result = new Array<Tag>();
+
+    let cacheKey = "get-published-tags";
+
+    let tags = await this.cache.getTags(cacheKey);
+
+    if (!tags) {
+      result = await this.getProvider().getPublishedTags();
+      //sort
+      let arraySort = require("array-sort");
+      result = new arraySort(result, "name", { reverse: false })
+
+      
+      await this.cache.setTags(cacheKey, result);
+      
     } else {
       result = tags;
     }

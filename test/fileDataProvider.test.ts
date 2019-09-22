@@ -137,7 +137,7 @@ describe("fileDataProvider", () => {
 
     let tags = await fileProvider.generateTags(posts);
 
-    expect(tags.length).to.equal(16);
+    expect(tags.length).to.equal(17);
   });
 
   it("parse bad file path post", async () => {
