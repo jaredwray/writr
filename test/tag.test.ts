@@ -11,6 +11,18 @@ describe('Tag', () => {
     expect(tag.name).to.equal('cow');
   });
 
+  it('tag should have a valid name with no space', () => {
+    let tag = new Tag(' cow');
+
+    expect(tag.name).to.equal('cow');
+  });
+
+  it('tag should have a valid name on capital', () => {
+    let tag = new Tag(' Cow');
+
+    expect(tag.name).to.equal('Cow');
+  });
+
   it('tag should have a valid id', () => {
     let tag = new Tag("How's now: brown cow! -");
 

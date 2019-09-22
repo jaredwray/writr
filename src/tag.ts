@@ -5,16 +5,14 @@ export class Tag {
   posts: Array<Post> = new Array<Post>();
 
   constructor(name: string) {
-    this.name = name;
+    this.name = name.trim();
   }
 
   get id(): string {
     let result = "";
 
-    let simpleUrl = this.name.toLowerCase().replace(/[^a-z0-9+]+/gi, " ").trim();
-    simpleUrl = simpleUrl.split(" ").join("-");
-    result = simpleUrl;
-
+    result = this.name.toLowerCase().replace(/[^a-z0-9+]+/gi, " ").trim();
+    result = result.split(" ").join("-");
 
     return result;
   }
