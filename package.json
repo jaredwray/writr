@@ -1,6 +1,6 @@
 {
   "name": "writr",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "description": "A Simple to Use Markdown Blog",
   "main": "./dist/index",
   "types": "./dist/index",
@@ -29,6 +29,7 @@
     "fs-extra": "^6.0.1",
     "gray-matter": "^4.0.2",
     "handlebars": "^4.0.11",
+    "helper-date": "^1.0.1",
     "keyv": "^3.0.0",
     "markdown-it": "^8.4.1",
     "moment": "^2.24.0",
