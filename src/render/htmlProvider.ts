@@ -138,15 +138,8 @@ export class HtmlProvider implements RenderProviderInterface {
         let date = new Date();
 
         data.writr = config;
-        data.today = {
-            time: date.getTime(),
-            month: date.getMonth(),
-            day: date.getDay(),
-            date: date.getDate(),
-            year: date.getFullYear(),
-            timezone: date.getTimezoneOffset()
-        }
 
+        handlebars.registerHelper('formatDate', require('helper-date'));
         let template: handlebars.Template = handlebars.compile(source);
         result = template(data);
 
