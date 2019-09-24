@@ -620,6 +620,13 @@ cycle@1.0.x:
   resolved "https://registry.yarnpkg.com/cycle/-/cycle-1.0.3.tgz#21e80b2be8580f98b468f379430662b046c34ad2"
   integrity sha1-IegLK+hYD5i0aPN5QwZisEbDStI=
 
+date.js@^0.3.1:
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/date.js/-/date.js-0.3.3.tgz#ef1e92332f507a638795dbb985e951882e50bbda"
+  integrity sha512-HgigOS3h3k6HnW011nAb43c5xx5rBXk8P2v/WIT9Zv4koIaVXiH2BURguI78VVp+5Qc076T7OR378JViCnZtBw==
+  dependencies:
+    debug "~3.1.0"
+
 debug@3.2.6, debug@^3.1.0:
   version "3.2.6"
   resolved "https://registry.yarnpkg.com/debug/-/debug-3.2.6.tgz#e83d17de16d8a7efb7717edbe5fb10135eee629b"
@@ -633,6 +640,13 @@ debug@^4.1.0, debug@^4.1.1:
   integrity sha512-pYAIzeRo8J6KPEaJ0VWOh5Pzkbw/RetuzehGM7QRRX5he4fPHx2rdKMB256ehJCkX+XRQm16eZLqLNS8RSZXZw==
   dependencies:
     ms "^2.1.1"
+
+debug@~3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-3.1.0.tgz#5bb5a0672628b64149566ba16819e61518c67261"
+  integrity sha512-OX8XqP7/1a9cqkxYw2yXss15f26NKWBpDXQd0/uK/KPqdQhxbPa994hnzjcE2VqQpDslf55723cKPUOGSmMY3g==
+  dependencies:
+    ms "2.0.0"
 
 decamelize@^1.2.0:
   version "1.2.0"
@@ -1060,6 +1074,14 @@ growl@1.10.5:
   resolved "https://registry.yarnpkg.com/growl/-/growl-1.10.5.tgz#f2735dc2283674fa67478b10181059355c369e5e"
   integrity sha512-qBr4OuELkhPenW6goKVXiv47US3clb3/IbuWF9KNKEijAy9oeHxU9IgzjvJhHkUzhaj7rOUD7+YGWqUjLp5oSA==
 
+handlebars-utils@^1.0.4:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/handlebars-utils/-/handlebars-utils-1.0.6.tgz#cb9db43362479054782d86ffe10f47abc76357f9"
+  integrity sha512-d5mmoQXdeEqSKMtQQZ9WkiUcO1E3tPbWxluCK9hVgIDPzQa9WsKo3Lbe/sGflTe7TomHEeZaOgwIkyIr1kfzkw==
+  dependencies:
+    kind-of "^6.0.0"
+    typeof-article "^0.1.1"
+
 handlebars@*, handlebars@^4.0.11, handlebars@^4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.1.2.tgz#b6b37c1ced0306b221e094fc7aca3ec23b131b67"
@@ -1099,6 +1121,15 @@ he@1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
+
+helper-date@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/helper-date/-/helper-date-1.0.1.tgz#12fedea3ad8e44a7ca4c4efb0ff4104a5120cffb"
+  integrity sha512-wU3VOwwTJvGr/w5rZr3cprPHO+hIhlblTJHD6aFBrKLuNbf4lAmkawd2iK3c6NbJEvY7HAmDpqjOFSI5/+Ey2w==
+  dependencies:
+    date.js "^0.3.1"
+    handlebars-utils "^1.0.4"
+    moment "^2.18.1"
 
 hosted-git-info@^2.1.4:
   version "2.8.4"
@@ -1174,6 +1205,11 @@ is-arrayish@^0.3.1:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/is-arrayish/-/is-arrayish-0.3.2.tgz#4574a2ae56f7ab206896fb431eaeed066fdf8f03"
   integrity sha512-eVRqCvVlZbuw3GrM63ovNSNAeA1K16kaR/LRY/92w0zxQ5/1YzwblUX652i4Xs9RwAGjW9d9y6X88t8OaAJfWQ==
+
+is-buffer@^1.1.5:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/is-buffer/-/is-buffer-1.1.6.tgz#efaa2ea9daa0d7ab2ea13a97b2b8ad51fefbe8be"
+  integrity sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==
 
 is-buffer@~2.0.3:
   version "2.0.3"
@@ -1361,6 +1397,13 @@ keyv@^3.0.0:
   integrity sha512-9ykJ/46SN/9KPM/sichzQ7OvXyGDYKGTaDlKMGCAlg2UK8KRy4jb0d8sFc+0Tt0YYnThq8X2RZgCg74RPxgcVA==
   dependencies:
     json-buffer "3.0.0"
+
+kind-of@^3.1.0:
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-3.2.2.tgz#31ea21a734bab9bbb0f32466d893aea51e4a3c64"
+  integrity sha1-MeohpzS6ubuw8yRm2JOupR5KPGQ=
+  dependencies:
+    is-buffer "^1.1.5"
 
 kind-of@^5.0.2:
   version "5.1.0"
@@ -1575,10 +1618,15 @@ mocha@^6.2.0:
     yargs-parser "13.0.0"
     yargs-unparser "1.5.0"
 
-moment@^2.24.0:
+moment@^2.18.1, moment@^2.24.0:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
+
+ms@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
+  integrity sha1-VgiurfwAvmwpAd9fmGF4jeDVl8g=
 
 ms@2.1.1:
   version "2.1.1"
@@ -2312,6 +2360,13 @@ type-detect@^4.0.0, type-detect@^4.0.5:
   version "4.0.8"
   resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-4.0.8.tgz#7646fb5f18871cfbb7749e69bd39a6388eb7450c"
   integrity sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==
+
+typeof-article@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/typeof-article/-/typeof-article-0.1.1.tgz#9f07e733c3fbb646ffa9e61c08debacd460e06af"
+  integrity sha1-nwfnM8P7tkb/qeYcCN66zUYOBq8=
+  dependencies:
+    kind-of "^3.1.0"
 
 typescript@^3.5.3:
   version "3.5.3"
