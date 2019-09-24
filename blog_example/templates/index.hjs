@@ -1,4 +1,5 @@
 {{#each posts}}
+<p>{{formatDate date "MM/DD/YYYY"}}</p>
 <p><a href="{{url}}">{{title}} - {{author}}</a></p>
 {{/each}}
 
@@ -8,3 +9,5 @@
 <li><a href="{{id}}">{{name}}</a></li>{{/each}}
 </ul>
 </p>
+
+{{formatDate "" "YYYY"}}

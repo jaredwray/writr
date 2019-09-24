@@ -5,7 +5,6 @@
 <p>{{{post.body}}}</p>
 
 <p>{{post.matter.featured_image}}</p>
-<p>{{today.year}}</p>
 
 <p>{{previousPost.id}}</p>
 <p>{{nextPost.id}}</p>
