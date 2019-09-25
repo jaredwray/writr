@@ -56,5 +56,22 @@ There are three templates that are part of every instance of Writr. By default i
 * post.hjs: The post itself and usually supporting items around that such as what is next to look at and tags. 
 * tag.hjs: Showing articles by tag filtering.
 
+## Different Layouts
+
+You can also set a post to use a different layout by setting the `layout` value in the `front-matter` like so:
+
+```yaml
+---
+title:  'Docula: Persistent Links and Styles!'
+tags:
+- Github
+- Open Source
+- Docula
+date: 2017-03-07
+layout: post2
+featured_image: Docula_%20Persistent%20Links%20and%20Styles%201.jpeg
+---
+```
+
 ## Markdown
 To learn more about Markdown go here: https://markdownguide.org
