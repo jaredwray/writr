@@ -5,6 +5,7 @@ tags:
 - Open Source
 - Docula
 date: 2017-03-07
+layout: post2
 featured_image: Docula_%20Persistent%20Links%20and%20Styles%201.jpeg
 ---
 
