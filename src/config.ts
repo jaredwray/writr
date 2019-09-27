@@ -14,6 +14,7 @@ export class Config {
   authorName: string = "";
   authorEmail: string = "";
   indexCount: number = 20;
+  permalink: string = "simple";
 
   constructor(config: any = undefined) {
     
@@ -64,6 +65,10 @@ export class Config {
         } else {
           this.render = obj.render;
         }
+      }
+
+      if(obj.permalink) {
+        this.permalink = obj.permalink;
       }
 
       if(obj.output) {

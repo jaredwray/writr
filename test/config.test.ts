@@ -123,6 +123,17 @@ describe('Config', () => {
         expect(config.output).to.equal("./blog1");
     });
 
+    it('config constructor should parse permalink', () => {
+
+        let obj = {
+            permalink: "/:year/:title/"
+        }
+
+        config = new Config(obj);
+
+        expect(config.permalink).to.equal(obj.permalink);
+    });
+
     it('config constructor should parse cache connection', () => {
 
         let obj = {
