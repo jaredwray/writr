@@ -138,15 +138,33 @@ export class HtmlProvider implements RenderProviderInterface {
 
     renderTemplate(source: string, data: any, config: Config): string {
         let result = "";
-        let date = new Date();
-
+        
         data.writr = config;
+
+        this.registerPartials(config);
 
         handlebars.registerHelper('formatDate', require('helper-date'));
         let template: handlebars.Template = handlebars.compile(source);
         result = template(data);
 
         return result;
+    }
+
+    registerPartials(config: Config) {
+        let path = config.path + "/templates/partials";
+        if(fs.pathExistsSync(path)) {
+            let partials = fs.readdirSync(path);
+            
+            partials.forEach(p => {
+                let source = fs.readFileSync(path + "/" + p).toString();
+                let name = p.split(".hjs")[0];
+
+                if(handlebars.partials[name] === undefined) {
+                    handlebars.registerPartial(name, handlebars.compile(source));
+                }
+
+            });
+        }
     }
 
     //Templates
