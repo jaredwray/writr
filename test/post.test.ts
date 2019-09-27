@@ -183,4 +183,64 @@ describe('Post', () => {
     expect(post.tags.length).to.equal(3);
   });
 
+  it('post parse url :title', () => {
+    let post = new Post();
+    
+    post.matter.title = "wowza cool!"
+    post.matter.date = "2019-01-01";
+    let url = "/:title";
+
+    expect(post.parseUrl(url)).to.equal("wowza-cool");
+  });
+
+  it('post parse url :title/:year', () => {
+    let post = new Post();
+    
+    post.matter.title = "wowza cool!"
+    post.matter.date = "2019-01-01";
+    let url = "/:title/:year";
+
+    expect(post.parseUrl(url)).to.equal("wowza-cool/2019");
+  });
+
+  it('post parse url :title/:year/:month', () => {
+    let post = new Post();
+    
+    post.matter.title = "wowza cool!"
+    post.matter.date = "2019-01-01";
+    let url = "/:title/:year/:month";
+
+    expect(post.parseUrl(url)).to.equal("wowza-cool/2019/01");
+  });
+
+  it('post parse url style none', () => {
+    let post = new Post();
+    
+    post.matter.title = "wowza cool!"
+    post.matter.date = "2019-01-01";
+    let url = "default";
+
+    expect(post.parseUrl(url)).to.equal("wowza-cool");
+  });
+
+  it('post parse url style date', () => {
+    let post = new Post();
+    
+    post.matter.title = "wowza cool!"
+    post.matter.date = "2019-01-01";
+    let url = "date";
+
+    expect(post.parseUrl(url)).to.equal("2019/01/01/wowza-cool");
+  });
+
+  it('post parse url style ordinal', () => {
+    let post = new Post();
+    
+    post.matter.title = "wowza cool!"
+    post.matter.date = "2019-01-01";
+    let url = "ordinal";
+
+    expect(post.parseUrl(url)).to.equal("2019/1/wowza-cool");
+  });
+
 });
