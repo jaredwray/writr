@@ -137,17 +137,19 @@ You can simply put in the style on permalink setting in the individual post `fro
 
 ```yaml
 ---
-title:  'Docula: Persistent Links and Styles!'
+title: 'Docula: Persistent Links and Styles!'
 tags:
 - Github
 - Open Source
 - Docula
-permalink: simple
+permalink: date
 date: 2017-03-07
 layout: post2
 featured_image: Docula_%20Persistent%20Links%20and%20Styles%201.jpeg
 ---
 ```
+
+The url will be: `/2017/03/07/docula-persistent-links-and-styles`
 
 ### Set it Globally
 
