@@ -56,6 +56,29 @@ There are three templates that are part of every instance of Writr. By default i
 * post.hjs: The post itself and usually supporting items around that such as what is next to look at and tags. 
 * tag.hjs: Showing articles by tag filtering.
 
+## Template Partials
+
+You can use template partials such as a header or footer by creating a folder in templates called `partials`. In there create a standard handlebars template file such as `header.hjs`. To reference it go to any of the main template files and include it like `{{> header}}`:
+
+```html
+
+<h1>Post</h1>
+
+{{> header}}
+
+<p>{{post.title}}</p>
+<p>{{post.author}}</p>
+<p>{{{post.body}}}</p>
+
+<p>{{post.matter.featured_image}}</p>
+
+<p>{{previousPost.id}}</p>
+<p>{{nextPost.id}}</p>
+
+...
+
+```
+
 ## Different Layouts
 
 You can also set a post to use a different layout by setting the `layout` value in the `front-matter` like so:
