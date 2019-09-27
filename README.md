@@ -89,6 +89,7 @@ In your posts `front-matter` you can specify the format of the url to be generat
 | long_month | Full month name, e.g. “January”. |
 | day | Day of the month from the post’s filename. (01..31) |
 | i_day | Day of the month without leading zeros from the post’s filename. |
+| y_day | Day of the year (01...365) |
 | short_day | Three-letter weekday abbreviation, e.g. “Sun”. | 
 | long_day | Weekday name, e.g. “Sunday”. |
 | week | Week number of the current year, starting with the first week having a majority of its days in January. (01..53) |
@@ -104,10 +105,9 @@ You can simply put in the style on permalink setting in the individual post `fro
 
 | Style | Template |
 | --- | ----------- |
-| none (default) | /:title/ |
-| date | /:year/:month/:date/:title/ |
+| default | /:title/ |
+| date | /:year/:month/:day/:title/ |
 | ordinal | /:year/:y_day/:title/ |
-| weekdate | /:year/W:week/:short_day/:title/ |
 
 
 ### Set it in the Post
