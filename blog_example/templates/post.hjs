@@ -1,5 +1,7 @@
 <h1>Post</h1>
 
+{{> header}}
+
 <p>{{post.title}}</p>
 <p>{{post.author}}</p>
 <p>{{{post.body}}}</p>
