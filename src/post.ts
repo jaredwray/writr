@@ -59,14 +59,6 @@ export class Post {
     this._matter = val;
   }
 
-  get metaData() {
-    return this._matter;
-  }
-
-  set metaData(val: { [key: string]: any }) {
-    this._matter = val;
-  }
-
   get body() {
 
     if(!this.matter.body) {
