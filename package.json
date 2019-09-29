@@ -7,6 +7,22 @@
   "repository": "https://github.com/jaredwray/writr.git",
   "author": "Jared Wray <me@jaredwray.com>",
   "license": "MIT",
+  "keywords": [
+    "static-site-generator",
+    "static-site",
+    "ssg",
+    "documentation",
+    "website",
+    "blog",
+    "templates",
+    "generator",
+    "framework",
+    "writr",
+    "writer",
+    "html",
+    "markdown",
+    "handlebars"
+  ],
   "scripts": {
     "watch": "tsc -w -p .",
     "clean-all": "clean && rm -rf node_modules",
