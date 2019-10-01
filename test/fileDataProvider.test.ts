@@ -4,7 +4,7 @@ import { FileDataProvider } from "../src/data/fileDataProvider";
 import winston = require('winston');
 import "mocha";
 
-describe("fileDataProvider", () => {
+describe("File Data Provider", () => {
   let config: Config = new Config();
 
   beforeEach(() => {
