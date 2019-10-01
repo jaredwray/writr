@@ -3,15 +3,15 @@ import { Post } from "../post";
 import { Tag } from "../tag";
 import { DataProviderInterface } from "./dataProviderInterface";
 import { FileDataProvider } from "./fileDataProvider";
-import { DataCacheService } from "./dataCacheService";
+import { Cache } from "../cache";
 
 export class DataService {
   config: Config;
-  cache: DataCacheService;
+  cache: Cache;
 
   constructor(config: Config) {
     this.config = config;
-    this.cache = new DataCacheService(this.config);
+    this.cache = new Cache(this.config);
   }
 
   //posts

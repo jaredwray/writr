@@ -1,9 +1,9 @@
-import { Config } from "../config";
-import { Post } from "../post";
-import { Tag } from "../tag";
+import { Config } from "./config";
+import { Post } from "./post";
+import { Tag } from "./tag";
 import Keyv = require("keyv");
 
-export class DataCacheService {
+export class Cache {
   cache: Keyv;
 
   constructor(config: Config) {

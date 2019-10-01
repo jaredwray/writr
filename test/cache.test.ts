@@ -2,19 +2,19 @@ import { expect } from 'chai';
 import 'mocha';
 
 import { Config } from '../src/config';
-import { DataCacheService } from '../src/data/dataCacheService'
+import { Cache } from '../src/cache'
 import { Post } from '../src/post';
 import { Tag } from '../src/tag';
 
-describe('Data Cache Service', async () => {
+describe('Cache', async () => {
 
     let config: Config = new Config();
-    let cache: DataCacheService;
+    let cache: Cache;
 
     before(async () => {
 
         config.loadConfig("./blog_example/config.json");
-        cache = new DataCacheService(config);
+        cache = new Cache(config);
 
     });
 
