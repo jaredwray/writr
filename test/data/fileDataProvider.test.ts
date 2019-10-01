@@ -1,6 +1,6 @@
 import { expect } from "chai";
-import { Config } from "../src/config";
-import { FileDataProvider } from "../src/data/fileDataProvider";
+import { Config } from "../../src/config";
+import { FileDataProvider } from "../../src/data/fileDataProvider";
 import winston = require('winston');
 import "mocha";
 

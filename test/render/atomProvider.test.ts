@@ -1,8 +1,8 @@
 import { expect } from "chai";
-import { Config } from "../src/config";
-import { AtomProvider } from "../src/render/atomProvider";
+import { Config } from "../../src/config";
+import { AtomProvider } from "../../src/render/atomProvider";
 import "mocha";
-import { DataService } from "../src/data/dataService";
+import { DataService } from "../../src/data/dataService";
 import * as del from "del";
 import * as fs from "fs-extra";
 

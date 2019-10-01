@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import "mocha";
 
-import { Config } from "../src/config";
-import { DataService } from "../src/data/dataService";
+import { Config } from "../../src/config";
+import { DataService } from "../../src/data/dataService";
 
 describe("Data Service", async () => {
   let config: Config = new Config();

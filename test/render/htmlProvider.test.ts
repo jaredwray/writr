@@ -1,10 +1,10 @@
 import { expect } from "chai";
-import { Config } from "../src/config";
-import { HtmlProvider } from "../src/render/htmlProvider";
+import { Config } from "../../src/config";
+import { HtmlProvider } from "../../src/render/htmlProvider";
 import "mocha";
-import { Tag } from "../src/tag";
-import { Post } from "../src/post";
-import { DataService } from "../src/data/dataService";
+import { Tag } from "../../src/tag";
+import { Post } from "../../src/post";
+import { DataService } from "../../src/data/dataService";
 import * as del from "del";
 import * as fs from "fs-extra";
 

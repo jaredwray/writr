@@ -1,12 +1,12 @@
 import { expect } from "chai";
-import { Config } from "../src/config";
+import { Config } from "../../src/config";
+import { JSONProvider } from "../../src/render/jsonProvider";
 import "mocha";
-import { DataService } from "../src/data/dataService";
+import { DataService } from "../../src/data/dataService";
 import * as del from "del";
 import * as fs from "fs-extra";
-import { ImageProvider } from "../src/render/imageProvider";
 
-describe("imageProvider", () => {
+describe("jsonProvider", () => {
   let config: Config = new Config();
 
   beforeEach(() => {
@@ -14,11 +14,11 @@ describe("imageProvider", () => {
   });
 
   it("render (long running)", async () => {
-    let imageProvider = new ImageProvider();
+    let jsonProvider = new JSONProvider();
     
     let ds = new DataService(config);
 
-    let val = await imageProvider.render(ds, config);
+    let val = await jsonProvider.render(ds, config);
 
     //cleanup
     if (fs.existsSync(config.output)) {
