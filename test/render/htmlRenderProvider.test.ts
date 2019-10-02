@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { Config } from "../../src/config";
-import { HtmlProvider } from "../../src/render/htmlProvider";
+import { HtmlRenderProvider } from "../../src/render/htmRenderlProvider";
 import "mocha";
 import { Tag } from "../../src/tag";
 import { Post } from "../../src/post";
@@ -17,27 +17,27 @@ describe("htmlProvider", () => {
 
   it("get home template", () => {
     
-    let val = new HtmlProvider().getHomeTemplate(config);
+    let val = new HtmlRenderProvider().getHomeTemplate(config);
 
     expect(val).to.contain("{{title}} - {{author}}</a></p>\n{{/each}}");
   });
 
   it("get tag template", () => {
     
-    let val = new HtmlProvider().getTagTemplate(config);
+    let val = new HtmlRenderProvider().getTagTemplate(config);
 
     expect(val).to.contain("\n\n<p>Tag: \n{{tag.name}}<br /></p>");
   });
 
   it("get post template", () => {
     
-    let val = new HtmlProvider().getPostTemplate(config);
+    let val = new HtmlRenderProvider().getPostTemplate(config);
 
     expect(val).to.contain("<h1>Post</h1>");
   });
 
   it("render template", () => {
-    let htmlProvider = new HtmlProvider();
+    let htmlProvider = new HtmlRenderProvider();
     let source = htmlProvider.getTagTemplate(config);
     let tag = new Tag("FOO");
     let tags = [tag];
@@ -48,7 +48,7 @@ describe("htmlProvider", () => {
   });
 
   it("render post", async () => {
-    let htmlProvider = new HtmlProvider();
+    let htmlProvider = new HtmlRenderProvider();
     let post = new Post();
     post.author = "John Doe";
     post.title = "The John Doe Diary 1";
@@ -63,7 +63,7 @@ describe("htmlProvider", () => {
   });
 
   it("render post without data", async () => {
-    let htmlProvider = new HtmlProvider();
+    let htmlProvider = new HtmlRenderProvider();
     let tag = new Tag("FOO");
     let tags = [tag];
 
@@ -73,7 +73,7 @@ describe("htmlProvider", () => {
   });
 
   it("render tag", async () => {
-    let htmlProvider = new HtmlProvider();
+    let htmlProvider = new HtmlRenderProvider();
     let tag = new Tag("FOO");
     let tags = [tag];
 
@@ -83,7 +83,7 @@ describe("htmlProvider", () => {
   });
 
   it("render tag without data", async () => {
-    let htmlProvider = new HtmlProvider();
+    let htmlProvider = new HtmlRenderProvider();
     let tag = undefined;
     let tags = [tag];
 
@@ -93,7 +93,7 @@ describe("htmlProvider", () => {
   });
 
   it("render home", async () => {
-    let htmlProvider = new HtmlProvider();
+    let htmlProvider = new HtmlRenderProvider();
     
     let ds = new DataService(config);
 
@@ -103,7 +103,7 @@ describe("htmlProvider", () => {
   });
 
   it("render (long running)", async () => {
-    let htmlProvider = new HtmlProvider();
+    let htmlProvider = new HtmlRenderProvider();
     
     let ds = new DataService(config);
 

@@ -5,7 +5,7 @@ import { RenderProviderInterface } from "./renderProviderInterface";
 import * as fs from "fs-extra";
 import { Feed } from "feed";
 
-export class AtomProvider implements RenderProviderInterface{
+export class AtomRenderProvider implements RenderProviderInterface{
     log: any;
     constructor() {
         this.log = new Logger({ transports: [new transports.Console()] });

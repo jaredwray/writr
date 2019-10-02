@@ -1,11 +1,11 @@
 import { Logger, transports } from "winston";
 import { DataService } from "./data/dataService";
 import { Config } from "./config";
-import { HtmlProvider } from "./render/htmlProvider";
+import { HtmlRenderProvider } from "./render/htmRenderlProvider";
 import * as del from "del";
 import * as fs from "fs-extra";
 import { JSONProvider } from "./render/jsonProvider";
-import { AtomProvider } from "./render/atomProvider";
+import { AtomRenderProvider } from "./render/atomRenderProvider";
 import { ImageProvider } from "./render/imageProvider";
 
 export class Writr {
@@ -58,13 +58,13 @@ export class Writr {
             for(let i=0; i < this.config.render.length; i++) {
                 let type = this.config.render[i];
                 if(type === "html") {
-                    render = await new HtmlProvider().render(this.dataStore, this.config);
+                    render = await new HtmlRenderProvider().render(this.dataStore, this.config);
                 }
                 if(type === "json") {
                     render = await new JSONProvider().render(this.dataStore, this.config);
                 }
                 if(type === "atom") {
-                    render = await new AtomProvider().render(this.dataStore, this.config);
+                    render = await new AtomRenderProvider().render(this.dataStore, this.config);
                 }
                 if(type === "images") {
                     render = await new ImageProvider().render(this.dataStore, this.config);

@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { Config } from "../../src/config";
-import { AtomProvider } from "../../src/render/atomProvider";
+import { AtomRenderProvider } from "../../src/render/atomRenderProvider";
 import "mocha";
 import { DataService } from "../../src/data/dataService";
 import * as del from "del";
@@ -14,7 +14,7 @@ describe("atomProvider", () => {
   });
 
   it("render (long running)", async () => {
-    let atomProvider = new AtomProvider();
+    let atomProvider = new AtomRenderProvider();
     
     let ds = new DataService(config);
 
@@ -29,7 +29,7 @@ describe("atomProvider", () => {
   });
 
   it("render without config defined", async () => {
-    let atomProvider = new AtomProvider();
+    let atomProvider = new AtomRenderProvider();
     
     let ds = new DataService(config);
 

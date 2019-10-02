@@ -8,7 +8,7 @@ import { Post } from "../post";
 import { Tag } from "../tag";
 import { RenderProviderInterface } from "./renderProviderInterface";
 
-export class HtmlProvider implements RenderProviderInterface {
+export class HtmlRenderProvider implements RenderProviderInterface {
     log: any;
 
     constructor() {
