@@ -6,7 +6,7 @@ import * as fs from "fs-extra";
 import { Post } from "../post";
 import { Tag } from "../tag";
 
-export class JSONProvider implements RenderProviderInterface {
+export class JSONRenderProvider implements RenderProviderInterface {
     log: any;
 
     constructor() {

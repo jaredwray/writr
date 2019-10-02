@@ -4,7 +4,7 @@ import { Config } from "./config";
 import { HtmlRenderProvider } from "./render/htmRenderlProvider";
 import * as del from "del";
 import * as fs from "fs-extra";
-import { JSONProvider } from "./render/jsonProvider";
+import { JSONRenderProvider } from "./render/jsonRenderProvider";
 import { AtomRenderProvider } from "./render/atomRenderProvider";
 import { ImageRenderProvider } from "./render/imageRenderProvider";
 
@@ -61,7 +61,7 @@ export class Writr {
                     render = await new HtmlRenderProvider().render(this.dataStore, this.config);
                 }
                 if(type === "json") {
-                    render = await new JSONProvider().render(this.dataStore, this.config);
+                    render = await new JSONRenderProvider().render(this.dataStore, this.config);
                 }
                 if(type === "atom") {
                     render = await new AtomRenderProvider().render(this.dataStore, this.config);

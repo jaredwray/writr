@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { Config } from "../../src/config";
-import { JSONProvider } from "../../src/render/jsonProvider";
+import { JSONRenderProvider } from "../../src/render/jsonRenderProvider";
 import "mocha";
 import { DataService } from "../../src/data/dataService";
 import * as del from "del";
@@ -14,7 +14,7 @@ describe("jsonProvider", () => {
   });
 
   it("render (long running)", async () => {
-    let jsonProvider = new JSONProvider();
+    let jsonProvider = new JSONRenderProvider();
     
     let ds = new DataService(config);
 
