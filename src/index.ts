@@ -6,7 +6,7 @@ import * as del from "del";
 import * as fs from "fs-extra";
 import { JSONProvider } from "./render/jsonProvider";
 import { AtomRenderProvider } from "./render/atomRenderProvider";
-import { ImageProvider } from "./render/imageProvider";
+import { ImageRenderProvider } from "./render/imageRenderProvider";
 
 export class Writr {
     log: any;
@@ -67,7 +67,7 @@ export class Writr {
                     render = await new AtomRenderProvider().render(this.dataStore, this.config);
                 }
                 if(type === "images") {
-                    render = await new ImageProvider().render(this.dataStore, this.config);
+                    render = await new ImageRenderProvider().render(this.dataStore, this.config);
                 }
             }
 

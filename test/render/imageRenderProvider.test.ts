@@ -4,7 +4,7 @@ import "mocha";
 import { DataService } from "../../src/data/dataService";
 import * as del from "del";
 import * as fs from "fs-extra";
-import { ImageProvider } from "../../src/render/imageProvider";
+import { ImageRenderProvider } from "../../src/render/imageRenderProvider";
 
 describe("imageProvider", () => {
   let config: Config = new Config();
@@ -14,7 +14,7 @@ describe("imageProvider", () => {
   });
 
   it("render (long running)", async () => {
-    let imageProvider = new ImageProvider();
+    let imageProvider = new ImageRenderProvider();
     
     let ds = new DataService(config);
 

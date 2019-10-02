@@ -6,7 +6,7 @@ import { DataService } from "../data/dataService";
 import { Config } from "../config";
 import { RenderProviderInterface } from "./renderProviderInterface";
 
-export class ImageProvider implements RenderProviderInterface {
+export class ImageRenderProvider implements RenderProviderInterface {
     log: any;
 
     constructor() {
