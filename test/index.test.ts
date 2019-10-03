@@ -31,7 +31,7 @@ describe('Writr', () => {
     writr.parseCLI(process);
 
     writr.config = config;
-    writr.dataStore = new DataService(config);
+    writr.data = new DataService(config);
 
     //create directory
     fs.ensureDirSync(config.output);
@@ -60,7 +60,7 @@ describe('Writr', () => {
     expect(writr.config.path).to.equal("./blog_example");
   });
 
-  it("cli run with no datastore or config", async () => {
+  it("cli run with no data set or config", async () => {
     let writr = new Writr();
   
     let p: any = {};
@@ -71,7 +71,7 @@ describe('Writr', () => {
     writr.parseCLI(p);
 
     writr.config = undefined;
-    writr.dataStore = undefined;
+    writr.data = undefined;
 
     let val = await writr.runCLI();
 

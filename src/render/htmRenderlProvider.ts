@@ -15,17 +15,17 @@ export class HtmlRenderProvider implements RenderProviderInterface {
         this.log = new Logger({ transports: [new transports.Console()] });
     }
 
-    async render(dataStore: DataService, config: Config): Promise<boolean | undefined> {
+    async render(data: DataService, config: Config): Promise<boolean | undefined> {
         let result: boolean  = true;
 
         let output = config.output;
 
         fs.ensureDirSync(output);
 
-        let posts = await dataStore.getPublishedPosts();
-        let unpublishedPosts = await dataStore.getPosts();
-        let tags = await dataStore.getPublishedTags();
-        let unpublishedTags = await dataStore.getTags();
+        let posts = await data.getPublishedPosts();
+        let unpublishedPosts = await data.getPosts();
+        let tags = await data.getPublishedTags();
+        let unpublishedTags = await data.getTags();
 
         //posts
 
@@ -94,17 +94,17 @@ export class HtmlRenderProvider implements RenderProviderInterface {
         });
 
         //home
-        fs.writeFileSync(output + "/index.html", await this.renderHome(dataStore, config));
+        fs.writeFileSync(output + "/index.html", await this.renderHome(data, config));
 
         return result;
     }
 
     //render
-    async renderHome(dataStore: DataService, config:Config): Promise<string> {
+    async renderHome(data: DataService, config:Config): Promise<string> {
         let result = "";
 
-        let postList = await dataStore.getPublishedPostsByCount(config.indexCount);
-        let tagList = await dataStore.getPublishedTags();
+        let postList = await data.getPublishedPostsByCount(config.indexCount);
+        let tagList = await data.getPublishedTags();
 
         let source = this.getHomeTemplate(config);
         result = this.renderTemplate(source, { tags: tagList, posts: postList }, config);

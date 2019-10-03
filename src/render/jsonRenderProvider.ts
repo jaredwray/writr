@@ -13,22 +13,22 @@ export class JSONRenderProvider implements RenderProviderInterface {
         this.log = new Logger({ transports: [new transports.Console()] });
     }
 
-    async render(dataStore: DataService, config: Config): Promise<boolean | undefined>  {
+    async render(data: DataService, config: Config): Promise<boolean | undefined>  {
         let result: boolean = false;
 
-        let data: any = {};
-        data.posts = new Array<Post>();
-        data.tags = new Array<Tag>();
+        let obj: any = {};
+        obj.posts = new Array<Post>();
+        obj.tags = new Array<Tag>();
 
-        let posts = await dataStore.getPosts();
-        let tags = await dataStore.getTags();
+        let posts = await data.getPosts();
+        let tags = await data.getTags();
 
         posts.forEach((post) => {
-            data.posts.push(post.toObject());
+            obj.posts.push(post.toObject());
         });
 
         tags.forEach((tag) => {
-            data.tags.push(tag.toObject());
+            obj.tags.push(tag.toObject());
         });
 
         fs.ensureDirSync(config.output);

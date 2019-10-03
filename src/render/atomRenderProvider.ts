@@ -11,7 +11,7 @@ export class AtomRenderProvider implements RenderProviderInterface{
         this.log = new Logger({ transports: [new transports.Console()] });
     }
 
-    async render(dataStore: DataService, config: Config): Promise<boolean> {
+    async render(data: DataService, config: Config): Promise<boolean> {
         let result = true;
 
         fs.ensureDirSync(config.output);
@@ -49,7 +49,7 @@ export class AtomRenderProvider implements RenderProviderInterface{
         let atomFeed = new Feed(feedConfig);
 
         //add in the posts
-        let posts = await dataStore.getPostsByCount(config.indexCount);
+        let posts = await data.getPostsByCount(config.indexCount);
 
         posts.forEach((post) => {
 

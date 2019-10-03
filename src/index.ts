@@ -12,7 +12,7 @@ export class Writr {
     log: any;
 
     config: Config | undefined;
-    dataStore: DataService | undefined;
+    data: DataService | undefined;
 
     constructor() {
         this.log = new Logger({ transports: [new transports.Console()] });
@@ -41,13 +41,13 @@ export class Writr {
 
         this.config.loadProgram(program);
 
-        this.dataStore = new DataService(this.config);
+        this.data = new DataService(this.config);
     }
 
     async runCLI(): Promise<boolean> {
         let result = true;
 
-        if(this.dataStore !== undefined && this.config !== undefined) {
+        if(this.data !== undefined && this.config !== undefined) {
 
             if (fs.existsSync(this.config.output)) {
                 del.sync(this.config.output);
@@ -58,16 +58,16 @@ export class Writr {
             for(let i=0; i < this.config.render.length; i++) {
                 let type = this.config.render[i];
                 if(type === "html") {
-                    render = await new HtmlRenderProvider().render(this.dataStore, this.config);
+                    render = await new HtmlRenderProvider().render(this.data, this.config);
                 }
                 if(type === "json") {
-                    render = await new JSONRenderProvider().render(this.dataStore, this.config);
+                    render = await new JSONRenderProvider().render(this.data, this.config);
                 }
                 if(type === "atom") {
-                    render = await new AtomRenderProvider().render(this.dataStore, this.config);
+                    render = await new AtomRenderProvider().render(this.data, this.config);
                 }
                 if(type === "images") {
-                    render = await new ImageRenderProvider().render(this.dataStore, this.config);
+                    render = await new ImageRenderProvider().render(this.data, this.config);
                 }
             }
 
