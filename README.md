@@ -138,7 +138,7 @@ You can simply put in the style on permalink setting in the individual post `fro
 | ordinal | /:year/:y_day/:title/ |
 
 
-### Set it in the Post
+#### Set Layout it in the Post
 
 ```yaml
 ---
@@ -156,7 +156,7 @@ featured_image: Docula_%20Persistent%20Links%20and%20Styles%201.jpeg
 
 The url will be: `/2017/03/07/docula-persistent-links-and-styles`
 
-### Set it Globally
+#### Set Layout Globally
 
 To set it globally you can set it in the `config.json` by setting the `permaLink` variable like so:
 ```javascript
