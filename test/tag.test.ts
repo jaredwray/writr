@@ -40,4 +40,13 @@ describe('Tag', () => {
     expect(obj.posts.length).to.equal(1);
   });
 
+  it('tag clone with no posts', () => {
+    let tag = new Tag("How's now: brown cow! -");
+    tag.posts = undefined;
+    let obj = Tag.create(tag);
+
+    expect(obj.id).to.equal("how-s-now-brown-cow");
+    expect(obj.posts.length).to.equal(0);
+  });
+
 });
