@@ -133,9 +133,12 @@ export class FileDataProvider implements DataProviderInterface {
   }
 
   async parsePost(filePath: string): Promise<Post | undefined> {
-    let result: Post | undefined = new Post();
+    let result: Post | undefined = undefined;
 
     if (await fs.pathExists(filePath)) {
+
+      result = new Post();
+      
       let buff = await fs.readFile(filePath);
 
       let data = buff.toString();
