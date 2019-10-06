@@ -3,6 +3,7 @@ import "mocha";
 
 import { Config } from "../../src/config";
 import { DataService } from "../../src/data/dataService";
+import { Post } from "../../src/post";
 
 describe("Data Service", async () => {
   let config: Config = new Config();
@@ -33,6 +34,12 @@ describe("Data Service", async () => {
     let posts = await ds.getPublishedPostsByCount(7);
 
     expect(posts.length).to.equal(6);
+  });
+
+  it("get published posts by count maximum", async () => {
+    let posts = await ds.getPublishedPostsByCount(3);
+
+    expect(posts.length).to.equal(3);
   });
 
   it("get posts", async () => {
