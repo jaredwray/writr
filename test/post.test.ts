@@ -169,6 +169,20 @@ describe('Post', () => {
     expect(post.tags.length).to.equal(3);
   });
 
+  it('post add tags undefined', () => {
+    let post = new Post();
+    post.tags.push("foo");
+
+    let tags = new Array<string>();
+    tags.push("foo");
+    tags.push("bar");
+    tags.push(undefined);
+
+    post.addTags(tags);
+
+    expect(post.tags.length).to.equal(2);
+  });
+
   it('post parse url :title', () => {
     let post = new Post();
     
