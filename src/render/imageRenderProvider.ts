@@ -1,10 +1,10 @@
 import * as handlebars from "handlebars";
-import * as fs from "fs-extra";
 import { Logger, transports } from "winston";
 
 import { DataService } from "../data/dataService";
 import { Config } from "../config";
 import { RenderProviderInterface } from "./renderProviderInterface";
+import { StorageService } from "../storage/storageService";
 
 export class ImageRenderProvider implements RenderProviderInterface {
     log: any;
@@ -18,11 +18,8 @@ export class ImageRenderProvider implements RenderProviderInterface {
 
         let output = config.output;
 
-        fs.ensureDirSync(output);
-
         //images
-        fs.ensureDirSync(output + "/images");
-        fs.copySync(config.path + "/images" , output + "/images");
+        await new StorageService(config).copy(config.path + "/images" , output + "/images");
 
         return result;
     }

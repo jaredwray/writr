@@ -1,18 +1,20 @@
 import * as handlebars from "handlebars";
-import * as fs from "fs-extra";
 import { Logger, transports } from "winston";
-
+import * as fs from "fs-extra";
 import { DataService } from "../data/dataService";
 import { Config } from "../config";
 import { Post } from "../post";
 import { Tag } from "../tag";
 import { RenderProviderInterface } from "./renderProviderInterface";
+import { StorageService } from "../storage/storageService";
+
 
 export class HtmlRenderProvider implements RenderProviderInterface {
     log: any;
 
     constructor() {
         this.log = new Logger({ transports: [new transports.Console()] });
+
     }
 
     async render(data: DataService, config: Config): Promise<boolean | undefined> {
@@ -20,12 +22,12 @@ export class HtmlRenderProvider implements RenderProviderInterface {
 
         let output = config.output;
 
-        fs.ensureDirSync(output);
-
         let posts = await data.getPublishedPosts();
         let unpublishedPosts = await data.getPosts();
         let tags = await data.getPublishedTags();
         let unpublishedTags = await data.getTags();
+
+        let storage = new StorageService(config);
 
         //posts
 
@@ -50,9 +52,8 @@ export class HtmlRenderProvider implements RenderProviderInterface {
             let postHtml = await this.renderPost(post, previousPost, nextPost, tags, config);
 
             let postPath = output + "/" + post.id;
-            fs.ensureDirSync(postPath);
 
-            fs.writeFileSync(postPath + "/index.html", postHtml);
+            await storage.set(postPath + "/index.html", postHtml);
         });
 
         //unpublished posts
@@ -74,27 +75,23 @@ export class HtmlRenderProvider implements RenderProviderInterface {
                 let postHtml = await this.renderPost(post, previousPost, nextPost, unpublishedTags, config);
 
                 let postPath = output + "/" + post.id;
-                fs.ensureDirSync(postPath);
 
-                fs.writeFileSync(postPath + "/index.html", postHtml);
+                storage.set(postPath + "/index.html", postHtml);
             }
         });
 
         //tags
-        fs.ensureDirSync(output + "/tags/");
 
         tags.forEach(async tag => {
             let tagHtml = await this.renderTag(tag, tags, config);
 
             let tagPath = output + "/tags/" + tag.id;
 
-            fs.ensureDirSync(tagPath);
-
-            fs.writeFileSync(tagPath + "/index.html", tagHtml);
+            storage.set(tagPath + "/index.html", tagHtml);
         });
 
         //home
-        fs.writeFileSync(output + "/index.html", await this.renderHome(data, config));
+        storage.set(output + "/index.html", await this.renderHome(data, config));
 
         return result;
     }
@@ -151,6 +148,7 @@ export class HtmlRenderProvider implements RenderProviderInterface {
     }
 
     registerPartials(config: Config) {
+        let result = false;
         let path = config.path + "/templates/partials";
         if(fs.pathExistsSync(path)) {
             let partials = fs.readdirSync(path);
@@ -164,7 +162,10 @@ export class HtmlRenderProvider implements RenderProviderInterface {
                 }
 
             });
+            result = true;
         }
+
+        return result;
     }
 
     //Templates

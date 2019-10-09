@@ -2,9 +2,9 @@ import { RenderProviderInterface } from "./renderProviderInterface";
 import { DataService } from "../data/dataService";
 import { Config } from "../config";
 import { Logger, transports } from "winston";
-import * as fs from "fs-extra";
 import { Post } from "../post";
 import { Tag } from "../tag";
+import { StorageService } from "../storage/storageService";
 
 export class JSONRenderProvider implements RenderProviderInterface {
     log: any;
@@ -30,9 +30,9 @@ export class JSONRenderProvider implements RenderProviderInterface {
         tags.forEach((tag) => {
             obj.tags.push(tag.toObject());
         });
-
-        fs.ensureDirSync(config.output);
-        fs.writeFileSync(config.output + "/data.json", JSON.stringify(data));
+        
+        await new StorageService(config).set(config.output + "/data.json", JSON.stringify(data));
+        
         result = true;
         
         return result;

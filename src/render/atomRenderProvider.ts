@@ -2,8 +2,8 @@ import { Logger, transports } from "winston";
 import { DataService } from "../data/dataService";
 import { Config } from "../config";
 import { RenderProviderInterface } from "./renderProviderInterface";
-import * as fs from "fs-extra";
 import { Feed } from "feed";
+import { StorageService } from "../storage/storageService";
 
 export class AtomRenderProvider implements RenderProviderInterface{
     log: any;
@@ -13,8 +13,6 @@ export class AtomRenderProvider implements RenderProviderInterface{
 
     async render(data: DataService, config: Config): Promise<boolean> {
         let result = true;
-
-        fs.ensureDirSync(config.output);
 
         let feedConfig: any = {};
 
@@ -67,7 +65,7 @@ export class AtomRenderProvider implements RenderProviderInterface{
         });
 
         //write the feed atom.xml
-        fs.writeFileSync(config.output + "/atom.xml", atomFeed.atom1());
+        await new StorageService(config).set(config.output + "/atom.xml", atomFeed.atom1());
 
         return result;
     }
