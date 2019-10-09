@@ -27,6 +27,7 @@ export class FileStorageProvider {
 
         if (path !== undefined && data !== undefined) {
             try {
+                await this.ensureFilePath(path);
                 await fs.writeFile(path, data);
                 result = true;
             } catch (error) {
@@ -52,11 +53,35 @@ export class FileStorageProvider {
         return result;
     }
 
+    async copy(src:string, dest:string): Promise<boolean> {
+        let result = false;
+
+        try {
+            await fs.ensureDir(dest);
+            await fs.copy(src, dest);
+            result = true;
+        } catch (error) {
+            /* istanbul ignore next */
+            this.log.error(error);
+        }
+
+        return result;
+    }
+
     exists(path: string) {
         return new Promise<boolean>((resolve) => {
             fs.exists(path, exist => {
                 resolve(exist);
             });
         });
+    }
+
+    private async ensureFilePath(path:string) {
+        let pathList = path.split("/");
+        pathList.pop();
+
+        let dir = pathList.join("/");
+
+        await fs.ensureDir(dir);
     }
 }

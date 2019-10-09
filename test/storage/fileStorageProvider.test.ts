@@ -15,7 +15,7 @@ describe("File Storage Provider", () => {
     config.loadConfig("./blog_example/config.json");
     filePath = config.path +"/article1.md";
     this.fileStorageProvider = new FileStorageProvider();
-    fileStorageProvider.log = new Logger({ transports: [new transports.File({ filename: "fsp_test.log"})] }); //setting the logger to nothing
+    fileStorageProvider.log = new Logger({ transports: [new transports.File({ filename: "fsp_test.log"})] });
 
   });
 
@@ -62,6 +62,18 @@ describe("File Storage Provider", () => {
     expect(result).to.equal(true);
 
     fs.removeSync(path);
+  });
+
+  it("copy directory show true", async () => {
+    let src = config.path + "/images";
+    let dest = config.output + "/images";
+    
+    await fs.remove(dest);
+    await fileStorageProvider.copy(src, dest);
+
+    expect(fs.readdirSync(dest).length).to.equal(4);
+
+    fs.removeSync(dest);
   });
 
   it("exist file should show false on bad path", async () => {
