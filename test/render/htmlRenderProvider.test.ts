@@ -117,5 +117,25 @@ describe("htmlProvider", () => {
     expect(val).to.equal(true);
   });
 
+
+  it("register partials", async () => {
+    let htmlProvider = new HtmlRenderProvider();
+
+    let result = htmlProvider.registerPartials(config);
+
+    expect(result).to.equal(true);
+  });
+
+  it("register partials on bad path", async () => {
+    let htmlProvider = new HtmlRenderProvider();
+
+    let c = new Config();
+    c.path = "./foo";
+
+    let result = htmlProvider.registerPartials(c);
+
+    expect(result).to.equal(false);
+  });
+
   
 });
