@@ -1,7 +1,8 @@
 import * as fs from "fs-extra";
 import { Logger, transports } from "winston";
+import { StorageProviderInterface } from "../storage/storageProviderInterface";
 
-export class FileStorageProvider {
+export class FileStorageProvider implements StorageProviderInterface {
 
     log: any;
 
