@@ -44,7 +44,7 @@
     "feed": "^4.0.0",
     "fs-extra": "^6.0.1",
     "gray-matter": "^4.0.2",
-    "handlebars": "~>4.3.0",
+    "handlebars": "~>4.5.3",
     "helper-date": "^1.0.1",
     "keyv": "^3.0.0",
     "markdown-it": "^8.4.1",
