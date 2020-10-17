@@ -1,13 +1,14 @@
 import * as fs from "fs-extra";
-import { Logger, transports } from "winston";
 import { StorageProviderInterface } from "../storage/storageProviderInterface";
+
+import { createLogger, transports } from "winston";
 
 export class FileStorageProvider implements StorageProviderInterface {
 
     log: any;
 
     constructor() {
-        this.log = new Logger({ transports: [new transports.Console()] });
+        this.log = createLogger({ transports: [new transports.Console()]});
     }
 
     async get(path: string): Promise<string | undefined> {

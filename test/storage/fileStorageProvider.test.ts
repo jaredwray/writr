@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { Config } from "../../src/config";
 import { FileStorageProvider } from "../../src/storage/fileStorageProvider";
-import { Logger, transports } from "winston";
+import { createLogger, transports } from "winston";
 import * as fs from "fs-extra";
 import "mocha";
 import { after } from "mocha";
@@ -14,8 +14,8 @@ describe("File Storage Provider", () => {
   beforeEach(() => {
     config.loadConfig("./blog_example/config.json");
     filePath = config.path +"/article1.md";
-    this.fileStorageProvider = new FileStorageProvider();
-    fileStorageProvider.log = new Logger({ transports: [new transports.File({ filename: "fsp_test.log"})] });
+    fileStorageProvider = new FileStorageProvider();
+    fileStorageProvider.log = createLogger({ transports: [new transports.File({ filename: "fsp_test.log"})] });
 
   });
 

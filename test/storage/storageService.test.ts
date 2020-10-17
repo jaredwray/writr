@@ -14,7 +14,7 @@ describe("Storage Service", () => {
   beforeEach(() => {
     config.loadConfig("./blog_example/config.json");
     filePath = config.path +"/article1.md";
-    this.storage = new StorageService(config);
+    storage = new StorageService(config);
 
   });
 

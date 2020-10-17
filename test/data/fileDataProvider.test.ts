@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { Config } from "../../src/config";
 import { FileDataProvider } from "../../src/data/fileDataProvider";
-import winston = require('winston');
+import { createLogger, transports } from "winston";
 import "mocha";
 
 describe("File Data Provider", () => {
@@ -143,7 +143,7 @@ describe("File Data Provider", () => {
   it("parse bad file path post", async () => {
     let fileProvider = new FileDataProvider();
     //set the logging level
-    fileProvider.log = new winston.Logger({ transports: undefined });
+    fileProvider.log = createLogger({ transports: undefined});
 
     let post = await fileProvider.parsePost("../foo.md")
 

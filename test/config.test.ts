@@ -2,7 +2,7 @@ import { Tag } from '../src/tag';
 import { expect } from 'chai';
 import 'mocha';
 import { Config } from '../src/config';
-import winston = require('winston');
+import { createLogger, transports } from "winston";
 
 describe('Config', () => {
 
@@ -94,7 +94,7 @@ describe('Config', () => {
         config = new Config();
 
         //only log on error
-        config.log = new winston.Logger({ transports: [new winston.transports.Console({ level: 'error' })] });
+        config.log = createLogger({ transports: [new transports.Console({ level: 'error' })] });
 
         let valid = config.loadConfig("../blog_example/blah.json");
 

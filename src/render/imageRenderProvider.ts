@@ -1,6 +1,4 @@
-import * as handlebars from "handlebars";
-import { Logger, transports } from "winston";
-
+import { createLogger, transports } from "winston";
 import { DataService } from "../data/dataService";
 import { Config } from "../config";
 import { RenderProviderInterface } from "./renderProviderInterface";
@@ -10,7 +8,7 @@ export class ImageRenderProvider implements RenderProviderInterface {
     log: any;
 
     constructor() {
-        this.log = new Logger({ transports: [new transports.Console()] });
+        this.log = createLogger({ transports: [new transports.Console()]});
     }
 
     async render(data: DataService, config: Config): Promise<boolean | undefined> {

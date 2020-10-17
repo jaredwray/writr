@@ -1,9 +1,9 @@
 import * as fs from "fs-extra";
-import { Logger, transports } from "winston";
+import { createLogger, transports } from "winston";
 
 export class Config {
   cache: ConfigCache = new ConfigCache();
-  log = new Logger({ transports: [new transports.Console()] });
+  log = createLogger({ transports: [new transports.Console()]});
   program: any = {};
   provider: any = {};
   render: Array<string> = ["html", "json", "atom"];

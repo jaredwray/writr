@@ -3,7 +3,7 @@ import { Tag } from "../tag";
 import { Config } from "../config";
 import { DataProviderInterface } from "./dataProviderInterface";
 import * as fs from "fs-extra";
-import { Logger, transports } from "winston";
+import { createLogger, transports } from "winston";
 import * as matter from 'gray-matter';
 
 export class FileDataProvider implements DataProviderInterface {
@@ -12,7 +12,7 @@ export class FileDataProvider implements DataProviderInterface {
   log: any;
 
   constructor() {
-    this.log = new Logger({ transports: [new transports.Console()] });
+    this.log = createLogger({ transports: [new transports.Console()]});
   }
 
   init(config: Config) {

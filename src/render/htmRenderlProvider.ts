@@ -1,5 +1,5 @@
 import * as handlebars from "handlebars";
-import { Logger, transports } from "winston";
+import { createLogger, transports } from "winston";
 import * as fs from "fs-extra";
 import { DataService } from "../data/dataService";
 import { Config } from "../config";
@@ -13,7 +13,7 @@ export class HtmlRenderProvider implements RenderProviderInterface {
     log: any;
 
     constructor() {
-        this.log = new Logger({ transports: [new transports.Console()] });
+        this.log = createLogger({ transports: [new transports.Console()]});
 
     }
 

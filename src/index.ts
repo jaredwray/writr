@@ -1,4 +1,4 @@
-import { Logger, transports } from "winston";
+import { createLogger, transports } from "winston";
 import { DataService } from "./data/dataService";
 import { Config } from "./config";
 import { HtmlRenderProvider } from "./render/htmRenderlProvider";
@@ -15,7 +15,7 @@ export class Writr {
     data: DataService | undefined;
 
     constructor() {
-        this.log = new Logger({ transports: [new transports.Console()] });
+        this.log = createLogger({ transports: [new transports.Console()]});
     }
 
     parseCLI(process: NodeJS.Process) {
