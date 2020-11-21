@@ -1,51 +1,48 @@
-import { expect } from "chai";
-import "mocha";
-
 import { Config } from "../../src/config";
 import { DataService } from "../../src/data/dataService";
 import { Post } from "../../src/post";
 
-describe("Data Service", async () => {
+describe("Data Service", () => {
   let config: Config = new Config();
   let ds: DataService;
 
-  before(async () => {
+  beforeAll(async () => {
     config.loadConfig("./blog_example/config.json");
     ds = new DataService(config);
   });
 
   it("get a provider based on the config", () => {
-    expect(ds.getProvider()).to.not.equal(undefined);
+    expect(ds.getProvider()).toBeDefined();
   });
 
   it("get published posts", async () => {
     let posts = await ds.getPublishedPosts();
 
-    expect(posts.length).to.equal(6);
+    expect(posts.length).toBe(6);
   });
 
   it("get posts by count", async () => {
     let posts = await ds.getPostsByCount(2);
 
-    expect(posts.length).to.equal(2);
+    expect(posts.length).toBe(2);
   });
 
   it("get published posts by count", async () => {
     let posts = await ds.getPublishedPostsByCount(7);
 
-    expect(posts.length).to.equal(6);
+    expect(posts.length).toBe(6);
   });
 
   it("get published posts by count maximum", async () => {
     let posts = await ds.getPublishedPostsByCount(3);
 
-    expect(posts.length).to.equal(3);
+    expect(posts.length).toBe(3);
   });
 
   it("get posts", async () => {
     let posts = await ds.getPosts();
 
-    expect(posts.length).to.equal(7);
+    expect(posts.length).toBe(7);
   });
 
   it("get posts from cache", async () => {
@@ -53,7 +50,7 @@ describe("Data Service", async () => {
 
     let posts2 = await ds.getPosts();
 
-    expect(posts2.length).to.equal(7);
+    expect(posts2.length).toBe(7);
   });
 
   it("get posts with a miss", async () => {
@@ -63,32 +60,36 @@ describe("Data Service", async () => {
 
     let posts = await ds2.getPosts();
 
-    expect(posts.length).to.equal(0);
+    expect(posts.length).toBe(0);
   });
 
   it("get post", async () => {
     let post = await ds.getPost("article-simple");
 
-    expect(post.title).to.equal("Article Simple");
+    if(post) {
+      expect(post.title).toBe("Article Simple");
+    } else {
+      fail();
+    }
   });
 
   it("get post with a miss", async () => {
     let post = await ds.getPost("sdfsfsdfsddfsd");
 
-    expect(post).to.equal(undefined);
+    expect(post).toBeUndefined();
   });
 
   it("get published tags", async () => {
     let tags = await ds.getPublishedTags();
 
-    expect(tags.length).to.equal(16);
+    expect(tags.length).toBe(16);
   });
 
 
   it("get tags", async () => {
     let tags = await ds.getTags();
 
-    expect(tags.length).to.equal(17);
+    expect(tags.length).toBe(17);
   });
 
   it("get tags from cache", async () => {
@@ -96,26 +97,34 @@ describe("Data Service", async () => {
 
     let tags = await ds.getTags();
 
-    expect(tags.length).to.equal(17);
+    expect(tags.length).toBe(17);
   });
 
   it("get tag with a miss", async () => {
     let tag = await ds.getTag("sdfkjslfkjse");
 
-    expect(tag).to.equal(undefined);
+    expect(tag).toBeUndefined();
   });
 
   it("get tag", async () => {
     let tag = await ds.getTag("tesla");
 
-    expect(tag.id).to.equal("tesla");
+    if(tag) {
+      expect(tag.id).toBe("tesla");
+    } else {
+      fail();
+    }
   });
 
   it("get tag from cache", async () => {
     await ds.getTag("tesla");
     let tag = await ds.getTag("tesla");
 
-    expect(tag.id).to.equal("tesla");
+    if(tag) {
+      expect(tag.id).toBe("tesla");
+    } else {
+      fail();
+    }
   });
 
 });

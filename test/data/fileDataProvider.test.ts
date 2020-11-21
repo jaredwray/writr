@@ -1,8 +1,6 @@
-import { expect } from "chai";
 import { Config } from "../../src/config";
 import { FileDataProvider } from "../../src/data/fileDataProvider";
 import { createLogger, transports } from "winston";
-import "mocha";
 
 describe("File Data Provider", () => {
   let config: Config = new Config();
@@ -15,7 +13,7 @@ describe("File Data Provider", () => {
     let fileProvider = new FileDataProvider();
     fileProvider.init(config);
 
-    expect(fileProvider.__postPath).to.equal(config.path);
+    expect(fileProvider.__postPath).toBe(config.path);
   });
 
   it("config gets no config.data.postPath in init", () => {
@@ -25,7 +23,7 @@ describe("File Data Provider", () => {
 
     fileProvider.init(config);
 
-    expect(fileProvider.__postPath).to.equal(config.path);
+    expect(fileProvider.__postPath).toBe(config.path);
   });
 
   it("should get the posts from the file system", async () => {
@@ -34,7 +32,7 @@ describe("File Data Provider", () => {
 
     let posts = await fileProvider.getPosts();
 
-    expect(posts.length).to.equal(7);
+    expect(posts.length).toBe(7);
   });
 
   it("should get the posts from memory", async () => {
@@ -45,7 +43,7 @@ describe("File Data Provider", () => {
 
     let posts = await fileProvider.getPosts();
 
-    expect(posts.length).to.equal(7);
+    expect(posts.length).toBe(7);
   });
 
   it("should get a valid post", async () => {
@@ -54,7 +52,11 @@ describe("File Data Provider", () => {
 
     let post = await fileProvider.getPost("article-simple");
 
-    expect(post.title).to.equal("Article Simple");
+    if(post) {
+      expect(post.title).toBe("Article Simple");
+    } else {
+      fail();
+    }
   });
 
   it("should not get a valid post", async () => {
@@ -63,7 +65,7 @@ describe("File Data Provider", () => {
 
     let post = await fileProvider.getPost("article");
 
-    expect(post).to.equal(undefined);
+    expect(post).toBeUndefined();
   });
 
   it("should get a post", async () => {
@@ -72,7 +74,12 @@ describe("File Data Provider", () => {
 
     let post = await fileProvider.getPost("all-about-the-tesla-model-3");
 
-    expect(post.title).to.equal("Tesla Model 3");
+    if(post) {
+      expect(post.title).toBe("Tesla Model 3");
+    } else {
+      fail();
+    }
+
   });
 
   it("should get posts", async () => {
@@ -81,7 +88,7 @@ describe("File Data Provider", () => {
 
     let posts = await fileProvider.getPosts();
 
-    expect(posts.length).to.equal(7);
+    expect(posts.length).toBe(7);
   });
 
   it("should get published posts", async () => {
@@ -90,7 +97,8 @@ describe("File Data Provider", () => {
 
     let posts = await fileProvider.getPublishedPosts();
 
-    expect(posts.length).to.equal(6);
+    expect(posts.length).toBe(6);
+
   });
 
   it("should have a valid tag", async () => {
@@ -99,7 +107,12 @@ describe("File Data Provider", () => {
 
     let tag = await fileProvider.getTag("whale");
 
-    expect(tag.name).to.equal("Whale");
+    if(tag) {
+      expect(tag.name).toBe("Whale");
+    } else {
+      fail();
+    }
+
   });
 
   it("should have a valid tag and multiple posts", async () => {
@@ -108,7 +121,11 @@ describe("File Data Provider", () => {
 
     let tag = await fileProvider.getTag("whale");
 
-    expect(tag.posts.length).to.equal(3);
+    if(tag) {
+      expect(tag.posts.length).toBe(3);
+    } else {
+      fail();
+    }
   });
 
   it("should have a invalid tag", async () => {
@@ -117,7 +134,7 @@ describe("File Data Provider", () => {
 
     let tag = await fileProvider.getTag("snoopy");
 
-    expect(tag).to.equal(undefined);
+    expect(tag).toBeUndefined();
   });
 
   it("should get published tags", async () => {
@@ -126,7 +143,7 @@ describe("File Data Provider", () => {
 
     let tags = await fileProvider.getPublishedTags();
 
-    expect(tags.length).to.equal(16);
+    expect(tags.length).toBe(16);
   });
 
   it("should generate the correct amount of tags", async () => {
@@ -137,16 +154,20 @@ describe("File Data Provider", () => {
 
     let tags = await fileProvider.generateTags(posts);
 
-    expect(tags.length).to.equal(17);
+    expect(tags.length).toBe(17);
   });
 
   it("parse bad file path post", async () => {
     let fileProvider = new FileDataProvider();
+    
     //set the logging level
-    fileProvider.log = createLogger({ transports: undefined});
+    fileProvider.log = createLogger({ transports: [new transports.Console()]});
+    for (let t of fileProvider.log.transports) {
+      t.silent = true;
+    }
 
     let post = await fileProvider.parsePost("../foo.md")
 
-    expect(post).to.equal(undefined);
+    expect(post).toBeUndefined();
   });
 });

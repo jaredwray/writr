@@ -1,7 +1,5 @@
-import { expect } from "chai";
 import { Config } from "../../src/config";
 import { JSONRenderProvider } from "../../src/render/jsonRenderProvider";
-import "mocha";
 import { DataService } from "../../src/data/dataService";
 import * as del from "del";
 import * as fs from "fs-extra";
@@ -25,7 +23,7 @@ describe("jsonProvider", () => {
         del.sync(config.output);
     }
 
-    expect(val).to.equal(true);
+    expect(val).toBe(true);
   });
 
   

@@ -1,15 +1,12 @@
-import { expect } from "chai";
 import { Config } from "../../src/config";
 import { FileStorageProvider } from "../../src/storage/fileStorageProvider";
 import { createLogger, transports } from "winston";
 import * as fs from "fs-extra";
-import "mocha";
-import { after } from "mocha";
 
 describe("File Storage Provider", () => {
   let config: Config = new Config();
   let fileStorageProvider: FileStorageProvider = new FileStorageProvider();
-  let filePath;
+  let filePath = "";
 
   beforeEach(() => {
     config.loadConfig("./blog_example/config.json");
@@ -19,7 +16,7 @@ describe("File Storage Provider", () => {
 
   });
 
-  after(() => {
+  afterAll(() => {
     fs.removeSync("fsp_test.log");
   });
 
@@ -27,30 +24,51 @@ describe("File Storage Provider", () => {
     
     let fileData = await fileStorageProvider.get("");
 
-    expect(fileData).to.equal(undefined);
+    expect(fileData).toBeUndefined();
   });
 
   it("get file should show a string", async () => {
     
     let fileData = await fileStorageProvider.get(filePath);
 
-    expect(fileData.length).to.equal(233);
+    if(fileData) {
+      expect(fileData.length).toBe(233);
+    } else {
+      fail();
+    }
+
   });
 
   it("set file should show false on no data", async () => {
     let path = config.path + "/foo.md";
 
-    let result = await fileStorageProvider.set(path, undefined);
+    let result = await fileStorageProvider.set(path, "");
 
-    expect(result).to.equal(false);
+    expect(result).toBe(false);
   });
 
   it("set file should show false on no path", async () => {
     let data = "boo hoo";
 
+    let result = await fileStorageProvider.set("", data);
+
+    expect(result).toBe(false);
+  });
+
+  it("set file should show false on undefined data", async () => {
+    let path = config.path + "/foo.md";
+
+    let result = await fileStorageProvider.set(path, undefined);
+
+    expect(result).toBe(false);
+  });
+
+  it("set file should show false on undefined path", async () => {
+    let data = "boo hoo";
+
     let result = await fileStorageProvider.set(undefined, data);
 
-    expect(result).to.equal(false);
+    expect(result).toBe(false);
   });
 
   it("set file should show true writing a file", async () => {
@@ -58,8 +76,8 @@ describe("File Storage Provider", () => {
     let path = config.path + "/fsp_test.md";
     let result = await fileStorageProvider.set(path, data);
 
-    expect(fs.existsSync(path)).to.equal(true);
-    expect(result).to.equal(true);
+    expect(fs.existsSync(path)).toBe(true);
+    expect(result).toBe(true);
 
     fs.removeSync(path);
   });
@@ -71,7 +89,7 @@ describe("File Storage Provider", () => {
     await fs.remove(dest);
     await fileStorageProvider.copy(src, dest);
 
-    expect(fs.readdirSync(dest).length).to.equal(4);
+    expect(fs.readdirSync(dest).length).toBe(4);
 
     fs.removeSync(dest);
   });
@@ -81,7 +99,7 @@ describe("File Storage Provider", () => {
 
     let result = await fileStorageProvider.exists(path);
 
-    expect(result).to.equal(false);
+    expect(result).toBe(false);
   });
 
   it("exist file should show true on good path", async () => {
@@ -89,7 +107,7 @@ describe("File Storage Provider", () => {
 
     let result = await fileStorageProvider.exists(path);
 
-    expect(result).to.equal(true);
+    expect(result).toBe(true);
   });
 
   it("delete file should show true", async () => {
@@ -97,7 +115,7 @@ describe("File Storage Provider", () => {
 
     let result = await fileStorageProvider.delete(path);
 
-    expect(result).to.equal(true);
+    expect(result).toBe(true);
   });
 
   it("delete file should show true", async () => {
@@ -108,7 +126,7 @@ describe("File Storage Provider", () => {
 
     let result = await fileStorageProvider.delete(path);
 
-    expect(result).to.equal(true);
+    expect(result).toBe(true);
   });
 
 });

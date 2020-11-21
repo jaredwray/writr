@@ -1,15 +1,12 @@
-import { expect } from "chai";
 import { Config } from "../../src/config";
 import { StorageService } from "../../src/storage/storageService";
 import { Logger, transports } from "winston";
 import * as fs from "fs-extra";
-import "mocha";
-import { after } from "mocha";
 
 describe("Storage Service", () => {
   let config: Config = new Config();
   let storage: StorageService = new StorageService(config);
-  let filePath;
+  let filePath = "";
 
   beforeEach(() => {
     config.loadConfig("./blog_example/config.json");
@@ -22,7 +19,11 @@ describe("Storage Service", () => {
     
     let fileData = await storage.get(filePath);
 
-    expect(fileData.length).to.equal(233);
+    if(fileData) {
+      expect(fileData.length).toBe(233);
+    } else {
+      fail();
+    }
   });
 
   it("set", async () => {
@@ -30,8 +31,8 @@ describe("Storage Service", () => {
     let path = config.path + "/fsp_test.md";
     let result = await storage.set(path, data);
 
-    expect(fs.existsSync(path)).to.equal(true);
-    expect(result).to.equal(true);
+    expect(fs.existsSync(path)).toBe(true);
+    expect(result).toBe(true);
 
     fs.removeSync(path);
   });
@@ -43,7 +44,7 @@ describe("Storage Service", () => {
     await fs.remove(dest);
     await storage.copy(src, dest);
 
-    expect(fs.readdirSync(dest).length).to.equal(4);
+    expect(fs.readdirSync(dest).length).toBe(4);
 
     fs.removeSync(dest);
   });
@@ -53,7 +54,7 @@ describe("Storage Service", () => {
 
     let result = await storage.exists(path);
 
-    expect(result).to.equal(true);
+    expect(result).toBe(true);
   });
 
   it("delete", async () => {
@@ -64,14 +65,14 @@ describe("Storage Service", () => {
 
     let result = await storage.delete(path);
 
-    expect(result).to.equal(true);
+    expect(result).toBe(true);
   });
 
   it("getProvider", async () => {
 
     let result = await storage.getProvider();
 
-    expect(result).not.equal(undefined);
+    expect(result).toBeDefined();
   });
 
 });

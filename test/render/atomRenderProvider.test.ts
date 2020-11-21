@@ -1,7 +1,5 @@
-import { expect } from "chai";
 import { Config } from "../../src/config";
 import { AtomRenderProvider } from "../../src/render/atomRenderProvider";
-import "mocha";
 import { DataService } from "../../src/data/dataService";
 import * as del from "del";
 import * as fs from "fs-extra";
@@ -25,7 +23,7 @@ describe("atomProvider", () => {
         del.sync(config.output);
     }
 
-    expect(val).to.equal(true);
+    expect(val).toBe(true);
   });
 
   it("render without config defined", async () => {
@@ -33,10 +31,10 @@ describe("atomProvider", () => {
     
     let ds = new DataService(config);
 
-    config.title = undefined;
-    config.url = undefined;
-    config.authorName = undefined;
-    config.authorEmail = undefined;
+    config.title = "";
+    config.url = "";
+    config.authorName = "";
+    config.authorEmail = "";
 
     let val = await atomProvider.render(ds, config);
 
@@ -45,7 +43,7 @@ describe("atomProvider", () => {
         del.sync(config.output);
     }
 
-    expect(val).to.equal(true);
+    expect(val).toBe(true);
   });
 
   

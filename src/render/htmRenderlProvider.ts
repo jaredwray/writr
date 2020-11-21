@@ -49,7 +49,7 @@ export class HtmlRenderProvider implements RenderProviderInterface {
                 nextPost = posts[index+1]
             }
 
-            let postHtml = await this.renderPost(post, previousPost, nextPost, tags, config);
+            let postHtml = await this.renderPost(post, tags, config, previousPost, nextPost);
 
             let postPath = output + "/" + post.id;
 
@@ -72,7 +72,7 @@ export class HtmlRenderProvider implements RenderProviderInterface {
             }
 
             if(post.published === false) {
-                let postHtml = await this.renderPost(post, previousPost, nextPost, unpublishedTags, config);
+                let postHtml = await this.renderPost(post, unpublishedTags, config, previousPost, nextPost);
 
                 let postPath = output + "/" + post.id;
 
@@ -119,7 +119,7 @@ export class HtmlRenderProvider implements RenderProviderInterface {
         return result;
     }
 
-    async renderPost(post: Post, previousPost: Post, nextPost: Post, tags: Array<Tag>, config:Config): Promise<string> {
+    async renderPost(post: Post, tags: Array<Tag>, config:Config, previousPost?: Post, nextPost?: Post,): Promise<string> {
         let result = "";
 
         if (post) {
