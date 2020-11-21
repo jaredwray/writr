@@ -142,7 +142,9 @@ export class HtmlRenderProvider implements RenderProviderInterface {
 
         handlebars.registerHelper('formatDate', require('helper-date'));
         let template: handlebars.Template = handlebars.compile(source);
-        result = template(data);
+        result = template(data, {
+            allowProtoPropertiesByDefault: true
+          });
 
         return result;
     }
