@@ -94,7 +94,10 @@ describe("htmlProvider", () => {
     let ds = new DataService(config);
 
     let val = await htmlProvider.renderHome(ds, config);
-    expect(val.replace(/(\r\n|\n|\r)/gm, "")).toContain("<p><a href=\"the-largest-whale\">Article One - John Smith</a></p><p>02/28/2019</p><p><a href=\"article-simple\">Article Simple - </a></p><p>12/03/2018</p><p><a href=\"foo/crazy/url/article-perm\">Article Perm - </a></p><p>11/08/2017</p><p><a href=\"big-content-is-real\">Big Content - Mr. Big</a></p><p>03/06/2017</p><p><a href=\"docula-persistent-links-and-styles\">Docula: Persistent Links and Styles! - </a></p><p>08/11/2016</p><p><a href=\"all-about-the-tesla-model-3\">Tesla Model 3 - Elon Musk</a></p><p>Tags: <br /><ul><li><a href=\"aerospace\">aerospace</a></li><li><a href=\"blast\">blast</a></li><li><a href=\"candle\">Candle</a></li><li><a href=\"cool\">cool</a></li><li><a href=\"docula\">Docula</a></li><li><a href=\"facts\">facts</a></li><li><a href=\"foo\">foo</a></li><li><a href=\"github\">Github</a></li><li><a href=\"model-3\">model 3</a></li><li><a href=\"mouse\">mouse</a></li><li><a href=\"muskified\">muskified</a></li><li><a href=\"nice3\">nice3</a></li><li><a href=\"ocean\">ocean</a></li><li><a href=\"open-source\">Open Source</a></li><li><a href=\"tesla\">tesla</a></li><li><a href=\"whale\">Whale</a></li></ul></p>");
+    val = val.replace(/(\r\n|\n|\r)/gm, "");
+    expect(val).toContain("<a href=\"the-largest-whale\">Article One - John Smith</a></p>");
+    expect(val).toContain("<p><a href=\"article-simple\">Article Simple - </a></p>");
+    expect(val).toContain("Tags: <br /><ul><li><a href=\"aerospace\">aerospace</a></li><li><a href=\"blast\">blast</a></li><li><a href=\"candle\">Candle</a></li><li><a href=\"cool\">cool</a></li><li><a href=\"docula\">Docula</a></li><li><a href=\"facts\">facts</a></li><li><a href=\"foo\">foo</a></li><li><a href=\"github\">Github</a></li><li><a href=\"model-3\">model 3</a></li><li><a href=\"mouse\">mouse</a></li><li><a href=\"muskified\">muskified</a></li><li><a href=\"nice3\">nice3</a></li><li><a href=\"ocean\">ocean</a></li><li><a href=\"open-source\">Open Source</a></li><li><a href=\"tesla\">tesla</a></li><li><a href=\"whale\">Whale</a></li></ul></p>2020");
   });
 
   it("render (long running)", async () => {
