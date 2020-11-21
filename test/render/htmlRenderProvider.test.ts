@@ -13,6 +13,14 @@ describe("htmlProvider", () => {
     config.loadConfig("./blog_example/config.json");
   });
 
+  afterAll( () => {
+      //cleanup
+      config.loadConfig("./blog_example/config.json");
+      if (fs.existsSync(config.output)) {
+        del.sync(config.output);
+    }
+  });
+
   it("get home template", () => {
     
     let val = new HtmlRenderProvider().getHomeTemplate(config);
@@ -95,11 +103,6 @@ describe("htmlProvider", () => {
     let ds = new DataService(config);
 
     let val = await htmlProvider.render(ds, config);
-
-    //cleanup
-    if (fs.existsSync(config.output)) {
-        del.sync(config.output);
-    }
 
     expect(val).toBe(true);
   });
