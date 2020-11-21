@@ -31,7 +31,7 @@
     "build": "yarn test && yarn compile",
     "test": "jest --coverage",
     "test-output": "yarn compile && node ./bin/writr -p ./blog_example",
-    "coverage": "yarn test && codecov -f coverage/*.json -t 62b3983c-08a1-425f-99b9-71e84fef74bc"
+    "coverage": "codecov -f coverage/*.json -t 62b3983c-08a1-425f-99b9-71e84fef74bc"
   },
   "bin": {
     "writr": "./bin/writr"
@@ -77,9 +77,5 @@
   "files": [
     "dist",
     "bin"
-  ],
-  "nyc": {
-    "extends": "@istanbuljs/nyc-config-typescript",
-    "all": true
-  }
+  ]
 }
