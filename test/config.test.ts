@@ -1,6 +1,4 @@
 import { Tag } from '../src/tag';
-import { expect } from 'chai';
-import 'mocha';
 import { Config } from '../src/config';
 import { createLogger, transports } from "winston";
 
@@ -18,7 +16,7 @@ describe('Config', () => {
 
         config = new Config(undefined);
 
-        expect(config.cache.type).to.equal("memory");
+        expect(config.cache.type).toBe("memory");
     });
 
     it('config should load via the config file path', () => {
@@ -26,7 +24,7 @@ describe('Config', () => {
         config = new Config();
         config.loadConfig("./blog_example/config.json");
 
-        expect(config.output).to.equal("./blog_output");
+        expect(config.output).toBe("./blog_output");
     });
 
     it('config should load via the file path', () => {
@@ -34,7 +32,7 @@ describe('Config', () => {
         config = new Config();
         config.loadPath("./blog_example");
 
-        expect(config.path).to.equal("./blog_example");
+        expect(config.path).toBe("./blog_example");
     });
 
     it('config should load via the program', () => {
@@ -48,7 +46,7 @@ describe('Config', () => {
 
         config.loadProgram(obj)
 
-        expect(config.output).to.equal("foo");
+        expect(config.output).toBe("foo");
     });
 
     it('config should load via the index count', () => {
@@ -62,7 +60,7 @@ describe('Config', () => {
 
         config.loadProgram(obj)
 
-        expect(config.indexCount).to.equal(10);
+        expect(config.indexCount).toBe(10);
     });
 
     it('config should not load', () => {
@@ -72,7 +70,7 @@ describe('Config', () => {
 
         config.loadProgram(undefined)
 
-        expect(config.indexCount).to.equal(20);
+        expect(config.indexCount).toBe(20);
     });
 
     it('config should load via the program on render', () => {
@@ -86,7 +84,7 @@ describe('Config', () => {
 
         config.loadProgram(obj)
 
-        expect(config.render.length).to.equal(3);
+        expect(config.render.length).toBe(3);
     });
 
     it('config should error on load via the file path', () => {
@@ -98,7 +96,7 @@ describe('Config', () => {
 
         let valid = config.loadConfig("../blog_example/blah.json");
 
-        expect(valid).to.equal(false);
+        expect(valid).toBe(false);
     });
 
     it('config constructor should parse render', () => {
@@ -109,7 +107,7 @@ describe('Config', () => {
 
         config = new Config(obj);
 
-        expect(config.render.length).to.equal(2);
+        expect(config.render.length).toBe(2);
     });
 
     it('config constructor should parse output', () => {
@@ -120,7 +118,7 @@ describe('Config', () => {
 
         config = new Config(obj);
 
-        expect(config.output).to.equal("./blog1");
+        expect(config.output).toBe("./blog1");
     });
 
     it('config constructor should parse permalink', () => {
@@ -131,7 +129,7 @@ describe('Config', () => {
 
         config = new Config(obj);
 
-        expect(config.permalink).to.equal(obj.permalink);
+        expect(config.permalink).toBe(obj.permalink);
     });
 
     it('config constructor should parse cache connection', () => {
@@ -144,7 +142,7 @@ describe('Config', () => {
 
         config = new Config(obj);
 
-        expect(config.cache.connection).to.equal("blah");
+        expect(config.cache.connection).toBe("blah");
     });
 
     it('config constructor should parse cache ttl', () => {
@@ -157,7 +155,7 @@ describe('Config', () => {
 
         config = new Config(obj);
 
-        expect(config.cache.ttl).to.equal(1111);
+        expect(config.cache.ttl).toBe(1111);
     });
 
     it('config constructor should parse cache type', () => {
@@ -170,32 +168,32 @@ describe('Config', () => {
 
         config = new Config(obj);
 
-        expect(config.cache.type).to.equal("blah");
+        expect(config.cache.type).toBe("blah");
     });
 
     it('config should have default data type', () => {
 
-        expect(config.provider.name).to.equal("file");
+        expect(config.provider.name).toBe("file");
     });
 
     it('config should have default data postPath', () => {
 
-        expect(config.path).to.equal("./blog");
+        expect(config.path).toBe("./blog");
     });
 
     it('config should have default cache connection', () => {
 
-        expect(config.cache.connection).to.equal("");
+        expect(config.cache.connection).toBe("");
     });
 
     it('config should have default cache ttl', () => {
 
-        expect(config.cache.ttl).to.equal(6000);
+        expect(config.cache.ttl).toBe(6000);
     });
 
     it('config should have default cache type', () => {
 
-        expect(config.cache.type).to.equal("memory");
+        expect(config.cache.type).toBe("memory");
     });
 
 });

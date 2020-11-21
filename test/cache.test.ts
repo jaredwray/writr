@@ -1,17 +1,14 @@
-import { expect } from 'chai';
-import 'mocha';
-
 import { Config } from '../src/config';
 import { Cache } from '../src/cache'
 import { Post } from '../src/post';
 import { Tag } from '../src/tag';
 
-describe('Cache', async () => {
+describe('Cache', () => {
 
     let config: Config = new Config();
     let cache: Cache;
 
-    before(async () => {
+    beforeAll(async () => {
 
         config.loadConfig("./blog_example/config.json");
         cache = new Cache(config);
@@ -26,7 +23,7 @@ describe('Cache', async () => {
 
         let result = await cache.setPost('foo', post);
 
-        expect(result).to.equal(true);
+        expect(result).toBe(true);
     });
 
     it('caching a post and retrieving it', async () => {
@@ -39,7 +36,11 @@ describe('Cache', async () => {
 
         let result = await cache.getPost('foo');
 
-        expect(result.title).to.equal('foo');
+        if(result) {
+            expect(result.title).toBe('foo');
+        } else {
+            fail();
+        }
     });
 
     it('no cached hit', async () => {
@@ -52,7 +53,7 @@ describe('Cache', async () => {
 
         let result = await cache.getPost('bar');
 
-        expect(result).to.equal(undefined);
+        expect(result).toBeUndefined();
     });
 
     it('caching a post and retrieving it with functions', async () => {
@@ -65,7 +66,12 @@ describe('Cache', async () => {
 
         let result = await cache.getPost('foo');
 
-        expect(result.title).to.equal("foo");
+        if(result) {
+            expect(result.title).toBe("foo");
+        } else {
+            fail();
+        }
+        
     });
 
     it('caching a post and retrieving it with correct values', async () => {
@@ -82,7 +88,12 @@ describe('Cache', async () => {
 
         let result = await cache.getPost('foo');
 
-        expect(result.keywords.length).to.equal(2);
+        if(result) {
+            expect(result.keywords.length).toBe(2);
+        } else {
+            fail();
+        }
+
     });
 
     it('caching posts and retrieving it with correct values', async () => {
@@ -114,7 +125,12 @@ describe('Cache', async () => {
 
         let result = await cache.getPosts(key);
 
-        expect(result.length).to.equal(2);
+        if(result) {
+            expect(result.length).toBe(2);
+        } else {
+            fail();
+        }
+
     });
 
     it('caching a tag and retrieving it', async () => {
@@ -125,7 +141,11 @@ describe('Cache', async () => {
 
         let result = await cache.getTag('foo');
 
-        expect(result.name).to.equal('foo');
+        if(result) {
+            expect(result.name).toBe('foo');
+        } else {
+            fail();
+        }
     });
 
     it('no cached hit', async () => {
@@ -136,7 +156,7 @@ describe('Cache', async () => {
 
         let result = await cache.getTag('bar');
 
-        expect(result).to.equal(undefined);
+        expect(result).toBeUndefined();
     });
 
     it('caching a tag and retrieving it with functions', async () => {
@@ -152,7 +172,11 @@ describe('Cache', async () => {
 
         let result = await cache.getTag('foo');
 
-        expect(result.name).to.equal("foo");
+        if(result) {
+            expect(result.name).toBe("foo");
+        } else {
+            fail();
+        }
     });
 
     it('caching a tags and retrieving it with functions', async () => {
@@ -181,24 +205,36 @@ describe('Cache', async () => {
 
         let result = await cache.getTags(key);
 
-        expect(result.length).to.equal(2);
+        if(result) {
+            expect(result.length).toBe(2);
+        } else {
+            fail();
+        }
+
     });
 
-    it('caching a tag with post and retrieving it with correct values', async () => {
+    it(
+        'caching a tag with post and retrieving it with correct values',
+        async () => {
 
-        let post = new Post();
-        post.title = 'foo';
-        post.matter.date = new Date();
+            let post = new Post();
+            post.title = 'foo';
+            post.matter.date = new Date();
 
-        let tag = new Tag('foo');
-        tag.posts.push(post);
+            let tag = new Tag('foo');
+            tag.posts.push(post);
 
-        await cache.setTag('foo', tag);
+            await cache.setTag('foo', tag);
 
-        let result = await cache.getTag('foo');
+            let result = await cache.getTag('foo');
+            if(result) {
+                expect(result.posts[0].title).toBe("foo");
+            } else {
+                fail();
+            }
 
-        expect(result.posts[0].title).to.equal("foo");
-    });
+        }
+    );
 
     it('caching a tag and a post and then clearing', async () => {
 
@@ -216,16 +252,16 @@ describe('Cache', async () => {
 
         let result = await cache.getTag('foo');
 
-        expect(result).to.equal(undefined);
+        expect(result).toBeUndefined();
     });
 
     it('format name correctly', () => {
 
-        expect(cache.formatName('blAh ', "post")).to.equal(`post-blah`);
+        expect(cache.formatName('blAh ', "post")).toBe(`post-blah`);
     });
 
     it('format name correctly and type', () => {
 
-        expect(cache.formatName('blAh ', "poSt ")).to.equal(`post-blah`);
+        expect(cache.formatName('blAh ', "poSt ")).toBe(`post-blah`);
     });
 });

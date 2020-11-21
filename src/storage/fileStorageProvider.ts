@@ -24,10 +24,10 @@ export class FileStorageProvider implements StorageProviderInterface {
         return result;
     }
 
-    async set(path: string, data: string): Promise<boolean> {
+    async set(path?: string, data?: string): Promise<boolean> {
         let result = false;
 
-        if (path !== undefined && data !== undefined) {
+        if (path !== undefined && data !== undefined && path !== "" && data !== "") {
             try {
                 await this.ensureFilePath(path);
                 await fs.writeFile(path, data);

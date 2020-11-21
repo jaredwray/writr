@@ -1,6 +1,4 @@
-import { expect } from "chai";
 import { Config } from "../../src/config";
-import "mocha";
 import { DataService } from "../../src/data/dataService";
 import * as del from "del";
 import * as fs from "fs-extra";
@@ -25,7 +23,7 @@ describe("imageProvider", () => {
         del.sync(config.output);
     }
 
-    expect(val).to.equal(true);
+    expect(val).toBe(true);
   });
 
   

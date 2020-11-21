@@ -1,8 +1,6 @@
 import { Writr } from "../src/index";
 import { Config } from "../src/config";
 import { DataService } from "../src/data/dataService";
-import { expect } from "chai";
-import "mocha";
 
 import * as del from "del";
 import * as fs from "fs-extra";
@@ -22,7 +20,11 @@ describe('Writr', () => {
 
     writr.parseCLI(process);
 
-    expect(writr.config.program.output).to.equal("./out");
+    if(writr.config) {
+      expect(writr.config.program.output).toBe("./out");
+    } else {
+      fail();
+    }
   });
 
   it("cli run", async () => {
@@ -43,7 +45,7 @@ describe('Writr', () => {
       del.sync(config.output);
     }
 
-    expect(val).to.equal(true);
+    expect(val).toBe(true);
   });
 
   it("cli run on path", async () => {
@@ -57,7 +59,11 @@ describe('Writr', () => {
 
     writr.parseCLI(p);
 
-    expect(writr.config.path).to.equal("./blog_example");
+    if(writr.config) {
+      expect(writr.config.path).toBe("./blog_example");
+    } else {
+      fail();
+    }
   });
 
   it("cli run with no data set or config", async () => {
@@ -75,7 +81,7 @@ describe('Writr', () => {
 
     let val = await writr.runCLI();
 
-    expect(val).to.equal(false);
+    expect(val).toBe(false);
   });
   
 
