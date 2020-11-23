@@ -30,8 +30,7 @@
     "compile": "yarn clean && tsc -p .",
     "build": "yarn test && yarn compile",
     "test": "jest --coverage",
-    "test-output": "yarn compile && node ./bin/writr -p ./blog_example",
-    "coverage": "codecov -f coverage/*.json -t 62b3983c-08a1-425f-99b9-71e84fef74bc"
+    "test-output": "yarn compile && node ./bin/writr -p ./blog_example"
   },
   "bin": {
     "writr": "./bin/writr"
