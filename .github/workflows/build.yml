@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10]
+        node-version: [12]
 
     steps:
     - uses: actions/checkout@v2
@@ -28,7 +28,7 @@ jobs:
       run: yarn compile
     - name: Testing    
       run: yarn test
-    - name: Codecov
+    - name: Code Coverage
       uses: codecov/codecov-action@v1.0.15
       with:
         token: ${{ secrets.CODECOV_KEY }}
