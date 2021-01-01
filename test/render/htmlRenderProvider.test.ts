@@ -97,7 +97,7 @@ describe("htmlProvider", () => {
     val = val.replace(/(\r\n|\n|\r)/gm, "");
     expect(val).toContain("<a href=\"the-largest-whale\">Article One - John Smith</a></p>");
     expect(val).toContain("<p><a href=\"article-simple\">Article Simple - </a></p>");
-    expect(val).toContain("Tags: <br /><ul><li><a href=\"aerospace\">aerospace</a></li><li><a href=\"blast\">blast</a></li><li><a href=\"candle\">Candle</a></li><li><a href=\"cool\">cool</a></li><li><a href=\"docula\">Docula</a></li><li><a href=\"facts\">facts</a></li><li><a href=\"foo\">foo</a></li><li><a href=\"github\">Github</a></li><li><a href=\"model-3\">model 3</a></li><li><a href=\"mouse\">mouse</a></li><li><a href=\"muskified\">muskified</a></li><li><a href=\"nice3\">nice3</a></li><li><a href=\"ocean\">ocean</a></li><li><a href=\"open-source\">Open Source</a></li><li><a href=\"tesla\">tesla</a></li><li><a href=\"whale\">Whale</a></li></ul></p>2020");
+    expect(val).toContain("Tags: <br /><ul><li><a href=\"aerospace\">aerospace</a></li><li><a href=\"blast\">blast</a></li><li><a href=\"candle\">Candle</a></li><li><a href=\"cool\">cool</a></li><li><a href=\"docula\">Docula</a></li><li><a href=\"facts\">facts</a></li><li><a href=\"foo\">foo</a></li><li><a href=\"github\">Github</a></li><li><a href=\"model-3\">model 3</a></li><li><a href=\"mouse\">mouse</a></li><li><a href=\"muskified\">muskified</a></li><li><a href=\"nice3\">nice3</a></li><li><a href=\"ocean\">ocean</a></li><li><a href=\"open-source\">Open Source</a></li><li><a href=\"tesla\">tesla</a></li><li><a href=\"whale\">Whale</a></li></ul></p>");
   });
 
   it("render (long running)", async () => {

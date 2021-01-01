@@ -1,6 +1,6 @@
 {
   "name": "writr",
-  "version": "0.9.9",
+  "version": "1.0.1",
   "description": "A Simple to Use Markdown Blog",
   "main": "./dist/index",
   "types": "./dist/index",
@@ -39,6 +39,7 @@
     "array-sort": "^1.0.0",
     "cheerio": "^1.0.0-rc.5",
     "commander": "^6.2.1",
+    "del": "^6.0.0",
     "feed": "^4.2.1",
     "fs-extra": "^9.0.1",
     "gray-matter": "^4.0.2",
@@ -52,9 +53,7 @@
     "winston": "^3.3.3"
   },
   "devDependencies": {
-    "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/array-sort": "^1.0.0",
-    "@types/chai": "^4.2.14",
     "@types/express": "^4.17.9",
     "@types/express-serve-static-core": "^4.17.17",
     "@types/fs-extra": "^9.0.6",
@@ -65,7 +64,6 @@
     "@types/parse-json": "^4.0.0",
     "@types/winston": "^2.3.8",
     "codecov": "^3.8.1",
-    "del": "^6.0.0",
     "jest": "^26.6.3",
     "source-map-support": "^0.5.19",
     "ts-jest": "^26.4.4",
