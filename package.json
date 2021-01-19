@@ -48,7 +48,7 @@
     "keyv": "^4.0.3",
     "markdown-it": "^12.0.4",
     "moment": "^2.29.1",
-    "parse-json": "^5.1.0",
+    "parse-json": "^5.2.0",
     "promisify": "^0.0.3",
     "winston": "^3.3.3"
   },
