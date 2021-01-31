@@ -25,14 +25,12 @@ export class Writr {
         const program = createCommand();
 
         program.storeOptionsAsProperties(true);
-
         
         program.option("-p, --path <path>", "Path of where the blog, config, and template are located");
         program.option("-o, --output <path>", "Path of where to output the generated blog");
         program.option("-r, --render <list>", "What do you want rendered such as html or json (example --render html,json)");
         program.option("-c, --config <path>", "custom configuration path");
     
-
         program.parse(process.argv);
 
         this.config = new Config();
