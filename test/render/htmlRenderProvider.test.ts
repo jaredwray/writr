@@ -21,13 +21,6 @@ describe("htmlProvider", () => {
     }
   });
 
-  it("get home template", () => {
-    
-    let val = new HtmlRenderProvider().getHomeTemplate(config);
-
-    expect(val.replace(/(\r\n|\n|\r)/gm, "")).toBe("{{#each posts}}<p>{{formatDate date \"MM/DD/YYYY\"}}</p><p><a href=\"{{url}}\">{{title}} - {{author}}</a></p>{{/each}}<p>Tags: <br /><ul>{{#each tags}}<li><a href=\"{{id}}\">{{name}}</a></li>{{/each}}</ul></p>{{formatDate \"\" \"YYYY\"}}");
-  });
-
   it("get tag template", () => {
     
     let val = new HtmlRenderProvider().getTagTemplate(config);
@@ -93,7 +86,7 @@ describe("htmlProvider", () => {
     
     let ds = new DataService(config);
 
-    let val = await htmlProvider.renderHome(ds, config);
+    let val = await htmlProvider.renderHome(ds, config, config.output + "/index.html");
     val = val.replace(/(\r\n|\n|\r)/gm, "");
     expect(val).toContain("<a href=\"the-largest-whale\">Article One - John Smith</a></p>");
     expect(val).toContain("<p><a href=\"article-simple\">Article Simple - </a></p>");

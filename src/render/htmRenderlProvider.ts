@@ -7,6 +7,9 @@ import { Post } from "../post";
 import { Tag } from "../tag";
 import { RenderProviderInterface } from "./renderProviderInterface";
 import { StorageService } from "../storage/storageService";
+import { Ecto } from "ecto";
+
+const ecto = new Ecto({defaultEngine: "handlebars"});
 
 
 export class HtmlRenderProvider implements RenderProviderInterface {
@@ -14,7 +17,8 @@ export class HtmlRenderProvider implements RenderProviderInterface {
 
     constructor() {
         this.log = createLogger({ transports: [new transports.Console()]});
-
+        ecto.handlebars.opts = { allowProtoPropertiesByDefault: true }
+        ecto.handlebars.engine.registerHelper('formatDate', require('helper-date'));
     }
 
     async render(data: DataService, config: Config): Promise<boolean | undefined> {
@@ -91,20 +95,25 @@ export class HtmlRenderProvider implements RenderProviderInterface {
         });
 
         //home
-        storage.set(output + "/index.html", await this.renderHome(data, config));
+        await this.renderHome(data, config, output + "/index.html");
 
         return result;
     }
 
     //render
-    async renderHome(data: DataService, config:Config): Promise<string> {
+    async renderHome(data: DataService, config:Config, outputPath:string): Promise<string> {
         let result = "";
 
         let postList = await data.getPublishedPostsByCount(config.indexCount);
         let tagList = await data.getPublishedTags();
+        let dataObject = { tags: tagList, posts: postList };
+        let rootTemplatePath = config.path + "/templates/";
 
-        let source = this.getHomeTemplate(config);
-        result = this.renderTemplate(source, { tags: tagList, posts: postList }, config);
+        let templateName = await this.getHomeTemplate(config.path + "/templates");
+
+        let homeTemplatePath = rootTemplatePath + templateName;
+        
+        result = await ecto.renderFromFile(homeTemplatePath, dataObject, rootTemplatePath, outputPath);
 
         return result;
     }
@@ -191,10 +200,17 @@ export class HtmlRenderProvider implements RenderProviderInterface {
         return result;
     }
 
-    getHomeTemplate(config: Config): string {
+    async getHomeTemplate(templatesPath:string): Promise<string> {
         let result = "";
 
-        result = this.getTemplate(config, "index");
+        let templates = await fs.readdir(templatesPath);
+
+        templates.forEach((file) => {
+
+            if(file.startsWith("index")) {
+                result = file;
+            }
+        });
 
         return result;
     }
