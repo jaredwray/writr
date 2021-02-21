@@ -26,6 +26,22 @@ describe("htmlProvider", () => {
     expect(val.replace(/(\r\n|\n|\r)/gm, "")).toBe("<h1>Post</h1>Header: The John Doe Diary 1<p>The John Doe Diary 1</p><p>John Doe</p><p><p>The long journy is real</p></p><p></p><p></p><p></p><h1>Tags</h1><ul>    <li>FOO</li></ul>");
   });
 
+  it("render EJS post", async () => {
+    let htmlProvider = new HtmlRenderProvider();
+    let post = new Post();
+    post.author = "John Doe";
+    post.title = "The John Doe Diary 1";
+    post.content = "The long journy is real";
+    post.matter.layout = "post3"
+
+    let tag = new Tag("FOO");
+    let tags = [tag];
+
+    let val = await htmlProvider.renderPost(post, tags, config, undefined, undefined);
+
+    expect(val).toContain("The long journy is real");
+  });
+
   it("render tag", async () => {
     let htmlProvider = new HtmlRenderProvider();
     let tag = new Tag("FOO");
