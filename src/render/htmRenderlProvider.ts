@@ -1,13 +1,11 @@
-import * as handlebars from "handlebars";
 import { createLogger, transports } from "winston";
-import * as fs from "fs-extra";
 import { DataService } from "../data/dataService";
 import { Config } from "../config";
 import { Post } from "../post";
 import { Tag } from "../tag";
 import { RenderProviderInterface } from "./renderProviderInterface";
-import { StorageService } from "../storage/storageService";
 import { Ecto } from "ecto";
+import * as fs from "fs-extra";
 
 const ecto = new Ecto({defaultEngine: "handlebars"});
 
@@ -31,8 +29,6 @@ export class HtmlRenderProvider implements RenderProviderInterface {
         let tags = await data.getPublishedTags();
         let unpublishedTags = await data.getTags();
 
-        let storage = new StorageService(config);
-
         //posts
 
         let previousPost: Post;
@@ -53,11 +49,9 @@ export class HtmlRenderProvider implements RenderProviderInterface {
                 nextPost = posts[index+1]
             }
 
-            let postHtml = await this.renderPost(post, tags, config, previousPost, nextPost);
+            let postPath = output + "/" + post.id + "/index.html";
+            await this.renderPost(post, tags, config, previousPost, nextPost, postPath);
 
-            let postPath = output + "/" + post.id;
-
-            await storage.set(postPath + "/index.html", postHtml);
         });
 
         //unpublished posts
@@ -76,22 +70,18 @@ export class HtmlRenderProvider implements RenderProviderInterface {
             }
 
             if(post.published === false) {
-                let postHtml = await this.renderPost(post, unpublishedTags, config, previousPost, nextPost);
-
-                let postPath = output + "/" + post.id;
-
-                storage.set(postPath + "/index.html", postHtml);
+                let postPath = output + "/" + post.id + "/index.html";
+                await this.renderPost(post, unpublishedTags, config, previousPost, nextPost, postPath);
             }
         });
 
         //tags
-
         tags.forEach(async tag => {
-            let tagHtml = await this.renderTag(tag, tags, config);
 
-            let tagPath = output + "/tags/" + tag.id;
+            let tagOutputPath = output + "/tags/" + tag.id + "/index.html";
 
-            storage.set(tagPath + "/index.html", tagHtml);
+            await this.renderTag(tag, tags, config, tagOutputPath);
+
         });
 
         //home
@@ -101,113 +91,65 @@ export class HtmlRenderProvider implements RenderProviderInterface {
     }
 
     //render
-    async renderHome(data: DataService, config:Config, outputPath:string): Promise<string> {
+    async renderHome(data: DataService, config:Config, outputPath?:string): Promise<string> {
         let result = "";
-
+        
         let postList = await data.getPublishedPostsByCount(config.indexCount);
         let tagList = await data.getPublishedTags();
         let dataObject = { tags: tagList, posts: postList };
         let rootTemplatePath = config.path + "/templates/";
 
-        let templateName = await this.getHomeTemplate(config.path + "/templates");
+        let templateName = await this.getTemplatePath(config.path + "/templates", "index");
 
         let homeTemplatePath = rootTemplatePath + templateName;
         
-        result = await ecto.renderFromFile(homeTemplatePath, dataObject, rootTemplatePath, outputPath);
+        result = await ecto.renderFromFile(homeTemplatePath, dataObject, rootTemplatePath, outputPath); 
 
         return result;
     }
 
-    async renderTag(tag: Tag, tags: Array<Tag>, config:Config): Promise<string> {
+    async renderTag(tag: Tag, tags: Array<Tag>, config:Config, outputPath?:string): Promise<string> {
         let result = "";
         if (tag) {
-            let source = this.getTagTemplate(config);
+            let dataObject = {tag: tag, tags: tags};
+            let rootTemplatePath = config.path + "/templates/";
+            let templateName = await this.getTemplatePath(config.path + "/templates", "tag");
+            let templatePath = rootTemplatePath + templateName;
 
-            result = this.renderTemplate(source, {tag: tag, tags: tags}, config);
+            result = await ecto.renderFromFile(templatePath, dataObject, rootTemplatePath, outputPath);
         }
         return result;
     }
 
-    async renderPost(post: Post, tags: Array<Tag>, config:Config, previousPost?: Post, nextPost?: Post,): Promise<string> {
+    async renderPost(post: Post, tags: Array<Tag>, config:Config, previousPost?: Post, nextPost?: Post, outputPath?:string): Promise<string> {
         let result = "";
 
         if (post) {
-            let source: string = this.getPostTemplate(config);
+
+            let dataObject = { post: post, previousPost: previousPost, nextPost: nextPost, tags: tags };
+            let rootTemplatePath = config.path + "/templates/";
+            let templateID = "post";
             if(post.matter.layout) {
-                source = this.getTemplate(config, post.matter.layout);
+                templateID = post.matter.layout;
             }
-            result = this.renderTemplate(source, { post: post, previousPost: previousPost, nextPost: nextPost, tags: tags }, config);
-        }
+
+            let templateName = await this.getTemplatePath(config.path + "/templates", templateID);
+            let templatePath = rootTemplatePath + templateName;
+
+            result = await ecto.renderFromFile(templatePath, dataObject, rootTemplatePath, outputPath);
+       }
 
         return result;
     }
 
-    renderTemplate(source: string, data: any, config: Config): string {
-        let result = "";
-        
-        data.writr = config;
-
-        this.registerPartials(config);
-
-        handlebars.registerHelper('formatDate', require('helper-date'));
-        let template: handlebars.Template = handlebars.compile(source);
-        result = template(data, {
-            allowProtoPropertiesByDefault: true
-          });
-
-        return result;
-    }
-
-    registerPartials(config: Config) {
-        let result = false;
-        let path = config.path + "/templates/partials";
-        if(fs.pathExistsSync(path)) {
-            let partials = fs.readdirSync(path);
-            
-            partials.forEach(p => {
-                let source = fs.readFileSync(path + "/" + p).toString();
-                let name = p.split(".hjs")[0];
-
-                if(handlebars.partials[name] === undefined) {
-                    handlebars.registerPartial(name, handlebars.compile(source));
-                }
-
-            });
-            result = true;
-        }
-
-        return result;
-    }
-
-    //Templates
-    getTemplate(config: Config, layout:string ): string {
-        return fs.readFileSync(config.path + "/templates/" + layout + ".hjs").toString();
-    }
-
-    getPostTemplate(config: Config): string {
-        let result = "";
-
-        result = this.getTemplate(config, "post");
-
-        return result;
-    }
-
-    getTagTemplate(config: Config): string {
-        let result = "";
-
-        result = this.getTemplate(config, "tag");
-
-        return result;
-    }
-
-    async getHomeTemplate(templatesPath:string): Promise<string> {
+    async getTemplatePath(templatesPath:string, templateName:string): Promise<string> {
         let result = "";
 
         let templates = await fs.readdir(templatesPath);
 
         templates.forEach((file) => {
 
-            if(file.startsWith("index")) {
+            if(file.split(".")[0].toLowerCase() === templateName.toLowerCase()) {
                 result = file;
             }
         });

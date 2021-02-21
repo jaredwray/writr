@@ -18,11 +18,6 @@ describe("jsonProvider", () => {
 
     let val = await jsonProvider.render(ds, config);
 
-    //cleanup
-    if (fs.existsSync(config.output)) {
-        del.sync(config.output);
-    }
-
     expect(val).toBe(true);
   });
 

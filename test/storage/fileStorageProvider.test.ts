@@ -8,7 +8,7 @@ describe("File Storage Provider", () => {
   let fileStorageProvider: FileStorageProvider = new FileStorageProvider();
   let filePath = "";
 
-  beforeEach(() => {
+  beforeEach(async () => {
     config.loadConfig("./blog_example/config.json");
     filePath = config.path +"/article1.md";
     fileStorageProvider = new FileStorageProvider();
@@ -16,7 +16,7 @@ describe("File Storage Provider", () => {
 
   });
 
-  afterAll(() => {
+  afterAll(async () => {
     fs.removeSync("fsp_test.log");
   });
 

@@ -40,11 +40,6 @@ describe('Writr', () => {
 
     let val = await writr.runCLI();
 
-    //cleanup
-    if (fs.existsSync(config.output)) {
-      del.sync(config.output);
-    }
-
     expect(val).toBe(true);
   });
 
