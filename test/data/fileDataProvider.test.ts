@@ -32,7 +32,7 @@ describe("File Data Provider", () => {
 
     let posts = await fileProvider.getPosts();
 
-    expect(posts.length).toBe(7);
+    expect(posts.length).toBe(8);
   });
 
   it("should get the posts from memory", async () => {
@@ -43,7 +43,7 @@ describe("File Data Provider", () => {
 
     let posts = await fileProvider.getPosts();
 
-    expect(posts.length).toBe(7);
+    expect(posts.length).toBe(8);
   });
 
   it("should get a valid post", async () => {
@@ -88,7 +88,7 @@ describe("File Data Provider", () => {
 
     let posts = await fileProvider.getPosts();
 
-    expect(posts.length).toBe(7);
+    expect(posts.length).toBe(8);
   });
 
   it("should get published posts", async () => {
@@ -97,7 +97,7 @@ describe("File Data Provider", () => {
 
     let posts = await fileProvider.getPublishedPosts();
 
-    expect(posts.length).toBe(6);
+    expect(posts.length).toBe(7);
 
   });
 

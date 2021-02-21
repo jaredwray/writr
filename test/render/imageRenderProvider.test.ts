@@ -1,7 +1,5 @@
 import { Config } from "../../src/config";
 import { DataService } from "../../src/data/dataService";
-import * as del from "del";
-import * as fs from "fs-extra";
 import { ImageRenderProvider } from "../../src/render/imageRenderProvider";
 
 describe("imageProvider", () => {
@@ -9,6 +7,7 @@ describe("imageProvider", () => {
 
   beforeEach(() => {
     config.loadConfig("./blog_example/config.json");
+    config.output + "/image_render";
   });
 
   it("render (long running)", async () => {
@@ -17,11 +16,6 @@ describe("imageProvider", () => {
     let ds = new DataService(config);
 
     let val = await imageProvider.render(ds, config);
-
-    //cleanup
-    if (fs.existsSync(config.output)) {
-        del.sync(config.output);
-    }
 
     expect(val).toBe(true);
   });

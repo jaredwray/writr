@@ -78,7 +78,7 @@ export class FileStorageProvider implements StorageProviderInterface {
         });
     }
 
-    private async ensureFilePath(path:string) {
+    async ensureFilePath(path:string) {
         let pathList = path.split("/");
         pathList.pop();
 

@@ -18,7 +18,7 @@ describe("Data Service", () => {
   it("get published posts", async () => {
     let posts = await ds.getPublishedPosts();
 
-    expect(posts.length).toBe(6);
+    expect(posts.length).toBe(7);
   });
 
   it("get posts by count", async () => {
@@ -30,7 +30,7 @@ describe("Data Service", () => {
   it("get published posts by count", async () => {
     let posts = await ds.getPublishedPostsByCount(7);
 
-    expect(posts.length).toBe(6);
+    expect(posts.length).toBe(7);
   });
 
   it("get published posts by count maximum", async () => {
@@ -42,7 +42,7 @@ describe("Data Service", () => {
   it("get posts", async () => {
     let posts = await ds.getPosts();
 
-    expect(posts.length).toBe(7);
+    expect(posts.length).toBe(8);
   });
 
   it("get posts from cache", async () => {
@@ -50,7 +50,7 @@ describe("Data Service", () => {
 
     let posts2 = await ds.getPosts();
 
-    expect(posts2.length).toBe(7);
+    expect(posts2.length).toBe(8);
   });
 
   it("get posts with a miss", async () => {
