@@ -1,6 +1,6 @@
 {
   "name": "writr",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "A Simple to Use Markdown Blog",
   "main": "./dist/index",
   "types": "./dist/index",
@@ -41,7 +41,7 @@
     "cheerio": "^1.0.0-rc.5",
     "commander": "^7.1.0",
     "del": "^6.0.0",
-    "ecto": "^1.0.0",
+    "ecto": "^1.0.1",
     "feed": "^4.2.2",
     "fs-extra": "^9.1.0",
     "gray-matter": "^4.0.2",

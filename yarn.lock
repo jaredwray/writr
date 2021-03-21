@@ -1921,17 +1921,17 @@ ecc-jsbn@~0.1.1:
     jsbn "~0.1.0"
     safer-buffer "^2.1.0"
 
-ecto@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/ecto/-/ecto-1.0.0.tgz#c7fce2d0ac8562c3b8639eef7a01e77f16078f69"
-  integrity sha512-nXfYNwUbt3juJwtarOIYDKaUAc4p8DBaxoDzs1okP1AOw046OKNjZW2HWwm5s4uWdm0TcAQfXomvp2UAnaxcUw==
+ecto@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/ecto/-/ecto-1.0.1.tgz#754fb17f44b9bc9f27c5260fafb6e1cc2294ac2f"
+  integrity sha512-jBCnkexr/ir6FW1iruphCK6mGXIAf3IVl3MuUv1/iuqgYa6XIEUqGGNZkBDgV+O+yPf25Dz/7qp+e7F54ildcg==
   dependencies:
     ejs "^3.1.6"
     fs-extra "^9.1.0"
     handlebars "^4.7.7"
     handlebars-helpers "^0.10.0"
     helper-date "^1.0.1"
-    liquidjs "^9.23.1"
+    liquidjs "^9.23.3"
     marked "^2.0.1"
     nunjucks "^3.2.3"
     pug "^3.0.2"
@@ -3602,10 +3602,10 @@ linkify-it@^3.0.1:
   dependencies:
     uc.micro "^1.0.1"
 
-liquidjs@^9.23.1:
-  version "9.23.2"
-  resolved "https://registry.yarnpkg.com/liquidjs/-/liquidjs-9.23.2.tgz#99a195f3a2e0a375a848b440e72fdf8bfdf3b156"
-  integrity sha512-aqun2s+esc8v1TIMQROeiTcR9/MOdK3sLz/ngFNh67pyMKC4NFp6Ttzc2HBPOAndbeoIC4NQXwSEITcYeE7Q3A==
+liquidjs@^9.23.3:
+  version "9.23.3"
+  resolved "https://registry.yarnpkg.com/liquidjs/-/liquidjs-9.23.3.tgz#47227b8fb3d88e42b6c754a89a296fd71e9751f1"
+  integrity sha512-YYcWER689qq4JohFjYnXl9vElm8QA46bQmvFCfsfqgoW2kdE8FyOwDUldGnbMgcuyS/HIi+vOQln9E+vmLvK9g==
 
 locate-path@^5.0.0:
   version "5.0.0"
