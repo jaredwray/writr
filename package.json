@@ -39,7 +39,7 @@
   "dependencies": {
     "array-sort": "^1.0.0",
     "cheerio": "^1.0.0-rc.5",
-    "commander": "^7.1.0",
+    "commander": "^7.2.0",
     "del": "^6.0.0",
     "ecto": "^1.0.1",
     "feed": "^4.2.2",
