@@ -1,4 +1,5 @@
 import * as MarkDownIt from "markdown-it";
+import { DateTime } from "luxon";
 
 export class Post {
   keywords: Array<string> = [];
@@ -17,9 +18,14 @@ export class Post {
   }
 
   get date(): Date {
-    let moment = require("moment");
-    let newDate = moment(this.matter.date).toDate();
-    return newDate;
+    if(Object.prototype.toString.call(this.matter.date) !== "[object Date]"){
+      let newDate = DateTime.fromISO(this.matter.date).toJSDate();
+      return newDate;
+      
+    } else {
+      return this.matter.date;
+    }
+
   }
 
   get title(): string {
@@ -154,8 +160,7 @@ export class Post {
 
   parseUrl(url:string): string {
 
-    let moment = require("moment");
-    let date = moment(this.date);
+    let date = DateTime.fromJSDate(this.date);
 
     //title
     let title = this._matter.title.toLowerCase().replace(/[^a-z0-9+]+/gi, " ").trim();
@@ -174,21 +179,21 @@ export class Post {
       url = this.permalink_ordinal;
     }
     
-    url = url.split(":year").join(date.format("YYYY"));
-    url = url.split(":short_year").join(date.format("YY"));
-    url = url.split(":month").join(date.format("MM"));
-    url = url.split(":i_month").join(date.format("M"));
-    url = url.split(":short_month").join(date.format("MMM"));
-    url = url.split(":long_month").join(date.format("MMMM"));
-    url = url.split(":day").join(date.format("DD"));
-    url = url.split(":i_day").join(date.format("D"));
-    url = url.split(":y_day").join(date.format("DDD"));
-    url = url.split(":short_day").join(date.format("dd"));
-    url = url.split(":long_day").join(date.format("dddd"));
-    url = url.split(":week").join(date.format("ww"));
-    url = url.split(":hour").join(date.format("HH"));
-    url = url.split(":minute").join(date.format("mm"));
-    url = url.split(":second").join(date.format("ss"));
+    url = url.split(":year").join(date.toFormat("yyyy"));
+    url = url.split(":short_year").join(date.toFormat("yy"));
+    url = url.split(":month").join(date.toFormat("LL"));
+    url = url.split(":i_month").join(date.toFormat("L"));
+    url = url.split(":short_month").join(date.toFormat("LLL"));
+    url = url.split(":long_month").join(date.toFormat("LLLL"));
+    url = url.split(":day").join(date.toFormat("dd"));
+    url = url.split(":i_day").join(date.toFormat("d"));
+    url = url.split(":y_day").join(date.toFormat("o"));
+    url = url.split(":short_day").join(date.toFormat("ccc"));
+    url = url.split(":long_day").join(date.toFormat("cccc"));
+    url = url.split(":week").join(date.toFormat("W"));
+    url = url.split(":hour").join(date.toFormat("HH"));
+    url = url.split(":minute").join(date.toFormat("mm"));
+    url = url.split(":second").join(date.toFormat("ss"));
     
     url = url.split(":title").join(title);
 

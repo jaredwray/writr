@@ -1,6 +1,6 @@
 {
   "name": "writr",
-  "version": "1.5.2",
+  "version": "1.5.4",
   "description": "A Simple to Use Markdown Blog",
   "main": "./dist/index",
   "types": "./dist/index",
@@ -47,8 +47,8 @@
     "gray-matter": "^4.0.2",
     "helper-date": "^1.0.1",
     "keyv": "^4.0.3",
+    "luxon": "^1.26.0",
     "markdown-it": "^12.0.6",
-    "moment": "^2.29.1",
     "parse-json": "^5.2.0",
     "promisify": "^0.0.3",
     "winston": "^3.3.3"
@@ -60,6 +60,7 @@
     "@types/fs-extra": "^9.0.11",
     "@types/jest": "^26.0.22",
     "@types/keyv": "^3.1.1",
+    "@types/luxon": "^1.26.4",
     "@types/markdown-it": "^12.0.1",
     "@types/node": "^14.14.41",
     "@types/parse-json": "^4.0.0",
