@@ -22,7 +22,7 @@
 ```
 blog/*.md           //markdown files in the folder root
 blog/images         //images for the blog
-blog/config.json    //config file
+blog/config.json    //config file (optional)
 blog/templates      //template directory for your index, post, and tag
 ```
 
