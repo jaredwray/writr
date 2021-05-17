@@ -104,7 +104,7 @@ featured_image: Docula_%20Persistent%20Links%20and%20Styles%201.jpeg
 
 ## Permalinks
 
-In your posts `front-matter` you can specify the format of the url to be generated. Be default is the `:title` (also known as the `none` style) that is formatted correctly. 
+In your posts `front-matter` you can specify the format of the url to be generated. By default is the `:title` (also known as the `none` style) that is formatted correctly. 
 
 ### Variables
 
