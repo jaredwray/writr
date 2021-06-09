@@ -1184,11 +1184,6 @@ asynckit@^0.4.0:
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
   integrity sha1-x57Zf380y48robyXkLzDZkdLS3k=
 
-at-least-node@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/at-least-node/-/at-least-node-1.0.0.tgz#602cd4b46e844ad4effc92a8011a3c46e0238dc2"
-  integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
-
 atob@^2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
@@ -1870,13 +1865,13 @@ domutils@^2.5.2, domutils@^2.6.0:
     domelementtype "^2.2.0"
     domhandler "^4.2.0"
 
-ecto@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/ecto/-/ecto-1.0.3.tgz#212f2bde7c0efdfcdde1b35b8843f2b77c1c025a"
-  integrity sha512-ESR37tl0CSBLSG6hDXky6ZxGBe1cnzM+ikufar34uC2FCPpS3fmsmhT5v8skw3ucPc/9gqAiswBXJ+xTKPOw+A==
+ecto@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/ecto/-/ecto-1.0.4.tgz#ad5df1aaa1267124fef0580b8f09724736b1a8bd"
+  integrity sha512-NX49zVwEz3J1vyTZaJchC96emrakUI/CEia1ZOa8Hdfy0hwMZBN53DgLiibmJjILO5DtDe/amEHEGLgRDGeoDQ==
   dependencies:
     ejs "^3.1.6"
-    fs-extra "^9.1.0"
+    fs-extra "^10.0.0"
     handlebars "^4.7.7"
     handlebars-helpers "^0.10.0"
     helper-date "^1.0.1"
@@ -2191,16 +2186,6 @@ fs-extra@^10.0.0:
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-10.0.0.tgz#9ff61b655dde53fb34a82df84bb214ce802e17c1"
   integrity sha512-C5owb14u9eJwizKGdchcDUQeFtlSHHthBk8pbX9Vc1PFZrLombudjDnNns88aYslCyF6IY5SUw3Roz6xShcEIQ==
   dependencies:
-    graceful-fs "^4.2.0"
-    jsonfile "^6.0.1"
-    universalify "^2.0.0"
-
-fs-extra@^9.1.0:
-  version "9.1.0"
-  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-9.1.0.tgz#5954460c764a8da2094ba3554bf839e6b9a7c86d"
-  integrity sha512-hcg3ZmepS30/7BSFqRvoo3DOMQu7IjqxO5nCDt+zM9XWjb33Wg7ziNT+Qvqbuc3+gWpzO02JubVyk2G4Zvo1OQ==
-  dependencies:
-    at-least-node "^1.0.0"
     graceful-fs "^4.2.0"
     jsonfile "^6.0.1"
     universalify "^2.0.0"
