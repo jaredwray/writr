@@ -77,14 +77,6 @@ You can use template partials such as a header or footer by creating a folder in
 ...
 ```
 
-## Template Helpers
-
-`formatDate` is supported in the template to help format the date via `handlebars`:
-
-```html
-<p>The short date for this blog post is: {{formatDate post.date "MM/DD/YYYY"}}
-```
-
 ## Different Templates / Layouts
 
 You can also set a post to use a different layout by setting the `layout` value in the `front-matter` like so:
