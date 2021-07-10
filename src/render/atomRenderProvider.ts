@@ -55,7 +55,7 @@ export class AtomRenderProvider implements RenderProviderInterface{
             feedPost.title = post.title;
             feedPost.id = config.url + "/" + post.url;
             feedPost.link = config.url + "/" + post.url;
-            feedPost.description = post.body;
+            feedPost.description = post.description;
             feedPost.content = post.body;
             feedPost.author = feedConfig.author;
             feedPost.date = post.date;
