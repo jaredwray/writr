@@ -97,6 +97,21 @@ describe('Post', () => {
     expect(post.published).toBe(false);
   });
 
+  it('post get description from matter', () => {
+    let post = new Post();
+    post.matter.description = "how now brown cow is cool";
+
+    expect(post.description).toBe(post.matter.description);
+  }); 
+
+  it('post get description from summary', () => {
+    let post = new Post();
+    post.content = "*HOW*\n\n*COW*";
+
+    expect(post.summary).toBe("<p><em>HOW</em></p><p><em>COW</em></p>");
+    expect(post.description).toBe("HOWCOW");
+  });
+
   it('post get summary', () => {
     let post = new Post();
     post.content = "*HOW*\n\n*COW*";

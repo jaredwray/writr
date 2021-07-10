@@ -1,5 +1,6 @@
 import * as MarkDownIt from "markdown-it";
 import { DateTime } from "luxon";
+import * as striptags from "striptags";
 
 export class Post {
   keywords: Array<string> = [];
@@ -84,6 +85,15 @@ export class Post {
 
   set published(val: boolean) {
     this.matter.published = val;
+  }
+
+  get description() {
+    
+    if(this.matter.description === undefined) {
+      this.matter.description = striptags(this.summary);
+    }
+
+    return this.matter.description;
   }
 
   get summary() {
@@ -220,6 +230,7 @@ export class Post {
     result.url = this.url;
     result.body = this.body;
     result.summary = this.summary;
+    result.description = this.description;
     result.metaData = this._matter;
     result.matter = this._matter;
     result.published = this.published;
