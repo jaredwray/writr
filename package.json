@@ -1,6 +1,6 @@
 {
   "name": "writr",
-  "version": "1.5.9",
+  "version": "1.6.0",
   "description": "A Simple to Use Markdown Blog",
   "main": "./dist/index",
   "types": "./dist/index",
@@ -39,7 +39,7 @@
   "dependencies": {
     "array-sort": "^1.0.0",
     "cheerio": "^1.0.0-rc.10",
-    "commander": "^8.0.0",
+    "commander": "^8.1.0",
     "del": "^6.0.0",
     "ecto": "^1.0.7",
     "feed": "^4.2.2",
@@ -62,7 +62,7 @@
     "@types/keyv": "^3.1.2",
     "@types/luxon": "^2.0.0",
     "@types/markdown-it": "^12.2.0",
-    "@types/node": "^16.4.2",
+    "@types/node": "^16.7.1",
     "@types/parse-json": "^4.0.0",
     "@types/winston": "^2.3.8",
     "codecov": "^3.8.3",
