@@ -1862,10 +1862,10 @@ domutils@^2.5.2, domutils@^2.6.0, domutils@^2.7.0:
     domelementtype "^2.2.0"
     domhandler "^4.2.0"
 
-ecto@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/ecto/-/ecto-1.0.7.tgz#5bfbf410ea99af3617a6f29d279b5f02a9a7470c"
-  integrity sha512-Ibjw5jatDbiCaRbiMMmND8Oj81FcoJdi5dOMh63Dbi4Wsz79FxvvyciceJzmWz+ErT64hmYFIKZrPITux6Goyw==
+ecto@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/ecto/-/ecto-1.0.8.tgz#c31a615e6550050c3bfebd65f9982d6db753c587"
+  integrity sha512-+ThPgNYdSRj5Q4ClqtTCjsODSKrBp2bEVsT4KJpcJYM6c8rrK9sQcp2gu8ZnSCSBOXEOex5iexooJ05aqKk3pQ==
   dependencies:
     ejs "^3.1.6"
     fs-extra "^10.0.0"
@@ -1873,7 +1873,7 @@ ecto@^1.0.7:
     handlebars-helpers "^0.10.0"
     helper-date "^1.0.1"
     liquidjs "^9.25.1"
-    marked "^3.0.0"
+    marked "^3.0.4"
     nunjucks "^3.2.3"
     pug "^3.0.2"
     winston "^3.3.3"
@@ -3563,10 +3563,10 @@ markdown-it@^12.2.0:
     mdurl "^1.0.1"
     uc.micro "^1.0.5"
 
-marked@^3.0.0:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/marked/-/marked-3.0.2.tgz#60ce97d6aec34dd882ab4bb4df82494666854e17"
-  integrity sha512-TMJQQ79Z0e3rJYazY0tIoMsFzteUGw9fB3FD+gzuIT3zLuG9L9ckIvUfF51apdJkcqc208jJN2KbtPbOvXtbjA==
+marked@^3.0.4:
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/marked/-/marked-3.0.4.tgz#b8a1539e5e05c6ea9e93f15c0bad1d54ce890406"
+  integrity sha512-jBo8AOayNaEcvBhNobg6/BLhdsK3NvnKWJg33MAAPbvTWiG4QBn9gpW1+7RssrKu4K1dKlN+0goVQwV41xEfOA==
 
 mdurl@^1.0.1:
   version "1.0.1"
