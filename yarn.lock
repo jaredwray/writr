@@ -1878,18 +1878,18 @@ domutils@^2.5.2, domutils@^2.6.0, domutils@^2.7.0:
     domelementtype "^2.2.0"
     domhandler "^4.2.0"
 
-ecto@^1.0.8:
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/ecto/-/ecto-1.0.8.tgz#c31a615e6550050c3bfebd65f9982d6db753c587"
-  integrity sha512-+ThPgNYdSRj5Q4ClqtTCjsODSKrBp2bEVsT4KJpcJYM6c8rrK9sQcp2gu8ZnSCSBOXEOex5iexooJ05aqKk3pQ==
+ecto@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/ecto/-/ecto-1.1.0.tgz#ad1fd1c5a66f61242ebb94bcb3d117c6f00dfb60"
+  integrity sha512-s2g/LD8VdIkOO120CN6M6kqF3qi1AfP6Ib6uUXCfUEbzyq5Lp8niSYGLTeSP/oghpGwhTliZ8xrwoXJnZUaozw==
   dependencies:
     ejs "^3.1.6"
     fs-extra "^10.0.0"
     handlebars "^4.7.7"
     handlebars-helpers "^0.10.0"
     helper-date "^1.0.1"
-    liquidjs "^9.25.1"
-    marked "^3.0.4"
+    liquidjs "^9.28.5"
+    marked "^4.0.3"
     nunjucks "^3.2.3"
     pug "^3.0.2"
     winston "^3.3.3"
@@ -3472,10 +3472,10 @@ linkify-it@^3.0.1:
   dependencies:
     uc.micro "^1.0.1"
 
-liquidjs@^9.25.1:
-  version "9.25.1"
-  resolved "https://registry.yarnpkg.com/liquidjs/-/liquidjs-9.25.1.tgz#1330e015158e9d7f0a24d4c063d2242049266f79"
-  integrity sha512-V6RYwuFsx13aKZ5ZrSUMHUgTPrEWpcP3GcafEkMdvlWVW9tTlQHOgBoJaK2HtLbOyvjXtaHXT82ZElwmRNY+Kw==
+liquidjs@^9.28.5:
+  version "9.28.5"
+  resolved "https://registry.yarnpkg.com/liquidjs/-/liquidjs-9.28.5.tgz#8d37d92058f5b0a260ef7649d8c416b625f604a2"
+  integrity sha512-K9mSxsAilSezwBtEUtaTpJy6cff3YLoBShyjNLExk5tk/rkygWBPJYWCoJIXKdKdXs/2M/WG3EXYU1ssAtSrsQ==
 
 locate-path@^5.0.0:
   version "5.0.0"
@@ -3603,10 +3603,10 @@ markdown-it@^12.2.0:
     mdurl "^1.0.1"
     uc.micro "^1.0.5"
 
-marked@^3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/marked/-/marked-3.0.4.tgz#b8a1539e5e05c6ea9e93f15c0bad1d54ce890406"
-  integrity sha512-jBo8AOayNaEcvBhNobg6/BLhdsK3NvnKWJg33MAAPbvTWiG4QBn9gpW1+7RssrKu4K1dKlN+0goVQwV41xEfOA==
+marked@^4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/marked/-/marked-4.0.3.tgz#986760a428d8fd666251ec578429bf9a239a34bc"
+  integrity sha512-vSwKKtw+lCA0uFK/02JT4tBfNxEREpoTg21NoXqcmX0ySBIEyLMYWmt8WPsM61QNFaDBZkggupyNXLsV7uPuRg==
 
 mdurl@^1.0.1:
   version "1.0.1"
@@ -4757,10 +4757,10 @@ typeof-article@^0.1.1:
   dependencies:
     kind-of "^3.1.0"
 
-typescript@^4.4.3:
-  version "4.4.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.4.3.tgz#bdc5407caa2b109efd4f82fe130656f977a29324"
-  integrity sha512-4xfscpisVgqqDfPaJo5vkd+Qd/ItkoagnHpufr+i2QCHBsNYp+G7UAoyFl8aPtx879u38wPV65rZ8qbGZijalA==
+typescript@^4.4.4:
+  version "4.4.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.4.4.tgz#2cd01a1a1f160704d3101fd5a58ff0f9fcb8030c"
+  integrity sha512-DqGhF5IKoBl8WNf8C1gu8q0xZSInh9j1kJJMqT3a94w1JzVaBU4EXOSMrz9yDqMT0xt3selp83fuFMQ0uzv6qA==
 
 uc.micro@^1.0.1, uc.micro@^1.0.5:
   version "1.0.6"

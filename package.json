@@ -41,7 +41,7 @@
     "cheerio": "^1.0.0-rc.10",
     "commander": "^8.2.0",
     "del": "^6.0.0",
-    "ecto": "^1.0.8",
+    "ecto": "^1.1.0",
     "feed": "^4.2.2",
     "fs-extra": "^10.0.0",
     "gray-matter": "^4.0.3",
@@ -70,10 +70,28 @@
     "source-map-support": "^0.5.20",
     "ts-jest": "^27.0.5",
     "ts-node": "^10.2.1",
-    "typescript": "^4.4.3"
+    "typescript": "^4.4.4"
   },
   "files": [
     "dist",
     "bin"
-  ]
+  ],
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "tsconfig": "tsconfig.json"
+      }
+    },
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "testMatch": [
+      "**/test/**/*.test.(ts)"
+    ],
+    "testEnvironment": "node"
+  }
 }
