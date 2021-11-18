@@ -1,4 +1,4 @@
-name: writr-build
+name: build
 
 on:
   push:
