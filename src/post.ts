@@ -1,6 +1,6 @@
-import * as MarkDownIt from "markdown-it";
 import { DateTime } from "luxon";
 import * as striptags from "striptags";
+import { Ecto } from "ecto";
 
 export class Post {
   keywords: Array<string> = [];
@@ -66,10 +66,11 @@ export class Post {
     this._matter = val;
   }
 
-  get body() {
+  async getBody() {
 
     if(!this.matter.body) {
-      this.matter.body = new MarkDownIt({html: true}).render(this.content);
+      const ecto = new Ecto();
+      this.matter.body = await ecto.render(this.content, undefined, 'markdown');
     }
 
     return this.matter.body;
@@ -87,23 +88,23 @@ export class Post {
     this.matter.published = val;
   }
 
-  get description() {
+  async getDescription() {
     
     if(this.matter.description === undefined) {
-      this.matter.description = striptags(this.summary);
+      this.matter.description = striptags(await this.getSummary());
     }
 
     return this.matter.description;
   }
 
-  get summary() {
+  async getSummary() {
 
     if(this.matter.description) {
       this.matter.summary = this.matter.description;
     }
 
     if(!this.matter.summary) {
-      let body = this.body;
+      let body = await this.getBody();
       let cheerio = require("cheerio");
       let html = cheerio.load(body);
 
@@ -218,7 +219,7 @@ export class Post {
     return url;
   }
 
-  toObject(): any {
+  async toObject(): Promise<any> {
     let result: any = {};
     result.keywords = this.keywords;
     result.tags = this.tags;
@@ -228,9 +229,9 @@ export class Post {
     result.title = this.title;
     result.author = this.author;
     result.url = this.url;
-    result.body = this.body;
-    result.summary = this.summary;
-    result.description = this.description;
+    result.body = await this.getBody();
+    result.summary = await this.getSummary();
+    result.description = await this.getDescription();
     result.metaData = this._matter;
     result.matter = this._matter;
     result.published = this.published;

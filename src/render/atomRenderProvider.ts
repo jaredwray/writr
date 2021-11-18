@@ -49,14 +49,14 @@ export class AtomRenderProvider implements RenderProviderInterface{
         //add in the posts
         let posts = await data.getPostsByCount(config.indexCount);
 
-        posts.forEach((post) => {
+        posts.forEach(async (post) => {
 
             let feedPost: any = {};
             feedPost.title = post.title;
             feedPost.id = config.url + "/" + post.url;
             feedPost.link = config.url + "/" + post.url;
-            feedPost.description = post.description;
-            feedPost.content = post.body;
+            feedPost.description = await post.getDescription();
+            feedPost.content = await post.getBody();
             feedPost.author = feedConfig.author;
             feedPost.date = post.date;
             feedPost.published = post.date;
