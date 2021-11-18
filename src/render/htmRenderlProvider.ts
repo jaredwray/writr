@@ -126,7 +126,7 @@ export class HtmlRenderProvider implements RenderProviderInterface {
 
         if (post) {
 
-            let dataObject = { post: post, previousPost: previousPost, nextPost: nextPost, tags: tags };
+            let dataObject = { post: await post.toObject(), previousPost: previousPost, nextPost: nextPost, tags: tags };
             let rootTemplatePath = config.path + "/templates/";
             let templateID = "post";
             if(post.matter.layout) {
