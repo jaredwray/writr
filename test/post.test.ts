@@ -63,12 +63,19 @@ describe('Post', () => {
     expect(post.date.getFullYear()).toBe(2019);
   });
 
-  it('post get body', () => {
+  it('post get body', async () => {
     let post = new Post();
     post.matter.body = "foo";
     post.content = "*HOW*";
 
-    expect(post.body).toBe("foo");
+    expect(await post.getBody()).toBe("foo");
+  });
+
+  it('post get body for html', async () => {
+    let post = new Post();
+    post.content = "*HOW*";
+
+    expect(await post.getBody()).toContain("<p><em>HOW</em></p>");
   });
 
   it('post get matter', () => {
@@ -97,41 +104,41 @@ describe('Post', () => {
     expect(post.published).toBe(false);
   });
 
-  it('post get description from matter', () => {
+  it('post get description from matter', async() => {
     let post = new Post();
     post.matter.description = "how now brown cow is cool";
 
-    expect(post.description).toBe(post.matter.description);
+    expect(await post.getDescription()).toBe(post.matter.description);
   }); 
 
-  it('post get description from summary', () => {
+  it('post get description from summary', async () => {
     let post = new Post();
     post.content = "*HOW*\n\n*COW*";
 
-    expect(post.summary).toBe("<p><em>HOW</em></p><p><em>COW</em></p>");
-    expect(post.description).toBe("HOWCOW");
+    expect(await post.getSummary()).toBe("<p><em>HOW</em></p><p><em>COW</em></p>");
+    expect(await post.getDescription()).toBe("HOWCOW");
   });
 
-  it('post get summary', () => {
+  it('post get summary', async () => {
     let post = new Post();
     post.content = "*HOW*\n\n*COW*";
 
-    expect(post.summary).toBe("<p><em>HOW</em></p><p><em>COW</em></p>");
+    expect(await post.getSummary()).toBe("<p><em>HOW</em></p><p><em>COW</em></p>");
   });
 
-  it('post get summary by description', () => {
+  it('post get summary by description', async () => {
     let post = new Post();
     post.content = "*HOW*\n\n*COW*";
     post.matter.description = "foo";
 
-    expect(post.summary).toBe("foo");
+    expect(await post.getSummary()).toBe("foo");
   });
 
-  it('post get body / generate', () => {
+  it('post get body / generate', async () => {
     let post = new Post();
     post.content = "*HOW*";
 
-    expect(post.body).toBe("<p><em>HOW</em></p>\n");
+    expect(await post.getBody()).toBe("<p><em>HOW</em></p>\n");
   });
 
   it('post add tag with same name', () => {
