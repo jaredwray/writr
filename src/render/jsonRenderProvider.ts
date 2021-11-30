@@ -23,14 +23,15 @@ export class JSONRenderProvider implements RenderProviderInterface {
         let posts = await data.getPosts();
         let tags = await data.getTags();
 
-        posts.forEach((post) => {
-            obj.posts.push(post.toObject());
-        });
+        for (let post of posts) {
+            let postObj: any = await post.toObject();
+            obj.posts.push(postObj);
+        }
 
-        tags.forEach((tag) => {
-            obj.tags.push(tag.toObject());
-        });
-        
+        for (let tag of tags) {
+            obj.tags.push(await tag.toObject());
+        }
+
         await new StorageService(config).set(config.output + "/data.json", JSON.stringify(obj));
         
         result = true;

@@ -49,7 +49,7 @@ export class AtomRenderProvider implements RenderProviderInterface{
         //add in the posts
         let posts = await data.getPostsByCount(config.indexCount);
 
-        posts.forEach(async (post) => {
+        for(let post of posts) {
 
             let feedPost: any = {};
             feedPost.title = post.title;
@@ -62,7 +62,7 @@ export class AtomRenderProvider implements RenderProviderInterface{
             feedPost.published = post.date;
 
             atomFeed.addItem(feedPost);
-        });
+        }
 
         //write the feed atom.xml
         await new StorageService(config).set(config.output + "/atom.xml", atomFeed.atom1());

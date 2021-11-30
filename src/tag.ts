@@ -17,14 +17,14 @@ export class Tag {
     return result;
   }
 
-  toObject(): any {
+  async toObject(): Promise<any> {
     let result: any = {};
     result.name = this.name;
     result.id = this.id;
     result.posts = [];
 
-    this.posts.forEach((post) => {
-      result.posts.push(post.toObject());
+    this.posts.forEach(async (post) => {
+      result.posts.push(await post.toObject());
     });
     
     return result;
