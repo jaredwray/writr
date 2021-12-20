@@ -25,13 +25,13 @@
   ],
   "scripts": {
     "watch": "tsc -w -p .",
-    "clean-all": "yarn clean && rm -rf node_modules && rm -rf coverage",
-    "clean": "rm -rf ./dist && yarn clean-output",
+    "clean-all": "npm run clean && rm -rf node_modules && rm -rf coverage",
+    "clean": "rm -rf ./dist && npm run clean-output",
     "clean-output": "rm -rf ./blog_output",
-    "compile": "yarn clean && tsc -p .",
-    "build": "yarn test && yarn compile",
-    "test": "jest --coverage && yarn clean-output",
-    "test-output": "yarn compile && node ./bin/writr -p ./blog_example"
+    "compile": "npm run clean && tsc -p .",
+    "build": "npm run test && npm run compile",
+    "test": "jest --coverage && npm run clean-output",
+    "test-output": "npm run compile && node ./bin/writr -p ./blog_example"
   },
   "bin": {
     "writr": "./bin/writr"
