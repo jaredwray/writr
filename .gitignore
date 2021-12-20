@@ -56,7 +56,7 @@ typings/
 
 # dotenv environment variables file
 .env
-
+yarn.lock
 package-lock.json
 
 #test-output
