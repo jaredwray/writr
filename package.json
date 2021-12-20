@@ -48,7 +48,7 @@
     "helper-date": "^1.0.1",
     "keyv": "^4.0.4",
     "luxon": "^2.2.0",
-    "parse-json": "^6.0.1",
+    "parse-json": "^6.0.2",
     "striptags": "^3.2.0",
     "winston": "^3.3.3"
   },
