@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "watch": "tsc -w -p .",
-    "clean-all": "npm run clean && rm -rf node_modules && rm -rf coverage",
+    "clean-all": "npm run clean && rm -rf node_modules && rm -rf coverage && rm -rf package-lock.json",
     "clean": "rm -rf ./dist && npm run clean-output",
     "clean-output": "rm -rf ./blog_output",
     "compile": "npm run clean && tsc -p .",
@@ -41,7 +41,7 @@
     "cheerio": "^1.0.0-rc.10",
     "commander": "^8.3.0",
     "del": "^6.0.0",
-    "ecto": "^1.1.0",
+    "ecto": "^1.1.1",
     "feed": "^4.2.2",
     "fs-extra": "^10.0.0",
     "gray-matter": "^4.0.3",
