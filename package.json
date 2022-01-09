@@ -46,7 +46,7 @@
     "fs-extra": "^10.0.0",
     "gray-matter": "^4.0.3",
     "helper-date": "^1.0.1",
-    "keyv": "^4.0.4",
+    "keyv": "^4.0.5",
     "luxon": "^2.3.0",
     "parse-json": "^6.0.2",
     "striptags": "^3.2.0",
