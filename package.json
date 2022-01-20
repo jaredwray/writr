@@ -30,7 +30,7 @@
     "clean-output": "rm -rf ./blog_output",
     "compile": "npm run clean && tsc -p .",
     "build": "npm run test && npm run compile",
-    "test": "jest --coverage && npm run clean-output",
+    "test": "npm run clean-output && jest --coverage && npm run clean-output",
     "test-output": "npm run compile && node ./bin/writr -p ./blog_example"
   },
   "bin": {
@@ -41,7 +41,7 @@
     "cheerio": "^1.0.0-rc.10",
     "commander": "^8.3.0",
     "del": "^6.0.0",
-    "ecto": "^1.1.2",
+    "ecto": "^1.1.3",
     "feed": "^4.2.2",
     "fs-extra": "^10.0.0",
     "gray-matter": "^4.0.3",
