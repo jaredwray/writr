@@ -50,7 +50,7 @@
     "luxon": "^2.3.0",
     "parse-json": "^6.0.2",
     "striptags": "^3.2.0",
-    "winston": "^3.4.0"
+    "winston": "^3.6.0"
   },
   "devDependencies": {
     "@types/array-sort": "^1.0.0",
