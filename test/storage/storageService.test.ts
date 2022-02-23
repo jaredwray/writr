@@ -5,18 +5,18 @@ import * as fs from "fs-extra";
 
 describe("Storage Service", () => {
   let config: Config = new Config();
-  let storage: StorageService = new StorageService(config);
+  let storage: StorageService = new StorageService();
   let filePath = "";
 
   beforeEach(() => {
     config.loadConfig("./blog_example/config.json");
     filePath = config.path +"/article1.md";
-    storage = new StorageService(config);
+    storage = new StorageService();
 
   });
 
   it("get", async () => {
-    
+
     let fileData = await storage.get(filePath);
 
     if(fileData) {
@@ -40,7 +40,7 @@ describe("Storage Service", () => {
   it("copy directory", async () => {
     let src = config.path + "/images";
     let dest = config.output + "/images";
-    
+
     await fs.remove(dest);
     await storage.copy(src, dest);
 
@@ -60,7 +60,7 @@ describe("Storage Service", () => {
   it("delete", async () => {
     let data = "boo hoo";
     let path = config.path + "/fsp_test.md";
-    
+
     await storage.set(path, data);
 
     let result = await storage.delete(path);
