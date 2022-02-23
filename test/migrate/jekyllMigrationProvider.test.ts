@@ -6,7 +6,7 @@ describe("jekyllMigrationProvider", () => {
     const jekyllMigration = new JekyllMigrationProvider();
 
     it("migrate", async () => {
-        const src = "../jekyll_example";
+        const src = "./test/jekyll_example";
         const dest = "./test/output";
 
         await jekyllMigration.migrate(src, dest);
