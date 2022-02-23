@@ -1,15 +1,12 @@
 import { StorageProviderInterface } from "../storage/storageProviderInterface";
 import { FileStorageProvider } from "../storage/fileStorageProvider";
-import { Config } from "../config";
 
 
 export class StorageService implements StorageProviderInterface {
-    config: Config;
     provider: StorageProviderInterface;
 
-    
-    constructor(config:Config) {
-        this.config = config;
+
+    constructor() {
         this.provider = new FileStorageProvider();
     }
 
@@ -34,7 +31,7 @@ export class StorageService implements StorageProviderInterface {
     }
 
     getProvider(): StorageProviderInterface {
-    
+
         return this.provider;
     }
 }

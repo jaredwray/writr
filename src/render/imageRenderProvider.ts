@@ -17,7 +17,7 @@ export class ImageRenderProvider implements RenderProviderInterface {
         let output = config.output;
 
         //images
-        await new StorageService(config).copy(config.path + "/images" , output + "/images");
+        await new StorageService().copy(config.path + "/images" , output + "/images");
 
         return result;
     }

@@ -15,12 +15,13 @@ export class Config {
   authorEmail: string = "";
   indexCount: number = 20;
   permalink: string = "simple";
+  params?: Record<string, any>;
 
   constructor(config: any = undefined) {
-    
+
     //set default for fileProvider
     this.provider.name = "file";
-    
+
     if (config) {
       this.parse(config);
     }
@@ -54,6 +55,10 @@ export class Config {
     this.program = program;
 
     this.parse(this.program);
+  }
+
+  loadParams(params: Record<string, any>){
+    this.params = params;
   }
 
   parse(obj: any) {
