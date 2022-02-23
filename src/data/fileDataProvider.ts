@@ -36,25 +36,28 @@ export class FileDataProvider implements DataProviderInterface {
   }
 
   async getPosts(): Promise<Array<Post>> {
-    let result = new Array<Post>();
+    let result: Post[];
 
-    if (this.__posts.length == 0) {
+    const supportedExtensions = ['.md', '.markdown'];
+
+    const hasExtension = (file: string, extensions: string[]) => {
+      return extensions.some(extension => file.toLowerCase().endsWith(extension));
+    };
+
+    if (this.__posts.length === 0) {
       let directory = this.__postPath;
-      
-      if (await fs.existsSync(directory)) {
-        let files = await fs.readdirSync(directory);
 
-        for (let i = 0; i < files.length; i++) {
-          let file = files[i];
+      if (fs.existsSync(directory)) {
+        let files = fs.readdirSync(directory);
 
-          if (file.indexOf(".md") > 0) {
+        for (const file of files) {
+          if (hasExtension(file, supportedExtensions)) {
             let filePath = directory + "/" + file;
             let post = await this.parsePost(filePath);
-            if(post) {
-            this.__posts.push(post);
-            }
+            if(post) this.__posts.push(post);
           }
         }
+
       }
     }
 
@@ -138,7 +141,7 @@ export class FileDataProvider implements DataProviderInterface {
     if (await fs.pathExists(filePath)) {
 
       result = new Post();
-      
+
       let buff = await fs.readFile(filePath);
 
       let data = buff.toString();

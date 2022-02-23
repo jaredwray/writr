@@ -14,4 +14,5 @@ export class JekyllMigrationProvider {
         await new StorageService().copy(src + "/_posts" , dest);
         await new StorageService().copy(src + "/images" , dest + '/images');
     }
+
 }
