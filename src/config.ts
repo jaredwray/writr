@@ -15,7 +15,7 @@ export class Config {
   authorEmail: string = "";
   indexCount: number = 20;
   permalink: string = "simple";
-  params?: Record<string, any>;
+  params: Record<string, string> = {};
 
   constructor(config: any = undefined) {
 

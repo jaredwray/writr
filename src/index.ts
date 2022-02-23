@@ -7,7 +7,7 @@ import * as fs from "fs-extra";
 import { JSONRenderProvider } from "./render/jsonRenderProvider";
 import { AtomRenderProvider } from "./render/atomRenderProvider";
 import { ImageRenderProvider } from "./render/imageRenderProvider";
-import {JekyllMigrationProvider} from "./migrate/jekyllMigrationProvider";
+import {Migrate} from "./migrate";
 const { createCommand } = require('commander');
 
 
@@ -62,10 +62,10 @@ export class Writr {
         if(this.data === undefined || this.config === undefined) {
             return false;
         }
+        const { jekyll, output } = this.config.params;
 
-        if(this.config.params?.jekyll) {
-            const { jekyll, output } = this.config.params;
-            await new JekyllMigrationProvider().migrate(jekyll, output)
+        if(jekyll && output) {
+            await new Migrate('jekyll').migrate(jekyll, output)
             return true;
         }
 
