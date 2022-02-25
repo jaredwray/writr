@@ -19,7 +19,7 @@ export class AtomRenderProvider implements RenderProviderInterface{
         if(config.title) {
             feedConfig.title = config.title;
         }
-        
+
         feedConfig.generator = "Writr";
 
         if(config.url) {
@@ -65,7 +65,7 @@ export class AtomRenderProvider implements RenderProviderInterface{
         }
 
         //write the feed atom.xml
-        await new StorageService(config).set(config.output + "/atom.xml", atomFeed.atom1());
+        await new StorageService().set(config.output + "/atom.xml", atomFeed.atom1());
 
         return result;
     }

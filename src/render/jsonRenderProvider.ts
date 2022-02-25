@@ -14,8 +14,6 @@ export class JSONRenderProvider implements RenderProviderInterface {
     }
 
     async render(data: DataService, config: Config): Promise<boolean | undefined>  {
-        let result: boolean = false;
-
         let obj: any = {};
         obj.posts = new Array<Post>();
         obj.tags = new Array<Tag>();
@@ -32,10 +30,8 @@ export class JSONRenderProvider implements RenderProviderInterface {
             obj.tags.push(await tag.toObject());
         }
 
-        await new StorageService(config).set(config.output + "/data.json", JSON.stringify(obj));
-        
-        result = true;
-        
-        return result;
+        await new StorageService().set(config.output + "/data.json", JSON.stringify(obj));
+
+        return true;
     }
 }

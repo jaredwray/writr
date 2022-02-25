@@ -1,8 +1,6 @@
 import { Writr } from "../src/index";
 import { Config } from "../src/config";
 import { DataService } from "../src/data/dataService";
-
-import * as del from "del";
 import * as fs from "fs-extra";
 
 describe('Writr', () => {
@@ -15,7 +13,7 @@ describe('Writr', () => {
 
   it("parse CLI", () => {
     let writr = new Writr();
-  
+
     process.argv = [ '-c', './test/blog/config-test2.json', '-o', './out' ];
 
     writr.parseCLI(process);
@@ -29,7 +27,7 @@ describe('Writr', () => {
 
   it("cli run", async () => {
     let writr = new Writr();
-  
+
     writr.parseCLI(process);
 
     writr.config = config;
@@ -45,7 +43,7 @@ describe('Writr', () => {
 
   it("cli run on path", async () => {
     let writr = new Writr();
-  
+
     let p: any = {};
     p.argv = [ '',
     '',
@@ -63,7 +61,7 @@ describe('Writr', () => {
 
   it("cli run with no data set or config", async () => {
     let writr = new Writr();
-  
+
     let p: any = {};
     p.argv = [ '',
     '',
@@ -78,6 +76,20 @@ describe('Writr', () => {
 
     expect(val).toBe(false);
   });
-  
+
+  it('cli should parse jekyll and output params to migrate', async () => {
+    const writr = new Writr();
+
+    process.argv = ['', '', '-m', 'jekyll', './jekyll-site', './out' ];
+
+    writr.parseCLI(process);
+
+    const [src, dest] = writr.config?.program.args;
+
+    expect(src).toBe('./jekyll-site');
+    expect(dest).toBe('./out');
+  });
+
+
 
 });
