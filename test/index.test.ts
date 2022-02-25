@@ -1,7 +1,6 @@
 import { Writr } from "../src/index";
 import { Config } from "../src/config";
 import { DataService } from "../src/data/dataService";
-
 import * as fs from "fs-extra";
 
 describe('Writr', () => {
@@ -81,14 +80,14 @@ describe('Writr', () => {
   it('cli should parse jekyll and output params to migrate', async () => {
     const writr = new Writr();
 
-    process.argv = ['', '', '-j', './jekyll-site', '-o', './out' ];
+    process.argv = ['', '', '-m', 'jekyll', './jekyll-site', './out' ];
 
     writr.parseCLI(process);
 
-    const { jekyll, output } = writr.config?.params || {};
+    const [src, dest] = writr.config?.program.args;
 
-    expect(jekyll).toBe('./jekyll-site');
-    expect(output).toBe('./out');
+    expect(src).toBe('./jekyll-site');
+    expect(dest).toBe('./out');
   });
 
 

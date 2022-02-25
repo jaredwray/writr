@@ -14,6 +14,9 @@ export class Migrate {
     }
 
     async migrate(src: string, dest: string) {
+        if(!src || !dest) {
+            throw new Error("Source and destination must be specified");
+        }
         await this.getProvider().migrate(src, dest);
     }
 

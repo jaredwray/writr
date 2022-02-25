@@ -31,7 +31,7 @@ export class Writr {
         program.option("-o, --output <path>", "Path of where to output the generated blog");
         program.option("-r, --render <list>", "What do you want rendered such as html or json (example --render html,json)");
         program.option("-c, --config <path>", "custom configuration path");
-        program.option("-j, --jekyll <path>", "Jekyll path to be migrated");
+        program.option("-m, --migrate <type> <source> <destination>", "Migrate from Jekyll to Writr");
 
         program.parse(process.argv);
 
@@ -62,10 +62,12 @@ export class Writr {
         if(this.data === undefined || this.config === undefined) {
             return false;
         }
-        const { jekyll, output } = this.config.params;
 
-        if(jekyll && output) {
-            await new Migrate('jekyll').migrate(jekyll, output)
+        const { migrate } = this.config.params;
+
+        if(migrate) {
+            const [src, dest] = this.config.program.args;
+            await new Migrate(migrate).migrate(src, dest);
             return true;
         }
 
