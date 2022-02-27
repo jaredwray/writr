@@ -24,17 +24,11 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
             const pages = <string>data.headers.get('X-WP-TotalPages');
             posts = await data.json();
 
-            const leftPages = (new Array(parseInt(pages)-1)).fill('page');
-
-            const postPromises = leftPages.map(async (_, i) => {
-                const data = await fetch(`${src}/wp-json/wp/v2/posts?page=${i+2}`);
-                return await data.json()
-            });
-
-            const postsArray = await Promise.all(postPromises);
-            const postsArrayFlat = postsArray.flat();
-
-            posts = [...posts, ...postsArrayFlat];
+            for(let i = 2; i <= parseInt(pages); i++){
+                const data = await fetch(`${src}/wp-json/wp/v2/posts?page=${i}`);
+                const pagePosts = await data.json();
+                posts = posts.concat(pagePosts);
+            }
 
             return posts;
         } catch (error: any) {
@@ -42,10 +36,25 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
         }
     }
 
-    async fetchMedia(src: string) {
+    async fetchMedia(src: string, id: string) {
         try{
-            const data = await fetch(`${src}/wp-json/wp/v2/media`);
-            return await data.json();
+            const response = await fetch(`${src}/wp-json/wp/v2/media/${id}`);
+            const {guid, slug, mime_type} = await response.json();
+            const mediaResponse = await fetch(guid.rendered);
+            const media = await mediaResponse.buffer();
+            const extension = mime_type.split('/')[1];
+            return { media, filename: `${slug}.${extension}` };
+        } catch (error: any) {
+            return {};
+        }
+    }
+
+    async saveMedia(mediaFetched: any, dest: string) {
+        try{
+            const { media, filename } = mediaFetched;
+            if(!media || !filename) return null;
+            await this.storage.set(`${dest}/images/${filename}`, media);
+            return `/images/${filename}`;
         } catch (error: any) {
             throw new Error(error.message);
         }
@@ -65,14 +74,28 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
         try{
             const posts = await this.fetchPosts(src);
             for (const post of posts) {
-                const {title, slug, content } = post;
-                const header = this.parser.generateMdHeaders({title: title.rendered, slug});
-                const postContent = this.parser.htmlToMd(content.rendered);
-                const mdContent = `${header}\n\n${postContent}`;
+                const {title, slug, content, featured_media } = post;
+
+                // Markdown header generation
+                const header = this.parser.generateMdHeaders({title: title?.rendered, slug});
+                let mdContent = `${header}\n\n`;
+
+                // Markdown media content
+                if(featured_media) {
+                    const mediaFetched = await this.fetchMedia(src, featured_media);
+                    const mediaPath = this.saveMedia(mediaFetched, dest);
+                    mdContent += mediaPath ? `![${title.rendered}](${mediaPath})\n\n` : '';
+                }
+
+                // Markdown html content
+                mdContent += this.parser.htmlToMd(content?.rendered);
+
                 await this.storage.set(`${dest}/${slug}.md`, mdContent);
             }
+            this.log.info("Migration was completed successfully");
             return true;
         }catch (error: any) {
+            console.log('Error', error.message)
             throw new Error('Error while migrating WordPress site: ' + src);
         }
     }
