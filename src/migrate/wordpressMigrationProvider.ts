@@ -60,12 +60,13 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
         }
     }
 
-    async fetchCategories(src: string){
+    async fetchCategoriesPerPost(src: string, postId: string) {
         try{
-            const data = await fetch(`${src}/wp-json/wp/v2/categories`);
-            return await data.json();
+            const data = await fetch(`${src}/wp-json/wp/v2/categories?post=${postId}`);
+            const categoriesData = await data.json();
+            return categoriesData.map((category: any) => category.name);
         } catch (error: any) {
-            throw new Error(error.message);
+            return null;
         }
     }
 
@@ -74,10 +75,15 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
         try{
             const posts = await this.fetchPosts(src);
             for (const post of posts) {
-                const {title, slug, content, featured_media } = post;
+                const {id, title, slug, date, content, featured_media } = post;
+
+                // Get post categories
+                const categories = await this.fetchCategoriesPerPost(src, id);
 
                 // Markdown header generation
-                const header = this.parser.generateMdHeaders({title: title?.rendered, slug});
+                const header = this.parser.generateMdHeaders({
+                    title: title?.rendered, slug, categories, date
+                });
                 let mdContent = `${header}\n\n`;
 
                 // Markdown media content
