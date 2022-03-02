@@ -21,7 +21,7 @@ describe('Migrate', () => {
         try{
             const writr = new Writr();
 
-            process.argv = ['', '', '-m', 'jekyll', './test/jekyll_example' ];
+            process.argv = ['', '', '-m', 'wordpress', './test/jekyll_example' ];
 
             writr.parseCLI(process);
             await writr.runCLI();
