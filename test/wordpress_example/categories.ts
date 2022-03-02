@@ -1,0 +1,32 @@
+export const categories = [{
+  "id": 1,
+  "count": 3,
+  "description": "",
+  "link": "https://www.demowp.com/category/category-one/",
+  "name": "Category One",
+  "slug": "category-one",
+  "taxonomy": "category",
+  "parent": 0,
+  "meta": [],
+}, {
+  "id": 2,
+  "count": 3,
+  "description": "",
+  "link": "https://www.demowp.com/category/category-two/",
+  "name": "Category Two",
+  "slug": "category-two",
+  "taxonomy": "category",
+  "parent": 0,
+  "meta": [],
+}, {
+  "id": 3,
+  "count": 7,
+  "description": "",
+  "link": "https://www.demowp.com/category/category-three/",
+  "name": "Category Three",
+  "slug": "category-three",
+  "taxonomy": "category",
+  "parent": 0,
+  "meta": [],
+}
+]
