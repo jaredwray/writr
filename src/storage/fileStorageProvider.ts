@@ -25,16 +25,10 @@ export class FileStorageProvider implements StorageProviderInterface {
     }
 
     async set(path?: string, data?: string): Promise<boolean> {
-        try {
-            if(!path || !data ) return false;
-            await this.ensureFilePath(path);
-            await fs.writeFile(path, data);
-            return true;
-        } catch (error) {
-            /* istanbul ignore next */
-            this.log.error(error);
-            return false;
-        }
+        if(!path || !data ) return false;
+        await this.ensureFilePath(path);
+        await fs.writeFile(path, data);
+        return true;
     }
 
     async delete(path: string): Promise<boolean> {
