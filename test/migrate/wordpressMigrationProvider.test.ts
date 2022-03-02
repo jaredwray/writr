@@ -5,7 +5,7 @@ import * as fs from "fs-extra";
 import {WordpressMigrationProvider} from "../../src/migrate/wordpressMigrationProvider";
 import {posts, media, categories} from "../wordpress_example/_mocks_";
 
-const {Response} = jest.requireActual('node-fetch');
+const {Response, FetchError} = jest.requireActual('node-fetch');
 
 describe('wordpressMigrationProvider', () => {
 
@@ -35,17 +35,16 @@ describe('wordpressMigrationProvider', () => {
     });
 
     it('should return an error when fetching posts', async () => {
-        // With no headers we will throw an error
         // @ts-ignore
-        fetch.mockResolvedValue({
-            json: jest.fn().mockResolvedValue(posts),
+        fetch.mockImplementation(() => {
+            throw new Error('Error');
         });
 
         try{
             await wordpressMigration.fetchPosts('');
             expect('Fetch failed').toBe('Fetch succeeded');
         } catch (error: any) {
-            expect(error.message).toBe("Cannot read property 'get' of undefined");
+            expect(error.message).toBe("Error");
         }
     });
 
