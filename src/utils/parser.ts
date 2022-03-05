@@ -13,13 +13,14 @@ export class Parser {
         return this.markdown.translate(html);
     }
 
-    generateMdHeaders({title, slug, date, categories}: Record<string, any>) {
+    generateMdHeaders({title, slug, date, categories, tags}: Record<string, any>) {
 
         let header = '---\n';
         if (title) header += `title: ${title}\n`;
         if(slug) header += `url: ${slug}\n`;
         if(date) header += `date: ${(new Date(date)).toISOString().slice(0, 10)}\n`;
         if(categories) header += `categories: ${categories.join(', ')}\n`;
+        if(tags) header += `tags: ${tags.join(', ')}\n`;
         header += '---'
 
         return header;

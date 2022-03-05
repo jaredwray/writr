@@ -3,9 +3,9 @@ import fetch from 'node-fetch';
 import * as fs from "fs-extra";
 
 import {WordpressMigrationProvider} from "../../src/migrate/wordpressMigrationProvider";
-import {posts, media, categories} from "../wordpress_example/_mocks_";
+import {posts, media, categories, tags} from "../wordpress_example/_mocks_";
 
-const {Response, FetchError} = jest.requireActual('node-fetch');
+const {Response} = jest.requireActual('node-fetch');
 
 describe('wordpressMigrationProvider', () => {
 
@@ -102,6 +102,23 @@ describe('wordpressMigrationProvider', () => {
         expect(categories).toBeNull();
     });
 
+    it('should fetch tags per post', async () => {
+        // @ts-ignore
+        fetch.mockResolvedValueOnce(new Response(JSON.stringify(tags)));
+        const tagsFetched = await wordpressMigration.fetchTagsPerPost('url', 'postId');
+
+        expect(tagsFetched.length).toBe(2);
+    });
+
+    it('should return an error when fetching tags data', async () => {
+        // @ts-ignore
+        fetch.mockResolvedValueOnce(new Response(null));
+
+        const tags = await wordpressMigration.fetchTagsPerPost('url', 'postId');
+
+        expect(tags).toBeNull();
+    });
+
     it('should migrate post to Writer', async () => {
 
         jest.spyOn(WordpressMigrationProvider.prototype, 'fetchPosts')
@@ -117,6 +134,11 @@ describe('wordpressMigrationProvider', () => {
         jest.spyOn(WordpressMigrationProvider.prototype, 'fetchMedia')
           .mockImplementation(() => {
               return Promise.resolve(media);
+          });
+
+        jest.spyOn(WordpressMigrationProvider.prototype, 'fetchTagsPerPost')
+          .mockImplementation(() => {
+              return Promise.resolve(tags);
           });
 
         // @ts-ignore
