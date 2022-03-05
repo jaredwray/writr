@@ -69,6 +69,15 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
         }
     }
 
+    async fetchTagsPerPost(src: string, postId: string){
+        try{
+            const data = await fetch(`${src}/wp-json/wp/v2/tags?post=${postId}`);
+            return await data.json();
+        } catch (error: any) {
+            return null;
+        }
+    }
+
     async migrate(src: string, dest: string): Promise<boolean>{
         this.log.info("Migrating WordPress site from " + src + " to " + dest);
         try{
@@ -78,10 +87,12 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
 
                 // Get post categories
                 const categoriesData = await this.fetchCategoriesPerPost(src, id);
+                const tagsData = await this.fetchTagsPerPost(src, id);
                 const categories = categoriesData.map((category: any) => category.name);
+                const tags = tagsData.map((tag: any) => tag.name);
                 // Markdown header generation
                 const header = this.parser.generateMdHeaders({
-                    title: title.rendered, slug, categories, date
+                    title: title.rendered, slug, categories, tags, date
                 });
                 let mdContent = `${header}\n\n`;
 
