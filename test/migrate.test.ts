@@ -1,6 +1,8 @@
 import { Writr } from "../src/index";
 import * as fs from "fs-extra";
 import {Migrate} from "../src/migrate";
+import {GhostMigrationProvider} from "../src/migrate/ghostMigrationProvider";
+jest.mock('../src/migrate/ghostMigrationProvider');
 
 describe('Migrate', () => {
 
@@ -42,6 +44,18 @@ describe('Migrate', () => {
 
         expect(fs.readdirSync("./test/output").length).toBe(2);
         expect(fs.readdirSync("./test/output/images").length).toBe(1);
+    })
+
+    it('cli should run migrate method in Ghost migration provider ', async () => {
+        const writr = new Writr();
+
+        process.argv = ['', '', '-m', 'ghost', 'https://demo-site.ghosts.io/?key=apikeye', './test/ghost' ];
+
+        writr.parseCLI(process);
+        await writr.runCLI();
+
+        expect(GhostMigrationProvider.prototype.migrate).toBeCalled();
+
     })
 
 })
