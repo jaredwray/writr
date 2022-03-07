@@ -1,5 +1,6 @@
 import {JekyllMigrationProvider} from "./migrate/jekyllMigrationProvider";
 import {WordpressMigrationProvider} from "./migrate/wordpressMigrationProvider";
+import {GhostMigrationProvider} from "./migrate/ghostMigrationProvider";
 
 export class Migrate {
     provider: any;
@@ -10,7 +11,10 @@ export class Migrate {
                 this.provider = new JekyllMigrationProvider();
                 break;
             case "wordpress":
-                this.provider = new WordpressMigrationProvider()
+                this.provider = new WordpressMigrationProvider();
+                break;
+            case "ghost":
+                this.provider = new GhostMigrationProvider();
                 break;
             default:
                 throw new Error("Unknown migration provider: " + provider);
