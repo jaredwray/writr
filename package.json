@@ -31,13 +31,16 @@
     "compile": "npm run clean && tsc -p .",
     "build": "npm run test && npm run compile",
     "test": "npm run clean-output && jest --coverage && npm run clean-output",
-    "test-output": "npm run compile && node ./bin/writr -p ./blog_example"
+    "test-output": "npm run compile && node ./bin/writr -p ./blog_example",
+    "test-migration": "npm run compile && node ./bin/writr -m wordpress https://inhouse.com.pa ./blog_example"
+
   },
   "bin": {
     "writr": "./bin/writr"
   },
   "dependencies": {
     "array-sort": "^1.0.0",
+    "axios": "^0.26.1",
     "cheerio": "^1.0.0-rc.10",
     "commander": "^9.0.0",
     "del": "^6.0.0",
