@@ -1,5 +1,5 @@
-jest.mock('node-fetch');
-import fetch from 'node-fetch';
+jest.mock('axios');
+import axios from 'axios';
 import * as fs from "fs-extra";
 import {GhostMigrationProvider} from "../../src/migrate/ghostMigrationProvider";
 import {posts} from "../ghost_example/_mocks_";
@@ -8,7 +8,7 @@ describe('ghostMigrationProvider', () => {
 
   beforeEach(() =>{
     // @ts-ignore
-    fetch.mockReset()
+    axios.mockReset()
   });
 
   afterEach(() => {
@@ -20,8 +20,8 @@ describe('ghostMigrationProvider', () => {
   it('should fetch all posts', async () => {
 
     // @ts-ignore
-    fetch.mockResolvedValue({
-      json: jest.fn().mockResolvedValue(posts),
+    axios.mockResolvedValue({
+      data: posts,
     });
 
     const fetchedPost = await ghostMigration.fetchPosts('https://demo-site.ghots.io/?key=apikey');
@@ -30,7 +30,7 @@ describe('ghostMigrationProvider', () => {
 
   it('should return an error when fetching posts', async () => {
     // @ts-ignore
-    fetch.mockImplementation(() => {
+    axios.mockImplementation(() => {
       throw new Error('Error');
     });
 
@@ -45,10 +45,10 @@ describe('ghostMigrationProvider', () => {
   it('should save media', async () => {
 
     // @ts-ignore
-    fetch.mockResolvedValueOnce({
-      buffer: () => Buffer.from('test'),
+    axios.mockResolvedValueOnce({
+      data: 'test',
       headers: {
-        get: jest.fn().mockReturnValue('image/png')
+        'content-type': 'image/png'
       }
       });
 

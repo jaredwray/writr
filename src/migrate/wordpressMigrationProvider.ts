@@ -74,7 +74,6 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
             const { data } = await axios(`${src}/wp-json/wp/v2/tags?post=${postId}`);
             return data;
         } catch (error: any) {
-            console.log('Error fetching tags', error.message);
             return null;
         }
     }
