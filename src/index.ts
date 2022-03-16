@@ -62,13 +62,14 @@ export class Writr {
     program
       .command('init')
       .description('Initialize a new Writr project')
-      .argument('<name>', 'Name of the project')
-      .action(async (name: string = 'Blog') => {
+      .argument('[name]', 'Name of the project', 'Blog')
+      .action(async (name: string) => {
+        console.log('Name', name);
         try{
           const setup = new Setup(name);
           await setup.run();
         } catch (error: any) {
-          program.error(error.message);
+          console.error('Error: ', error.message);
         }
       })
 

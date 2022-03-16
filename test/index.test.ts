@@ -90,7 +90,7 @@ describe('Writr', () => {
     expect(dest).toBe('./out');
   });
 
-  it('cli should run the init command',async () => {
+  it('cli should run the init command with app name',async () => {
     const writr = new Writr();
 
     process.argv = ['', '', 'init', 'blog'];
@@ -101,6 +101,18 @@ describe('Writr', () => {
 
     fs.removeSync('./blog');
   });
+
+  it('cli should run the init command without app name', () => {
+    const writr = new Writr();
+
+    process.argv = ['', '', 'init'];
+
+    writr.parseCLI(process);
+
+    expect(fs.readdirSync("./Blog").length).toBe(3);
+
+    fs.removeSync('./Blog');
+  })
 
   it('cli should run the init command and return error',async () => {
     try{
