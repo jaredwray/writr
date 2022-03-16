@@ -1,44 +1,54 @@
-import * as shell from 'shelljs';
+import * as fs from "fs-extra";
+import {StorageProviderInterface} from "../storage/storageProviderInterface";
+import {StorageService} from "../storage/storageService";
 
 export class Setup {
 
+  private storage: StorageProviderInterface;
   private readonly name: string;
-  private readonly destPath: string;
   private readonly gitignoreContent: string;
+  private readonly packageJsonContent: Record<string, any>;
 
   constructor(name: string) {
+
+    this.storage = new StorageService();
     this.name = name;
-    this.destPath = `${process.cwd()}/${name}`;
-    this.gitignoreContent = `### Node ###
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
+    this.gitignoreContent = "### Node ###\n" +
+      "# Logs\n" +
+      "logs\n" +
+      "*.log\n" +
+      "npm-debug.log*\n" +
+      "yarn-debug.log*\n" +
+      "yarn-error.log*\n" +
+      "lerna-debug.log*\n" +
+      "# Dependency directories\n" +
+      "node_modules/\n" +
+      "jspm_packages/\n" +
+      "# Optional npm cache directory\n" +
+      ".npm\n";
+    this.packageJsonContent = {
+      name: this.name,
+      version: "0.0.1",
+      description: "",
+      keywords: [],
+      license: "ISC",
+      author: "",
+      scripts: {
+        test: "echo \"Error: no test specified\" && exit 1"
+      },
+    }
 
-# Dependency directories
-node_modules/
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-`;
-    shell.config.silent = true;
   };
 
-
   async run() {
-    shell.mkdir('-p', this.destPath);
-    shell.cd(this.destPath);
-    shell.echo(this.gitignoreContent).to('.gitignore');
-    shell.exec('npm init -y', {silent:true});
-    const content = `# ${this.name}`;
-    shell.cd(this.destPath);
-    shell.echo(content).to('Readme.md');
-    console.log(__dirname);
-    shell.cp('-R', `${__dirname}/../../blog_example/`, 'blog');
+    try{
+      fs.mkdirSync(this.name);
+      fs.outputFileSync(`./${this.name}/.gitignore`, this.gitignoreContent);
+      fs.outputFileSync(`./${this.name}/package.json`, JSON.stringify(this.packageJsonContent, null, 2));
+      fs.copySync(`${__dirname}/../../blog_example`, `./${this.name}/blog`);
+    } catch (error: any) {
+      throw new Error('Directory already exists');
+    }
   }
 
 }

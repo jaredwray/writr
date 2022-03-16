@@ -1,6 +1,7 @@
 import {createLogger, transports} from "winston";
 import * as del from "del";
 import * as fs from "fs-extra";
+import { createCommand } from "commander";
 
 import {DataService} from "./data/dataService";
 import {Config} from "./config";
@@ -10,8 +11,6 @@ import {AtomRenderProvider} from "./render/atomRenderProvider";
 import {ImageRenderProvider} from "./render/imageRenderProvider";
 import {Migrate} from "./migrate";
 import {Setup} from "./utils/setup";
-
-const {createCommand} = require('commander');
 
 export class Writr {
   log: any;
@@ -64,9 +63,13 @@ export class Writr {
       .command('init')
       .description('Initialize a new Writr project')
       .argument('<name>', 'Name of the project')
-      .action(async (name: string) => {
-        const setup = new Setup(name);
-        await setup.run();
+      .action(async (name: string = 'Blog') => {
+        try{
+          const setup = new Setup(name);
+          await setup.run();
+        } catch (error: any) {
+          program.error(error.message);
+        }
       })
 
     program.parse(process.argv);
