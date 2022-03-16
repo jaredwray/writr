@@ -36,7 +36,7 @@ export class Setup {
 
   };
 
-  async run() {
+  async init() {
     try{
       fs.mkdirSync(this.name);
       fs.outputFileSync(`./${this.name}/.gitignore`, this.gitignoreContent);

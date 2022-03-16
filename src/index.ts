@@ -67,7 +67,7 @@ export class Writr {
         console.log('Name', name);
         try{
           const setup = new Setup(name);
-          await setup.run();
+          await setup.init();
         } catch (error: any) {
           console.error('Error: ', error.message);
         }
