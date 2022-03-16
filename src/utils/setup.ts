@@ -1,17 +1,13 @@
 import * as fs from "fs-extra";
-import {StorageProviderInterface} from "../storage/storageProviderInterface";
-import {StorageService} from "../storage/storageService";
 
 export class Setup {
 
-  private storage: StorageProviderInterface;
   private readonly name: string;
   private readonly gitignoreContent: string;
   private readonly packageJsonContent: Record<string, any>;
 
   constructor(name: string) {
 
-    this.storage = new StorageService();
     this.name = name;
     this.gitignoreContent = "### Node ###\n" +
       "# Logs\n" +
