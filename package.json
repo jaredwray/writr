@@ -31,8 +31,7 @@
     "compile": "npm run clean && tsc -p .",
     "build": "npm run test && npm run compile",
     "test": "npm run clean-output && jest --coverage && npm run clean-output",
-    "test-output": "npm run compile && node ./bin/writr -p ./blog_example",
-    "test-init": "npm run compile && node ./bin/writr init demo"
+    "test-output": "npm run compile && node ./bin/writr -p ./blog_example"
   },
   "bin": {
     "writr": "./bin/writr"
