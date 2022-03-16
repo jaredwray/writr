@@ -1,4 +1,6 @@
 import * as fs from "fs-extra";
+import * as inquirer from "inquirer";
+import {Parser} from "./parser";
 
 export class Setup {
 
@@ -44,6 +46,40 @@ export class Setup {
       fs.copySync(`${__dirname}/../../blog_example`, `./${this.name}/blog`);
     } catch (error: any) {
       throw new Error('Directory already exists');
+    }
+  }
+
+  async new() {
+    try{
+      const questions = [
+        {
+          name: 'title',
+          message: 'What is the title of the post?',
+        },
+        {
+          name: 'categories',
+          message: 'Please enter the categories of the post separated by commas',
+        },
+        {
+          name: 'tags',
+          message: 'Please enter the tags of the post separated by commas',
+        },
+        {
+          name: 'date',
+          message: 'Please enter the date of the post in the format YYYY-MM-DD',
+          default: new Date().toLocaleDateString('en-CA'),
+        },
+      ]
+      const prompt = inquirer.createPromptModule();
+      const response = await prompt(questions);
+      response.slug = new Parser().slugify(response.title);
+
+      const headerContent = new Parser().generateMdHeaders(response)
+
+      await fs.outputFileSync(`${response.slug}.md`, headerContent);
+
+    } catch (error: any) {
+      throw new Error('Error creating new file');
     }
   }
 
