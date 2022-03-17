@@ -7,7 +7,10 @@ const Writr = require("../dist/index").Writr;
 const writr = new Writr;
 
 writr.parseCLI(process);
-writr.runCLI().then(() => {
+
+if(writr.command === 'build') {
+  writr.runCLI().then(() => {
     process.exit();
-    log.info("Done!");
-});
+    log.info("Done!")
+  })
+}
