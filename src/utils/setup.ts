@@ -43,7 +43,7 @@ export class Setup {
       fs.mkdirSync(this.name);
       fs.outputFileSync(`./${this.name}/.gitignore`, this.gitignoreContent);
       fs.outputFileSync(`./${this.name}/package.json`, JSON.stringify(this.packageJsonContent, null, 2));
-      fs.copySync(`${__dirname}/../../blog_example`, `./${this.name}/blog`);
+      fs.copySync(`${__dirname}/../../init`, `./${this.name}/blog`);
     } catch (error: any) {
       throw new Error('Directory already exists');
     }

@@ -11,6 +11,7 @@ writr.parseCLI(process);
 if(writr.command === 'build') {
   writr.runCLI().then(() => {
     process.exit();
-    log.info("Done!")
+    console.info("Done!");
   })
 }
+
