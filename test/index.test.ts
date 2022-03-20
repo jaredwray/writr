@@ -1,7 +1,7 @@
+import * as fs from "fs-extra";
 import { Writr } from "../src/index";
 import { Config } from "../src/config";
 import { DataService } from "../src/data/dataService";
-import * as fs from "fs-extra";
 
 describe('Writr', () => {
 
@@ -90,6 +90,45 @@ describe('Writr', () => {
     expect(dest).toBe('./out');
   });
 
+  it('cli should run the init command with app name',async () => {
+    const writr = new Writr();
 
+    process.argv = ['', '', 'init', 'blog'];
+
+    writr.parseCLI(process);
+
+    expect(fs.readdirSync("./blog").length).toBe(3);
+
+    fs.removeSync('./blog');
+  });
+
+  it('cli should run the init command without app name', () => {
+    const writr = new Writr();
+
+    process.argv = ['', '', 'init'];
+
+    writr.parseCLI(process);
+
+    expect(fs.readdirSync("./Blog").length).toBe(3);
+
+    fs.removeSync('./Blog');
+  })
+
+  it('cli should run the init command and return error',async () => {
+    try{
+      fs.mkdirSync('./blog');
+
+      const writr = new Writr();
+
+      process.argv = ['', '', 'init', 'blog'];
+
+      writr.parseCLI(process);
+
+    } catch (error: any){
+      expect(error.message).toBe('Directory already exists');
+    } finally {
+      fs.removeSync('./blog');
+    }
+  })
 
 });

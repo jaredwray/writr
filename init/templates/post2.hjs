@@ -1,0 +1,17 @@
+<h1>Post 2</h1>
+
+<p>{{post.title}}</p>
+<p>{{post.author}}</p>
+<p>{{{post.body}}}</p>
+
+<p>{{post.matter.featured_image}}</p>
+
+<p>{{previousPost.id}}</p>
+<p>{{nextPost.id}}</p>
+
+<h1>Tags</h1>
+<ul>
+    {{#each tags}}
+    <li>{{name}}</li>
+    {{/each}}
+</ul>

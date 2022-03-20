@@ -70,7 +70,8 @@
   },
   "files": [
     "dist",
-    "bin"
+    "bin",
+    "init"
   ],
   "jest": {
     "globals": {
