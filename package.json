@@ -71,7 +71,7 @@
   "files": [
     "dist",
     "bin",
-    "blog_example"
+    "init"
   ],
   "jest": {
     "globals": {
