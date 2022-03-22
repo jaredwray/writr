@@ -8,7 +8,7 @@ export class Setup {
   private readonly gitignoreContent: string;
   private readonly packageJsonContent: Record<string, any>;
 
-  constructor(name: string) {
+  constructor(name: string = 'default') {
 
     this.name = name;
     this.gitignoreContent = "### Node ###\n" +
@@ -70,8 +70,7 @@ export class Setup {
           default: new Date().toLocaleDateString('en-CA'),
         },
       ]
-      const prompt = inquirer.createPromptModule();
-      const response = await prompt(questions);
+      const response = await inquirer.prompt(questions);
       response.slug = new Parser().slugify(response.title);
 
       const headerContent = new Parser().generateMdHeaders(response)
