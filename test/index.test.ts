@@ -2,6 +2,7 @@ import * as fs from "fs-extra";
 import { Writr } from "../src/index";
 import { Config } from "../src/config";
 import { DataService } from "../src/data/dataService";
+import { Setup } from "../src/utils/setup";
 
 describe('Writr', () => {
 
@@ -128,6 +129,33 @@ describe('Writr', () => {
       expect(error.message).toBe('Directory already exists');
     } finally {
       fs.removeSync('./blog');
+    }
+  })
+
+  it('cli should run new command successfully', async() => {
+    jest.spyOn(Setup.prototype, 'new').getMockImplementation()
+
+    const writr = new Writr();
+
+    process.argv = ['', '', 'new'];
+
+    writr.parseCLI(process);
+
+    expect(Setup.prototype.new).toHaveBeenCalled();
+  })
+
+  it('cli should run new command and return an error', async () => {
+    jest.spyOn(Setup.prototype, 'new').mockImplementation(() => {
+      throw new Error('Error');
+    })
+    try{
+      const writr = new Writr();
+
+      process.argv = ['', '', 'new'];
+
+      writr.parseCLI(process);
+    } catch (error: any) {
+      expect(error.message).toBe('Error');
     }
   })
 
