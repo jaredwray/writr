@@ -1,10 +1,13 @@
 import * as fs from "fs-extra";
-import { Writr } from "../src/index";
+import { Writr } from "../src";
 import { Config } from "../src/config";
 import { DataService } from "../src/data/dataService";
 import { Setup } from "../src/utils/setup";
+import {ConsoleMessage} from "../src/log";
 
 describe('Writr', () => {
+
+  jest.spyOn(ConsoleMessage.prototype, 'error').mockImplementation(() => {});
 
   let config: Config = new Config();
 

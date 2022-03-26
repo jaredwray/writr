@@ -1,10 +1,13 @@
 jest.mock('axios');
 import axios from 'axios';
 import * as fs from "fs-extra";
+import {ConsoleMessage} from "../../src/log";
 import {GhostMigrationProvider} from "../../src/migrate/ghostMigrationProvider";
-import {posts} from "../ghost_example/_mocks_";
+import {posts} from "../ghost_example/posts";
 
 describe('ghostMigrationProvider', () => {
+
+  jest.spyOn(ConsoleMessage.prototype, 'info').mockImplementation(() => {});
 
   beforeEach(() =>{
     // @ts-ignore

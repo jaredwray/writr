@@ -1,10 +1,13 @@
-import { Writr } from "../src/index";
+import { Writr } from "../src";
 import * as fs from "fs-extra";
+import {ConsoleMessage} from "../src/log";
 import {Migrate} from "../src/migrate";
 import {GhostMigrationProvider} from "../src/migrate/ghostMigrationProvider";
 jest.mock('../src/migrate/ghostMigrationProvider');
 
 describe('Migrate', () => {
+
+    jest.spyOn(ConsoleMessage.prototype, 'info').mockImplementation(() => {});
 
     afterEach(() => {
         fs.removeSync("./test/output/");

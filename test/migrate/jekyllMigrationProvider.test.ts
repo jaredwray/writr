@@ -1,7 +1,10 @@
 import {JekyllMigrationProvider} from "../../src/migrate/jekyllMigrationProvider";
 import * as fs from "fs-extra";
+import {ConsoleMessage} from "../../src/log";
 
 describe("jekyllMigrationProvider", () => {
+
+    jest.spyOn(ConsoleMessage.prototype, 'info').mockImplementation(() => {});
 
     const jekyllMigration = new JekyllMigrationProvider();
 

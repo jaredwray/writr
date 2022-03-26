@@ -1,3 +1,5 @@
+import {ConsoleMessage} from "../../src/log";
+
 jest.mock('axios');
 import axios from 'axios';
 import * as fs from "fs-extra";
@@ -6,6 +8,8 @@ import {WordpressMigrationProvider} from "../../src/migrate/wordpressMigrationPr
 import {posts, media, categories, tags} from "../wordpress_example/_mocks_";
 
 describe('wordpressMigrationProvider', () => {
+
+    jest.spyOn(ConsoleMessage.prototype, 'info').mockImplementation(() => {});
 
     beforeEach(() =>{
        // @ts-ignore
