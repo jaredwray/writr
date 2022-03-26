@@ -1,4 +1,3 @@
-import {createLogger, transports} from "winston";
 import * as del from "del";
 import * as fs from "fs-extra";
 import { createCommand } from "commander";
@@ -11,17 +10,13 @@ import {AtomRenderProvider} from "./render/atomRenderProvider";
 import {ImageRenderProvider} from "./render/imageRenderProvider";
 import {Migrate} from "./migrate";
 import {Setup} from "./utils/setup";
+import {ConsoleMessage} from "./log";
 
 export class Writr {
-  log: any;
 
   config: Config | undefined;
   data: DataService | undefined;
   command: string | undefined;
-
-  constructor() {
-    this.log = createLogger({transports: [new transports.Console()]});
-  }
 
   parseCLI(process: NodeJS.Process) {
 
@@ -70,7 +65,7 @@ export class Writr {
           this.command = "init";
           await new Setup(name).init();
         } catch (error: any) {
-          this.log.error('Error: ', error.message);
+          new ConsoleMessage().error('Error: '+ error.message);
         }
       })
 
@@ -82,7 +77,7 @@ export class Writr {
           this.command = "new";
           await new Setup('new').new();
         } catch (error: any) {
-          this.log.error('Error: ', error.message);
+          new ConsoleMessage().error('Error: '+ error.message);
         }
       })
 

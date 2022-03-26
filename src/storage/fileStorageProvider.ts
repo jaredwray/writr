@@ -1,15 +1,8 @@
 import * as fs from "fs-extra";
-import { StorageProviderInterface } from "../storage/storageProviderInterface";
-
-import { createLogger, transports } from "winston";
+import { StorageProviderInterface } from "./storageProviderInterface";
+import { ConsoleMessage } from "../log";
 
 export class FileStorageProvider implements StorageProviderInterface {
-
-    log: any;
-
-    constructor() {
-        this.log = createLogger({ transports: [new transports.Console()]});
-    }
 
     async get(path: string): Promise<string | undefined> {
         let result: string | undefined;
@@ -17,8 +10,8 @@ export class FileStorageProvider implements StorageProviderInterface {
         try {
             let buffer = await fs.readFile(path);
             result = buffer.toString();
-        } catch (error) {
-            this.log.error(error);
+        } catch (error: any) {
+            new ConsoleMessage().info(error.message);
         }
 
         return result;
@@ -37,9 +30,8 @@ export class FileStorageProvider implements StorageProviderInterface {
         try {
             await fs.remove(path);
             result = true;
-        } catch(error) {
-            /* istanbul ignore next */
-            this.log.error(error);
+        } catch(error: any) {
+            new ConsoleMessage().error(error.message);
         }
 
         return result;
@@ -52,9 +44,8 @@ export class FileStorageProvider implements StorageProviderInterface {
             await fs.ensureDir(dest);
             await fs.copy(src, dest);
             result = true;
-        } catch (error) {
-            /* istanbul ignore next */
-            this.log.error(error);
+        } catch (error: any) {
+            new ConsoleMessage().error(error.message);
         }
 
         return result;

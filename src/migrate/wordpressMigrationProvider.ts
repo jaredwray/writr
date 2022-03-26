@@ -3,6 +3,7 @@ import axios from "axios";
 import {MigrationProviderInterface} from "./migrationProviderInterface";
 import {Parser} from "../utils/parser";
 import {StorageService} from "../storage/storageService";
+import {ConsoleMessage} from "../log";
 
 export class WordpressMigrationProvider implements MigrationProviderInterface{
 
@@ -79,7 +80,7 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
     }
 
     async migrate(src: string, dest: string): Promise<boolean>{
-        this.log.info("Migrating WordPress site from " + src + " to " + dest);
+        new ConsoleMessage().info("Migrating WordPress site from " + src + " to " + dest);
         try{
             const posts = await this.fetchPosts(src);
             for (const post of posts) {
@@ -108,7 +109,7 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
 
                 await this.storage.set(`${dest}/${slug}.md`, mdContent);
             }
-            this.log.info("Migration was completed successfully");
+            new ConsoleMessage().info("Migration was completed successfully");
             return true;
         }catch (error: any) {
             throw new Error('Error while migrating WordPress site: ' + src);
