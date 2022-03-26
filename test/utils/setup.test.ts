@@ -40,7 +40,7 @@ describe('setup', () => {
     const mdFile = `---
 title: Test Title
 url: test-title
-date: 2022-03-22
+date: ${new Date().toLocaleDateString('en-CA')}
 categories: category 1, category 2
 tags: tag 1, tag 2
 ---`

@@ -70,7 +70,7 @@ export class Writr {
           this.command = "init";
           await new Setup(name).init();
         } catch (error: any) {
-          console.error('Error: ', error.message);
+          this.log.error('Error: ', error.message);
         }
       })
 
@@ -82,7 +82,7 @@ export class Writr {
           this.command = "new";
           await new Setup('new').new();
         } catch (error: any) {
-          console.error('Error: ', error.message);
+          this.log.error('Error: ', error.message);
         }
       })
 
