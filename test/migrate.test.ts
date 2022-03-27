@@ -10,7 +10,7 @@ describe('Migrate', () => {
     jest.spyOn(ConsoleMessage.prototype, 'info').mockImplementation(() => {});
 
     afterEach(() => {
-        fs.removeSync("./test/output/");
+        fs.removeSync("./test_output/migrate/");
     });
 
     it('should return error when unknow provider is specified', () => {
@@ -40,19 +40,19 @@ describe('Migrate', () => {
     it('cli should migrate from jekyll project', async () => {
         const writr = new Writr();
 
-        process.argv = ['', '', '-m', 'jekyll', './test/jekyll_example', './test/output' ];
+        process.argv = ['', '', '-m', 'jekyll', './test/jekyll_example', './test_output/migrate' ];
 
         writr.parseCLI(process);
         await writr.runCLI();
 
-        expect(fs.readdirSync("./test/output").length).toBe(2);
-        expect(fs.readdirSync("./test/output/images").length).toBe(1);
+        expect(fs.readdirSync("./test_output/migrate").length).toBe(2);
+        expect(fs.readdirSync("./test_output/migrate/images").length).toBe(1);
     })
 
     it('cli should run migrate method in Ghost migration provider ', async () => {
         const writr = new Writr();
 
-        process.argv = ['', '', '-m', 'ghost', 'https://demo-site.ghosts.io/?key=apikeye', './test/ghost' ];
+        process.argv = ['', '', '-m', 'ghost', 'https://demo-site.ghosts.io/?key=apikeye', './test_output/migrate/ghost' ];
 
         writr.parseCLI(process);
         await writr.runCLI();

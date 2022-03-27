@@ -1,6 +1,5 @@
-import { Config } from "../../src/config";
-import { StorageService } from "../../src/storage/storageService";
-import { Logger, transports } from "winston";
+import {Config} from "../../src/config";
+import {StorageService} from "../../src/storage/storageService";
 import * as fs from "fs-extra";
 
 describe("Storage Service", () => {
@@ -50,9 +49,7 @@ describe("Storage Service", () => {
   });
 
   it("exists", async () => {
-    let path = filePath;
-
-    let result = await storage.exists(path);
+    const result = await storage.exists(filePath);
 
     expect(result).toBe(true);
   });

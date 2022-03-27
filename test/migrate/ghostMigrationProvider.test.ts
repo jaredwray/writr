@@ -60,11 +60,11 @@ describe('ghostMigrationProvider', () => {
       slug: 'welcome-to-ghost'
     };
 
-    const filename = await ghostMigration.saveMedia(mediaFetched, './test/output');
+    const filename = await ghostMigration.saveMedia(mediaFetched, './test_output/ghost');
 
     expect(filename).toBe('/images/welcome-to-ghost.png');
 
-    fs.removeSync('./test/output');
+    fs.removeSync('./test_output/ghost');
   });
 
   it('should migrate posts to Writer', async () => {
@@ -79,11 +79,11 @@ describe('ghostMigrationProvider', () => {
         return Promise.resolve('/images/welcome-to-ghost.png');
       });
 
-    await ghostMigration.migrate('https://demo-site.ghosts.io/?key=apikey', './test/ghosts');
+    await ghostMigration.migrate('https://demo-site.ghosts.io/?key=apikey', './test_output/ghosts');
 
-    expect(fs.readdirSync("./test/ghosts").length).toBe(7);
+    expect(fs.readdirSync("./test_output/ghosts").length).toBe(7);
 
-    fs.removeSync('./test/ghosts');
+    fs.removeSync('./test_output/ghosts');
   });
 
   it('should return an error when something fail', async () => {
@@ -95,8 +95,7 @@ describe('ghostMigrationProvider', () => {
       });
 
     try{
-      await ghostMigration.migrate(src, './test/ghosts');
-
+      await ghostMigration.migrate(src, './test_output/ghosts');
       expect('Migration failed').toBe('Migration succeeded');
     } catch (error: any) {
       expect(error.message).toBe('Error while migrating Ghost site: ' + src);

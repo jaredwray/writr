@@ -1,6 +1,5 @@
 import { Config } from "../../src/config";
 import { DataService } from "../../src/data/dataService";
-import { Post } from "../../src/post";
 
 describe("Data Service", () => {
   let config: Config = new Config();
