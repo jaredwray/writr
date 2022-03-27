@@ -11,7 +11,7 @@ export class FileStorageProvider implements StorageProviderInterface {
             let buffer = await fs.readFile(path);
             result = buffer.toString();
         } catch (error: any) {
-            new ConsoleMessage().info(error.message);
+            new ConsoleMessage().error(error.message);
         }
 
         return result;

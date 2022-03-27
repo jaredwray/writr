@@ -21,15 +21,7 @@ describe("File Storage Provider", () => {
     fs.removeSync("fsp_test.log");
   });
 
-  it("get file should show undefined", async () => {
-
-    let fileData = await fileStorageProvider.get("");
-
-    expect(fileData).toBeUndefined();
-  });
-
   it("get file should show a string", async () => {
-
     let fileData = await fileStorageProvider.get(filePath);
 
     if(fileData) {
@@ -37,7 +29,6 @@ describe("File Storage Provider", () => {
     } else {
       fail();
     }
-
   });
 
   it("set file should show false on no data", async () => {
@@ -126,6 +117,28 @@ describe("File Storage Provider", () => {
     let result = await fileStorageProvider.delete(path);
 
     expect(result).toBe(true);
+  });
+
+  it("should console error when some method fails", async () => {
+    const path = config.path + "/foo.md";
+
+    jest.spyOn(fs, "readFile").mockImplementation(() => {
+      throw new Error("readFile failed");
+    });
+
+    jest.spyOn(fs, "remove").mockImplementation(() => {
+      throw new Error("remove failed");
+    });
+
+    jest.spyOn(fs, "ensureDir").mockImplementation(() => {
+      throw new Error("copy failed");
+    });
+
+    await fileStorageProvider.get(path);
+    await fileStorageProvider.delete(path);
+    await fileStorageProvider.copy(path, path);
+
+    expect(ConsoleMessage.prototype.error).toHaveBeenCalledTimes(3);
   });
 
 });
