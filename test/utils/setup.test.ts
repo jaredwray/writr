@@ -32,7 +32,7 @@ describe('setup', () => {
       title: 'Test Title',
       categories: 'category 1, category 2',
       tags: 'tag 1, tag 2',
-      date: new Date().toLocaleDateString(),
+      date: new Date(),
     }));
 
     await new Setup().new();
@@ -40,7 +40,7 @@ describe('setup', () => {
     const mdFile = `---
 title: Test Title
 url: test-title
-date: ${new Date().toLocaleDateString('en-CA')}
+date: ${new Date().toISOString().slice(0, 10)}
 categories: category 1, category 2
 tags: tag 1, tag 2
 ---`
