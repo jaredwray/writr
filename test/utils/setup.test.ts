@@ -32,7 +32,7 @@ describe('setup', () => {
       title: 'Test Title',
       categories: 'category 1, category 2',
       tags: 'tag 1, tag 2',
-      date: new Date().toLocaleDateString('en-CA'),
+      date: new Date().toLocaleDateString(),
     }));
 
     await new Setup().new();
@@ -44,6 +44,8 @@ date: ${new Date().toLocaleDateString('en-CA')}
 categories: category 1, category 2
 tags: tag 1, tag 2
 ---`
+
+    console.log(mdFile);
     expect(fs.readFileSync('./test-title.md', 'utf-8')).toBe(mdFile);
     fs.removeSync('./test-title.md');
   });
