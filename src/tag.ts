@@ -9,9 +9,8 @@ export class Tag {
   }
 
   get id(): string {
-    let result = "";
 
-    result = this.name.toLowerCase().replace(/[^a-z0-9+]+/gi, " ").trim();
+    let result = this.name.toLowerCase().replace(/[^a-z0-9+]+/gi, " ").trim();
     result = result.split(" ").join("-");
 
     return result;
@@ -23,10 +22,10 @@ export class Tag {
     result.id = this.id;
     result.posts = [];
 
-    this.posts.forEach(async (post) => {
+    for (const post of this.posts) {
       result.posts.push(await post.toObject());
-    });
-    
+    }
+
     return result;
   }
 

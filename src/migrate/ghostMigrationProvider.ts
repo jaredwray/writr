@@ -1,18 +1,15 @@
-import {createLogger, transports} from "winston";
+import axios from "axios";
+import {ConsoleMessage} from "../log";
 import {MigrationProviderInterface} from "./migrationProviderInterface";
 import {Parser} from "../utils/parser";
 import {StorageService} from "../storage/storageService";
-import axios from "axios";
-
 
 export class GhostMigrationProvider implements MigrationProviderInterface {
 
-  log: any;
   parser: any;
   storage: any;
 
   constructor() {
-    this.log = createLogger({ transports: [new transports.Console()]});
     this.parser = new Parser();
     this.storage = new StorageService();
   }
@@ -57,7 +54,7 @@ export class GhostMigrationProvider implements MigrationProviderInterface {
 
   async migrate(src: string, dest: string) {
     try{
-      this.log.info('Migrating from Ghost to Writr');
+      new ConsoleMessage().info('Migrating from Ghost to Writr');
       const posts = await this.fetchPosts(src);
 
       for (const post of posts) {
@@ -78,7 +75,7 @@ export class GhostMigrationProvider implements MigrationProviderInterface {
 
         await this.storage.set(`${dest}/${slug}.md`, mdContent);
       }
-      this.log.info("Migration was completed successfully");
+      new ConsoleMessage().info("Migration was completed successfully");
       return true;
     } catch (error: any) {
       throw new Error('Error while migrating Ghost site: ' + src)

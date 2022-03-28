@@ -1,3 +1,5 @@
+import {ConsoleMessage} from "../../src/log";
+
 jest.mock('axios');
 import axios from 'axios';
 import * as fs from "fs-extra";
@@ -6,6 +8,8 @@ import {WordpressMigrationProvider} from "../../src/migrate/wordpressMigrationPr
 import {posts, media, categories, tags} from "../wordpress_example/_mocks_";
 
 describe('wordpressMigrationProvider', () => {
+
+    jest.spyOn(ConsoleMessage.prototype, 'info').mockImplementation(() => {});
 
     beforeEach(() =>{
        // @ts-ignore
@@ -65,7 +69,7 @@ describe('wordpressMigrationProvider', () => {
     });
 
     it('should return null when not media fetched passed', async () => {
-        const data = await wordpressMigration.saveMedia(null, './test/blog');
+        const data = await wordpressMigration.saveMedia(null, './test_output/wordpress');
         expect(data).toBeNull();
     })
 
@@ -74,7 +78,7 @@ describe('wordpressMigrationProvider', () => {
         // @ts-ignore
         axios.mockResolvedValueOnce({data: 'mediaFileContent'});
 
-        const filename = await wordpressMigration.saveMedia(media, './test/blog');
+        const filename = await wordpressMigration.saveMedia(media, './test_output/wordpress');
 
         expect(filename).toBe('/images/article-one-image.png');
 
@@ -87,7 +91,7 @@ describe('wordpressMigrationProvider', () => {
             throw new Error('Error');
         });
 
-        const filename = await wordpressMigration.saveMedia(media, './test/blog');
+        const filename = await wordpressMigration.saveMedia(media, './test_output/wordpress');
         expect(filename).toBeNull();
 
         fs.removeSync('./test/blog');
@@ -156,12 +160,12 @@ describe('wordpressMigrationProvider', () => {
         // @ts-ignore
         axios.mockResolvedValueOnce({data: 'mediaContent'});
 
-        await wordpressMigration.migrate('url', './test/output');
+        await wordpressMigration.migrate('url', './test_output/wordpress');
 
-        expect(fs.readdirSync("./test/output").length).toBe(2);
-        expect(fs.readdirSync("./test/output/images").length).toBe(1);
+        expect(fs.readdirSync("./test_output/wordpress").length).toBe(2);
+        expect(fs.readdirSync("./test_output/wordpress/images").length).toBe(1);
 
-        fs.removeSync('./test/output');
+        fs.removeSync('./test_output/wordpress');
     });
 
     it('should return an error when something fail', async () => {
@@ -173,7 +177,7 @@ describe('wordpressMigrationProvider', () => {
           });
 
         try{
-            await wordpressMigration.migrate(src, './test/output');
+            await wordpressMigration.migrate(src, './test_output/wordpress');
 
             expect('Migration failed').toBe('Migration succeeded');
         } catch (error: any) {

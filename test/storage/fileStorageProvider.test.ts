@@ -1,34 +1,27 @@
-import { Config } from "../../src/config";
-import { FileStorageProvider } from "../../src/storage/fileStorageProvider";
-import { createLogger, transports } from "winston";
 import * as fs from "fs-extra";
+import {Config} from "../../src/config";
+import {ConsoleMessage} from "../../src/log";
+import {FileStorageProvider} from "../../src/storage/fileStorageProvider";
 
 describe("File Storage Provider", () => {
   let config: Config = new Config();
   let fileStorageProvider: FileStorageProvider = new FileStorageProvider();
   let filePath = "";
 
+  jest.spyOn(ConsoleMessage.prototype, "info").mockImplementation(() => {});
+  jest.spyOn(ConsoleMessage.prototype, "error").mockImplementation(() => {});
+
   beforeEach(async () => {
     config.loadConfig("./blog_example/config.json");
     filePath = config.path +"/article1.md";
     fileStorageProvider = new FileStorageProvider();
-    fileStorageProvider.log = createLogger({ transports: [new transports.File({ filename: "fsp_test.log"})] });
-
   });
 
   afterAll(async () => {
     fs.removeSync("fsp_test.log");
   });
 
-  it("get file should show undefined", async () => {
-    
-    let fileData = await fileStorageProvider.get("");
-
-    expect(fileData).toBeUndefined();
-  });
-
   it("get file should show a string", async () => {
-    
     let fileData = await fileStorageProvider.get(filePath);
 
     if(fileData) {
@@ -36,7 +29,6 @@ describe("File Storage Provider", () => {
     } else {
       fail();
     }
-
   });
 
   it("set file should show false on no data", async () => {
@@ -85,7 +77,7 @@ describe("File Storage Provider", () => {
   it("copy directory show true", async () => {
     let src = config.path + "/images";
     let dest = config.output + "/images";
-    
+
     await fs.remove(dest);
     await fileStorageProvider.copy(src, dest);
 
@@ -103,9 +95,7 @@ describe("File Storage Provider", () => {
   });
 
   it("exist file should show true on good path", async () => {
-    let path = filePath;
-
-    let result = await fileStorageProvider.exists(path);
+    let result = await fileStorageProvider.exists(filePath);
 
     expect(result).toBe(true);
   });
@@ -121,12 +111,34 @@ describe("File Storage Provider", () => {
   it("delete file should show true", async () => {
     let data = "boo hoo";
     let path = config.path + "/fsp_test.md";
-    
+
     await fileStorageProvider.set(path, data);
 
     let result = await fileStorageProvider.delete(path);
 
     expect(result).toBe(true);
+  });
+
+  it("should console error when some method fails", async () => {
+    const path = config.path + "/foo.md";
+
+    jest.spyOn(fs, "readFile").mockImplementation(() => {
+      throw new Error("readFile failed");
+    });
+
+    jest.spyOn(fs, "remove").mockImplementation(() => {
+      throw new Error("remove failed");
+    });
+
+    jest.spyOn(fs, "ensureDir").mockImplementation(() => {
+      throw new Error("copy failed");
+    });
+
+    await fileStorageProvider.get(path);
+    await fileStorageProvider.delete(path);
+    await fileStorageProvider.copy(path, path);
+
+    expect(ConsoleMessage.prototype.error).toHaveBeenCalledTimes(3);
   });
 
 });

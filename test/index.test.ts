@@ -1,9 +1,13 @@
 import * as fs from "fs-extra";
-import { Writr } from "../src/index";
+import { Writr } from "../src";
 import { Config } from "../src/config";
 import { DataService } from "../src/data/dataService";
+import { Setup } from "../src/utils/setup";
+import {ConsoleMessage} from "../src/log";
 
 describe('Writr', () => {
+
+  jest.spyOn(ConsoleMessage.prototype, 'error').mockImplementation(() => {});
 
   let config: Config = new Config();
 
@@ -14,12 +18,12 @@ describe('Writr', () => {
   it("parse CLI", () => {
     let writr = new Writr();
 
-    process.argv = [ '-c', './test/blog/config-test2.json', '-o', './out' ];
+    process.argv = [ '-c', './test/blog/config-test2.json', '-o', './test_output/out' ];
 
     writr.parseCLI(process);
 
     if(writr.config) {
-      expect(writr.config.program.output).toBe("./out");
+      expect(writr.config.program.output).toBe("./test_output/out");
     } else {
       fail();
     }
@@ -65,7 +69,7 @@ describe('Writr', () => {
     let p: any = {};
     p.argv = [ '',
     '',
-    '-c', './blog_example/config.json', '-o', './out' ];
+    '-c', './blog_example/config.json', '-o', './test_output/out' ];
 
     writr.parseCLI(p);
 
@@ -80,14 +84,14 @@ describe('Writr', () => {
   it('cli should parse jekyll and output params to migrate', async () => {
     const writr = new Writr();
 
-    process.argv = ['', '', '-m', 'jekyll', './jekyll-site', './out' ];
+    process.argv = ['', '', '-m', 'jekyll', './jekyll-site', './test_output/out' ];
 
     writr.parseCLI(process);
 
     const [src, dest] = writr.config?.program.args;
 
     expect(src).toBe('./jekyll-site');
-    expect(dest).toBe('./out');
+    expect(dest).toBe('./test_output/out');
   });
 
   it('cli should run the init command with app name',async () => {
@@ -128,6 +132,33 @@ describe('Writr', () => {
       expect(error.message).toBe('Directory already exists');
     } finally {
       fs.removeSync('./blog');
+    }
+  })
+
+  it('cli should run new command successfully', async() => {
+    jest.spyOn(Setup.prototype, 'new').getMockImplementation()
+
+    const writr = new Writr();
+
+    process.argv = ['', '', 'new'];
+
+    writr.parseCLI(process);
+
+    expect(Setup.prototype.new).toHaveBeenCalled();
+  })
+
+  it('cli should run new command and return an error', async () => {
+    jest.spyOn(Setup.prototype, 'new').mockImplementation(() => {
+      throw new Error('Error');
+    })
+    try{
+      const writr = new Writr();
+
+      process.argv = ['', '', 'new'];
+
+      writr.parseCLI(process);
+    } catch (error: any) {
+      expect(error.message).toBe('Error');
     }
   })
 

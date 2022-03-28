@@ -1,6 +1,6 @@
-import { DateTime } from "luxon";
+import {DateTime} from "luxon";
 import * as striptags from "striptags";
-import { Ecto } from "ecto";
+import {Ecto} from "ecto";
 
 export class Post {
   keywords: Array<string> = [];
@@ -20,9 +20,8 @@ export class Post {
 
   get date(): Date {
     if(Object.prototype.toString.call(this.matter.date) !== "[object Date]"){
-      let newDate = DateTime.fromISO(this.matter.date).toJSDate();
-      return newDate;
-      
+      return DateTime.fromISO(this.matter.date).toJSDate();
+
     } else {
       return this.matter.date;
     }
@@ -50,7 +49,7 @@ export class Post {
   get url() {
     if(!this.matter.url) {
       this.generateUrl();
-    } 
+    }
     return this.matter.url;
   }
 
@@ -89,7 +88,7 @@ export class Post {
   }
 
   async getDescription() {
-    
+
     if(this.matter.description === undefined) {
       this.matter.description = striptags(await this.getSummary());
     }
@@ -117,7 +116,7 @@ export class Post {
         if(i < summaryLength) {
           this.matter.summary = this.matter.summary + html.html(elem);
         }
-        
+
       });
     }
 
@@ -151,7 +150,7 @@ export class Post {
   generateUrl() {
 
     if(!this.matter.url) {
-      
+
       //set default
       let url = this.permalink_default;
 
@@ -189,7 +188,7 @@ export class Post {
     if(url.toLowerCase().trim() === "ordinal") {
       url = this.permalink_ordinal;
     }
-    
+
     url = url.split(":year").join(date.toFormat("yyyy"));
     url = url.split(":short_year").join(date.toFormat("yy"));
     url = url.split(":month").join(date.toFormat("LL"));
@@ -205,7 +204,7 @@ export class Post {
     url = url.split(":hour").join(date.toFormat("HH"));
     url = url.split(":minute").join(date.toFormat("mm"));
     url = url.split(":second").join(date.toFormat("ss"));
-    
+
     url = url.split(":title").join(title);
 
     //url remove white spaces
@@ -235,13 +234,11 @@ export class Post {
     result.metaData = this._matter;
     result.matter = this._matter;
     result.published = this.published;
-    
+
     return result;
   }
 
   static create(obj: any): Post {
-    let result = Object.assign(new Post(), obj);
-
-    return result;
+    return Object.assign(new Post(), obj);
   }
 }

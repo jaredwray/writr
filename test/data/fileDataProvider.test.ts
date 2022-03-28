@@ -152,14 +152,14 @@ describe("File Data Provider", () => {
 
     let posts = await fileProvider.getPosts();
 
-    let tags = await fileProvider.generateTags(posts);
+    let tags = fileProvider.generateTags(posts);
 
     expect(tags.length).toBe(17);
   });
 
   it("parse bad file path post", async () => {
     let fileProvider = new FileDataProvider();
-    
+
     //set the logging level
     fileProvider.log = createLogger({ transports: [new transports.Console()]});
     for (let t of fileProvider.log.transports) {

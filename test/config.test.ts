@@ -1,4 +1,3 @@
-import { Tag } from '../src/tag';
 import { Config } from '../src/config';
 import { createLogger, transports } from "winston";
 
@@ -113,12 +112,12 @@ describe('Config', () => {
     it('config constructor should parse output', () => {
 
         let obj = {
-            output: "./blog1"
+            output: "./test_output/blog1"
         }
 
         config = new Config(obj);
 
-        expect(config.output).toBe("./blog1");
+        expect(config.output).toBe("./test_output/blog1");
     });
 
     it('config constructor should parse permalink', () => {

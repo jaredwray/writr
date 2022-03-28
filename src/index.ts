@@ -1,4 +1,3 @@
-import {createLogger, transports} from "winston";
 import * as del from "del";
 import * as fs from "fs-extra";
 import { createCommand } from "commander";
@@ -11,16 +10,13 @@ import {AtomRenderProvider} from "./render/atomRenderProvider";
 import {ImageRenderProvider} from "./render/imageRenderProvider";
 import {Migrate} from "./migrate";
 import {Setup} from "./utils/setup";
+import {ConsoleMessage} from "./log";
 
 export class Writr {
-  log: any;
 
   config: Config | undefined;
   data: DataService | undefined;
-
-  constructor() {
-    this.log = createLogger({transports: [new transports.Console()]});
-  }
+  command: string | undefined;
 
   parseCLI(process: NodeJS.Process) {
 
@@ -37,6 +33,7 @@ export class Writr {
       .option("-c, --config <path>", "custom configuration path")
       .option("-m, --migrate <type> <source> <destination>", "Migrate from Jekyll to Writr")
       .action((options: any) => {
+        this.command = "build";
 
         const params = options.opts();
 
@@ -64,12 +61,23 @@ export class Writr {
       .description('Initialize a new Writr project')
       .argument('[name]', 'Name of the project', 'Blog')
       .action(async (name: string) => {
-        console.log('Name', name);
         try{
-          const setup = new Setup(name);
-          await setup.run();
+          this.command = "init";
+          await new Setup(name).init();
         } catch (error: any) {
-          console.error('Error: ', error.message);
+          new ConsoleMessage().error('Error: '+ error.message);
+        }
+      })
+
+    program
+      .command('new')
+      .description('Create new markdown file')
+      .action(async() => {
+        try{
+          this.command = "new";
+          await new Setup('new').new();
+        } catch (error: any) {
+          new ConsoleMessage().error('Error: '+ error.message);
         }
       })
 
