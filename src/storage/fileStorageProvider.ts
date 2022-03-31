@@ -67,4 +67,8 @@ export class FileStorageProvider implements StorageProviderInterface {
 
         await fs.ensureDir(dir);
     }
+
+    readDir(path: string) {
+        return fs.readdirSync(path)
+    }
 }

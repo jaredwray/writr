@@ -26,7 +26,7 @@ describe('Migrate', () => {
         try{
             const writr = new Writr();
 
-            process.argv = ['', '', '-m', 'wordpress', './test/jekyll_example' ];
+            process.argv = ['', '', '-m', 'wordpress', './test/migration_example/jekyll' ];
 
             writr.parseCLI(process);
             await writr.runCLI();
@@ -40,7 +40,7 @@ describe('Migrate', () => {
     it('cli should migrate from jekyll project', async () => {
         const writr = new Writr();
 
-        process.argv = ['', '', '-m', 'jekyll', './test/jekyll_example', './test_output/migrate' ];
+        process.argv = ['', '', '-m', 'jekyll', './test/migration_example/jekyll', './test_output/migrate' ];
 
         writr.parseCLI(process);
         await writr.runCLI();

@@ -3,7 +3,7 @@ import axios from 'axios';
 import * as fs from "fs-extra";
 import {ConsoleMessage} from "../../src/log";
 import {GhostMigrationProvider} from "../../src/migrate/ghostMigrationProvider";
-import {posts} from "../ghost_example/posts";
+import {posts} from "../migration_example/ghost/posts";
 
 describe('ghostMigrationProvider', () => {
 
