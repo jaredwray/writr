@@ -136,7 +136,9 @@ describe('Writr', () => {
   })
 
   it('cli should run new command successfully', async() => {
-    jest.spyOn(Setup.prototype, 'new').getMockImplementation()
+    jest.spyOn(Setup.prototype, 'new').mockImplementation(() => {
+      return Promise.resolve();
+    })
 
     const writr = new Writr();
 
