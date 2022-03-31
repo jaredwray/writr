@@ -1,5 +1,5 @@
-import { StorageProviderInterface } from "../storage/storageProviderInterface";
-import { FileStorageProvider } from "../storage/fileStorageProvider";
+import { StorageProviderInterface } from "./storageProviderInterface";
+import { FileStorageProvider } from "./fileStorageProvider";
 
 
 export class StorageService implements StorageProviderInterface {
@@ -33,5 +33,9 @@ export class StorageService implements StorageProviderInterface {
     getProvider(): StorageProviderInterface {
 
         return this.provider;
+    }
+
+    readDir(path: string): string[] {
+        return this.getProvider().readDir(path);
     }
 }

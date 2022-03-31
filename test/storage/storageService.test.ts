@@ -16,7 +16,7 @@ describe("Storage Service", () => {
 
   it("get", async () => {
 
-    let fileData = await storage.get(filePath);
+    const fileData = await storage.get(filePath);
 
     if(fileData) {
       expect(fileData.length).toBe(233);
@@ -26,9 +26,9 @@ describe("Storage Service", () => {
   });
 
   it("set", async () => {
-    let data = "boo hoo";
-    let path = config.path + "/fsp_test.md";
-    let result = await storage.set(path, data);
+    const data = "boo hoo";
+    const path = config.path + "/fsp_test.md";
+    const result = await storage.set(path, data);
 
     expect(fs.existsSync(path)).toBe(true);
     expect(result).toBe(true);
@@ -37,8 +37,8 @@ describe("Storage Service", () => {
   });
 
   it("copy directory", async () => {
-    let src = config.path + "/images";
-    let dest = config.output + "/images";
+    const src = config.path + "/images";
+    const dest = config.output + "/images";
 
     await fs.remove(dest);
     await storage.copy(src, dest);
@@ -55,12 +55,12 @@ describe("Storage Service", () => {
   });
 
   it("delete", async () => {
-    let data = "boo hoo";
-    let path = config.path + "/fsp_test.md";
+    const data = "boo hoo";
+    const path = config.path + "/fsp_test.md";
 
     await storage.set(path, data);
 
-    let result = await storage.delete(path);
+    const result = await storage.delete(path);
 
     expect(result).toBe(true);
   });
@@ -70,6 +70,19 @@ describe("Storage Service", () => {
     let result = await storage.getProvider();
 
     expect(result).toBeDefined();
+  });
+
+  it("readDir", async () => {
+
+    const data = 'content';
+    let path = './test_output/storage/file.md';
+    await storage.set(path, data);
+
+    const result = storage.readDir('./test_output/storage');
+
+    expect(result.length).toBe(1);
+
+    fs.removeSync('./test_output/storage');
   });
 
 });
