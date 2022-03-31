@@ -89,10 +89,9 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
                 const categories = categoriesData.map((category: any) => category.name);
                 const tags = tagsData.map((tag: any) => tag.name);
                 // Markdown header generation
-                const header = this.parser.generateMdHeaders({
+                let mdContent = this.parser.generateMdHeaders({
                     title: title.rendered, slug, categories, tags, date
                 });
-                let mdContent = `${header}\n\n`;
 
                 // Markdown media content
                 if(featured_media) {

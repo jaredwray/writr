@@ -3,7 +3,10 @@ import * as fs from "fs-extra";
 import {ConsoleMessage} from "../src/log";
 import {Migrate} from "../src/migrate";
 import {GhostMigrationProvider} from "../src/migrate/ghostMigrationProvider";
+import {MediumMigrationProvider} from "../src/migrate/mediumMigrationProvider";
+
 jest.mock('../src/migrate/ghostMigrationProvider');
+jest.mock('../src/migrate/mediumMigrationProvider');
 
 describe('Migrate', () => {
 
@@ -58,6 +61,18 @@ describe('Migrate', () => {
         await writr.runCLI();
 
         expect(GhostMigrationProvider.prototype.migrate).toBeCalled();
+
+    })
+
+    it('cli should run migrate method in Medium migration provider ', async () => {
+        const writr = new Writr();
+
+        process.argv = ['', '', '-m', 'medium', './test_output/migrate/medium', './test_output/migrate/medium' ];
+
+        writr.parseCLI(process);
+        await writr.runCLI();
+
+        expect(MediumMigrationProvider.prototype.migrate).toBeCalled();
 
     })
 

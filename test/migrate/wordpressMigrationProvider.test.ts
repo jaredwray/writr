@@ -135,7 +135,7 @@ describe('wordpressMigrationProvider', () => {
         expect(tags).toBeNull();
     });
 
-    it('should migrate post to Writer', async () => {
+    it('should migrate post to Writr', async () => {
 
         jest.spyOn(WordpressMigrationProvider.prototype, 'fetchPosts')
           .mockImplementation(() => {
