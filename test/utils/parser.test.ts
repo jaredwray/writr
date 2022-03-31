@@ -48,7 +48,9 @@ url: hello-this-is-a-title
 date: 2020-01-01
 categories: category 1, category2
 tags: tag 1, tag 2
----`
+---
+
+`
 
 		expect(result).toBe(headersExpected);
 

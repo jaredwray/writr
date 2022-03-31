@@ -61,9 +61,7 @@ export class GhostMigrationProvider implements MigrationProviderInterface {
         const { title, slug, html, feature_image, published_at } = post;
 
         // Markdown header generation
-        const header = this.parser.generateMdHeaders({title, slug, date: published_at});
-
-        let mdContent = `${header}\n\n`;
+        let mdContent = this.parser.generateMdHeaders({title, slug, date: published_at});
 
         if(feature_image) {
           const mediaPath = await this.saveMedia({ mediaUrl: feature_image, slug}, dest);
