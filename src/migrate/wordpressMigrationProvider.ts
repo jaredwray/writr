@@ -1,4 +1,3 @@
-import {createLogger, transports} from "winston";
 import axios from "axios";
 import {MigrationProviderInterface} from "./migrationProviderInterface";
 import {Parser} from "../utils/parser";
@@ -7,12 +6,10 @@ import {ConsoleMessage} from "../log";
 
 export class WordpressMigrationProvider implements MigrationProviderInterface{
 
-    log: any;
     parser: any;
     storage: any;
 
     constructor() {
-        this.log = createLogger({ transports: [new transports.Console()]});
         this.parser = new Parser();
         this.storage = new StorageService();
     }

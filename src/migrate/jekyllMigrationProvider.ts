@@ -1,15 +1,8 @@
-import {createLogger, transports} from "winston";
 import {StorageService} from "../storage/storageService";
 import {MigrationProviderInterface} from "./migrationProviderInterface";
 import {ConsoleMessage} from "../log";
 
 export class JekyllMigrationProvider implements MigrationProviderInterface{
-
-    log: any;
-
-    constructor() {
-        this.log = createLogger({ transports: [new transports.Console()]});
-    }
 
     async migrate(src: string, dest: string): Promise<boolean>{
         new ConsoleMessage().info("Migrating Jekyll site from " + src + " to " + dest);
