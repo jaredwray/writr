@@ -15,7 +15,7 @@ export class Parser {
     if (date) header += `date: ${(new Date(date)).toISOString().slice(0, 10)}\n`;
     if (categories) header += `categories: ${typeof categories === 'string' ? categories : categories.join(', ')}\n`;
     if (tags) header += `tags: ${typeof tags === 'string' ? tags : tags.join(', ')}\n`;
-    header += '---'
+    header += '---\n\n'
 
     return header;
 

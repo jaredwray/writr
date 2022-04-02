@@ -4,4 +4,5 @@ export interface StorageProviderInterface {
     delete(path:string): Promise<boolean>;
     copy(src:string, dest:string): Promise<boolean>;
     exists(path:string): Promise<boolean>;
+    readDir(path:string): string[];
 }

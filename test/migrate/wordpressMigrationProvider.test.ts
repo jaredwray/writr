@@ -5,7 +5,7 @@ import axios from 'axios';
 import * as fs from "fs-extra";
 
 import {WordpressMigrationProvider} from "../../src/migrate/wordpressMigrationProvider";
-import {posts, media, categories, tags} from "../wordpress_example/_mocks_";
+import {posts, media, categories, tags} from "../migration_example/wordpress/_mocks_";
 
 describe('wordpressMigrationProvider', () => {
 
@@ -135,7 +135,7 @@ describe('wordpressMigrationProvider', () => {
         expect(tags).toBeNull();
     });
 
-    it('should migrate post to Writer', async () => {
+    it('should migrate post to Writr', async () => {
 
         jest.spyOn(WordpressMigrationProvider.prototype, 'fetchPosts')
           .mockImplementation(() => {

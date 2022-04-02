@@ -43,7 +43,9 @@ url: test-title
 date: ${new Date().toISOString().slice(0, 10)}
 categories: category 1, category 2
 tags: tag 1, tag 2
----`
+---
+
+`
 
     expect(fs.readFileSync('./test-title.md', 'utf-8')).toBe(mdFile);
     fs.removeSync('./test-title.md');
