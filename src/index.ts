@@ -11,6 +11,7 @@ import {ImageRenderProvider} from "./render/imageRenderProvider";
 import {Migrate} from "./migrate";
 import {Setup} from "./utils/setup";
 import {ConsoleMessage} from "./log";
+import {Serve} from "./serve";
 
 export class Writr {
 
@@ -76,6 +77,22 @@ export class Writr {
         try{
           this.command = "new";
           await new Setup('new').new();
+        } catch (error: any) {
+          new ConsoleMessage().error('Error: '+ error.message);
+        }
+      })
+
+    program
+      .command('serve')
+      .description('Serve the site locally')
+      .option("-o, --output <path>", "Path of where to output the generated blog be served", 'blog_output')
+      .option("-p, --port <port>", "Port to serve the site on", '3000')
+      .option("-w, --watch", "Watch for changes and rebuild", false)
+      .action(async(options: any) => {
+        try{
+          this.command = "serve";
+          const params = options.opts();
+          await new Serve(params).run();
         } catch (error: any) {
           new ConsoleMessage().error('Error: '+ error.message);
         }
