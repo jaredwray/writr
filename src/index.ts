@@ -87,6 +87,7 @@ export class Writr {
       .description('Serve the site locally')
       .option("-o, --output <path>", "Path of where to output the generated blog be served", 'blog_output')
       .option("-p, --port <port>", "Port to serve the site on", '3000')
+      .option("--path <path>", "Path of where the blog, config, and template are located", './blog')
       .option("-w, --watch", "Watch for changes and rebuild", false)
       .action(async(options: any) => {
         try{
