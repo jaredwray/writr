@@ -4,6 +4,7 @@ type Params = {
 	output: string;
 	port: string;
 	watch: boolean;
+	path: string;
 }
 
 export class Serve {
@@ -17,12 +18,15 @@ export class Serve {
 	}
 
 	run() {
-		const {output, port, watch} = this.params;
+		const {output, port, watch, path} = this.params;
 		const baseDir = `${process.cwd()}/${output}`;
 
-		this.bs.watch(`${process.cwd()}/*.md`, (event: any, file: any) => {
-			this.bs.reload();
-		});
+		if(watch) {
+			this.bs.watch(`${process.cwd()}/${path}/*.md`, async (event: any, file: any) => {
+				console.log(`${event} ${file}`);
+				this.bs.reload();
+			});
+		}
 
 		this.bs.init({
 			server: {
