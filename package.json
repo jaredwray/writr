@@ -32,20 +32,20 @@
     "build": "npm run test && npm run compile",
     "test": "npm run clean-output && jest --coverage && npm run clean-output",
     "test-output": "npm run compile && node ./bin/writr -p ./blog_example",
-    "test-output2": "npm run compile && node ./bin/writr -m medium ./test/migration_example/medium ./test_output/migrate"
+    "test-migrate": "npm run compile && node ./bin/writr -m ghost https://site-demo.ghost.io/?key=b99a795ef14ca139438a514e95 ./test/ghost"
   },
   "bin": {
     "writr": "./bin/writr"
   },
   "dependencies": {
     "array-sort": "^1.0.0",
-    "axios": "^0.26.1",
     "cheerio": "^1.0.0-rc.10",
     "commander": "^9.1.0",
     "del": "^6.0.0",
     "ecto": "^1.2.1",
     "feed": "^4.2.2",
     "fs-extra": "^10.0.1",
+    "got": "^11.8.2",
     "gray-matter": "^4.0.3",
     "helper-date": "^1.0.1",
     "inquirer": "^8.2.2",

@@ -1,4 +1,4 @@
-import axios from "axios";
+import got from "got";
 import {MigrationProviderInterface} from "./migrationProviderInterface";
 import {Parser} from "../utils/parser";
 import {StorageService} from "../storage/storageService";
@@ -18,14 +18,14 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
         try{
             let posts: Record<string, any>[];
 
-            const response = await axios(`${src}/wp-json/wp/v2/posts?page=1`);
-            const pages = <string>response.headers['x-wp-totalpages'];
-            posts = response.data;
-
+            const response = await got(`${src}/wp-json/wp/v2/posts?page=1`);
+            const headers = response.headers;
+            const body = JSON.parse(response.body);
+            const pages = <string>headers['x-wp-totalpages'];
+            posts = [...body as unknown as Record<string, any>[]];
             for(let i = 2; i <= parseInt(pages); i++){
-                const pageData = await axios(`${src}/wp-json/wp/v2/posts?page=${i}`);
-                const pagePosts = await pageData.data;
-                posts = posts.concat(pagePosts);
+                const body = await got(`${src}/wp-json/wp/v2/posts?page=${i}`).json();
+                posts = posts.concat(body as unknown as Record<string, any>[]);
             }
             return posts;
         } catch (error: any) {
@@ -35,8 +35,7 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
 
     async fetchMedia(src: string, id: string) {
         try{
-            const { data } = await axios(`${src}/wp-json/wp/v2/media/${id}`);
-            return data;
+            return await got(`${src}/wp-json/wp/v2/media/${id}`).json();
         } catch (error: any) {
             return null;
         }
@@ -47,8 +46,7 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
             if (!mediaFetched) return null;
             const {source_url, slug, mime_type} = mediaFetched;
             const encodedURI = encodeURI(source_url);
-            const mediaResponse = await axios(encodedURI, { responseType: 'arraybuffer' });
-            const media = await mediaResponse.data
+            const media = await got(encodedURI).buffer();
             const extension = mime_type.split('/')[1];
             const filename = `${slug}.${extension}`;
             await this.storage.set(`${dest}/images/${filename}`, media);
@@ -58,21 +56,19 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
         }
     }
 
-    async fetchCategoriesPerPost(src: string, postId: string) {
+    async fetchCategoriesPerPost(src: string, postId: string): Promise<Record<string, any>[]> {
         try{
-            const { data } = await axios(`${src}/wp-json/wp/v2/categories?post=${postId}`);
-            return data
+            return await got(`${src}/wp-json/wp/v2/categories?post=${postId}`).json()
         } catch (error: any) {
-            return null;
+            return [];
         }
     }
 
-    async fetchTagsPerPost(src: string, postId: string){
+    async fetchTagsPerPost(src: string, postId: string): Promise<Record<string, any>[]> {
         try{
-            const { data } = await axios(`${src}/wp-json/wp/v2/tags?post=${postId}`);
-            return data;
+            return await got(`${src}/wp-json/wp/v2/tags?post=${postId}`).json();
         } catch (error: any) {
-            return null;
+            return [];
         }
     }
 

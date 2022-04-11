@@ -1,4 +1,4 @@
-import axios from "axios";
+import got from "got";
 import {ConsoleMessage} from "../log";
 import {MigrationProviderInterface} from "./migrationProviderInterface";
 import {Parser} from "../utils/parser";
@@ -22,15 +22,13 @@ export class GhostMigrationProvider implements MigrationProviderInterface {
 
       let totalPosts: Record<string, any>[];
 
-      const initialData = await axios(`${origin}/ghost/api/v2/content/posts/?key=${key}`);
-      const { posts, meta } = await initialData.data;
+      const { posts, meta } = await got(`${origin}/ghost/api/v2/content/posts/?key=${key}`).json();
       totalPosts = [...posts];
 
       const { pagination: { pages } } = meta;
 
       for(let i = 2; i <= pages; i++) {
-        const { data } = await axios(`${origin}/ghost/api/v2/content/posts/?key=${key}&page=${i}`);
-        const { posts } = data;
+        const { posts } = await got(`${origin}/ghost/api/v2/content/posts/?key=${key}&page=${i}`).json();
         totalPosts = totalPosts.concat(posts);
       }
 
@@ -43,9 +41,9 @@ export class GhostMigrationProvider implements MigrationProviderInterface {
 
   async saveMedia(mediaFetched: any, dest: string) {
     const { mediaUrl, slug } = mediaFetched;
-    const response = await axios(mediaUrl, { responseType: 'arraybuffer' });
-    const media = await response.data;
-    const mime_type = response.headers['content-type'];
+    const response: Record<string, any> = await got(mediaUrl);
+    const { rawBody: media, headers } = response;
+    const mime_type = headers['content-type'];
     const extension = mime_type!.split('/')[1];
     const filename = `${slug}.${extension}`;
     await this.storage.set(`${dest}/images/${filename}`, media);
