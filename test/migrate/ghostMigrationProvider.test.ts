@@ -1,5 +1,5 @@
-jest.mock('axios');
-import axios from 'axios';
+jest.mock("got");
+import got from "got";
 import * as fs from "fs-extra";
 import {ConsoleMessage} from "../../src/log";
 import {GhostMigrationProvider} from "../../src/migrate/ghostMigrationProvider";
@@ -11,7 +11,7 @@ describe('ghostMigrationProvider', () => {
 
   beforeEach(() =>{
     // @ts-ignore
-    axios.mockReset()
+    got.mockReset()
   });
 
   afterEach(() => {
@@ -23,8 +23,10 @@ describe('ghostMigrationProvider', () => {
   it('should fetch all posts', async () => {
 
     // @ts-ignore
-    axios.mockResolvedValue({
-      data: posts,
+    got.mockImplementation(() => {
+      return  {
+        json: () => posts,
+      }
     });
 
     const fetchedPost = await ghostMigration.fetchPosts('https://demo-site.ghots.io/?key=apikey');
@@ -33,7 +35,7 @@ describe('ghostMigrationProvider', () => {
 
   it('should return an error when fetching posts', async () => {
     // @ts-ignore
-    axios.mockImplementation(() => {
+    got.mockImplementation(() => {
       throw new Error('Error');
     });
 
@@ -48,12 +50,14 @@ describe('ghostMigrationProvider', () => {
   it('should save media', async () => {
 
     // @ts-ignore
-    axios.mockResolvedValueOnce({
-      data: 'test',
-      headers: {
-        'content-type': 'image/png'
+    got.mockImplementation(() => {
+      return  {
+        rawBody: 'mediaData',
+        headers: {
+          'content-type': 'image/png'
+        }
       }
-      });
+    });
 
     const mediaFetched = {
       mediaUrl: 'https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png',
