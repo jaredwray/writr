@@ -63,3 +63,6 @@ package-lock.json
 blog_output
 blog_public
 dist
+
+# IDEs
+.idea/
