@@ -3,9 +3,11 @@ import { Writr } from "../src";
 import { Config } from "../src/config";
 import { Setup } from "../src/utils/setup";
 import {ConsoleMessage} from "../src/log";
+import {Migrate} from "../src/migrate";
+import {SiteGenerator} from "../src/generator";
+import {Serve} from "../src/serve";
 
 describe('Writr', () => {
-
   jest.spyOn(ConsoleMessage.prototype, 'error').mockImplementation(() => {});
 
   let config: Config = new Config();
@@ -14,87 +16,35 @@ describe('Writr', () => {
     config.loadConfig("./blog_example/config.json");
   });
 
-  /*it("parse CLI", async () => {
-    let writr = new Writr();
+  it('cli should run build command successfully', async () => {
+    jest.spyOn(SiteGenerator.prototype, 'run').mockImplementation(() => {
+      return Promise.resolve(true)
+    });
 
-    let p: any = {};
-    p.argv = [ '',
-      '',
-      '-c', './blog_example/config.json', '-o', './test_output/out' ];
-
-    await writr.parseCLI(p);
-
-    console.log('Writr.config', writr);
-
-    if(writr.config) {
-      expect(writr.config.program.output).toBe("./test_output/out");
-    } else {
-      fail();
-    }
-  });*/
-
-/*  it("cli run", async () => {
-    let writr = new Writr();
-
-    await writr.parseCLI(process);
-
-    writr.config = config;
-    writr.data = new DataService(config);
-
-    //create directory
-    fs.ensureDirSync(config.output);
-
-    let val = await writr.runCLI();
-
-    expect(val).toBe(true);
-  });*/
-
-  /*it("cli run on path", async () => {
-    let writr = new Writr();
-
-    let p: any = {};
-    p.argv = [ '',
-    '',
-    '-p',
-    './blog_example' ];
-
-    await writr.parseCLI(p);
-
-    if(writr.config) {
-      expect(writr.config.path).toBe("./blog_example");
-    } else {
-      fail();
-    }
-  });*/
-
-  it("cli run with no data set or config", async () => {
-    let writr = new Writr();
-
-    let p: any = {};
-    p.argv = [ '',
-    '',
-    '-c', './blog_example/config.json', '-o', './test_output/out' ];
-
-    writr.config = undefined;
-    writr.data = undefined;
-
-    const val  = await writr.parseCLI(p);
-
-    expect(val).toBe(false);
-  });
-
-  /*it('cli should parse jekyll and output params to migrate', async () => {
     const writr = new Writr();
 
-    process.argv = ['', '', '-m', 'jekyll', './jekyll-site', './test_output/out' ];
+    process.argv = ['', ''];
 
-    await writr.parseCLI(process);
+    await writr.parseCLI(process)
 
-    const [src, dest] = writr.config?.program.args;
+    expect(SiteGenerator.prototype.run).toHaveBeenCalled();
+  });
 
-    expect(src).toBe('./jekyll-site');
-    expect(dest).toBe('./test_output/out');
-  });*/
+  it('cli should run build command and return an error', async () => {
+    jest.spyOn(SiteGenerator.prototype, 'run').mockImplementation(() => {
+      throw new Error('Error');
+    });
+    try{
+      const writr = new Writr();
+
+      process.argv = ['', ''];
+
+      await writr.parseCLI(process)
+
+    } catch (error: any) {
+      expect(error.message).toBe('Error');
+    }
+  });
 
   it('cli should run the init command with app name',async () => {
     const writr = new Writr();
@@ -159,6 +109,64 @@ describe('Writr', () => {
       const writr = new Writr();
 
       process.argv = ['', '', 'new'];
+
+      await writr.parseCLI(process);
+    } catch (error: any) {
+      expect(error.message).toBe('Error');
+    }
+  })
+
+  it('cli should run migrate command successfully', async () => {
+    jest.spyOn(Migrate.prototype, 'migrate').mockImplementation(() => {
+      return Promise.resolve();
+    })
+
+    const writr = new Writr();
+
+    process.argv = ['', '', 'migrate', 'jekyll', 'option 1', 'option 2'];
+
+    await writr.parseCLI(process);
+
+    expect(Migrate.prototype.migrate).toHaveBeenCalled();
+  })
+
+  it('cli should run migrate command and return an error', async () => {
+    jest.spyOn(Migrate.prototype, 'migrate').mockImplementation(() => {
+      throw new Error('Error');
+    })
+    try{
+      const writr = new Writr();
+
+      process.argv = ['', '', 'migrate', 'demo1', 'demo2'];
+
+      await writr.parseCLI(process);
+    } catch (error: any) {
+      expect(error.message).toBe('Error');
+    }
+  })
+
+  it('cli should run serve command successfully', async () => {
+    jest.spyOn(Serve.prototype, 'run').mockImplementation(() => {
+      return Promise.resolve();
+    })
+
+    const writr = new Writr();
+
+    process.argv = ['', '', 'serve'];
+
+    await writr.parseCLI(process);
+
+    expect(Serve.prototype.run).toHaveBeenCalled();
+  })
+
+  it('cli should run serve command and return an error', async () => {
+    jest.spyOn(Serve.prototype, 'run').mockImplementation(() => {
+      throw new Error('Error');
+    })
+    try{
+      const writr = new Writr();
+
+      process.argv = ['', '', 'serve'];
 
       await writr.parseCLI(process);
     } catch (error: any) {

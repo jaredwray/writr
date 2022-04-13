@@ -4,7 +4,6 @@ import {HtmlRenderProvider} from "./render/htmRenderlProvider";
 import {JSONRenderProvider} from "./render/jsonRenderProvider";
 import {AtomRenderProvider} from "./render/atomRenderProvider";
 import {ImageRenderProvider} from "./render/imageRenderProvider";
-import {Migrate} from "./migrate";
 import {DataService} from "./data/dataService";
 import {Config} from "./config";
 
@@ -40,14 +39,6 @@ export class SiteGenerator {
 
 		if (this.data === undefined || this.config === undefined) {
 			return false;
-		}
-
-		const {migrate} = this.config.params;
-
-		if (migrate) {
-			const [src, dest] = this.config.program.args;
-			await new Migrate(migrate).migrate(src, dest);
-			return true;
 		}
 
 		if (fs.existsSync(this.config.output)) {

@@ -6,6 +6,7 @@ import {Setup} from "./utils/setup";
 import {ConsoleMessage} from "./log";
 import {Serve} from "./serve";
 import {SiteGenerator} from "./generator";
+import {Migrate} from "./migrate";
 
 export class Writr {
 
@@ -26,7 +27,6 @@ export class Writr {
       .option("-o, --output <path>", "Path of where to output the generated blog")
       .option("-r, --render <list>", "What do you want rendered such as html or json (example --render html,json)")
       .option("-c, --config <path>", "custom configuration path")
-      .option("-m, --migrate <type> <source> <destination>", "Migrate from Jekyll to Writr")
       .action(async (options: any) => {
         try{
           await new SiteGenerator(options).run();
@@ -55,6 +55,20 @@ export class Writr {
       .action(async() => {
         try{
           await new Setup('new').new();
+          this.result = true;
+        } catch (error: any) {
+          new ConsoleMessage().error('Error: '+ error.message);
+        }
+      })
+
+    program
+      .command('migrate')
+      .description('Migrate from different sources to Writr')
+      .argument("<type> <options...>", "Provider type (jekyll, wordpress, etc), source and destination" )
+      .action(async(options) => {
+        try{
+          const [type, src, dest] = options;
+          await new Migrate(type).migrate(src, dest);
           this.result = true;
         } catch (error: any) {
           new ConsoleMessage().error('Error: '+ error.message);
