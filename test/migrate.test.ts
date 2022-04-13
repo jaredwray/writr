@@ -31,8 +31,8 @@ describe('Migrate', () => {
 
             process.argv = ['', '', '-m', 'wordpress', './test/migration_example/jekyll' ];
 
-            writr.parseCLI(process);
-            await writr.runCLI();
+            await writr.parseCLI(process);
+            // await writr.runCLI();
 
             expect('src or dest not provided').toBe('src and dest provided');
         } catch (error: any) {
@@ -45,8 +45,8 @@ describe('Migrate', () => {
 
         process.argv = ['', '', '-m', 'jekyll', './test/migration_example/jekyll', './test_output/migrate' ];
 
-        writr.parseCLI(process);
-        await writr.runCLI();
+        await writr.parseCLI(process);
+        // await writr.runCLI();
 
         expect(fs.readdirSync("./test_output/migrate").length).toBe(2);
         expect(fs.readdirSync("./test_output/migrate/images").length).toBe(1);
@@ -57,8 +57,8 @@ describe('Migrate', () => {
 
         process.argv = ['', '', '-m', 'ghost', 'https://demo-site.ghosts.io/?key=apikeye', './test_output/migrate/ghost' ];
 
-        writr.parseCLI(process);
-        await writr.runCLI();
+        await writr.parseCLI(process);
+        // await writr.runCLI();
 
         expect(GhostMigrationProvider.prototype.migrate).toBeCalled();
 
@@ -69,8 +69,8 @@ describe('Migrate', () => {
 
         process.argv = ['', '', '-m', 'medium', './test_output/migrate/medium', './test_output/migrate/medium' ];
 
-        writr.parseCLI(process);
-        await writr.runCLI();
+        await writr.parseCLI(process);
+        // await writr.runCLI();
 
         expect(MediumMigrationProvider.prototype.migrate).toBeCalled();
 
