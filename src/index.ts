@@ -79,8 +79,7 @@ export class Writr {
       .option("-w, --watch", "Watch for changes and rebuild", false)
       .action(async(options: any) => {
         try{
-          const params = options.opts();
-          await new Serve(params).run();
+          await new Serve(options).run();
         } catch (error: any) {
           new ConsoleMessage().error('Error: '+ error.message);
         }

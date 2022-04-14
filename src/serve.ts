@@ -1,4 +1,5 @@
 import * as browserSync from 'browser-sync';
+import {SiteGenerator} from "./generator";
 
 type Params = {
 	output: string;
@@ -11,10 +12,12 @@ export class Serve {
 
 	bs: any;
 	params: Params;
+	generator: SiteGenerator;
 
-	constructor(params: Params) {
+	constructor(options: any) {
 		this.bs = browserSync.create();
-		this.params = params;
+		this.params = options.opts();
+		this.generator = new SiteGenerator(options);
 	}
 
 	run() {
@@ -22,8 +25,8 @@ export class Serve {
 		const baseDir = `${process.cwd()}/${output}`;
 
 		if(watch) {
-			this.bs.watch(`${process.cwd()}/${path}/*.md`, async (event: any, file: any) => {
-				console.log(`${event} ${file}`);
+			this.bs.watch(`${process.cwd()}/${path}/*.md`, async () => {
+				await this.generator.run();
 				this.bs.reload();
 			});
 		}
