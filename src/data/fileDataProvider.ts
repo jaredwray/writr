@@ -3,8 +3,8 @@ import { Tag } from "../tag";
 import { Config } from "../config";
 import { DataProviderInterface } from "./dataProviderInterface";
 import * as fs from "fs-extra";
-import { createLogger, transports } from "winston";
 import * as matter from 'gray-matter';
+import {ConsoleMessage} from "../log";
 
 export class FileDataProvider implements DataProviderInterface {
   __postPath: string = "";
@@ -12,7 +12,7 @@ export class FileDataProvider implements DataProviderInterface {
   log: any;
 
   constructor() {
-    this.log = createLogger({ transports: [new transports.Console()]});
+    this.log = new ConsoleMessage()
   }
 
   init(config: Config) {
@@ -136,7 +136,7 @@ export class FileDataProvider implements DataProviderInterface {
   }
 
   async parsePost(filePath: string): Promise<Post | undefined> {
-    let result: Post | undefined = undefined;
+    let result: Post | undefined;
 
     if (await fs.pathExists(filePath)) {
 

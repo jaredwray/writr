@@ -17,7 +17,6 @@ export class MediumMigrationProvider implements MigrationProviderInterface {
 	async migrate(src: string, dest: string): Promise<boolean> {
 		new ConsoleMessage().info("Migrating Medium post from " + src + " to " + dest);
 		const files = new StorageService().readDir(`${src}/posts`);
-		console.log('Files: ', files);
 		const bodyRegex = /\<body[^>]*\>([^]*)\<\/body/m;
 
 		files.forEach((file) => {

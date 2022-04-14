@@ -1,11 +1,11 @@
-import { createLogger, transports } from "winston";
-import { DataService } from "../data/dataService";
-import { Config } from "../config";
-import { Post } from "../post";
-import { Tag } from "../tag";
-import { RenderProviderInterface } from "./renderProviderInterface";
-import { Ecto } from "ecto";
 import * as fs from "fs-extra";
+import {DataService} from "../data/dataService";
+import {Config} from "../config";
+import {Post} from "../post";
+import {Tag} from "../tag";
+import {RenderProviderInterface} from "./renderProviderInterface";
+import {Ecto} from "ecto";
+import { ConsoleMessage } from "../log";
 
 const ecto = new Ecto({defaultEngine: "handlebars"});
 
@@ -14,7 +14,7 @@ export class HtmlRenderProvider implements RenderProviderInterface {
     log: any;
 
     constructor() {
-        this.log = createLogger({ transports: [new transports.Console()]});
+        this.log = new ConsoleMessage();
         ecto.handlebars.opts = { allowProtoPropertiesByDefault: true }
         ecto.handlebars.engine.registerHelper('formatDate', require('helper-date'));
     }
@@ -35,7 +35,8 @@ export class HtmlRenderProvider implements RenderProviderInterface {
         let nextPost: Post;
 
         //published posts
-        posts.forEach(async (post, index) => {
+        for (const post of posts) {
+            const index = posts.indexOf(post);
 
             if(index === 0) {
                 previousPost = posts[posts.length-1];
@@ -52,10 +53,11 @@ export class HtmlRenderProvider implements RenderProviderInterface {
             let postPath = output + "/" + post.id + "/index.html";
             await this.renderPost(post, tags, config, previousPost, nextPost, postPath);
 
-        });
+        }
 
         //unpublished posts
-        unpublishedPosts.forEach(async (post, index) => {
+        for (const post of unpublishedPosts) {
+            const index = unpublishedPosts.indexOf(post);
 
             if(index === 0) {
                 previousPost = posts[posts.length-1];
@@ -73,16 +75,16 @@ export class HtmlRenderProvider implements RenderProviderInterface {
                 let postPath = output + "/" + post.id + "/index.html";
                 await this.renderPost(post, unpublishedTags, config, previousPost, nextPost, postPath);
             }
-        });
+        }
 
         //tags
-        tags.forEach(async tag => {
+        for (const tag of tags) {
 
             let tagOutputPath = output + "/tags/" + tag.id + "/index.html";
 
             await this.renderTag(tag, tags, config, tagOutputPath);
 
-        });
+        }
 
         //home
         await this.renderHome(data, config, output + "/index.html");
@@ -92,8 +94,7 @@ export class HtmlRenderProvider implements RenderProviderInterface {
 
     //render
     async renderHome(data: DataService, config:Config, outputPath?:string): Promise<string> {
-        let result = "";
-        
+
         let postList = await data.getPublishedPostsByCount(config.indexCount);
         let tagList = await data.getPublishedTags();
         let dataObject = { tags: tagList, posts: postList };
@@ -102,10 +103,8 @@ export class HtmlRenderProvider implements RenderProviderInterface {
         let templateName = await this.getTemplatePath(config.path + "/templates", "index");
 
         let homeTemplatePath = rootTemplatePath + templateName;
-        
-        result = await ecto.renderFromFile(homeTemplatePath, dataObject, rootTemplatePath, outputPath); 
 
-        return result;
+        return await ecto.renderFromFile(homeTemplatePath, dataObject, rootTemplatePath, outputPath);
     }
 
     async renderTag(tag: Tag, tags: Array<Tag>, config:Config, outputPath?:string): Promise<string> {

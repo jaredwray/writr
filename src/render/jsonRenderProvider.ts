@@ -1,16 +1,16 @@
 import { RenderProviderInterface } from "./renderProviderInterface";
 import { DataService } from "../data/dataService";
 import { Config } from "../config";
-import { createLogger, transports } from "winston";
 import { Post } from "../post";
 import { Tag } from "../tag";
 import { StorageService } from "../storage/storageService";
+import {ConsoleMessage} from "../log";
 
 export class JSONRenderProvider implements RenderProviderInterface {
     log: any;
 
     constructor() {
-        this.log = createLogger({ transports: [new transports.Console()]});
+        this.log = new ConsoleMessage();
     }
 
     async render(data: DataService, config: Config): Promise<boolean | undefined>  {

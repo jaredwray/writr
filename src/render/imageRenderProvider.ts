@@ -1,14 +1,14 @@
-import { createLogger, transports } from "winston";
 import { DataService } from "../data/dataService";
 import { Config } from "../config";
 import { RenderProviderInterface } from "./renderProviderInterface";
 import { StorageService } from "../storage/storageService";
+import {ConsoleMessage} from "../log";
 
 export class ImageRenderProvider implements RenderProviderInterface {
     log: any;
 
     constructor() {
-        this.log = createLogger({ transports: [new transports.Console()]});
+        this.log = new ConsoleMessage();
     }
 
     async render(data: DataService, config: Config): Promise<boolean | undefined> {

@@ -16,9 +16,7 @@ export class DataService {
 
   //posts
   async getPost(id: string): Promise<Post | undefined> {
-    let result = undefined;
-
-    result = await this.cache.getPost(id);
+    let result = await this.cache.getPost(id);
 
     if (!result) {
       result = await this.getProvider().getPost(id);
@@ -32,7 +30,7 @@ export class DataService {
   }
 
   async getPosts(): Promise<Array<Post>> {
-    let result = new Array<Post>();
+    let result: Post[];
 
     let cacheKey = "get-posts";
     let posts = await this.cache.getPosts(cacheKey);
@@ -45,7 +43,7 @@ export class DataService {
       result = new arraySort(result, "date", { reverse: true })
       //cache
       await this.cache.setPosts(cacheKey, result);
-      
+
     } else {
       result = posts;
     }
@@ -54,7 +52,7 @@ export class DataService {
   }
 
   async getPublishedPosts(): Promise<Array<Post>> {
-    let result = new Array<Post>();
+    let result: Post[];
 
     let cacheKey = "get-published-posts";
     let posts = await this.cache.getPosts(cacheKey);
@@ -67,7 +65,7 @@ export class DataService {
       result = new arraySort(result, "date", { reverse: true })
       //cache
       await this.cache.setPosts(cacheKey, result);
-      
+
     } else {
       result = posts;
     }
@@ -113,9 +111,7 @@ export class DataService {
 
   //tags
   async getTag(name: string): Promise<Tag | undefined> {
-    let result = undefined;
-
-    result = await this.cache.getTag(name);
+    let result = await this.cache.getTag(name);
 
     if (!result) {
       result = await this.getProvider().getTag(name);
@@ -129,7 +125,7 @@ export class DataService {
   }
 
   async getTags(): Promise<Array<Tag>> {
-    let result = new Array<Tag>();
+    let result: Tag[];
 
     let cacheKey = "get-tags";
 
@@ -141,7 +137,7 @@ export class DataService {
       let arraySort = require("array-sort");
       result = new arraySort(result, "id", { reverse: false })
       await this.cache.setTags(cacheKey, result);
-      
+
     } else {
       result = tags;
     }
@@ -150,7 +146,7 @@ export class DataService {
   }
 
   async getPublishedTags(): Promise<Array<Tag>> {
-    let result = new Array<Tag>();
+    let result: Tag[];
 
     let cacheKey = "get-published-tags";
 
@@ -162,9 +158,9 @@ export class DataService {
       let arraySort = require("array-sort");
       result = new arraySort(result, "id", { reverse: false })
 
-      
+
       await this.cache.setTags(cacheKey, result);
-      
+
     } else {
       result = tags;
     }
@@ -173,7 +169,7 @@ export class DataService {
   }
 
   getProvider(): DataProviderInterface {
-    let result = undefined;
+    let result;
 
     switch (this.config.provider.name) {
       default:

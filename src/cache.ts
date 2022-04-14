@@ -7,9 +7,6 @@ export class Cache {
   cache: Keyv;
 
   constructor(config: Config) {
-
-    config = new Config();
-
     this.cache = new Keyv({ ttl: config.cache.ttl, namespace: "data-cache" });
   }
 

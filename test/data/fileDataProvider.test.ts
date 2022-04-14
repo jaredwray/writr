@@ -1,9 +1,10 @@
 import { Config } from "../../src/config";
 import { FileDataProvider } from "../../src/data/fileDataProvider";
-import { createLogger, transports } from "winston";
+import {ConsoleMessage} from "../../src/log";
 
 describe("File Data Provider", () => {
   let config: Config = new Config();
+  jest.spyOn(ConsoleMessage.prototype, 'error').mockImplementation(() => {});
 
   beforeEach(() => {
     config.loadConfig("./blog_example/config.json");
@@ -159,12 +160,6 @@ describe("File Data Provider", () => {
 
   it("parse bad file path post", async () => {
     let fileProvider = new FileDataProvider();
-
-    //set the logging level
-    fileProvider.log = createLogger({ transports: [new transports.Console()]});
-    for (let t of fileProvider.log.transports) {
-      t.silent = true;
-    }
 
     let post = await fileProvider.parsePost("../foo.md")
 

@@ -31,17 +31,16 @@
     "compile": "npm run clean && tsc -p .",
     "build": "npm run test && npm run compile",
     "test": "npm run clean-output && jest --coverage && npm run clean-output",
-    "test-output": "npm run compile && node ./bin/writr -p ./blog_example",
-    "test-migrate": "npm run compile && node ./bin/writr -m ghost https://site-demo.ghost.io/?key=b99a795ef14ca139438a514e95 ./test/ghost"
+    "test-output": "npm run compile && node ./bin/writr -p ./blog_example"
   },
   "bin": {
     "writr": "./bin/writr"
   },
   "dependencies": {
     "array-sort": "^1.0.0",
+    "browser-sync": "^2.27.9",
     "cheerio": "^1.0.0-rc.10",
     "commander": "^9.1.0",
-    "del": "^6.0.0",
     "ecto": "^1.2.1",
     "feed": "^4.2.2",
     "fs-extra": "^10.0.1",
@@ -58,6 +57,7 @@
   },
   "devDependencies": {
     "@types/array-sort": "^1.0.0",
+    "@types/browser-sync": "^2.26.3",
     "@types/fs-extra": "^9.0.13",
     "@types/inquirer": "^8.2.0",
     "@types/jest": "^27.4.1",

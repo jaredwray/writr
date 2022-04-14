@@ -37,8 +37,8 @@ describe("Storage Service", () => {
   });
 
   it("copy directory", async () => {
-    const src = config.path + "/images";
-    const dest = config.output + "/images";
+    const src = "./blog_example/images";
+    const dest = "./test_output/images";
 
     await fs.remove(dest);
     await storage.copy(src, dest);
