@@ -1,12 +1,16 @@
-import { Writr } from "../src";
 import * as fs from "fs-extra";
 import {ConsoleMessage} from "../src/log";
 import {Migrate} from "../src/migrate";
 import {GhostMigrationProvider} from "../src/migrate/ghostMigrationProvider";
 import {MediumMigrationProvider} from "../src/migrate/mediumMigrationProvider";
+import {WordpressMigrationProvider} from "../src/migrate/wordpressMigrationProvider";
+import {JekyllMigrationProvider} from "../src/migrate/jekyllMigrationProvider";
 
 jest.mock('../src/migrate/ghostMigrationProvider');
 jest.mock('../src/migrate/mediumMigrationProvider');
+jest.mock('../src/migrate/wordPressMigrationProvider');
+jest.mock('../src/migrate/jekyllMigrationProvider');
+
 
 describe('Migrate', () => {
 
@@ -14,6 +18,17 @@ describe('Migrate', () => {
 
     afterEach(() => {
         fs.removeSync("./test_output/migrate/");
+    });
+
+    beforeEach(() => {
+        // @ts-ignore
+        GhostMigrationProvider.mockClear();
+        // @ts-ignore
+        MediumMigrationProvider.mockClear();
+        // @ts-ignore
+        WordpressMigrationProvider.mockClear();
+        // @ts-ignore
+        JekyllMigrationProvider.mockClear();
     });
 
     it('should return error when unknow provider is specified', () => {
@@ -26,54 +41,59 @@ describe('Migrate', () => {
     });
 
     it('should return error when src or dest is not provided', async () => {
-        try{
-            const writr = new Writr();
-
-            process.argv = ['', '', '-m', 'wordpress', './test/migration_example/jekyll' ];
-
-            await writr.parseCLI(process);
-            // await writr.runCLI();
-
+        try {
+            const migrate = new Migrate('jekyll');
+            await migrate.migrate('src', '');
             expect('src or dest not provided').toBe('src and dest provided');
         } catch (error: any) {
             expect(error.message).toBe("Source and destination must be specified");
         }
     })
 
-    it('cli should migrate from jekyll project', async () => {
-        const writr = new Writr();
-
-        process.argv = ['', '', '-m', 'jekyll', './test/migration_example/jekyll', './test_output/migrate' ];
-
-        await writr.parseCLI(process);
-        // await writr.runCLI();
-
-        expect(fs.readdirSync("./test_output/migrate").length).toBe(2);
-        expect(fs.readdirSync("./test_output/migrate/images").length).toBe(1);
+    it('should run JekyllMigrationProvider', async () => {
+        try{
+            new Migrate('jekyll');
+            expect(JekyllMigrationProvider).toHaveBeenCalled();
+        } catch (error) {
+            fail()
+        }
     })
 
-    it('cli should run migrate method in Ghost migration provider ', async () => {
-        const writr = new Writr();
-
-        process.argv = ['', '', '-m', 'ghost', 'https://demo-site.ghosts.io/?key=apikeye', './test_output/migrate/ghost' ];
-
-        await writr.parseCLI(process);
-        // await writr.runCLI();
-
-        expect(GhostMigrationProvider.prototype.migrate).toBeCalled();
-
+    it('should run WordPressMigrationProvider', async () => {
+        try{
+            new Migrate('wordpress');
+            expect(WordpressMigrationProvider).toHaveBeenCalled();
+        } catch (error) {
+            fail()
+        }
     })
 
-    it('cli should run migrate method in Medium migration provider ', async () => {
-        const writr = new Writr();
+    it('should run GhostMigrationProvider', async () => {
+        try{
+            new Migrate('ghost');
+            expect(GhostMigrationProvider).toHaveBeenCalled();
+        } catch (error) {
+            fail()
+        }
+    })
 
-        process.argv = ['', '', '-m', 'medium', './test_output/migrate/medium', './test_output/migrate/medium' ];
+    it('should run MediumMigrationProvider', async () => {
+        try{
+            new Migrate('medium');
+            expect(MediumMigrationProvider).toHaveBeenCalled();
+        } catch (error) {
+            fail()
+        }
+    })
 
-        await writr.parseCLI(process);
-        // await writr.runCLI();
-
-        expect(MediumMigrationProvider.prototype.migrate).toBeCalled();
-
+    it('should run migrate method successfully', async () => {
+        try{
+            const migrate = new Migrate('jekyll');
+            await migrate.migrate('./test/migration_example/jekyll', './test_output/migrate/jekyll');
+            expect(JekyllMigrationProvider.prototype.migrate).toHaveBeenCalled();
+        } catch (error) {
+            fail()
+        }
     })
 
 })
