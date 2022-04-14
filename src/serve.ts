@@ -20,15 +20,17 @@ export class Serve {
 		this.generator = new SiteGenerator(options);
 	}
 
+	async buildAndReload() {
+		await this.generator.run();
+		this.bs.reload();
+	}
+
 	run() {
 		const {output, port, watch, path} = this.params;
 		const baseDir = `${process.cwd()}/${output}`;
 
 		if(watch) {
-			this.bs.watch(`${process.cwd()}/${path}/*.md`, async () => {
-				await this.generator.run();
-				this.bs.reload();
-			});
+			this.bs.watch(`${process.cwd()}/${path}/*.md`, async () => await this.buildAndReload());
 		}
 
 		this.bs.init({
