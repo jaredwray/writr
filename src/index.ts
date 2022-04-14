@@ -12,7 +12,6 @@ export class Writr {
 
   config: Config | undefined;
   data: DataService | undefined;
-  result = false;
 
   async parseCLI(process: NodeJS.Process) {
 
@@ -30,7 +29,6 @@ export class Writr {
       .action(async (options: any) => {
         try{
           await new SiteGenerator(options).run();
-          this.result = true;
         } catch (error: any) {
           new ConsoleMessage().error('Error: '+ error.message);
         }
@@ -43,7 +41,6 @@ export class Writr {
       .action(async (name: string) => {
         try{
           await new Setup(name).init();
-          this.result = true;
         } catch (error: any) {
           new ConsoleMessage().error('Error: '+ error.message);
         }
@@ -55,7 +52,6 @@ export class Writr {
       .action(async() => {
         try{
           await new Setup('new').new();
-          this.result = true;
         } catch (error: any) {
           new ConsoleMessage().error('Error: '+ error.message);
         }
@@ -67,9 +63,8 @@ export class Writr {
       .argument("<type> <options...>", "Provider type (jekyll, wordpress, etc), source and destination" )
       .action(async(options) => {
         try{
-          const [type, src, dest] = options;
+          const [type  , src, dest] = options;
           await new Migrate(type).migrate(src, dest);
-          this.result = true;
         } catch (error: any) {
           new ConsoleMessage().error('Error: '+ error.message);
         }
@@ -86,14 +81,11 @@ export class Writr {
         try{
           const params = options.opts();
           await new Serve(params).run();
-          this.result = true;
         } catch (error: any) {
           new ConsoleMessage().error('Error: '+ error.message);
         }
       })
 
     program.parse(process.argv);
-
-    return this.result;
   }
 }
