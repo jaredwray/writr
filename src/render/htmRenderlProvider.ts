@@ -1,11 +1,11 @@
-import {createLogger, transports} from "winston";
+import * as fs from "fs-extra";
 import {DataService} from "../data/dataService";
 import {Config} from "../config";
 import {Post} from "../post";
 import {Tag} from "../tag";
 import {RenderProviderInterface} from "./renderProviderInterface";
 import {Ecto} from "ecto";
-import * as fs from "fs-extra";
+import { ConsoleMessage } from "../log";
 
 const ecto = new Ecto({defaultEngine: "handlebars"});
 
@@ -14,7 +14,7 @@ export class HtmlRenderProvider implements RenderProviderInterface {
     log: any;
 
     constructor() {
-        this.log = createLogger({ transports: [new transports.Console()]});
+        this.log = new ConsoleMessage();
         ecto.handlebars.opts = { allowProtoPropertiesByDefault: true }
         ecto.handlebars.engine.registerHelper('formatDate', require('helper-date'));
     }

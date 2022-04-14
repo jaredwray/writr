@@ -1,8 +1,11 @@
+import * as fs from "fs-extra";
 import {SiteGenerator} from "../src/generator";
 import {Config} from "../src/config";
-import * as fs from "fs-extra";
+import {ConsoleMessage} from "../src/log";
 
 describe('SiteGenerator', () => {
+
+	jest.spyOn(ConsoleMessage.prototype, 'info').mockImplementation(() => {});
 
 	const options = {
 		opts: () => {

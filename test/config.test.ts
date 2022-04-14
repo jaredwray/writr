@@ -1,9 +1,10 @@
 import { Config } from '../src/config';
-import { createLogger, transports } from "winston";
+import {ConsoleMessage} from "../src/log";
 
 describe('Config', () => {
 
     let config = new Config();
+    jest.spyOn(ConsoleMessage.prototype, 'info').mockImplementation(() => {});
 
     beforeEach(async () => {
 
@@ -89,9 +90,6 @@ describe('Config', () => {
     it('config should error on load via the file path', () => {
 
         config = new Config();
-
-        //only log on error
-        config.log = createLogger({ transports: [new transports.Console({ level: 'error' })] });
 
         let valid = config.loadConfig("../blog_example/blah.json");
 

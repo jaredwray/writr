@@ -9,6 +9,7 @@ import {Serve} from "../src/serve";
 
 describe('Writr', () => {
   jest.spyOn(ConsoleMessage.prototype, 'error').mockImplementation(() => {});
+  jest.spyOn(ConsoleMessage.prototype, 'info').mockImplementation(() => {});
 
   let config: Config = new Config();
 
