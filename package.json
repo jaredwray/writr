@@ -41,7 +41,6 @@
     "browser-sync": "^2.27.9",
     "cheerio": "^1.0.0-rc.10",
     "commander": "^9.1.0",
-    "del": "^6.0.0",
     "ecto": "^1.2.1",
     "feed": "^4.2.2",
     "fs-extra": "^10.0.1",

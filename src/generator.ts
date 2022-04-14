@@ -1,5 +1,4 @@
 import * as fs from "fs-extra";
-import * as del from "del";
 import {HtmlRenderProvider} from "./render/htmRenderlProvider";
 import {JSONRenderProvider} from "./render/jsonRenderProvider";
 import {AtomRenderProvider} from "./render/atomRenderProvider";
@@ -42,7 +41,7 @@ export class SiteGenerator {
 		}
 
 		if (fs.existsSync(this.config.output)) {
-			del.sync(this.config.output);
+			fs.removeSync(this.config.output);
 		}
 
 		let render: boolean | undefined = true;
