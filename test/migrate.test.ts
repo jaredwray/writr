@@ -8,7 +8,7 @@ import {JekyllMigrationProvider} from "../src/migrate/jekyllMigrationProvider";
 
 jest.mock('../src/migrate/ghostMigrationProvider');
 jest.mock('../src/migrate/mediumMigrationProvider');
-jest.mock('../src/migrate/wordPressMigrationProvider');
+jest.mock('../src/migrate/wordpressMigrationProvider');
 jest.mock('../src/migrate/jekyllMigrationProvider');
 
 
