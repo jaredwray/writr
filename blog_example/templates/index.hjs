@@ -6,7 +6,7 @@
 <p>Tags: <br />
 <ul>
 {{#each tags}}
-<li><a href="{{id}}">{{name}}</a></li>{{/each}}
+<li><a href="/tags/{{id}}">{{name}}</a></li>{{/each}}
 </ul>
 </p>
 
