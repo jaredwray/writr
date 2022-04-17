@@ -6,12 +6,12 @@
 
 <p>{{post.matter.featured_image}}</p>
 
-<p>{{previousPost.id}}</p>
-<p>{{nextPost.id}}</p>
+<p><a href="/{{previousPost.url}}">{{previousPost.id}}</a></p>
+<p><a href="/{{nextPost.url}}">{{nextPost.id}}</a></p>
 
 <h1>Tags</h1>
 <ul>
     {{#each tags}}
-    <li>{{name}}</li>
+    <li><a href="/tags/{{id}}">{{name}}</a></li>
     {{/each}}
 </ul>
