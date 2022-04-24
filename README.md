@@ -19,6 +19,8 @@
 
 ## 2. Setup your directory (look at /blog_example for how to do this)
 
+> writr init
+
 ```
 blog/*.md           //markdown files in the folder root
 blog/images         //images for the blog
@@ -26,11 +28,21 @@ blog/config.json    //config file (optional)
 blog/templates      //template directory for your index, post, and tag
 ```
 
-## 3. Run Writr on it with defaults. This will output everything to ./blog_output
+## 3. Create your first post
 
-> writr --path ./blog
+> writr new
 
-## 4. Express Integration
+This will allow you to answer a couple questions to setup your first blog post. 
+
+## 4. Run Writr on it with defaults. This will output everything to ./blog_output
+
+> writr
+
+## 5. You can serve your blog with a simple webserver
+
+> writr serve
+
+## 4. Integrate your blog with Express
 
 Then in express map your `blog_output` via static files:
 
@@ -49,6 +61,9 @@ app.use("/blog", express.static(path.join(__dirname, "blog_output")))
 * -o, --output: Path of where to output the generated blog
 * -r, --render: What do you want rendered such as html or json (example --render html,json)
 * -c, --config: Configuration file location if different than 'path'
+* init: Initialize a new blog
+* new: Create a new blog post
+* serve: Serve the blog. You can also specify a port with --port and --watch for hot reloading
 
 ## Templates
 
@@ -164,7 +179,6 @@ To set it globally you can set it in the `config.json` by setting the `permaLink
     "permalink": ":year/:month/:title"
 }
 ```
-
 
 ## Markdown
 To learn more about Markdown go here: https://markdownguide.org
