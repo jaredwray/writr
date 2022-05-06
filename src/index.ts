@@ -7,6 +7,7 @@ import {ConsoleMessage} from "./log";
 import {Serve} from "./serve";
 import {SiteGenerator} from "./generator";
 import {Migrate} from "./migrate";
+import {Translate} from "./translate";
 
 export class Writr {
 
@@ -80,6 +81,19 @@ export class Writr {
       .action(async(options: any) => {
         try{
           await new Serve(options).run();
+        } catch (error: any) {
+          new ConsoleMessage().error('Error: '+ error.message);
+        }
+      })
+
+    program
+      .command('translate')
+      .description('Translate the site using Google Translate')
+      .option("-p, --path <path>", "Path of where the blog, config, and template are located", './blog_example')
+      .option("-k, --key <key>", "Google Translate API key")
+      .action(async(options: any) => {
+        try{
+          await new Translate().translate(options);
         } catch (error: any) {
           new ConsoleMessage().error('Error: '+ error.message);
         }
