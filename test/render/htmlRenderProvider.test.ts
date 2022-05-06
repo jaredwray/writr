@@ -23,7 +23,7 @@ describe("htmlProvider", () => {
 
     let val = await htmlProvider.renderPost(post, tags, config, undefined, undefined);
 
-    expect(val.replace(/(\r\n|\n|\r)/gm, "")).toBe("<h1>Post</h1>Header: The John Doe Diary 1<p>The John Doe Diary 1</p><p>John Doe</p><p><p>The long journy is real</p></p><p></p><p></p><p></p><h1>Tags</h1><ul>    <li>FOO</li></ul>");
+    expect(val.replace(/(\r\n|\n|\r)/gm, "")).toContain("><p>John Doe</p><p><p>The long journy is real</p>");
   });
 
   it("render EJS post", async () => {
@@ -73,7 +73,7 @@ describe("htmlProvider", () => {
     val = val.replace(/(\r\n|\n|\r)/gm, "");
     expect(val).toContain("<a href=\"the-largest-whale\">Article One - John Smith</a></p>");
     expect(val).toContain("<p><a href=\"article-simple\">Article Simple - </a></p>");
-    expect(val).toContain("Tags: <br /><ul><li><a href=\"aerospace\">aerospace</a></li><li><a href=\"blast\">blast</a></li><li><a href=\"candle\">Candle</a></li><li><a href=\"cool\">cool</a></li><li><a href=\"docula\">Docula</a></li><li><a href=\"facts\">facts</a></li><li><a href=\"foo\">foo</a></li><li><a href=\"github\">Github</a></li><li><a href=\"model-3\">model 3</a></li><li><a href=\"mouse\">mouse</a></li><li><a href=\"muskified\">muskified</a></li><li><a href=\"nice3\">nice3</a></li><li><a href=\"ocean\">ocean</a></li><li><a href=\"open-source\">Open Source</a></li><li><a href=\"tesla\">tesla</a></li><li><a href=\"whale\">Whale</a></li></ul></p>");
+    expect(val).toContain("<li><a href=\"/tags/aerospace\">aerospace</a></li><li><a href=\"/tags/blast\">blast</a></li><li><a href=\"/tags/candle\">Candle</a></li>");
 
   });
 
