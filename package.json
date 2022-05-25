@@ -47,7 +47,7 @@
     "got": "^11.8.2",
     "gray-matter": "^4.0.3",
     "helper-date": "^1.0.1",
-    "inquirer": "^8.2.2",
+    "inquirer": "^8.2.4",
     "keyv": "^4.2.2",
     "luxon": "^2.3.2",
     "node-html-markdown": "^1.2.0",
