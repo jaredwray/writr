@@ -1,5 +1,5 @@
-jest.mock("got");
-import got from "got";
+jest.mock("axios");
+import axios from "axios";
 import * as fs from "fs-extra";
 import {ConsoleMessage} from "../../src/log";
 import {GhostMigrationProvider} from "../../src/migrate/ghostMigrationProvider";
@@ -11,7 +11,8 @@ describe('ghostMigrationProvider', () => {
 
   beforeEach(() =>{
     // @ts-ignore
-    got.mockReset()
+    // got.mockReset()
+    axios.delete.mockClear();
   });
 
   afterEach(() => {
@@ -23,9 +24,9 @@ describe('ghostMigrationProvider', () => {
   it('should fetch all posts', async () => {
 
     // @ts-ignore
-    got.mockImplementation(() => {
+    axios.get.mockImplementation(() => {
       return  {
-        json: () => posts,
+        data:  posts,
       }
     });
 
@@ -33,9 +34,10 @@ describe('ghostMigrationProvider', () => {
     expect(fetchedPost.length).toBe(14);
   });
 
+
   it('should return an error when fetching posts', async () => {
     // @ts-ignore
-    got.mockImplementation(() => {
+    axios.get.mockImplementation(() => {
       throw new Error('Error');
     });
 
@@ -50,9 +52,9 @@ describe('ghostMigrationProvider', () => {
   it('should save media', async () => {
 
     // @ts-ignore
-    got.mockImplementation(() => {
+    axios.get.mockImplementation(() => {
       return  {
-        rawBody: 'mediaData',
+        data: 'mediaData',
         headers: {
           'content-type': 'image/png'
         }
