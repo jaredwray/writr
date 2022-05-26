@@ -1,8 +1,4 @@
 import {ConsoleMessage} from "../../src/log";
-
-// jest.mock('got');
-// import got from 'got';
-
 jest.mock('axios');
 import axios from 'axios';
 import * as fs from "fs-extra";
@@ -16,7 +12,6 @@ describe('wordpressMigrationProvider', () => {
 
     beforeEach(() =>{
        // @ts-ignore
-        // got.mockReset()
         axios.delete.mockClear();
     });
 

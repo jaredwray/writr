@@ -11,7 +11,6 @@ describe('ghostMigrationProvider', () => {
 
   beforeEach(() =>{
     // @ts-ignore
-    // got.mockReset()
     axios.delete.mockClear();
   });
 
