@@ -1,4 +1,4 @@
-import got from "got";
+import axios from "axios";
 import {MigrationProviderInterface} from "./migrationProviderInterface";
 import {Parser} from "../utils/parser";
 import {StorageService} from "../storage/storageService";
@@ -18,13 +18,13 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
         try{
             let posts: Record<string, any>[];
 
-            const response = await got(`${src}/wp-json/wp/v2/posts?page=1`);
+            const response = await axios.get(`${src}/wp-json/wp/v2/posts?page=1`);
             const headers = response.headers;
-            const body = JSON.parse(response.body);
+            const body = typeof response.data == 'string' ? JSON.parse(response.data) : response.data;
             const pages = <string>headers['x-wp-totalpages'];
             posts = [...body as unknown as Record<string, any>[]];
             for(let i = 2; i <= parseInt(pages); i++){
-                const body = await got(`${src}/wp-json/wp/v2/posts?page=${i}`).json();
+                const body = (await axios.get(`${src}/wp-json/wp/v2/posts?page=${i}`)).data;
                 posts = posts.concat(body as unknown as Record<string, any>[]);
             }
             return posts;
@@ -35,7 +35,7 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
 
     async fetchMedia(src: string, id: string) {
         try{
-            return await got(`${src}/wp-json/wp/v2/media/${id}`).json();
+            return (await axios.get(`${src}/wp-json/wp/v2/media/${id}`)).data
         } catch (error: any) {
             return null;
         }
@@ -46,10 +46,12 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
             if (!mediaFetched) return null;
             const {source_url, slug, mime_type} = mediaFetched;
             const encodedURI = encodeURI(source_url);
-            const media = await got(encodedURI).buffer();
+            const response = await axios.get(encodedURI, { responseType: 'arraybuffer' });
+            const { data: media, headers } = response;
+            const mediaBuffer = Buffer.from(media, 'binary').toString('base64')
             const extension = mime_type.split('/')[1];
             const filename = `${slug}.${extension}`;
-            await this.storage.set(`${dest}/images/${filename}`, media);
+            await this.storage.set(`${dest}/images/${filename}`, mediaBuffer);
             return `/images/${filename}`;
         } catch (error: any) {
             return null
@@ -58,7 +60,7 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
 
     async fetchCategoriesPerPost(src: string, postId: string): Promise<Record<string, any>[]> {
         try{
-            return await got(`${src}/wp-json/wp/v2/categories?post=${postId}`).json()
+            return (await axios.get(`${src}/wp-json/wp/v2/categories?post=${postId}`)).data
         } catch (error: any) {
             return [];
         }
@@ -66,7 +68,7 @@ export class WordpressMigrationProvider implements MigrationProviderInterface{
 
     async fetchTagsPerPost(src: string, postId: string): Promise<Record<string, any>[]> {
         try{
-            return await got(`${src}/wp-json/wp/v2/tags?post=${postId}`).json();
+            return (await axios.get(`${src}/wp-json/wp/v2/tags?post=${postId}`)).data;
         } catch (error: any) {
             return [];
         }

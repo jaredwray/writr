@@ -1,7 +1,6 @@
 import {ConsoleMessage} from "../../src/log";
-
-jest.mock('got');
-import got from 'got';
+jest.mock('axios');
+import axios from 'axios';
 import * as fs from "fs-extra";
 
 import {WordpressMigrationProvider} from "../../src/migrate/wordpressMigrationProvider";
@@ -13,7 +12,7 @@ describe('wordpressMigrationProvider', () => {
 
     beforeEach(() =>{
        // @ts-ignore
-        got.mockReset()
+        axios.delete.mockClear();
     });
 
     afterEach(() => {
@@ -25,13 +24,13 @@ describe('wordpressMigrationProvider', () => {
     it('should fetch all posts', async () => {
 
         // @ts-ignore
-        got.mockImplementation(() => {
+        axios.get.mockImplementation(() => {
             return  {
                 body: JSON.stringify(posts),
                 headers: {
                     'x-wp-totalpages': 2
                 },
-                json: () => posts,
+                data : posts,
             }
         });
 
@@ -41,7 +40,7 @@ describe('wordpressMigrationProvider', () => {
 
     it('should return an error when fetching posts', async () => {
         // @ts-ignore
-        got.mockImplementation(() => {
+        axios.get.mockImplementation(() => {
             throw new Error('Error');
         });
 
@@ -55,8 +54,8 @@ describe('wordpressMigrationProvider', () => {
 
     it('should fetch media data', async () => {
         // @ts-ignore
-        got.mockReturnValue({
-            json: () => media,
+         axios.get.mockResolvedValue({
+            data: media,
         });
         const mediaFetched = await wordpressMigration.fetchMedia('url', 'mediaId');
         expect(mediaFetched).toMatchObject(media);
@@ -64,7 +63,7 @@ describe('wordpressMigrationProvider', () => {
 
     it('should return an error when fetching media', async () => {
         // @ts-ignore
-        got.mockImplementation(() => {
+        axios.get.mockImplementation(() => {
             throw new Error('Error');
         });
 
@@ -81,8 +80,8 @@ describe('wordpressMigrationProvider', () => {
     it('should save media', async () => {
 
         // @ts-ignore
-        got.mockReturnValue({
-            buffer: () => 'mediaContent'
+        axios.get.mockResolvedValue({
+            data: 'mediaContent'
         });
 
         const filename = await wordpressMigration.saveMedia(media, './test_output/wordpress');
@@ -94,7 +93,7 @@ describe('wordpressMigrationProvider', () => {
 
     it('should return error when fail save media', async () => {
         // @ts-ignore
-        got.mockImplementation(() => {
+        axios.get.mockImplementation(() => {
             throw new Error('Error');
         });
 
@@ -106,8 +105,8 @@ describe('wordpressMigrationProvider', () => {
 
     it('should fetch categories per post', async () => {
         // @ts-ignore
-        got.mockReturnValue({
-            json: () => categories
+        axios.get.mockResolvedValue({
+            data: categories
         });
         const categoriesFetched = await wordpressMigration.fetchCategoriesPerPost('url', 'postId');
 
@@ -116,7 +115,7 @@ describe('wordpressMigrationProvider', () => {
 
     it('should return an error when fetching categories data', async () => {
         // @ts-ignore
-        got.mockImplementation(() => {
+        axios.get.mockImplementation(() => {
             throw new Error('Error');
         });
 
@@ -127,8 +126,8 @@ describe('wordpressMigrationProvider', () => {
 
     it('should fetch tags per post', async () => {
         // @ts-ignore
-        got.mockReturnValue({
-            json: () => tags
+        axios.get.mockResolvedValue({
+            data: tags
         });
         const tagsFetched = await wordpressMigration.fetchTagsPerPost('url', 'postId');
 
@@ -137,7 +136,7 @@ describe('wordpressMigrationProvider', () => {
 
     it('should return an error when fetching tags data', async () => {
         // @ts-ignore
-        got.mockImplementation(() => {
+        axios.get.mockImplementation(() => {
             throw new Error('Error');
         });
 
@@ -169,8 +168,8 @@ describe('wordpressMigrationProvider', () => {
           });
 
         // @ts-ignore
-        got.mockReturnValue({
-            buffer: () => 'mediaContent'
+        axios.get.mockResolvedValue({
+            data: 'mediaContent'
         });
 
         await wordpressMigration.migrate('url', './test_output/wordpress');
