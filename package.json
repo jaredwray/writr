@@ -36,7 +36,6 @@
   "bin": {
     "writr": "./bin/writr"
   },
-  "type": "module",
   "dependencies": {
     "array-sort": "^1.0.0",
     "axios": "^0.27.2",
