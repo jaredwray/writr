@@ -2,7 +2,7 @@
 
 "use strict";
 
-const Writr = require("../dist/index").Writr;
+const Writr = require("../dist/index.js").Writr;
 
 const writr = new Writr();
 
