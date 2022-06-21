@@ -23,7 +23,7 @@ describe("htmlProvider", () => {
 
     let val = await htmlProvider.renderPost(post, tags, config, undefined, undefined);
 
-    expect(val.replace(/(\r\n|\n|\r)/gm, "")).toContain("><p>John Doe</p><p><p>The long journy is real</p>");
+    expect(val.replace(/(\r\n|\n|\r)/gm, "")).toContain("<p>John Doe</p><p><article><p>The long journy is real</p></article>");
   });
 
   it("render EJS post", async () => {
