@@ -138,7 +138,7 @@ describe('Post', () => {
     let post = new Post();
     post.content = "*HOW*";
 
-    expect(await post.getBody()).toBe("<p><em>HOW</em></p>\n");
+    expect(await post.getBody()).toContain("<em>HOW</em>");
   });
 
   it('post add tag with same name', () => {
