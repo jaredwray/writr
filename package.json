@@ -1,6 +1,6 @@
 {
   "name": "writr",
-  "version": "1.8.7",
+  "version": "1.8.8",
   "description": "A Simple to Use Markdown Blog",
   "main": "./dist/index",
   "types": "./dist/index",
