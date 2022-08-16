@@ -1,9 +1,9 @@
 {
   "name": "writr",
-  "version": "1.8.9",
+  "version": "1.9.0",
   "description": "A Simple to Use Markdown Blog",
-  "main": "./dist/index",
-  "types": "./dist/index",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "repository": "https://github.com/jaredwray/writr.git",
   "author": "Jared Wray <me@jaredwray.com>",
   "license": "MIT",
