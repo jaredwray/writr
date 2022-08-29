@@ -38,6 +38,23 @@ describe('wordpressMigrationProvider', () => {
         expect(fetchedPost.length).toBe(2);
     });
 
+    it('should fetch all post with json data', async () => {
+
+        // @ts-ignore
+        axios.get.mockImplementation(() => {
+            return  {
+                body: JSON.stringify(posts),
+                headers: {
+                    'x-wp-totalpages': 2
+                },
+                data : JSON.stringify(posts),
+            }
+        });
+
+        const fetchedPost = await wordpressMigration.fetchPosts('');
+        expect(fetchedPost.length).toBe(2);
+    });
+
     it('should return an error when fetching posts', async () => {
         // @ts-ignore
         axios.get.mockImplementation(() => {
