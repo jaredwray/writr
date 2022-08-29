@@ -1,7 +1,7 @@
 import { Config } from "./config";
 import { Post } from "./post";
 import { Tag } from "./tag";
-import Keyv = require("keyv");
+import Keyv from "keyv";
 
 export class Cache {
   cache: Keyv;

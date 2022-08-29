@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { Writr } from "../src";
 import { Config } from "../src/config";
 import { Setup } from "../src/utils/setup";

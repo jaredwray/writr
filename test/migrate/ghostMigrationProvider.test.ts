@@ -1,6 +1,6 @@
 jest.mock("axios");
 import axios from "axios";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import {ConsoleMessage} from "../../src/log";
 import {GhostMigrationProvider} from "../../src/migrate/ghostMigrationProvider";
 import {posts} from "../migration_example/ghost/posts";

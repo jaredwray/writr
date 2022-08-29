@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import {DataService} from "../data/dataService";
 import {Config} from "../config";
 import {Post} from "../post";

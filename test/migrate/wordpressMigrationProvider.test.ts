@@ -1,7 +1,7 @@
 import {ConsoleMessage} from "../../src/log";
 jest.mock('axios');
 import axios from 'axios';
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 
 import {WordpressMigrationProvider} from "../../src/migrate/wordpressMigrationProvider";
 import {posts, media, categories, tags} from "../migration_example/wordpress/_mocks_";

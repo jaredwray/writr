@@ -4,6 +4,7 @@ import { Tag } from "../tag";
 import { DataProviderInterface } from "./dataProviderInterface";
 import { FileDataProvider } from "./fileDataProvider";
 import { Cache } from "../cache";
+import arraySort from "array-sort";
 
 export class DataService {
   config: Config;
@@ -39,8 +40,7 @@ export class DataService {
       result = await this.getProvider().getPosts();
 
       //sort
-      let arraySort = require("array-sort");
-      result = new arraySort(result, "date", { reverse: true })
+      result = arraySort(result, "date", { reverse: true })
       //cache
       await this.cache.setPosts(cacheKey, result);
 
@@ -61,8 +61,7 @@ export class DataService {
       result = await this.getProvider().getPublishedPosts();
 
       //sort
-      let arraySort = require("array-sort");
-      result = new arraySort(result, "date", { reverse: true })
+      result = arraySort(result, "date", { reverse: true })
       //cache
       await this.cache.setPosts(cacheKey, result);
 
@@ -134,8 +133,7 @@ export class DataService {
     if (!tags) {
       result = await this.getProvider().getTags();
       //sort
-      let arraySort = require("array-sort");
-      result = new arraySort(result, "id", { reverse: false })
+      result = arraySort(result, "id", { reverse: false })
       await this.cache.setTags(cacheKey, result);
 
     } else {
@@ -155,9 +153,7 @@ export class DataService {
     if (!tags) {
       result = await this.getProvider().getPublishedTags();
       //sort
-      let arraySort = require("array-sort");
-      result = new arraySort(result, "id", { reverse: false })
-
+      result = arraySort(result, "id", { reverse: false });
 
       await this.cache.setTags(cacheKey, result);
 

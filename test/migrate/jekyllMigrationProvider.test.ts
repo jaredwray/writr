@@ -1,5 +1,5 @@
 import {JekyllMigrationProvider} from "../../src/migrate/jekyllMigrationProvider";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import {ConsoleMessage} from "../../src/log";
 
 describe("jekyllMigrationProvider", () => {

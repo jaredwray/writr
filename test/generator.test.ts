@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import {SiteGenerator} from "../src/generator";
 import {Config} from "../src/config";
 import {ConsoleMessage} from "../src/log";

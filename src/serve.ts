@@ -1,4 +1,4 @@
-import * as browserSync from 'browser-sync';
+import browserSync from 'browser-sync';
 import {SiteGenerator} from "./generator";
 
 type Params = {
