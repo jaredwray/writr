@@ -2,8 +2,8 @@ import { Post } from "../post";
 import { Tag } from "../tag";
 import { Config } from "../config";
 import { DataProviderInterface } from "./dataProviderInterface";
-import * as fs from "fs-extra";
-import * as matter from 'gray-matter';
+import fs from "fs-extra";
+import matter from 'gray-matter';
 import {ConsoleMessage} from "../log";
 
 export class FileDataProvider implements DataProviderInterface {

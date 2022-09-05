@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import {HtmlRenderProvider} from "./render/htmRenderlProvider";
 import {JSONRenderProvider} from "./render/jsonRenderProvider";
 import {AtomRenderProvider} from "./render/atomRenderProvider";

@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import {MigrationProviderInterface} from "./migrationProviderInterface";
 import {ConsoleMessage} from "../log";
 import {StorageService} from "../storage/storageService";

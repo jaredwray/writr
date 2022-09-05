@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { StorageProviderInterface } from "./storageProviderInterface";
 import { ConsoleMessage } from "../log";
 

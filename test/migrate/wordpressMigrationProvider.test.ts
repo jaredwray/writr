@@ -1,7 +1,7 @@
 import {ConsoleMessage} from "../../src/log";
 jest.mock('axios');
 import axios from 'axios';
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 
 import {WordpressMigrationProvider} from "../../src/migrate/wordpressMigrationProvider";
 import {posts, media, categories, tags} from "../migration_example/wordpress/_mocks_";
@@ -31,6 +31,23 @@ describe('wordpressMigrationProvider', () => {
                     'x-wp-totalpages': 2
                 },
                 data : posts,
+            }
+        });
+
+        const fetchedPost = await wordpressMigration.fetchPosts('');
+        expect(fetchedPost.length).toBe(2);
+    });
+
+    it('should fetch all post with json data', async () => {
+
+        // @ts-ignore
+        axios.get.mockImplementation(() => {
+            return  {
+                body: JSON.stringify(posts),
+                headers: {
+                    'x-wp-totalpages': 2
+                },
+                data : JSON.stringify(posts),
             }
         });
 

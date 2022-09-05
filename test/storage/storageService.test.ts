@@ -1,6 +1,6 @@
 import {Config} from "../../src/config";
 import {StorageService} from "../../src/storage/storageService";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 
 describe("Storage Service", () => {
   let config: Config = new Config();

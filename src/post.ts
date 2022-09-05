@@ -1,5 +1,5 @@
 import {DateTime} from "luxon";
-import * as striptags from "striptags";
+import striptags from "striptags";
 import {Ecto} from "ecto";
 
 export class Post {

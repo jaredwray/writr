@@ -1,7 +1,7 @@
 jest.mock("inquirer");
 import {Setup} from "../../src/utils/setup";
-import * as fs from "fs-extra";
-import * as inquirer from "inquirer";
+import fs from "fs-extra";
+import inquirer from "inquirer";
 
 describe('setup', () => {
 
