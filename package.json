@@ -49,7 +49,7 @@
     "gray-matter": "^4.0.3",
     "helper-date": "^1.0.1",
     "inquirer": "^8.2.4",
-    "keyv": "^4.4.1",
+    "keyv": "^4.5.0",
     "luxon": "^3.0.4",
     "node-html-markdown": "^1.2.0",
     "parse-json": "^6.0.2",
