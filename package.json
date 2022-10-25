@@ -47,7 +47,6 @@
     "feed": "^4.2.2",
     "fs-extra": "^10.1.0",
     "gray-matter": "^4.0.3",
-    "helper-date": "^1.0.1",
     "inquirer": "^8.2.3",
     "keyv": "^4.5.0",
     "luxon": "^3.0.4",
