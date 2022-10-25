@@ -1,7 +1,7 @@
-import {JekyllMigrationProvider} from "./migrate/jekyllMigrationProvider";
-import {WordpressMigrationProvider} from "./migrate/wordpressMigrationProvider";
-import {GhostMigrationProvider} from "./migrate/ghostMigrationProvider";
-import {MediumMigrationProvider} from "./migrate/mediumMigrationProvider";
+import {JekyllMigrationProvider} from "./migrate/jekyllMigrationProvider.js";
+import {WordpressMigrationProvider} from "./migrate/wordpressMigrationProvider.js";
+import {GhostMigrationProvider} from "./migrate/ghostMigrationProvider.js";
+import {MediumMigrationProvider} from "./migrate/mediumMigrationProvider.js";
 
 export class Migrate {
     provider: any;

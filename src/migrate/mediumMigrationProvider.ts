@@ -1,8 +1,8 @@
 import fs from "fs-extra";
-import {MigrationProviderInterface} from "./migrationProviderInterface";
-import {ConsoleMessage} from "../log";
-import {StorageService} from "../storage/storageService";
-import {Parser} from "../utils/parser";
+import {MigrationProviderInterface} from "./migrationProviderInterface.js";
+import {ConsoleMessage} from "../log.js";
+import {StorageService} from "../storage/storageService.js";
+import {Parser} from "../utils/parser.js";
 
 export class MediumMigrationProvider implements MigrationProviderInterface {
 

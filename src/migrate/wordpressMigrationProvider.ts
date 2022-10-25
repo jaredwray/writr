@@ -1,8 +1,8 @@
 import axios from "axios";
-import {MigrationProviderInterface} from "./migrationProviderInterface";
-import {Parser} from "../utils/parser";
-import {StorageService} from "../storage/storageService";
-import {ConsoleMessage} from "../log";
+import {MigrationProviderInterface} from "./migrationProviderInterface.js";
+import {Parser} from "../utils/parser.js";
+import {StorageService} from "../storage/storageService.js";
+import {ConsoleMessage} from "../log.js";
 
 export class WordpressMigrationProvider implements MigrationProviderInterface{
 

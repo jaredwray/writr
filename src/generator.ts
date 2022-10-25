@@ -1,10 +1,10 @@
 import fs from "fs-extra";
-import {HtmlRenderProvider} from "./render/htmRenderlProvider";
-import {JSONRenderProvider} from "./render/jsonRenderProvider";
-import {AtomRenderProvider} from "./render/atomRenderProvider";
-import {ImageRenderProvider} from "./render/imageRenderProvider";
-import {DataService} from "./data/dataService";
-import {Config} from "./config";
+import {HtmlRenderProvider} from "./render/htmRenderlProvider.js";
+import {JSONRenderProvider} from "./render/jsonRenderProvider.js";
+import {AtomRenderProvider} from "./render/atomRenderProvider.js";
+import {ImageRenderProvider} from "./render/imageRenderProvider.js";
+import {DataService} from "./data/dataService.js";
+import {Config} from "./config.js";
 
 export class SiteGenerator {
 

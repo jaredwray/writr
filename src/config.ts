@@ -1,5 +1,5 @@
 import fs from "fs-extra";
-import {ConsoleMessage} from "./log";
+import {ConsoleMessage} from "./log.js";
 
 export class Config {
   cache: ConfigCache = new ConfigCache();

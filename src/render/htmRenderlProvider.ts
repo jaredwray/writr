@@ -1,11 +1,11 @@
 import fs from "fs-extra";
-import {DataService} from "../data/dataService";
-import {Config} from "../config";
-import {Post} from "../post";
-import {Tag} from "../tag";
-import {RenderProviderInterface} from "./renderProviderInterface";
+import {DataService} from "../data/dataService.js";
+import {Config} from "../config.js";
+import {Post} from "../post.js";
+import {Tag} from "../tag.js";
+import {RenderProviderInterface} from "./renderProviderInterface.js";
 import {Ecto} from "ecto";
-import { ConsoleMessage } from "../log";
+import { ConsoleMessage } from "../log.js";
 
 const ecto = new Ecto({defaultEngine: "handlebars"});
 

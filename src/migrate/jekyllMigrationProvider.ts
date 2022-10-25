@@ -1,6 +1,6 @@
-import {StorageService} from "../storage/storageService";
-import {MigrationProviderInterface} from "./migrationProviderInterface";
-import {ConsoleMessage} from "../log";
+import {StorageService} from "../storage/storageService.js";
+import {MigrationProviderInterface} from "./migrationProviderInterface.js";
+import {ConsoleMessage} from "../log.js";
 
 export class JekyllMigrationProvider implements MigrationProviderInterface{
 

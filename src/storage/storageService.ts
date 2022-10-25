@@ -1,5 +1,5 @@
-import { StorageProviderInterface } from "./storageProviderInterface";
-import { FileStorageProvider } from "./fileStorageProvider";
+import { StorageProviderInterface } from "./storageProviderInterface.js";
+import { FileStorageProvider } from "./fileStorageProvider.js";
 
 
 export class StorageService implements StorageProviderInterface {

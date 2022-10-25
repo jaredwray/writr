@@ -1,5 +1,5 @@
 import browserSync from 'browser-sync';
-import {SiteGenerator} from "./generator";
+import {SiteGenerator} from "./generator.js";
 
 type Params = {
 	output: string;

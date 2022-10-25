@@ -1,6 +1,6 @@
 import fs from "fs-extra";
-import { StorageProviderInterface } from "./storageProviderInterface";
-import { ConsoleMessage } from "../log";
+import { StorageProviderInterface } from "./storageProviderInterface.js";
+import { ConsoleMessage } from "../log.js";
 
 export class FileStorageProvider implements StorageProviderInterface {
 

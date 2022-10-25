@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import inquirer from "inquirer";
-import {Parser} from "./parser";
+import {Parser} from "./parser.js";
 
 export class Setup {
 
