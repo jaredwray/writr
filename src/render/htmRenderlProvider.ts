@@ -6,6 +6,7 @@ import {Tag} from "../tag.js";
 import {RenderProviderInterface} from "./renderProviderInterface.js";
 import {Ecto} from "ecto";
 import { ConsoleMessage } from "../log.js";
+import moment from 'moment';
 
 const ecto = new Ecto({defaultEngine: "handlebars"});
 
@@ -16,7 +17,9 @@ export class HtmlRenderProvider implements RenderProviderInterface {
     constructor() {
         this.log = new ConsoleMessage();
         ecto.handlebars.opts = { allowProtoPropertiesByDefault: true }
-        ecto.handlebars.engine.registerHelper('formatDate', require('helper-date'));
+        ecto.handlebars.engine.registerHelper('formatDate', 
+            (date: any, format: any, utc: boolean) => (utc === true) ? 
+            moment(date).utc().format(format) : moment(date).format(format));
     }
 
     async render(data: DataService, config: Config): Promise<boolean | undefined> {

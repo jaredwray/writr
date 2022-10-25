@@ -104,7 +104,7 @@ export class Post {
 
     if(!this.matter.summary) {
       let body = await this.getBody();
-      let cheerio = require("cheerio");
+      let cheerio = await import("cheerio");
       let html = cheerio.load(body);
 
       let summaryLength = 3;
