@@ -1,6 +1,6 @@
-import { Config } from "./config";
-import { Post } from "./post";
-import { Tag } from "./tag";
+import { Config } from "./config.js";
+import { Post } from "./post.js";
+import { Tag } from "./tag.js";
 import Keyv from "keyv";
 
 export class Cache {

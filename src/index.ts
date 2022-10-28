@@ -1,12 +1,12 @@
 import { createCommand } from "commander";
 
-import {DataService} from "./data/dataService";
-import {Config} from "./config";
-import {Setup} from "./utils/setup";
-import {ConsoleMessage} from "./log";
-import {Serve} from "./serve";
-import {SiteGenerator} from "./generator";
-import {Migrate} from "./migrate";
+import {DataService} from "./data/dataService.js";
+import {Config} from "./config.js";
+import {Setup} from "./utils/setup.js";
+import {ConsoleMessage} from "./log.js";
+import {Serve} from "./serve.js";
+import {SiteGenerator} from "./generator.js";
+import {Migrate} from "./migrate.js";
 
 export class Writr {
 
@@ -14,6 +14,7 @@ export class Writr {
   data: DataService | undefined;
 
   async parseCLI(process: NodeJS.Process) {
+
 
     const program = createCommand();
 
@@ -42,6 +43,7 @@ export class Writr {
         try{
           await new Setup(name).init();
         } catch (error: any) {
+
           new ConsoleMessage().error('Error: '+ error.message);
         }
       })
@@ -57,6 +59,7 @@ export class Writr {
         }
       })
 
+
     program
       .command('migrate')
       .description('Migrate from different sources to Writr')
@@ -69,6 +72,7 @@ export class Writr {
           new ConsoleMessage().error('Error: '+ error.message);
         }
       })
+
 
     program
       .command('serve')
@@ -84,6 +88,7 @@ export class Writr {
           new ConsoleMessage().error('Error: '+ error.message);
         }
       })
+
 
     program.parse(process.argv);
   }

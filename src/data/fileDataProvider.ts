@@ -1,10 +1,10 @@
-import { Post } from "../post";
-import { Tag } from "../tag";
-import { Config } from "../config";
-import { DataProviderInterface } from "./dataProviderInterface";
+import { Post } from "../post.js";
+import { Tag } from "../tag.js";
+import { Config } from "../config.js";
+import { DataProviderInterface } from "./dataProviderInterface.js";
 import fs from "fs-extra";
 import matter from 'gray-matter';
-import {ConsoleMessage} from "../log";
+import {ConsoleMessage} from "../log.js";
 
 export class FileDataProvider implements DataProviderInterface {
   __postPath: string = "";

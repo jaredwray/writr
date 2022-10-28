@@ -1,9 +1,9 @@
-import { Config } from "../config";
-import { Post } from "../post";
-import { Tag } from "../tag";
-import { DataProviderInterface } from "./dataProviderInterface";
-import { FileDataProvider } from "./fileDataProvider";
-import { Cache } from "../cache";
+import { Config } from "../config.js";
+import { Post } from "../post.js";
+import { Tag } from "../tag.js";
+import { DataProviderInterface } from "./dataProviderInterface.js";
+import { FileDataProvider } from "./fileDataProvider.js";
+import { Cache } from "../cache.js";
 import arraySort from "array-sort";
 
 export class DataService {

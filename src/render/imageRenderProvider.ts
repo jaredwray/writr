@@ -1,8 +1,8 @@
-import { DataService } from "../data/dataService";
-import { Config } from "../config";
-import { RenderProviderInterface } from "./renderProviderInterface";
-import { StorageService } from "../storage/storageService";
-import {ConsoleMessage} from "../log";
+import { DataService } from "../data/dataService.js";
+import { Config } from "../config.js";
+import { RenderProviderInterface } from "./renderProviderInterface.js";
+import { StorageService } from "../storage/storageService.js";
+import {ConsoleMessage} from "../log.js";
 
 export class ImageRenderProvider implements RenderProviderInterface {
     log: any;

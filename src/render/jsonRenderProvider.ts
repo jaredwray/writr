@@ -1,10 +1,10 @@
-import { RenderProviderInterface } from "./renderProviderInterface";
-import { DataService } from "../data/dataService";
-import { Config } from "../config";
-import { Post } from "../post";
-import { Tag } from "../tag";
-import { StorageService } from "../storage/storageService";
-import {ConsoleMessage} from "../log";
+import { RenderProviderInterface } from "./renderProviderInterface.js";
+import { DataService } from "../data/dataService.js";
+import { Config } from "../config.js";
+import { Post } from "../post.js";
+import { Tag } from "../tag.js";
+import { StorageService } from "../storage/storageService.js";
+import {ConsoleMessage} from "../log.js";
 
 export class JSONRenderProvider implements RenderProviderInterface {
     log: any;

@@ -1,8 +1,8 @@
 import axios from "axios";
-import {ConsoleMessage} from "../log";
-import {MigrationProviderInterface} from "./migrationProviderInterface";
-import {Parser} from "../utils/parser";
-import {StorageService} from "../storage/storageService";
+import {ConsoleMessage} from "../log.js";
+import {MigrationProviderInterface} from "./migrationProviderInterface.js";
+import {Parser} from "../utils/parser.js";
+import {StorageService} from "../storage/storageService.js";
 
 export class GhostMigrationProvider implements MigrationProviderInterface {
 
