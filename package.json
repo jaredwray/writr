@@ -51,7 +51,7 @@
     "keyv": "^4.5.0",
     "luxon": "^3.0.4",
     "moment": "^2.29.4",
-    "node-html-markdown": "^1.2.0",
+    "node-html-markdown": "^1.2.2",
     "parse-json": "^6.0.2",
     "striptags": "^3.2.0",
     "winston": "^3.8.2"
