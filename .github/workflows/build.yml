@@ -32,8 +32,8 @@ jobs:
       run: npm run test
 
     - name: Code Coverage
-      uses: codecov/codecov-action@3
+      uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_KEY }}
-        files: packages/writr-cli/lcov.info
+        files: packages/writr-cli/coverage/coverage-final.json
 
