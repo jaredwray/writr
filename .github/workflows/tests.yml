@@ -23,10 +23,10 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - name: Install Dependencies
-      run: npm install
+      run: yarn
 
     - name: Testing    
-      run: npm run test
+      run: yarn run test
 
     - name: Code Coverage
       uses: codecov/codecov-action@v3
