@@ -27,7 +27,7 @@
   "scripts": {
     "watch": "tsc -w -p .",
     "clean-all": "npm run clean && rm -rf node_modules && rm -rf coverage && rm -rf package-lock.json && rm -rf ./test/output",
-    "clean": "rm -rf ./dist && npm run clean-output",
+    "clean": "rm -rf ./dist && rm -rf ./test_output && npm run clean-output",
     "clean-output": "rm -rf ./blog_output",
     "compile": "npm run clean && tsc -p .",
     "build": "npm run test && npm run compile",
@@ -49,7 +49,7 @@
     "gray-matter": "^4.0.3",
     "inquirer": "^8.2.3",
     "keyv": "^4.5.2",
-    "luxon": "^3.1.0",
+    "luxon": "^3.1.1",
     "moment": "^2.29.4",
     "node-html-markdown": "^1.3.0",
     "parse-json": "^6.0.2",
