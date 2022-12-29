@@ -30,7 +30,7 @@ describe('SiteGenerator', () => {
 		const val = await generator.run();
 		expect(val).toBeTruthy();
 
-		fs.removeSync('./blog_output/');
+		await fs.remove ('./blog_output/');
 	})
 
 	it('should return false when does not exist data and config', async () => {
