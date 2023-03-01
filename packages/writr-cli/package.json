@@ -1,6 +1,6 @@
 {
   "name": "writr",
-  "version": "1.9.5",
+  "version": "1.9.6",
   "description": "A Simple to Use Markdown Blog",
   "type": "module",
   "exports": "./dist/index.js",
