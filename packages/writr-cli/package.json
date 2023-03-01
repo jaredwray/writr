@@ -43,7 +43,7 @@
     "browser-sync": "^2.27.11",
     "cheerio": "^1.0.0-rc.12",
     "commander": "^10.0.0",
-    "ecto": "^2.1.7",
+    "ecto": "^2.1.8",
     "feed": "^4.2.2",
     "fs-extra": "^11.1.0",
     "gray-matter": "^4.0.3",
