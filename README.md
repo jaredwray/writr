@@ -17,7 +17,7 @@ Writr provides readme information for each of its packages. In addtion we have a
 
 ## Getting Started
 
-Writr is designed to make it easier to write with Markdown. You can export from many different sources to markdown, and then use Writr to write your content. Writr is designed to be a simple, distraction-free writing environment (in-progress).
+Writr is designed to make it easier to write with Markdown. You can export from many different sources to markdown, and then use Writr to write your content. Writr is designed to be a simple, distraction-free writing environment.
 
 ## Open a Pull Request
 
