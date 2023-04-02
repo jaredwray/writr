@@ -45,7 +45,7 @@
     "commander": "^10.0.0",
     "ecto": "^2.1.9",
     "feed": "^4.2.2",
-    "fs-extra": "^11.1.0",
+    "fs-extra": "^11.1.1",
     "gray-matter": "^4.0.3",
     "inquirer": "^8.2.3",
     "keyv": "^4.5.2",
