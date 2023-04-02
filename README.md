@@ -49,7 +49,7 @@ To ask a question, create an issue with the label "question." In the issue descr
 
 ## Packages in this Repository
 
-* [writr-cli](https://github.com/jaredwray/keyv/tree/main/packages/writr-cli): command line interface for exports, rendering, and more with markdown files
+* [writr-cli](https://github.com/jaredwray/writr/tree/main/packages/writr-cli): command line interface for exports, rendering, and more with markdown files
 
 ## License
 
