@@ -15,7 +15,7 @@
       "clean": "rm -rf node_modules && rm -rf yarn.lock && yarn workspaces run clean"
     },
     "dependencies": {
-      "@types/node": "^18.14.2"
+      "@types/node": "^20.2.5"
     }
   }
   
