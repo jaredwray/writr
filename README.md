@@ -17,7 +17,7 @@ Writr provides readme information for each of its packages. In addtion we have a
 
 ## Getting Started
 
-Writr is designed to make it easier to write with Markdown. You can export from many different sources to markdown.
+Writr is designed to make it easier to write with Markdown.
 
 ## Open a Pull Request
 
