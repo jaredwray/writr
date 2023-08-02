@@ -47,7 +47,7 @@
     "feed": "^4.2.2",
     "fs-extra": "^11.1.1",
     "gray-matter": "^4.0.3",
-    "inquirer": "^9.2.7",
+    "inquirer": "^9.2.9",
     "keyv": "^4.5.3",
     "luxon": "^3.3.0",
     "moment": "^2.29.4",
