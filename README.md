@@ -1,4 +1,4 @@
-![Writr](../../logo.png)
+![Writr](logo.png)
 
 ---
 
