@@ -178,6 +178,5 @@ To set it globally you can set it in the `config.json` by setting the `permaLink
     "permalink": ":year/:month/:title"
 }
 ```
-
 ## Markdown
 To learn more about Markdown go here: https://markdownguide.org
