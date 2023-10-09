@@ -1,9 +1,0 @@
-{
-    "output" : "./blog_output",
-    "render": [ "html" , "json", "atom", "images"],
-    "path": "./blog",
-    "title": "Example Blog",
-    "url": "https://writr.io/blog",
-    "authorName": "Jared Wray",
-    "authorEmail": "me@jaredwray.com"
-}

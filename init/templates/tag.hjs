@@ -1,9 +1,0 @@
-
-
-<p>Tag: 
-{{tag.name}}<br /></p>
-
-<ul>
-{{#each tag.posts}}
-<li>{{title}} - {{author}}</li>{{/each}}
-</ul>
