@@ -12,15 +12,12 @@
 ## Table of Contents
 - [Features](#features)
 - [Getting Started](#getting-started)
-- [1. Install Writr](#1-install-writr)
-- [2. Add your content](#2-add-your-content)
-- [3. Build your site](#3-build-your-site)
 - [Using Your own Template](#using-your-own-template)
 - [Building Multiple Pages](#building-multiple-pages)
 - [Helper Functions for Markdown](#helper-functions-for-markdown)
 - [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
 - [What Happened to it Generating a Blog](#what-happened-to-it-generating-a-blog)
-- [License](#license)
+- [License - MIT](#license)
 
 ## Features
 * No configuration requrired. Just setup the folder structure with a logo, favicon, and css file. 
