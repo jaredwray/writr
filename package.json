@@ -24,12 +24,9 @@
   ],
   "scripts": {
     "watch": "tsc -w -p .",
-    "clean": "rm -rf ./dist && npm run clean-output",
-    "clean-output": "rm -rf ./blog_output && rm -rf ./test_output",
-    "compile": "npm run clean && tsc -p .",
-    "build": "npm run test && npm run compile",
-    "test": "vitest run --coverage",
-    "test-output": "npm run compile && node ./bin/writr.js -p ./blog_example"
+    "clean": "rm -rf ./dist && rm -rf ./coverage && rm -rf ./node_modules && rm -rf ./package-lock.json && rm -rf ./yarn.lock",
+    "build": "tsc --project ./tsconfig.build.json",
+    "test": "xo --fix && vitest run --coverage"
   },
   "bin": {
     "writr": "./bin/writr.js"
