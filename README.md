@@ -2,181 +2,131 @@
 
 ---
 
-### CLI Tool for Markdown
+## Beautiful Website for Your Projects
 [![Build](https://github.com/jaredwray/writr/actions/workflows/tests.yml/badge.svg)](https://github.com/jaredwray/writr/actions/workflows/tests.yml)
 [![GitHub license](https://img.shields.io/github/license/jaredwray/writr)](https://github.com/jaredwray/writr/blob/master/LICENSE)
 [![codecov](https://codecov.io/gh/jaredwray/writr/branch/master/graph/badge.svg?token=1YdMesM07X)](https://codecov.io/gh/jaredwray/writr)
 [![npm](https://img.shields.io/npm/dm/writr)](https://npmjs.com/package/writr)
 
 ---
+## Table of Contents
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Using Your own Template](#using-your-own-template)
+- [Building Multiple Pages](#building-multiple-pages)
+- [Helper Functions for Markdown](#helper-functions-for-markdown)
+- [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
+- [What Happened to it Generating a Blog](#what-happened-to-it-generating-a-blog)
+- [License - MIT](#license)
+
+## Features
+* No configuration requrired. Just setup the folder structure with a logo, favicon, and css file. 
+* Builds a static website that can be hosted anywhere.
+* For more complex projects easily add a `writr.json` file to customize the build process.
+* Support for single page with readme or multiple pages with a table of contents.
+* Will generate a sitemap.xml, robots.txt, and  file for SEO.
+* Uses Github release notes to generate a changelog page.
+* Uses Github to show contributors and link to their profiles.
+* Simple search is provided by default out of the box. 
 
 ## Getting Started 
 
 ## 1. Install Writr
 
-> npm install -g writr 
+> npx writr init
 
-## 2. Setup your directory (look at /blog_example for how to do this)
-
-> writr init
+This will create a folder called site with the following structure:
 
 ```
-blog/*.md           //markdown files in the folder root
-blog/images         //images for the blog
-blog/config.json    //config file (optional)
-blog/templates      //template directory for your index, post, and tag
+site
+├───site.css
+├───logo.png
+├───favicon.ico
+├───README.md
+├───writr.json
 ```
 
-## 3. Create your first post
+## 2. Add your content
 
-> writr new
+Simply replace the logo, favicon, and css file with your own. The readme is your root project readme and you just need to at build time move it over to the site folder. If you have it at the root of the project and this is a folder inside just delete the  README.md file in the site folder and writr will copy it over for you automatically.
 
-This will allow you to answer a couple questions to setup your first blog post. 
+## 3. Build your site
 
-## 4. Run Writr on it with defaults. This will output everything to ./blog_output
+> npx writr
 
-> writr
+This will build your site and place it in the `dist` folder. You can then host it anywhere you like.
 
-## 5. You can serve your blog with a simple webserver
+## Using Your own Template
 
-> writr serve
+If you want to use your own template you can do so by adding a `writr.json` file to the root of your project. This file will be used to configure the build process. Here is an example of what it looks like:
 
-## 4. Integrate your blog with Express
-
-Then in express map your `blog_output` via static files:
-
-```javascript
-app.use("/blog/*/images", express.static(path.join(__dirname, "blog_output/images")))
-app.use("/blog/images", express.static(path.join(__dirname, "blog_output/images")))
-app.use("/blog", express.static(path.join(__dirname, "blog_output")))
-```
-
----
-
-## CLI
-
-* -h, --help: Output usage information
-* -p, --path: Path of where the blog, and config are located
-* -o, --output: Path of where to output the generated blog
-* -r, --render: What do you want rendered such as html or json (example --render html,json)
-* -c, --config: Configuration file location if different than 'path'
-* init: Initialize a new blog
-* new: Create a new blog post
-* serve: Serve the blog. You can also specify a port with --port and --watch for hot reloading
-
-## Templates
-
-There are three templates that are part of every instance of Writr. By default it goes in the `/blog/templates` directory. Here are the files and are in `Handlebars` format:
-* index.hjs: This is the main template that lists all of the latest blogs or what you want to add. 
-* post.hjs: The post itself and usually supporting items around that such as what is next to look at and tags. 
-* tag.hjs: Showing articles by tag filtering.
-
-## Template Partials
-
-You can use template partials such as a header or footer by creating a folder in templates called `partials`. In there create a standard handlebars template file such as `header.hjs`. To reference it go to any of the main template files and include it like `{{> header}}`:
-
-```html
-<h1>Post</h1>
-
-{{> header}}
-
-<p>{{post.title}}</p>
-<p>{{post.author}}</p>
-<p>{{{post.body}}}</p>
-
-<p>{{post.matter.featured_image}}</p>
-
-<p>{{previousPost.id}}</p>
-<p>{{nextPost.id}}</p>
-...
-```
-
-## Different Templates / Layouts
-
-You can also set a post to use a different layout by setting the `layout` value in the `front-matter` like so:
-
-```yaml
----
-title:  'Docula: Persistent Links and Styles!'
-tags:
-- Github
-- Open Source
-- Docula
-date: 2017-03-07
-layout: post2
-featured_image: Docula_%20Persistent%20Links%20and%20Styles%201.jpeg
----
-```
-
-## Permalinks
-
-In your posts `front-matter` you can specify the format of the url to be generated. By default is the `:title` (also known as the `none` style) that is formatted correctly. 
-
-### Variables
-
-| Variable | Description |
-| --- | ----------- |
-| year | Year from the post’s filename with four digits. |
-| short_year | Year from the post’s filename without the century. (00..99) |
-| month | Month from the post’s filename. (01..12) |
-| i_month | Month without leading zeros |
-| short_month | Three-letter month abbreviation, e.g. "Dec". |
-| long_month | Full month name, e.g. “January”. |
-| day | Day of the month from the post’s filename. (01..31) |
-| i_day | Day of the month without leading zeros from the post’s filename. |
-| y_day | Day of the year (01...365) |
-| short_day | Three-letter weekday abbreviation, e.g. “Sun”. | 
-| long_day | Weekday name, e.g. “Sunday”. |
-| week | Week number of the current year, starting with the first week having a majority of its days in January. (01..53) |
-| hour | Hour of the day, 24-hour clock, zero-padded from the post’s date front matter. (00..23) |
-| minute | Minute of the hour from the post’s date front matter. (00..59) |
-| second | Second of the minute from the post’s date front matter. (00..59) |
-| title | Title from the document’s front matter. | 
-
-
-### Default Styles
-
-You can simply put in the style on permalink setting in the individual post `front-matter` or globally in `config.json`
-
-| Style | Template |
-| --- | ----------- |
-| default | /:title/ |
-| date | /:year/:month/:day/:title/ |
-| ordinal | /:year/:y_day/:title/ |
-
-
-#### Set Layout it in the Post
-
-```yaml
----
-title: 'Docula: Persistent Links and Styles!'
-tags:
-- Github
-- Open Source
-- Docula
-permalink: date
-date: 2017-03-07
-layout: post2
-featured_image: Docula_%20Persistent%20Links%20and%20Styles%201.jpeg
----
-```
-
-The url will be: `/2017/03/07/docula-persistent-links-and-styles`
-
-#### Set Layout Globally
-
-To set it globally you can set it in the `config.json` by setting the `permaLink` variable like so:
-```javascript
+```js
 {
-    "output" : "./blog_output",
-    "render": [ "html" , "json", "atom", "images"],
-    "path": "./blog_example",
-    "title": "Example Blog",
-    "url": "https://writr.io/blog",
-    "authorName": "Jared Wray",
-    "authorEmail": "me@jaredwray.com",
-    "permalink": ":year/:month/:title"
+    template: 'path/to/template',
 }
 ```
-## Markdown
-To learn more about Markdown go here: https://markdownguide.org
+
+or at the command line:
+
+> npx writr --template path/to/template
+
+## Building Multiple Pages
+
+If you want to build multiple pages you can easily do that by adding in a `docs` folder to the root of the site folder. Inside of that folder you can add as many pages as you like. Each page will be a markdown file and it will generate a table of contents for you. Here is an example of what it looks like:
+
+```
+site
+├───site.css
+├───logo.png
+├───favicon.ico
+├───writr.json
+├───docs
+│   ├───readme.md
+│   ├───getting-started.md
+│   ├───contributing.md
+│   ├───license.md
+│   ├───code-of-conduct.md
+```
+
+The `readme.md` file will be the root page and the rest will be added to the table of contents. If you want to control the title or order of the pages you can do so by setting the `title` and `order` properties in the front matter of the markdown file. Here is an example:
+
+```md
+---
+title: Getting Started
+order: 2
+---
+```
+
+## Helper Functions for Markdown
+
+Writr comes with some helper functions that you can use in your markdown files. 
+
+### Remove html content
+
+In some cases your markdown file will have html content in it such as the logo of your project or a badge. You can use the `wrtir.helpers.removeHtmlContent()` helper function to remove that content from the page. Here is an example:
+
+```js
+writr.helpers.removeHtmlContent('../readme.md', '<img src=');
+```
+
+### Get and Set the Front Matter of a Markdown File
+
+You can use the `writr.helpers.getFrontMatter()` and `writr.helpers.setFrontMatter()` helper functions to get and set the front matter of a markdown file. Here is an example:
+
+```js
+const frontMatter = writr.helpers.getFrontMatter('../readme.md');
+frontMatter.title = 'My Title';
+writr.helpers.setFrontMatter('../readme.md', frontMatter);
+```
+
+## Code of Conduct and Contributing
+
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines.
+
+## What Happened to it Generating a Blog
+
+The original version of writr was a blog generator. Since there are plenty of blog generators out there we made the decision to make it a static site generator for open source projects. This is something that we constantly need and we hope you find it useful as well.
+
+## License
+
+MIT © [Jared Wray](https://jaredwray.com)
