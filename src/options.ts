@@ -5,7 +5,7 @@ export class WritrOptions {
 	public sitePath = './site';
 	public githubPath = 'jaredwray/writr';
 	public siteTitle = 'Writr';
-	public siteDescription = 'A simple static site generator';
+	public siteDescription = 'Beautiful Website for Your Projects';
 	public siteUrl = 'https://writr.org';
 
 	constructor(options?: Record<string, unknown>) {
