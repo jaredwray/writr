@@ -1,7 +1,7 @@
 {
   "name": "writr",
-  "version": "1.9.12",
-  "description": "A Simple to Use Markdown Blog",
+  "version": "2.0.0",
+  "description": "Beautiful Website for Your Projects",
   "exports": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "repository": "https://github.com/jaredwray/writr.git",
@@ -24,7 +24,6 @@
     "handlebars"
   ],
   "scripts": {
-    "watch": "tsc -w -p .",
     "clean": "rm -rf ./dist && rm -rf ./coverage && rm -rf ./node_modules && rm -rf ./package-lock.json && rm -rf ./yarn.lock",
     "build": "tsc --project ./tsconfig.build.json",
     "test": "xo --fix && vitest run --coverage"
@@ -51,7 +50,6 @@
   },
   "files": [
     "dist",
-    "bin",
-    "init"
+    "bin"
   ]
 }
