@@ -10,7 +10,7 @@ describe('WritrOptions', () => {
 			expect(options.sitePath).toEqual('./site');
 			expect(options.githubPath).toEqual('jaredwray/writr');
 			expect(options.siteTitle).toEqual('Writr');
-			expect(options.siteDescription).toEqual('A simple static site generator');
+			expect(options.siteDescription).toEqual('Beautiful Website for Your Projects');
 			expect(options.siteUrl).toEqual('https://writr.org');
 		});
 
