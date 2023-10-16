@@ -37,9 +37,12 @@
     "fs-extra": "^11.1.1",
     "gray-matter": "^4.0.3",
     "inquirer": "^9.2.9",
+    "js-yaml": "^4.1.0",
     "keyv": "^4.5.3"
   },
   "devDependencies": {
+    "@types/fs-extra": "^11.0.2",
+    "@types/js-yaml": "^4.0.7",
     "@types/node": "^20.4.5",
     "@vitest/coverage-v8": "^0.34.6",
     "ts-node": "^10.9.1",
