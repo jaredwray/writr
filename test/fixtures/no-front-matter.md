@@ -1,4 +1,3 @@
-![Writr](site/logo.png)
 
 ---
 

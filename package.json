@@ -32,20 +32,23 @@
     "writr": "./bin/writr.js"
   },
   "dependencies": {
-    "ecto": "^2.1.13",
+    "ecto": "^2.2.2",
     "feed": "^4.2.2",
     "fs-extra": "^11.1.1",
     "gray-matter": "^4.0.3",
-    "inquirer": "^9.2.9",
-    "keyv": "^4.5.3"
+    "inquirer": "^9.2.11",
+    "js-yaml": "^4.1.0",
+    "keyv": "^4.5.4"
   },
   "devDependencies": {
-    "@types/node": "^20.4.5",
+    "@types/fs-extra": "^11.0.3",
+    "@types/js-yaml": "^4.0.8",
+    "@types/node": "^20.8.7",
     "@vitest/coverage-v8": "^0.34.6",
     "ts-node": "^10.9.1",
-    "typescript": "^5.1.6",
+    "typescript": "^5.2.2",
     "vitest": "^0.34.6",
-    "webpack": "^5.88.2",
+    "webpack": "^5.89.0",
     "xo": "^0.56.0"
   },
   "files": [

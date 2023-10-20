@@ -1,5 +1,6 @@
-![Writr](site/logo.png)
-
+---
+title: Writr
+description: Beautiful Website for Your Projects
 ---
 
 ## Beautiful Website for Your Projects
