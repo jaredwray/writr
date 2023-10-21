@@ -6,9 +6,12 @@ export class WritrHelpers {
 		console.log('createDoc', source, destination, frontMatter, contentFn);
 	}
 
-	getFrontMatter(source: string): Record<string, unknown> {
-		const content = fs.readFileSync(source, 'utf8');
+	getFrontMatterFromFile(path: string): Record<string, unknown> {
+		const content = fs.readFileSync(path, 'utf8');
+		return this.getFrontMatter(content);
+	}
 
+	getFrontMatter(content: string): Record<string, unknown> {
 		// Use regular expressions to extract the FrontMatter
 		const match = /^---\r?\n([\s\S]+?)\r?\n---/.exec(content);
 		if (match) {
@@ -21,9 +24,13 @@ export class WritrHelpers {
 		return {};
 	}
 
-	setFrontMatter(source: string, frontMatter: Record<string, unknown>): void {
-		const content = fs.readFileSync(source, 'utf8');
+	setFrontMatterToFile(path: string, frontMatter: Record<string, string>): void {
+		const content = fs.readFileSync(path, 'utf8');
+		const newContent = this.setFrontMatterInContent(content, frontMatter);
+		fs.writeFileSync(path, newContent, 'utf8');
+	}
 
+	setFrontMatterInContent(content: string, frontMatter: Record<string, string>): string {
 		const match = /^---\r?\n([\s\S]+?)\r?\n---\r?\n([\s\S]*)/.exec(content);
 
 		if (match) {
@@ -43,13 +50,13 @@ export class WritrHelpers {
 			const newContent = `---\n${newYaml}---\n${match[2]}`;
 
 			// Write the result back to the file
-			fs.writeFileSync(source, newContent, 'utf8');
-		} else {
-			// No FrontMatter found, add it
-			const newYaml = yaml.dump(frontMatter);
-			const newContent = `---\n${newYaml}---\n${content}`;
-			fs.writeFileSync(source, newContent, 'utf8');
+			return newContent;
 		}
+
+		// No FrontMatter found, add it
+		const newYaml = yaml.dump(frontMatter);
+		const newContent = `---\n${newYaml}---\n${content}`;
+		return newContent;
 	}
 }
 
