@@ -2,22 +2,30 @@ import fs from 'fs-extra';
 import yaml from 'js-yaml';
 
 export class WritrHelpers {
-	createDoc(source: string, destination: string, frontMatter?: Record<string, unknown>, contentFn?: () => void[]): void {
-		console.log('createDoc', source, destination, frontMatter, contentFn);
+	createDoc(path: string, destination: string, frontMatter: Record<string, string>, contentFn?: (content: string) => string): void {
+		const content = fs.readFileSync(path, 'utf8');
+
+		let newContent = this.setFrontMatterInContent(content, frontMatter);
+
+		if (contentFn) {
+			newContent = contentFn(newContent);
+		}
+
+		fs.writeFileSync(destination, newContent, 'utf8');
 	}
 
-	getFrontMatterFromFile(path: string): Record<string, unknown> {
+	getFrontMatterFromFile(path: string): Record<string, string> {
 		const content = fs.readFileSync(path, 'utf8');
 		return this.getFrontMatter(content);
 	}
 
-	getFrontMatter(content: string): Record<string, unknown> {
+	getFrontMatter(content: string): Record<string, string> {
 		// Use regular expressions to extract the FrontMatter
 		const match = /^---\r?\n([\s\S]+?)\r?\n---/.exec(content);
 		if (match) {
 			// Parse the YAML string to an object
 			const frontMatter = yaml.load(match[1]);
-			return frontMatter as Record<string, unknown>;
+			return frontMatter as Record<string, string>;
 		}
 
 		// Return null or some default value if no FrontMatter is found

@@ -3,6 +3,42 @@ import fs from 'fs-extra';
 import {WritrHelpers} from '../src/helpers.js';
 
 describe('WritrHelpers', () => {
+	describe('createDoc', () => {
+		it('should create a document from a previous readme', () => {
+			const source = './test/fixtures/readme-example.md';
+			const destination = './test/fixtures/readme-example-createdoc-new.md';
+			if (fs.existsSync(destination)) {
+				fs.unlinkSync(destination);
+			}
+
+			const helpers = new WritrHelpers();
+			helpers.createDoc(source, destination, {title: 'Writr'});
+			const frontMatter = helpers.getFrontMatterFromFile(destination);
+			expect(frontMatter.title).toEqual('Writr');
+			if (fs.existsSync(destination)) {
+				fs.unlinkSync(destination);
+			}
+		});
+		it('should create a document from a previous readme with contentFn', () => {
+			const source = './test/fixtures/readme-example.md';
+			const destination = './test/fixtures/readme-example-createdoc-new-fn.md';
+			if (fs.existsSync(destination)) {
+				fs.unlinkSync(destination);
+			}
+
+			const fn = (content: string) => content.replace('description: Beautiful Website for Your Projects', 'description: More Beautiful');
+
+			const helpers = new WritrHelpers();
+			helpers.createDoc(source, destination, {title: 'Writr', description: 'Beautiful Website for Your Projects'}, fn);
+			const frontMatter = helpers.getFrontMatterFromFile(destination);
+			expect(frontMatter.title).toEqual('Writr');
+			expect(frontMatter.description).toEqual('More Beautiful');
+
+			if (fs.existsSync(destination)) {
+				fs.unlinkSync(destination);
+			}
+		});
+	});
 	describe('getFrontMatter', () => {
 		it('should return an empty object if no FrontMatter is found', () => {
 			const helpers = new WritrHelpers();
