@@ -5,7 +5,7 @@ import {WritrConsole} from './console.js';
 export class Writr {
 	private _options: WritrOptions = new WritrOptions();
 	private readonly _helpers: WritrHelpers = new WritrHelpers();
-	private _console: WritrConsole = new WritrConsole();
+	private readonly _console: WritrConsole = new WritrConsole();
 
 	constructor(options?: WritrOptions) {
 		if (options) {
@@ -25,13 +25,12 @@ export class Writr {
 		return this._helpers;
 	}
 
-	public parseCLI(process: NodeJS.Process): void {
-		//get the arguments
+	public execute(process: NodeJS.Process): void {
+		// Get the arguments
 		const args = process.argv.slice(2);
 
-		if(args.length === 0) {
+		if (args.length === 0) {
 			this._console.printHelp();
-			return;
 		}
 	}
 }

@@ -5,4 +5,4 @@ import {Writr} from '../dist/index.js';
 
 const writr = new Writr();
 
-writr.parseCLI(process);
+writr.execute(process);
