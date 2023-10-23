@@ -40,4 +40,8 @@ describe('writr', () => {
 		const writr = new Writr(defaultOptions);
 		expect(writr.helpers).toBeDefined();
 	});
+	it('should be able to get the helpers via static', () => {
+		const writr = new Writr(defaultOptions);
+		expect(writr.helpers.createDoc).toBeDefined();
+	});
 });
