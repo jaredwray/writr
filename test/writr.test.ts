@@ -1,3 +1,4 @@
+import process from 'node:process';
 import {expect, it, describe} from 'vitest';
 import {Writr} from '../src/writr.js';
 import {WritrOptions} from '../src/options.js';
@@ -43,5 +44,19 @@ describe('writr', () => {
 	it('should be able to get the helpers via static', () => {
 		const writr = new Writr(defaultOptions);
 		expect(writr.helpers.createDoc).toBeDefined();
+	});
+	it('if no parameters then it should print help', () => {
+		const writr = new Writr(defaultOptions);
+		const consoleLog = console.log;
+
+		const messages = [];
+		console.log = message => {
+			messages.push(message);
+		};
+
+		writr.execute(process);
+
+		expect(messages.length).toEqual(17);
+		console.log = consoleLog;
 	});
 });
