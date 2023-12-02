@@ -123,8 +123,7 @@ writr.helpers.setFrontMatter('../readme.md', frontMatter);
 ```
 
 ## Code of Conduct and Contributing
-
-Please read our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines.
+[Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines.
 
 ## What Happened to it Generating a Blog
 
