@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import yaml from 'js-yaml';
 
 export class WritrHelpers {
-	createDoc(path: string, destination: string, frontMatter: Record<string, string>, contentFn?: (content: string) => string): void {
+	createDoc(path: string, destination: string, frontMatter?: Record<string, string>, contentFn?: (content: string) => string): void {
 		const content = fs.readFileSync(path, 'utf8');
 
 		let newContent = this.setFrontMatterInContent(content, frontMatter);
@@ -38,7 +38,11 @@ export class WritrHelpers {
 		fs.writeFileSync(path, newContent, 'utf8');
 	}
 
-	setFrontMatterInContent(content: string, frontMatter: Record<string, string>): string {
+	setFrontMatterInContent(content: string, frontMatter?: Record<string, string>): string {
+		if (!frontMatter) {
+			return content;
+		}
+
 		const match = /^---\r?\n([\s\S]+?)\r?\n---\r?\n([\s\S]*)/.exec(content);
 
 		if (match) {

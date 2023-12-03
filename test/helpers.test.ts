@@ -62,6 +62,11 @@ describe('WritrHelpers', () => {
 			const newContent = helpers.setFrontMatterInContent('# Hello World', {title: 'Writr1'});
 			expect(newContent).toEqual('---\ntitle: Writr1\n---\n# Hello World');
 		});
+		it('should do nothing with no frontmatter', () => {
+			const helpers = new WritrHelpers();
+			const newContent = helpers.setFrontMatterInContent('# Hello World', undefined);
+			expect(newContent).toEqual('# Hello World');
+		});
 	});
 	describe('setFrontMatterToFile', () => {
 		it('should get and append FrontMatter to new file', () => {
