@@ -1,10 +1,8 @@
 import {WritrOptions} from './options.js';
-import {WritrHelpers} from './helpers.js';
 import {WritrConsole} from './console.js';
 
-export class Writr {
+export default class Writr {
 	private _options: WritrOptions = new WritrOptions();
-	private readonly _helpers: WritrHelpers = new WritrHelpers();
 	private readonly _console: WritrConsole = new WritrConsole();
 
 	constructor(options?: WritrOptions) {
@@ -21,10 +19,6 @@ export class Writr {
 		this._options = value;
 	}
 
-	public get helpers(): WritrHelpers {
-		return this._helpers;
-	}
-
 	public execute(process: NodeJS.Process): void {
 		// Get the arguments
 		const args = process.argv.slice(2);
@@ -34,3 +28,5 @@ export class Writr {
 		}
 	}
 }
+
+export {WritrHelpers} from './helpers.js';

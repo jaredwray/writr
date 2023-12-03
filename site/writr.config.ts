@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-import writr from '../dist/writr.js';
+
+import writr, {WritrHelpers} from '../dist/writr.js';
 
 export const writrOptions = {
 	templatePath: './template',
@@ -11,15 +11,14 @@ export const writrOptions = {
 	siteUrl: 'https://writr.org',
 };
 
-export async function onPrepare(writrOptions?: any) {
+export function onPrepare(writrOptions?: any) {
 	// Copy the template to the site path
-
-	const removeImage = async (content: string) => content.replace('![Writr](site/logo.png)', '');
-
-	writr.helpers.createDoc(
+	const removeImage = (content: string) => content.replace('![Writr](site/logo.png)', '');
+	const writrHelpers = new WritrHelpers();
+	writrHelpers.createDoc(
 		'../README.md',
 		'./site/README.md',
 		undefined, // No need to set the front matter
-		[removeImage],
+		removeImage,
 	);
 }

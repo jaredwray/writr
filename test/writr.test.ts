@@ -1,6 +1,6 @@
 import process from 'node:process';
 import {expect, it, describe} from 'vitest';
-import {Writr} from '../src/writr.js';
+import Writr, {WritrHelpers} from '../src/writr.js';
 import {WritrOptions} from '../src/options.js';
 
 const defaultOptions: WritrOptions = new WritrOptions({
@@ -39,11 +39,13 @@ describe('writr', () => {
 	});
 	it('should be able to get the helpers', () => {
 		const writr = new Writr(defaultOptions);
-		expect(writr.helpers).toBeDefined();
+		const writrHelpers = new WritrHelpers();
+		expect(writrHelpers).toBeDefined();
 	});
 	it('should be able to get the helpers via static', () => {
 		const writr = new Writr(defaultOptions);
-		expect(writr.helpers.createDoc).toBeDefined();
+		const writrHelpers = new WritrHelpers();
+		expect(writrHelpers.createDoc).toBeDefined();
 	});
 	it('if no parameters then it should print help', () => {
 		const writr = new Writr(defaultOptions);
