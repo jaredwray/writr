@@ -61,4 +61,11 @@ describe('writr', () => {
 		expect(messages.length).toEqual(17);
 		console.log = consoleLog;
 	});
+	it('is a single page site or not', () => {
+		const writr = new Writr(defaultOptions);
+		const singlePageSite = 'test/fixtures/single-page-site';
+		const multiPageSite = 'test/fixtures/multi-page-site';
+		expect(writr.isSinglePageWebsite(singlePageSite)).toEqual(true);
+		expect(writr.isSinglePageWebsite(multiPageSite)).toEqual(false);
+	});
 });

@@ -1,3 +1,4 @@
+import fs from 'fs-extra';
 import {WritrOptions} from './options.js';
 import {WritrConsole} from './console.js';
 
@@ -26,6 +27,17 @@ export default class Writr {
 		if (args.length === 0) {
 			this._console.printHelp();
 		}
+	}
+
+	public isSinglePageWebsite(sitePath: string): boolean {
+		const docsPath = `${sitePath}/docs`;
+		if (!fs.existsSync(docsPath)) {
+			return true;
+		}
+
+		const files = fs.readdirSync(docsPath);
+		console.log(files);
+		return files.length === 0;
 	}
 }
 
