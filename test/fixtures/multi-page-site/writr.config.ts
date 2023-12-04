@@ -1,5 +1,5 @@
 
-import writr, {WritrHelpers} from '../../../dist/writr.js';
+import {WritrHelpers} from '../../../dist/writr.js';
 
 export const writrOptions = {
 	templatePath: './template',
