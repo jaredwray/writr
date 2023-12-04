@@ -36,7 +36,6 @@ export default class Writr {
 		}
 
 		const files = fs.readdirSync(docsPath);
-		console.log(files);
 		return files.length === 0;
 	}
 }
