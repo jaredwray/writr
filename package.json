@@ -27,7 +27,7 @@
     "handlebars"
   ],
   "scripts": {
-    "clean": "rm -rf ./dist && rm -rf ./coverage && rm -rf ./node_modules && rm -rf ./package-lock.json && rm -rf ./yarn.lock",
+    "clean": "rimraf ./dist ./coverage ./node_modules ./package-lock.json ./yarn.lock",
     "build": "tsc --project ./tsconfig.build.json",
     "test": "xo --fix && vitest run --coverage",
     "prepare": "yarn run build"
@@ -49,6 +49,7 @@
     "@types/js-yaml": "^4.0.8",
     "@types/node": "^20.8.9",
     "@vitest/coverage-v8": "^0.34.6",
+    "rimraf": "^5.0.5",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2",
     "vitest": "^0.34.6",
