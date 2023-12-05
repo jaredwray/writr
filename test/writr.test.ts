@@ -1,5 +1,6 @@
 import process from 'node:process';
 import {expect, it, describe} from 'vitest';
+import fs from 'fs-extra';
 import Writr, {WritrHelpers} from '../src/writr.js';
 import {WritrOptions} from '../src/options.js';
 
@@ -67,5 +68,53 @@ describe('writr', () => {
 		const multiPageSite = 'test/fixtures/multi-page-site';
 		expect(writr.isSinglePageWebsite(singlePageSite)).toEqual(true);
 		expect(writr.isSinglePageWebsite(multiPageSite)).toEqual(false);
+	});
+	it('should generate the site init files and folders', () => {
+		const writr = new Writr(defaultOptions);
+		const consoleLog = console.log;
+		let consoleMessage = '';
+		const temporarySitePath = './temp-site';
+		console.log = message => {
+			/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
+			consoleMessage = message;
+		};
+
+		try {
+			writr.generateInit(temporarySitePath, true);
+
+			expect(consoleMessage).toContain('Writr initialized.');
+			console.log = consoleLog;
+
+			expect(fs.existsSync(temporarySitePath)).toEqual(true);
+			expect(fs.existsSync(`${temporarySitePath}/writr.config.ts`)).toEqual(true);
+			expect(fs.existsSync(`${temporarySitePath}/logo.png`)).toEqual(true);
+			expect(fs.existsSync(`${temporarySitePath}/favicon.svg`)).toEqual(true);
+		} finally {
+			fs.rmdirSync(temporarySitePath, {recursive: true});
+		}
+	});
+	it('should generate the site init files and folders for javascript', () => {
+		const writr = new Writr(defaultOptions);
+		const consoleLog = console.log;
+		let consoleMessage = '';
+		const temporarySitePath = './temp-site-js';
+		console.log = message => {
+			/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
+			consoleMessage = message;
+		};
+
+		try {
+			writr.generateInit(temporarySitePath, false);
+
+			expect(consoleMessage).toContain('Writr initialized.');
+			console.log = consoleLog;
+
+			expect(fs.existsSync(temporarySitePath)).toEqual(true);
+			expect(fs.existsSync(`${temporarySitePath}/writr.config.js`)).toEqual(true);
+			expect(fs.existsSync(`${temporarySitePath}/logo.png`)).toEqual(true);
+			expect(fs.existsSync(`${temporarySitePath}/favicon.svg`)).toEqual(true);
+		} finally {
+			fs.rmdirSync(temporarySitePath, {recursive: true});
+		}
 	});
 });
