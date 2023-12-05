@@ -149,13 +149,22 @@ describe('writr execute', () => {
 	it('should init based on the init command', () => {
 		const writr = new Writr(defaultOptions);
 		const sitePath = './custom-site';
+		let consoleMessage = '';
+		const consoleLog = console.log;
+		console.log = message => {
+			/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
+			consoleMessage = message;
+		};
+
 		process.argv = ['node', 'writr', 'init', '-s', sitePath];
 		try {
 			writr.execute(process);
 			expect(fs.existsSync(sitePath)).toEqual(true);
 			expect(fs.existsSync(`${sitePath}/writr.config.ts`)).toEqual(true);
+			expect(consoleMessage).toContain('Writr initialized.');
 		} finally {
 			fs.rmdirSync(sitePath, {recursive: true});
+			console.log = consoleLog;
 		}
 	});
 	it('should build based on the build command', () => {
@@ -172,6 +181,7 @@ describe('writr execute', () => {
 
 		writr.execute(process);
 		expect(consoleMessage).toContain('Build');
+		console.log = consoleLog;
 	});
 	it('should print help command', () => {
 		const writr = new Writr(defaultOptions);
@@ -186,6 +196,7 @@ describe('writr execute', () => {
 
 		writr.execute(process);
 		expect(consoleMessage).toContain('Usage:');
+		console.log = consoleLog;
 	});
 	it('should show version by the version command', () => {
 		const writr = new Writr(defaultOptions);
@@ -200,6 +211,7 @@ describe('writr execute', () => {
 
 		writr.execute(process);
 		expect(consoleMessage).toContain('.');
+		console.log = consoleLog;
 	});
 	it('should execute serve based on the serve command', () => {
 		const writr = new Writr(defaultOptions);
@@ -214,5 +226,6 @@ describe('writr execute', () => {
 
 		writr.execute(process);
 		expect(consoleMessage).toContain('Serve');
+		console.log = consoleLog;
 	});
 });
