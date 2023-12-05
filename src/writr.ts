@@ -38,6 +38,24 @@ export default class Writr {
 		const files = fs.readdirSync(docsPath);
 		return files.length === 0;
 	}
+
+	public generateInit(sitePath: string, isTypescript: boolean): void {
+		// Check if the site path exists
+		if (!fs.existsSync(sitePath)) {
+			fs.mkdirSync(sitePath);
+		}
+
+		// Add the writr.config file based on js or ts
+		const writrConfigFile = isTypescript ? './init/writr.config.ts' : './init/writr.config.js';
+		fs.copyFileSync(writrConfigFile, `${sitePath}/writr.config.${isTypescript ? 'ts' : 'js'}`);
+
+		// Add in the image and favicon
+		fs.copyFileSync('./init/logo.png', `${sitePath}/logo.png`);
+		fs.copyFileSync('./init/favicon.svg', `${sitePath}/favicon.svg`);
+
+		// Output the instructions
+		this._console.log(`Writr initialized. Please update the ${writrConfigFile} file with your site information. In addition, you can replace the image, favicon, and stype the site with site.css file.`);
+	}
 }
 
 export {WritrHelpers} from './helpers.js';
