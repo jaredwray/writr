@@ -1,4 +1,6 @@
 import fs from 'fs-extra';
+import updateNotifier from 'update-notifier';
+import packageJson from '../package.json';
 import {WritrOptions} from './options.js';
 import {WritrConsole} from './console.js';
 
@@ -21,11 +23,51 @@ export default class Writr {
 	}
 
 	public execute(process: NodeJS.Process): void {
-		// Get the arguments
-		const args = process.argv.slice(2);
+		// Check for updates
+		updateNotifier({pkg: packageJson}).notify();
 
-		if (args.length === 0) {
-			this._console.printHelp();
+		const consoleProcess = this._console.parseProcessArgv(process.argv);
+
+		// Update options
+		if (consoleProcess.args.site) {
+			this.options.sitePath = consoleProcess.args.site;
+		}
+
+		if (consoleProcess.args.output) {
+			this.options.outputPath = consoleProcess.args.output;
+		}
+
+		switch (consoleProcess.command) {
+			case 'init': {
+				const isTypescript = fs.existsSync('./tsconfig.json') ?? false;
+				this.generateInit(this.options.sitePath, isTypescript);
+				break;
+			}
+
+			case 'help': {
+				this._console.printHelp();
+				break;
+			}
+
+			case 'version': {
+				this._console.log(this.getVersion());
+				break;
+			}
+
+			case 'build': {
+				this._console.log('Build');
+				break;
+			}
+
+			case 'serve': {
+				this._console.log('Serve');
+				break;
+			}
+
+			default: {
+				this._console.log('Build');
+				break;
+			}
 		}
 	}
 
@@ -55,6 +97,12 @@ export default class Writr {
 
 		// Output the instructions
 		this._console.log(`Writr initialized. Please update the ${writrConfigFile} file with your site information. In addition, you can replace the image, favicon, and stype the site with site.css file.`);
+	}
+
+	public getVersion(): string {
+		const packageJson = fs.readFileSync('./package.json', 'utf8');
+		const packageObject = JSON.parse(packageJson) as {version: string};
+		return packageObject.version;
 	}
 }
 
