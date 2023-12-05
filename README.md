@@ -43,7 +43,7 @@ site
 ├───logo.png
 ├───favicon.ico
 ├───README.md
-├───writr.json
+├───writr.config.ts
 ```
 
 ## 2. Add your content
@@ -58,7 +58,7 @@ This will build your site and place it in the `dist` folder. You can then host i
 
 ## Using Your own Template
 
-If you want to use your own template you can do so by adding a `writr.json` file to the root of your project. This file will be used to configure the build process. Here is an example of what it looks like:
+If you want to use your own template you can do so by adding a `writr.config.ts` file to the root of your project. This file will be used to configure the build process. Here is an example of what it looks like:
 
 ```js
 {
@@ -79,7 +79,7 @@ site
 ├───site.css
 ├───logo.png
 ├───favicon.ico
-├───writr.json
+├───writr.config.ts
 ├───docs
 │   ├───readme.md
 │   ├───getting-started.md
