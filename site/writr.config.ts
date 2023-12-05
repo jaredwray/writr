@@ -1,4 +1,3 @@
-
 import {WritrHelpers} from '../dist/writr.js';
 
 export const writrOptions = {

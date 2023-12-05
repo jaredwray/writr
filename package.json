@@ -58,6 +58,11 @@
     "webpack": "^5.89.0",
     "xo": "^0.56.0"
   },
+  "xo": {
+    "ignores": [
+      "writr.config.*"
+    ]
+  },
   "files": [
     "dist",
     "init",
