@@ -1,7 +1,5 @@
 
-import {WritrHelpers} from '../../../dist/writr.js';
-
-export const writrOptions = {
+export const options = {
 	templatePath: './template',
 	outputPath: './dist',
 	sitePath: './site',
@@ -12,13 +10,5 @@ export const writrOptions = {
 };
 
 export function onPrepare(writrOptions?: any) {
-	// Copy the template to the site path
-	const removeImage = (content: string) => content.replace('![Writr](site/logo.png)', '');
-	const writrHelpers = new WritrHelpers();
-	writrHelpers.createDoc(
-		'../README.md',
-		'./site/README.md',
-		undefined, // No need to set the front matter
-		removeImage,
-	);
+	console.log('onPrepare');
 }

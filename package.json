@@ -43,6 +43,7 @@
     "inquirer": "^9.2.11",
     "js-yaml": "^4.1.0",
     "keyv": "^4.5.4",
+    "ts-node": "^10.9.1",
     "update-notifier": "^7.0.0"
   },
   "devDependencies": {
@@ -52,7 +53,6 @@
     "@types/update-notifier": "^6.0.8",
     "@vitest/coverage-v8": "^0.34.6",
     "rimraf": "^5.0.5",
-    "ts-node": "^10.9.1",
     "typescript": "^5.2.2",
     "vitest": "^0.34.6",
     "webpack": "^5.89.0",

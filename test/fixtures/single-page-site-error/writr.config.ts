@@ -1,3 +1,4 @@
+
 export const options = {
 	templatePath: './template',
 	outputPath: './dist',
@@ -9,5 +10,5 @@ export const options = {
 };
 
 export function onPrepare(writrOptions?: any) {
-	console.log('onPrepare');
-};
+	throw new Error('onPrepare Error');
+}
