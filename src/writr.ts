@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import updateNotifier from 'update-notifier';
+import {register} from 'ts-node';
 import packageJson from '../package.json';
 import {WritrOptions} from './options.js';
 import {WritrConsole} from './console.js';
@@ -7,6 +8,7 @@ import {WritrConsole} from './console.js';
 export default class Writr {
 	private _options: WritrOptions = new WritrOptions();
 	private readonly _console: WritrConsole = new WritrConsole();
+	private _configFileModule: any = {};
 
 	constructor(options?: WritrOptions) {
 		if (options) {
@@ -22,9 +24,32 @@ export default class Writr {
 		this._options = value;
 	}
 
-	public execute(process: NodeJS.Process): void {
+	public get configFileModule(): any {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+		return this._configFileModule;
+	}
+
+	public async execute(process: NodeJS.Process): Promise<void> {
 		// Check for updates
 		updateNotifier({pkg: packageJson}).notify();
+
+		// Load the Config File
+		await this.loadConfigFile(this.options.sitePath);
+
+		// Parse the config file
+		if (this._configFileModule.options) {
+			this.options.parseOptions(this._configFileModule.options as Record<string, any>);
+		}
+
+		// Run the onPrepare function
+		try {
+			if (this._configFileModule.onPrepare) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+				await this._configFileModule.onPrepare(this.options);
+			}
+		} catch (error) {
+			this._console.error((error as Error).message);
+		}
 
 		const consoleProcess = this._console.parseProcessArgv(process.argv);
 
@@ -103,6 +128,23 @@ export default class Writr {
 		const packageJson = fs.readFileSync('./package.json', 'utf8');
 		const packageObject = JSON.parse(packageJson) as {version: string};
 		return packageObject.version;
+	}
+
+	public async loadConfigFile(sitePath: string): Promise<void> {
+		if (fs.existsSync(sitePath)) {
+			const isTypescript = fs.existsSync(`${sitePath}/writr.config.ts`);
+			const configFile = isTypescript ? `${sitePath}/writr.config.ts` : `${sitePath}/writr.config.js`;
+			if (isTypescript) {
+				// Typescript
+				register({transpileOnly: true});
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				this._configFileModule = await import(configFile);
+			} else {
+				// Javascript
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				this._configFileModule = await import(configFile);
+			}
+		}
 	}
 }
 

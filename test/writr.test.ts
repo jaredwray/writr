@@ -48,7 +48,7 @@ describe('writr', () => {
 		const writrHelpers = new WritrHelpers();
 		expect(writrHelpers.createDoc).toBeDefined();
 	});
-	it('if no parameters then it should build', () => {
+	it('if no parameters then it should build', async () => {
 		const writr = new Writr(defaultOptions);
 		const consoleLog = console.log;
 		let consoleMessage = '';
@@ -59,7 +59,7 @@ describe('writr', () => {
 			}
 		};
 
-		writr.execute(process);
+		await writr.execute(process);
 
 		expect(consoleMessage).toContain('Build');
 		console.log = consoleLog;
@@ -130,7 +130,7 @@ describe('writr', () => {
 });
 
 describe('writr execute', () => {
-	it('should be able to execute with no parameters', () => {
+	it('should be able to execute with no parameters', async () => {
 		const writr = new Writr(defaultOptions);
 		const consoleLog = console.log;
 		let consoleMessage = '';
@@ -141,12 +141,12 @@ describe('writr execute', () => {
 			}
 		};
 
-		writr.execute(process);
+		await writr.execute(process);
 
 		expect(consoleMessage).toContain('Build');
 		console.log = consoleLog;
 	});
-	it('should init based on the init command', () => {
+	it('should init based on the init command', async () => {
 		const writr = new Writr(defaultOptions);
 		const sitePath = './custom-site';
 		let consoleMessage = '';
@@ -158,7 +158,7 @@ describe('writr execute', () => {
 
 		process.argv = ['node', 'writr', 'init', '-s', sitePath];
 		try {
-			writr.execute(process);
+			await writr.execute(process);
 			expect(fs.existsSync(sitePath)).toEqual(true);
 			expect(fs.existsSync(`${sitePath}/writr.config.ts`)).toEqual(true);
 			expect(consoleMessage).toContain('Writr initialized.');
@@ -167,7 +167,7 @@ describe('writr execute', () => {
 			console.log = consoleLog;
 		}
 	});
-	it('should build based on the build command', () => {
+	it('should build based on the build command', async () => {
 		const writr = new Writr(defaultOptions);
 		const sitePath = './custom-site/dist';
 		const consoleLog = console.log;
@@ -179,11 +179,11 @@ describe('writr execute', () => {
 			}
 		};
 
-		writr.execute(process);
+		await writr.execute(process);
 		expect(consoleMessage).toContain('Build');
 		console.log = consoleLog;
 	});
-	it('should print help command', () => {
+	it('should print help command', async () => {
 		const writr = new Writr(defaultOptions);
 		const consoleLog = console.log;
 		let consoleMessage = '';
@@ -194,11 +194,11 @@ describe('writr execute', () => {
 			}
 		};
 
-		writr.execute(process);
+		await writr.execute(process);
 		expect(consoleMessage).toContain('Usage:');
 		console.log = consoleLog;
 	});
-	it('should show version by the version command', () => {
+	it('should show version by the version command', async () => {
 		const writr = new Writr(defaultOptions);
 		const consoleLog = console.log;
 		let consoleMessage = '';
@@ -209,11 +209,11 @@ describe('writr execute', () => {
 			}
 		};
 
-		writr.execute(process);
+		await writr.execute(process);
 		expect(consoleMessage).toContain('.');
 		console.log = consoleLog;
 	});
-	it('should execute serve based on the serve command', () => {
+	it('should execute serve based on the serve command', async () => {
 		const writr = new Writr(defaultOptions);
 		const consoleLog = console.log;
 		let consoleMessage = '';
@@ -224,8 +224,49 @@ describe('writr execute', () => {
 			}
 		};
 
-		writr.execute(process);
+		await writr.execute(process);
 		expect(consoleMessage).toContain('Serve');
 		console.log = consoleLog;
+	});
+});
+
+describe('writr config file', () => {
+	it('should be able to load the config file', async () => {
+		const writr = new Writr(defaultOptions);
+		const sitePath = 'test/fixtures/multi-page-site';
+		await writr.loadConfigFile(sitePath);
+		expect(writr.configFileModule).toBeDefined();
+		expect(writr.configFileModule.options).toBeDefined();
+	});
+	it('should load the config and set the options', async () => {
+		const writr = new Writr(defaultOptions);
+		const sitePath = 'test/fixtures/multi-page-site';
+		await writr.loadConfigFile(sitePath);
+		expect(writr.configFileModule).toBeDefined();
+		expect(writr.configFileModule.options).toBeDefined();
+		process.argv = ['node', 'writr', 'serve'];
+		await writr.execute(process);
+		expect(writr.options.outputPath).toEqual(writr.configFileModule.options.outputPath);
+	});
+	it('should load the config and test the onPrepare', async () => {
+		const writr = new Writr(defaultOptions);
+		const sitePath = 'test/fixtures/single-page-site';
+		await writr.loadConfigFile(sitePath);
+		expect(writr.configFileModule).toBeDefined();
+		expect(writr.configFileModule.options).toBeDefined();
+		process.argv = ['node', 'writr', 'serve'];
+		await writr.execute(process);
+		expect(writr.options.outputPath).toEqual(writr.configFileModule.options.outputPath);
+	});
+	it('should throw error onPrepare', async () => {
+		const writr = new Writr(defaultOptions);
+		writr.options.sitePath = 'test/fixtures/single-page-site-error';
+		process.argv = ['node', 'writr', 'serve'];
+		try {
+			await writr.execute(process);
+			expect.fail('Should have thrown an error');
+		} catch (error) {
+			expect(error).toBeDefined();
+		}
 	});
 });
