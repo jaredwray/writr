@@ -244,9 +244,18 @@ describe('writr config file', () => {
 		await writr.loadConfigFile(sitePath);
 		expect(writr.configFileModule).toBeDefined();
 		expect(writr.configFileModule.options).toBeDefined();
+		const consoleLog = console.log;
+		let consoleMessage = '';
+		console.log = message => {
+			if (typeof message === 'string') {
+				consoleMessage = message;
+			}
+		};
+
 		process.argv = ['node', 'writr', 'serve'];
 		await writr.execute(process);
 		expect(writr.options.outputPath).toEqual(writr.configFileModule.options.outputPath);
+		console.log = consoleLog;
 	});
 	it('should load the config and test the onPrepare', async () => {
 		const writr = new Writr(defaultOptions);
@@ -254,13 +263,38 @@ describe('writr config file', () => {
 		await writr.loadConfigFile(sitePath);
 		expect(writr.configFileModule).toBeDefined();
 		expect(writr.configFileModule.options).toBeDefined();
+		const consoleLog = console.log;
+		let consoleMessage = '';
+		console.log = message => {
+			if (typeof message === 'string') {
+				consoleMessage = message;
+			}
+		};
+
 		process.argv = ['node', 'writr', 'serve'];
 		await writr.execute(process);
 		expect(writr.options.outputPath).toEqual(writr.configFileModule.options.outputPath);
+		console.log = consoleLog;
 	});
 	it('should throw error onPrepare', async () => {
 		const writr = new Writr(defaultOptions);
 		writr.options.sitePath = 'test/fixtures/single-page-site-error';
+		const consoleLog = console.log;
+		let consoleMessage = '';
+		console.log = message => {
+			if (typeof message === 'string') {
+				consoleMessage = message;
+			}
+		};
+
+		const consoleError = console.error;
+		let consoleErrorMessage = '';
+		console.error = message => {
+			if (typeof message === 'string') {
+				consoleErrorMessage = message;
+			}
+		};
+
 		process.argv = ['node', 'writr', 'serve'];
 		try {
 			await writr.execute(process);
@@ -268,5 +302,8 @@ describe('writr config file', () => {
 		} catch (error) {
 			expect(error).toBeDefined();
 		}
+
+		console.log = consoleLog;
+		console.error = consoleError;
 	});
 });
