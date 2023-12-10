@@ -41,19 +41,26 @@ describe('WritrConsole', () => {
 
 		const c = new WritrConsole();
 		c.printHelp();
-		expect(messages.length).toEqual(18);
+		expect(messages.length).toEqual(19);
 
 		console.log = consoleLog;
 	});
 	it('should be able to parse process argv', () => {
 		const c = new WritrConsole();
-		const result = c.parseProcessArgv(['node', 'writr', 'build', '-w', '-s', './site', '-o', './site/dist', '-p', '8080']);
-		expect(result.argv.length).toEqual(10);
+		const result = c.parseProcessArgv(['node', 'writr', 'build', '-w', '-s', './site', '-o', './site/dist', '-p', '8080', '-t', './site/template']);
+		expect(result.argv.length).toEqual(12);
 		expect(result.command).toEqual('build');
 		expect(result.args.watch).toEqual(true);
-		expect(result.args.site).toEqual('./site');
+		expect(result.args.templatePath).toEqual('./site/template');
+		expect(result.args.sitePath).toEqual('./site');
 		expect(result.args.output).toEqual('./site/dist');
 		expect(result.args.port).toEqual(8080);
+	});
+	it('should be able to parse process templatePath', () => {
+		const c = new WritrConsole();
+		const result = c.parseProcessArgv(['node', 'writr', 'build', '--templatePath', './site/dist', '-p', '8080']);
+		expect(result.command).toEqual('build');
+		expect(result.args.templatePath).toEqual('./site/dist');
 	});
 	it('should be able to parse serve', () => {
 		const c = new WritrConsole();
