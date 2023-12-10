@@ -54,6 +54,9 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
+# apple
+.DS_Store
+
 # dotenv environment variables file
 .env
 yarn.lock
