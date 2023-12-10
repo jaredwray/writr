@@ -36,7 +36,7 @@
     "writr": "./bin/writr.js"
   },
   "dependencies": {
-    "ecto": "^2.2.3",
+    "ecto": "^2.2.4",
     "feed": "^4.2.2",
     "fs-extra": "^11.1.1",
     "gray-matter": "^4.0.3",
