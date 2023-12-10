@@ -54,8 +54,8 @@ export default class Writr {
 		const consoleProcess = this._console.parseProcessArgv(process.argv);
 
 		// Update options
-		if (consoleProcess.args.site) {
-			this.options.sitePath = consoleProcess.args.site;
+		if (consoleProcess.args.sitePath) {
+			this.options.sitePath = consoleProcess.args.sitePath;
 		}
 
 		if (consoleProcess.args.output) {

@@ -22,9 +22,10 @@ export class WritrConsole {
 		console.log('     version        Print the version');
 		console.log();
 		console.log('   Arguments Build:');
-		console.log('     -w, --watch        watch for changes and rebuild');
-		console.log('     -s, --site         Set the path where site files are located');
-		console.log('     -o, --output       Set the output directory. Default is ./site/dist');
+		console.log('     -w, --watch            watch for changes and rebuild');
+		console.log('     -s, --site             Set the path where site files are located');
+		console.log('     -o, --outputPath       Set the output directory. Default is ./site/dist');
+		console.log('     -t, --templatePath     Set the custom template to use');
 		console.log();
 		console.log('   Arguments serve:');
 		console.log('     -p, --port         Set the port number used with serve');
@@ -79,7 +80,8 @@ export class WritrConsole {
 
 	public getArguments(argv: string[]): WritrConsoleArguments {
 		const args = {
-			site: '',
+			sitePath: '',
+			templatePath: '',
 			output: '',
 			watch: false,
 			port: 3000,
@@ -112,7 +114,13 @@ export class WritrConsole {
 
 				case '-s':
 				case '--site': {
-					args.site = argv[i + 1];
+					args.sitePath = argv[i + 1];
+					break;
+				}
+
+				case '-t':
+				case '--templatePath': {
+					args.templatePath = argv[i + 1];
 					break;
 				}
 			}
@@ -129,7 +137,8 @@ type WritrConsoleProcess = {
 };
 
 type WritrConsoleArguments = {
-	site: string | undefined;
+	sitePath: string | undefined;
+	templatePath: string | undefined;
 	output: string | undefined;
 	watch: boolean;
 	port: number;
