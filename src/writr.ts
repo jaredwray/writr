@@ -120,6 +120,9 @@ export default class Writr {
 		fs.copyFileSync('./init/logo.png', `${sitePath}/logo.png`);
 		fs.copyFileSync('./init/favicon.svg', `${sitePath}/favicon.svg`);
 
+		// Add in the variables file
+		fs.copyFileSync('./init/variables.css', `${sitePath}/variables.css`);
+
 		// Output the instructions
 		this._console.log(`Writr initialized. Please update the ${writrConfigFile} file with your site information. In addition, you can replace the image, favicon, and stype the site with site.css file.`);
 	}

@@ -91,6 +91,7 @@ describe('writr', () => {
 			expect(fs.existsSync(`${temporarySitePath}/writr.config.ts`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/logo.png`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/favicon.svg`)).toEqual(true);
+			expect(fs.existsSync(`${temporarySitePath}/variables.css`)).toEqual(true);
 		} finally {
 			fs.rmdirSync(temporarySitePath, {recursive: true});
 		}
@@ -115,6 +116,7 @@ describe('writr', () => {
 			expect(fs.existsSync(`${temporarySitePath}/writr.config.js`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/logo.png`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/favicon.svg`)).toEqual(true);
+			expect(fs.existsSync(`${temporarySitePath}/variables.css`)).toEqual(true);
 		} finally {
 			fs.rmdirSync(temporarySitePath, {recursive: true});
 		}
