@@ -114,7 +114,7 @@ writr.helpers.removeHtmlContent('../readme.md', '<img src=');
 
 ### Get and Set the Front Matter of a Markdown File
 
-You can use the `writr.helpers.getFrontMatter()` and `writr.helpers.setFrontMatter()` helper functions to get and set the front matter of a markdown file. Here is an example:
+You can use the `writrHelpers.getFrontMatter()` and `writrHelpers.setFrontMatter()` helper functions to get and set the front matter of a markdown file. Here is an example:
 
 ```js
 const frontMatter = writr.helpers.getFrontMatter('../readme.md');
