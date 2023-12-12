@@ -58,13 +58,7 @@ This will build your site and place it in the `dist` folder. You can then host i
 
 ## Using Your own Template
 
-If you want to use your own template you can do so by adding a `writr.config.ts` file to the root of your project. This file will be used to configure the build process. Here is an example of what it looks like:
-
-```js
-{
-    template: 'path/to/template',
-}
-```
+If you want to use your own template you can do so by adding a `writr.config.ts` file to the root of your project. This file will be used to configure the build process.
 
 or at the command line:
 
