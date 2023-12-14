@@ -6,7 +6,7 @@ This project is updated on a monthly basis unless there are security issues that
 
 | Version | Supported          |
 | ------- | ------------------ |
-| >0.9.5  | :white_check_mark: |
+| >1.0.0 | :white_check_mark: |
 
 
 ## Reporting a Vulnerability
