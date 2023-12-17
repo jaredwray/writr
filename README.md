@@ -42,6 +42,7 @@ site
 ├───site.css
 ├───logo.png
 ├───favicon.ico
+├───robots.txt
 ├───README.md
 ├───writr.config.ts
 ```
