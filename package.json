@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "clean": "rimraf ./dist ./coverage ./node_modules ./package-lock.json ./yarn.lock",
-    "build": "tsc --project ./tsconfig.build.json",
+    "build": "rimraf ./dist && tsc --project ./tsconfig.build.json",
     "test": "xo --fix && vitest run --coverage",
     "prepare": "yarn run build"
   },
