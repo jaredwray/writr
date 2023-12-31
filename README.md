@@ -22,7 +22,7 @@
 ## Features
 * No configuration requrired. Just setup the folder structure with a logo, favicon, and css file. 
 * Builds a static website that can be hosted anywhere.
-* For more complex projects easily add a `writr.config.js` or `writr.config.ts` file to customize the build process.
+* For more complex projects easily add a `writr.config.js` or `writr.config.ts` file to customize the build process. With PRE and POST methods. 
 * Support for single page with readme or multiple pages with a table of contents.
 * Will generate a sitemap.xml and robots.txt for SEO.
 * Uses Github release notes to generate a changelog page.
