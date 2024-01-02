@@ -96,8 +96,8 @@ order: 2
 
 Writr comes with some helper functions that you can use in your markdown files.
 * `writrHelpers.getFrontMatter(fileName)` - Gets the front matter of a markdown file.
-* `writr.helpers.setFrontMatter(fileName, frontMatter)` - Sets the front matter of a markdown file.
-* `writr.helpers.createDoc(source, destination, frontMatter?, contentFn[]?)` - Creates a markdown file with the specified front matter and content. The contentFn is a function that is executed on the original content of the file. This is useful if you want to remove content from the original file.
+* `writrHelpers.setFrontMatter(fileName, frontMatter)` - Sets the front matter of a markdown file.
+* `writrHelpers.createDoc(source, destination, frontMatter?, contentFn[]?)` - Creates a markdown file with the specified front matter and content. The contentFn is a function that is executed on the original content of the file. This is useful if you want to remove content from the original file.
 
 ### Remove html content
 
