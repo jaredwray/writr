@@ -43,8 +43,9 @@ site
 ├───logo.png
 ├───favicon.ico
 ├───README.md
-├───writr.config.ts
+├───writr.config.js
 ```
+Note: for typescript do 'writr init --typescript'
 
 ## 2. Add your content
 
