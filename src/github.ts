@@ -6,6 +6,11 @@ export type GithubOptions = {
 	repo: string;
 };
 
+export type GithubData = {
+	releases: Record<string, unknown>;
+	contributors: Record<string, unknown>;
+};
+
 export class Github {
 	options = {
 		api: 'https://api.github.com',
@@ -17,7 +22,7 @@ export class Github {
 		this.parseOptions(options);
 	}
 
-	async getData(): Promise<Record<string, unknown>> {
+	async getData(): Promise<GithubData> {
 		const data = {
 			releases: {},
 			contributors: {},
@@ -27,7 +32,7 @@ export class Github {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		data.contributors = await this.getContributors();
 
-		return data;
+		return data as GithubData;
 	}
 
 	async getReleases(): Promise<any> {
