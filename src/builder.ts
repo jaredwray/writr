@@ -1,6 +1,6 @@
+import {Ecto} from 'ecto';
 import {WritrOptions} from './options.js';
-import {type GithubData, Github} from './github.js';
-import { Ecto } from 'ecto';
+import {type GithubData} from './github.js';
 
 export type WritrData = {
 	github: GithubData;
@@ -8,7 +8,7 @@ export type WritrData = {
 
 export class WritrBuilder {
 	private readonly _options: WritrOptions = new WritrOptions();
-    private readonly _ecto: Ecto = new Ecto();
+	private readonly _ecto: Ecto = new Ecto();
 	constructor(options?: WritrOptions) {
 		if (options) {
 			this._options = options;
@@ -34,8 +34,9 @@ export class WritrBuilder {
 
 		// build the rss feed (/rss.xml)
 
-        // build the sitemap (/sitemap.xml)
+		// build the sitemap (/sitemap.xml)
 
-        // build the robots.txt (/robots.txt)
+		// build the robots.txt (/robots.txt)
+		console.log('build');
 	}
 }
