@@ -67,4 +67,9 @@ describe('WritrBuilder', () => {
 			expect(error.message).toBe('No site url options provided');
 		}
 	});
+	it('should get github data', async () => {
+		const builder = new WritrBuilder();
+		const githubData = await builder.getGithubData('jaredwray/writr');
+		expect(githubData).toBeTruthy();
+	});
 });

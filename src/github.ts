@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export type GithubOptions = {
-	api: string | undefined;
+	api?: string | undefined;
 	author: string;
 	repo: string;
 };
