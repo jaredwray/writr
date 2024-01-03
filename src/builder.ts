@@ -21,8 +21,8 @@ export class WritrBuilder {
 
 	public async build(): Promise<void> {
 		// Validate the options
-
-		// get data from github
+		this.validateOptions(this.options);
+		// Get data from github
 
 		// get data of the site
 
