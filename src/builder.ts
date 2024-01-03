@@ -1,6 +1,6 @@
 import {Ecto} from 'ecto';
 import {WritrOptions} from './options.js';
-import {type GithubData} from './github.js';
+import {type GithubData, Github, type GithubOptions} from './github.js';
 
 export type WritrData = {
 	github: GithubData;
@@ -23,8 +23,8 @@ export class WritrBuilder {
 		// Validate the options
 		this.validateOptions(this.options);
 		// Get data from github
-
-		// get data of the site
+		const githubData = await this.getGithubData(this.options.githubPath);
+		// Get data of the site
 
 		// get the templates to use
 
@@ -56,5 +56,15 @@ export class WritrBuilder {
 		if (!options.siteUrl) {
 			throw new Error('No site url options provided');
 		}
+	}
+
+	public async getGithubData(githubPath: string): Promise<GithubData> {
+		const paths = githubPath.split('/');
+		const options: GithubOptions = {
+			author: paths[0],
+			repo: paths[1],
+		};
+		const github = new Github(options);
+		return github.getData();
 	}
 }
