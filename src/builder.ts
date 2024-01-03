@@ -39,4 +39,22 @@ export class WritrBuilder {
 		// build the robots.txt (/robots.txt)
 		console.log('build');
 	}
+
+	public validateOptions(options: WritrOptions): void {
+		if (options.githubPath.length < 3) {
+			throw new Error('No github options provided');
+		}
+
+		if (options.siteDescription.length < 3) {
+			throw new Error('No site description options provided');
+		}
+
+		if (!options.siteTitle) {
+			throw new Error('No site title options provided');
+		}
+
+		if (!options.siteUrl) {
+			throw new Error('No site url options provided');
+		}
+	}
 }

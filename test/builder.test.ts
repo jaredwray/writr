@@ -27,4 +27,44 @@ describe('WritrBuilder', () => {
 
 		console.log = consoleLog;
 	});
+	it('should validate githubPath options', async () => {
+		const builder = new WritrBuilder();
+		const options = new WritrOptions();
+		try {
+			options.githubPath = '';
+			builder.validateOptions(options);
+		} catch (error: any) {
+			expect(error.message).toBe('No github options provided');
+		}
+	});
+	it('should validate siteDescription options', async () => {
+		const builder = new WritrBuilder();
+		const options = new WritrOptions();
+		try {
+			options.siteDescription = '';
+			builder.validateOptions(options);
+		} catch (error: any) {
+			expect(error.message).toBe('No site description options provided');
+		}
+	});
+	it('should validate site title options', async () => {
+		const builder = new WritrBuilder();
+		const options = new WritrOptions();
+		try {
+			options.siteTitle = '';
+			builder.validateOptions(options);
+		} catch (error: any) {
+			expect(error.message).toBe('No site title options provided');
+		}
+	});
+	it('should validate site url options', async () => {
+		const builder = new WritrBuilder();
+		const options = new WritrOptions();
+		try {
+			options.siteUrl = '';
+			builder.validateOptions(options);
+		} catch (error: any) {
+			expect(error.message).toBe('No site url options provided');
+		}
+	});
 });
