@@ -1,4 +1,5 @@
 import {expect, it, describe} from 'vitest';
+import * as fs from 'fs-extra';
 import {WritrBuilder} from '../src/builder.js';
 import {WritrOptions} from '../src/options.js';
 
@@ -16,12 +17,18 @@ describe('WritrBuilder', () => {
 	it('should build', async () => {
 		const builder = new WritrBuilder();
 		const consoleLog = console.log;
+		const options = new WritrOptions();
+		options.outputPath = 'test/temp-build-test';
 		let consoleMessage = '';
 		console.log = message => {
 			consoleMessage = message as string;
 		};
 
-		await builder.build();
+		try {
+			await builder.build();
+		} finally {
+			await fs.remove(builder.options.outputPath);
+		}
 
 		expect(consoleMessage).toBe('build');
 
@@ -97,6 +104,36 @@ describe('WritrBuilder', () => {
 			await builder.getTemplates(options);
 		} catch (error: any) {
 			expect(error.message).toBe('No template path found');
+		}
+	});
+	it('should build the robots.txt (/robots.txt)', async () => {
+		const builder = new WritrBuilder();
+		const options = new WritrOptions();
+		options.sitePath = 'test/fixtures/single-page-site';
+		options.outputPath = 'test/temp-robots-test';
+
+		await fs.remove(options.outputPath);
+		try {
+			await builder.buildRobotsPage(options);
+			const robots = await fs.readFile(`${options.outputPath}/robots.txt`, 'utf8');
+			expect(robots).toBe('User-agent: *\nDisallow:');
+		} finally {
+			await fs.remove(options.outputPath);
+		}
+	});
+	it('should copy the robots.txt (/robots.txt)', async () => {
+		const builder = new WritrBuilder();
+		const options = new WritrOptions();
+		options.sitePath = 'test/fixtures/multi-page-site';
+		options.outputPath = 'test/temp-robots-test-copy';
+
+		await fs.remove(options.outputPath);
+		try {
+			await builder.buildRobotsPage(options);
+			const robots = await fs.readFile(`${options.outputPath}/robots.txt`, 'utf8');
+			expect(robots).toBe('User-agent: *\nDisallow: /meow');
+		} finally {
+			await fs.remove(options.outputPath);
 		}
 	});
 });
