@@ -1,9 +1,16 @@
 import {Ecto} from 'ecto';
+import fs from 'fs-extra';
 import {WritrOptions} from './options.js';
 import {type GithubData, Github, type GithubOptions} from './github.js';
 
 export type WritrData = {
-	github: GithubData;
+	github?: GithubData;
+	templates?: WritrTemplates;
+};
+
+export type WritrTemplates = {
+	index: string;
+	releases: string;
 };
 
 export class WritrBuilder {
@@ -25,10 +32,13 @@ export class WritrBuilder {
 		// Get data from github
 		const githubData = await this.getGithubData(this.options.githubPath);
 		// Get data of the site
+		const writrData: WritrData = {
+			github: githubData,
+		};
+		// Get the templates to use
+		writrData.templates = await this.getTemplates(this.options);
 
-		// get the templates to use
-
-		// build the home page (index.html)
+		// Build the home page (index.html)
 
 		// build the releases page (/releases/index.html)
 
@@ -66,5 +76,42 @@ export class WritrBuilder {
 		};
 		const github = new Github(options);
 		return github.getData();
+	}
+
+	public async getTemplates(options: WritrOptions): Promise<WritrTemplates> {
+		const templates: WritrTemplates = {
+			index: '',
+			releases: '',
+		};
+
+		if (await fs.pathExists(options.templatePath)) {
+			const index = await this.getTemplateFile(options.templatePath, 'index');
+			if (index) {
+				templates.index = index;
+			}
+
+			const releases = await this.getTemplateFile(options.templatePath, 'releases');
+			if (releases) {
+				templates.releases = releases;
+			}
+		} else {
+			throw new Error('No template path found');
+		}
+
+		return templates;
+	}
+
+	public async getTemplateFile(path: string, name: string): Promise<string | undefined> {
+		let result;
+		const files = await fs.readdir(path);
+		for (const file of files) {
+			const fileName = file.split('.');
+			if (fileName[0].toString().toLowerCase() === name.toLowerCase()) {
+				result = file.toString();
+				break;
+			}
+		}
+
+		return result;
 	}
 }
