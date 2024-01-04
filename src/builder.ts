@@ -47,6 +47,8 @@ export class WritrBuilder {
 		// build the sitemap (/sitemap.xml)
 
 		// build the robots.txt (/robots.txt)
+		await this.buildRobotsPage(this.options);
+
 		console.log('build');
 	}
 
@@ -113,5 +115,15 @@ export class WritrBuilder {
 		}
 
 		return result;
+	}
+
+	public async buildRobotsPage(options: WritrOptions): Promise<void> {
+		const {sitePath} = options;
+		const {outputPath} = options;
+		const robotsPath = `${outputPath}/robots.txt`;
+
+		await fs.ensureDir(outputPath);
+
+		await (await fs.pathExists(`${sitePath}/robots.txt`) ? fs.copy(`${sitePath}/robots.txt`, robotsPath) : fs.writeFile(robotsPath, 'User-agent: *\nDisallow:'));
 	}
 }
