@@ -4,9 +4,14 @@ import {WritrOptions} from './options.js';
 import {type GithubData, Github, type GithubOptions} from './github.js';
 
 export type WritrData = {
+	siteUrl: string;
+	siteTitle: string;
+	siteDescription: string;
+	sitePath: string;
+	templatePath: string;
+	outputPath: string;
 	github?: GithubData;
 	templates?: WritrTemplates;
-	options: WritrOptions;
 };
 
 export type WritrTemplates = {
@@ -32,7 +37,12 @@ export class WritrBuilder {
 		this.validateOptions(this.options);
 		// Set the site options
 		const writrData: WritrData = {
-			options: this.options,
+			siteUrl: this.options.siteUrl,
+			siteTitle: this.options.siteTitle,
+			siteDescription: this.options.siteDescription,
+			sitePath: this.options.sitePath,
+			templatePath: this.options.templatePath,
+			outputPath: this.options.outputPath,
 		};
 		// Get data from github
 		const githubData = await this.getGithubData(this.options.githubPath);
@@ -131,13 +141,10 @@ export class WritrBuilder {
 	}
 
 	public async buildSiteMapPage(data: WritrData): Promise<void> {
-		const {siteUrl} = data.options;
-		const {outputPath} = data.options;
-
-		const sitemapPath = `${outputPath}/sitemap.xml`;
+		const sitemapPath = `${data.outputPath}/sitemap.xml`;
 		const urls = [
-			{url: siteUrl},
-			{url: `${siteUrl}/releases`},
+			{url: data.siteUrl},
+			{url: `${data.siteUrl}/releases`},
 		];
 
 		let xml = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -151,23 +158,19 @@ export class WritrBuilder {
 
 		xml += '</urlset>';
 
-		await fs.ensureDir(outputPath);
+		await fs.ensureDir(data.outputPath);
 
 		await fs.writeFile(sitemapPath, xml, 'utf8');
 	}
 
 	public async buildIndexPage(data: WritrData): Promise<void> {
-		const {templatePath} = data.options;
-		const {outputPath} = data.options;
-
 		if (data.templates) {
-			const indexPath = `${outputPath}/index.html`;
-			const indexOutputPath = `${outputPath}/index.html`;
+			const indexPath = `${data.outputPath}/index.html`;
 
-			await fs.ensureDir(outputPath);
+			await fs.ensureDir(data.outputPath);
 
-			const indexTemplate = `${templatePath}/${data.templates.index}`;
-			const indexContent = await this._ecto.renderFromFile(indexTemplate, data, templatePath, indexOutputPath);
+			const indexTemplate = `${data.templatePath}/${data.templates.index}`;
+			const indexContent = await this._ecto.renderFromFile(indexTemplate, data, data.templatePath);
 			await fs.writeFile(indexPath, indexContent, 'utf8');
 		} else {
 			throw new Error('No templates found');
