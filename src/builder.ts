@@ -55,8 +55,9 @@ export class WritrBuilder {
 		await this.buildIndexPage(writrData);
 
 		// Build the releases page (/releases/index.html)
+		await this.buildReleasePage(writrData);
 
-		// build the sitemap (/sitemap.xml)
+		// Build the sitemap (/sitemap.xml)
 		await this.buildSiteMapPage(writrData);
 
 		// Build the robots.txt (/robots.txt)
