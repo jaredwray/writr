@@ -1,4 +1,4 @@
-import {expect, it, describe} from 'vitest';
+import {expect, it, describe, vi} from 'vitest';
 import * as fs from 'fs-extra';
 import {WritrBuilder, type WritrData} from '../src/builder.js';
 import {WritrOptions} from '../src/options.js';
@@ -189,6 +189,31 @@ describe('WritrBuilder', () => {
 			await builder.buildIndexPage(data);
 		} catch (error: any) {
 			expect(error.message).toBe('No templates found');
+		} finally {
+			await fs.remove(data.outputPath);
+		}
+	});
+	it('should build release page (/releases/index.html)', async () => {
+		const builder = new WritrBuilder();
+		const data = writrData;
+		data.templates = {
+			index: 'index.hbs',
+			releases: 'releases.hbs',
+		};
+		data.sitePath = 'site';
+		data.templatePath = 'template';
+		data.outputPath = 'test/temp-release-test';
+
+		data.github = {
+			releases: {},
+			contributors: {},
+		};
+
+		await fs.remove(data.outputPath);
+		try {
+			await builder.buildReleasePage(data);
+			const index = await fs.readFile(`${data.outputPath}/releases/index.html`, 'utf8');
+			expect(index).toContain('<title>Writr Releases</title>');
 		} finally {
 			await fs.remove(data.outputPath);
 		}
