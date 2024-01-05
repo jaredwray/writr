@@ -154,4 +154,39 @@ describe('WritrBuilder', () => {
 			await fs.remove(data.options.outputPath);
 		}
 	});
+	it('should build the index.html (/index.html)', async () => {
+		const builder = new WritrBuilder();
+		const data: WritrData = {
+			options: new WritrOptions(),
+			templates: {
+				index: 'index.hbs',
+				releases: 'releases.hbs',
+			},
+		};
+		data.options.sitePath = 'template';
+		data.options.outputPath = 'test/temp-index-test';
+
+		await fs.remove(data.options.outputPath);
+		try {
+			await builder.buildIndexPage(data);
+			const index = await fs.readFile(`${data.options.outputPath}/index.html`, 'utf8');
+			expect(index).toContain('<title>Writr</title>');
+		} finally {
+			await fs.remove(data.options.outputPath);
+		}
+	});
+	it('should throw an error build the index.html (/index.html)', async () => {
+		const builder = new WritrBuilder();
+		const data: WritrData = {
+			options: new WritrOptions(),
+		};
+		data.options.sitePath = 'template';
+		data.options.outputPath = 'test/temp-index-test';
+
+		try {
+			await builder.buildIndexPage(data);
+		} catch (error: any) {
+			expect(error.message).toBe('No templates found');
+		}
+	});
 });
