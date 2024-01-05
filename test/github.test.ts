@@ -72,7 +72,6 @@ describe('Github', () => {
 	});
 	it('should be able to get the releases', async () => {
 		const github = new Github(defaultOptions);
-
 		// @ts-expect-error - mock
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 		axios.get.mockResolvedValue({data: githubMockReleases});

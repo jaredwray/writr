@@ -1,5 +1,6 @@
 import {expect, it, describe, vi} from 'vitest';
 import * as fs from 'fs-extra';
+import axios from 'axios';
 import {WritrBuilder, type WritrData} from '../src/builder.js';
 import {WritrOptions} from '../src/options.js';
 
@@ -85,8 +86,10 @@ describe('WritrBuilder', () => {
 	});
 	it('should get github data', async () => {
 		const builder = new WritrBuilder();
+		vi.spyOn(axios, 'get').mockResolvedValue({data: {}});
 		const githubData = await builder.getGithubData('jaredwray/writr');
 		expect(githubData).toBeTruthy();
+		vi.resetAllMocks();
 	});
 	it('should get the file without extension', async () => {
 		const builder = new WritrBuilder();
@@ -214,6 +217,28 @@ describe('WritrBuilder', () => {
 			await builder.buildReleasePage(data);
 			const index = await fs.readFile(`${data.outputPath}/releases/index.html`, 'utf8');
 			expect(index).toContain('<title>Writr Releases</title>');
+		} finally {
+			await fs.remove(data.outputPath);
+		}
+	});
+	it('should error on build release page (/releases/index.html)', async () => {
+		const builder = new WritrBuilder();
+		const data = writrData;
+		data.templates = {
+			index: 'index.hbs',
+			releases: 'releases.hbs',
+		};
+		data.sitePath = 'site';
+		data.templatePath = 'template';
+		data.outputPath = 'test/temp-release-test';
+
+		data.github = undefined;
+
+		await fs.remove(data.outputPath);
+		try {
+			await builder.buildReleasePage(data);
+		} catch (error: any) {
+			expect(error.message).toBe('No github data found');
 		} finally {
 			await fs.remove(data.outputPath);
 		}
