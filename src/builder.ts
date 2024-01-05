@@ -176,4 +176,19 @@ export class WritrBuilder {
 			throw new Error('No templates found');
 		}
 	}
+
+	public async buildReleasePage(data: WritrData): Promise<void> {
+		if (data.github && data.templates) {
+			const releasesPath = `${data.outputPath}/releases/index.html`;
+			const releaseOutputPath = `${data.outputPath}/releases`;
+
+			await fs.ensureDir(releaseOutputPath);
+
+			const releasesTemplate = `${data.templatePath}/${data.templates.releases}`;
+			const releasesContent = await this._ecto.renderFromFile(releasesTemplate, data, data.templatePath);
+			await fs.writeFile(releasesPath, releasesContent, 'utf8');
+		} else {
+			throw new Error('No github data found');
+		}
+	}
 }
