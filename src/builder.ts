@@ -42,8 +42,9 @@ export class WritrBuilder {
 		writrData.templates = await this.getTemplates(this.options);
 
 		// Build the home page (index.html)
+		await this.buildIndexPage(writrData);
 
-		// build the releases page (/releases/index.html)
+		// Build the releases page (/releases/index.html)
 
 		// build the sitemap (/sitemap.xml)
 		await this.buildSiteMapPage(writrData);
@@ -153,5 +154,23 @@ export class WritrBuilder {
 		await fs.ensureDir(outputPath);
 
 		await fs.writeFile(sitemapPath, xml, 'utf8');
+	}
+
+	public async buildIndexPage(data: WritrData): Promise<void> {
+		const {templatePath} = data.options;
+		const {outputPath} = data.options;
+
+		if (data.templates) {
+			const indexPath = `${outputPath}/index.html`;
+			const indexOutputPath = `${outputPath}/index.html`;
+
+			await fs.ensureDir(outputPath);
+
+			const indexTemplate = `${templatePath}/${data.templates.index}`;
+			const indexContent = await this._ecto.renderFromFile(indexTemplate, data, templatePath, indexOutputPath);
+			await fs.writeFile(indexPath, indexContent, 'utf8');
+		} else {
+			throw new Error('No templates found');
+		}
 	}
 }
