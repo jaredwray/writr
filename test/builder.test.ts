@@ -4,6 +4,15 @@ import {WritrBuilder, type WritrData} from '../src/builder.js';
 import {WritrOptions} from '../src/options.js';
 
 describe('WritrBuilder', () => {
+	const writrData: WritrData = {
+		siteUrl: 'http://foo.com',
+		siteTitle: 'Writr',
+		siteDescription: 'Beautiful Website for Your Projects',
+		sitePath: 'test/fixtures/single-page-site',
+		templatePath: 'test/fixtures/template-example',
+		outputPath: 'test/temp-sitemap-test',
+	};
+
 	it('should initiate', () => {
 		const builder = new WritrBuilder();
 		expect(builder).toBeTruthy();
@@ -138,55 +147,50 @@ describe('WritrBuilder', () => {
 	});
 	it('should build the sitemap.xml (/sitemap.xml)', async () => {
 		const builder = new WritrBuilder();
-		const data: WritrData = {
-			options: new WritrOptions(),
-		};
-		data.options.sitePath = 'test/fixtures/single-page-site';
-		data.options.outputPath = 'test/temp-sitemap-test';
-		data.options.siteUrl = 'http://foo.com';
+		const data = writrData;
 
-		await fs.remove(data.options.outputPath);
+		await fs.remove(data.outputPath);
 		try {
 			await builder.buildSiteMapPage(data);
-			const sitemap = await fs.readFile(`${data.options.outputPath}/sitemap.xml`, 'utf8');
+			const sitemap = await fs.readFile(`${data.outputPath}/sitemap.xml`, 'utf8');
 			expect(sitemap).toContain('<loc>http://foo.com</loc>');
 		} finally {
-			await fs.remove(data.options.outputPath);
+			await fs.remove(data.outputPath);
 		}
 	});
 	it('should build the index.html (/index.html)', async () => {
 		const builder = new WritrBuilder();
-		const data: WritrData = {
-			options: new WritrOptions(),
-			templates: {
-				index: 'index.hbs',
-				releases: 'releases.hbs',
-			},
+		const data = writrData;
+		data.templates = {
+			index: 'index.hbs',
+			releases: 'releases.hbs',
 		};
-		data.options.sitePath = 'template';
-		data.options.outputPath = 'test/temp-index-test';
+		data.sitePath = 'site';
+		data.templatePath = 'template';
+		data.outputPath = 'test/temp-index-test';
 
-		await fs.remove(data.options.outputPath);
+		await fs.remove(data.outputPath);
 		try {
 			await builder.buildIndexPage(data);
-			const index = await fs.readFile(`${data.options.outputPath}/index.html`, 'utf8');
+			const index = await fs.readFile(`${data.outputPath}/index.html`, 'utf8');
 			expect(index).toContain('<title>Writr</title>');
 		} finally {
-			await fs.remove(data.options.outputPath);
+			await fs.remove(data.outputPath);
 		}
 	});
 	it('should throw an error build the index.html (/index.html)', async () => {
 		const builder = new WritrBuilder();
-		const data: WritrData = {
-			options: new WritrOptions(),
-		};
-		data.options.sitePath = 'template';
-		data.options.outputPath = 'test/temp-index-test';
+		const data = writrData;
+		data.sitePath = 'template';
+		data.outputPath = 'test/temp-index-test';
+		data.templates = undefined;
 
 		try {
 			await builder.buildIndexPage(data);
 		} catch (error: any) {
 			expect(error.message).toBe('No templates found');
+		} finally {
+			await fs.remove(data.outputPath);
 		}
 	});
 });
