@@ -1,6 +1,6 @@
 import {expect, it, describe} from 'vitest';
 import * as fs from 'fs-extra';
-import {WritrBuilder} from '../src/builder.js';
+import {WritrBuilder, type WritrData} from '../src/builder.js';
 import {WritrOptions} from '../src/options.js';
 
 describe('WritrBuilder', () => {
@@ -134,6 +134,24 @@ describe('WritrBuilder', () => {
 			expect(robots).toBe('User-agent: *\nDisallow: /meow');
 		} finally {
 			await fs.remove(options.outputPath);
+		}
+	});
+	it('should build the sitemap.xml (/sitemap.xml)', async () => {
+		const builder = new WritrBuilder();
+		const data: WritrData = {
+			options: new WritrOptions(),
+		};
+		data.options.sitePath = 'test/fixtures/single-page-site';
+		data.options.outputPath = 'test/temp-sitemap-test';
+		data.options.siteUrl = 'http://foo.com';
+
+		await fs.remove(data.options.outputPath);
+		try {
+			await builder.buildSiteMapPage(data);
+			const sitemap = await fs.readFile(`${data.options.outputPath}/sitemap.xml`, 'utf8');
+			expect(sitemap).toContain('<loc>http://foo.com</loc>');
+		} finally {
+			await fs.remove(data.options.outputPath);
 		}
 	});
 });

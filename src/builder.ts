@@ -6,6 +6,7 @@ import {type GithubData, Github, type GithubOptions} from './github.js';
 export type WritrData = {
 	github?: GithubData;
 	templates?: WritrTemplates;
+	options: WritrOptions;
 };
 
 export type WritrTemplates = {
@@ -29,12 +30,14 @@ export class WritrBuilder {
 	public async build(): Promise<void> {
 		// Validate the options
 		this.validateOptions(this.options);
+		// Set the site options
+		const writrData: WritrData = {
+			options: this.options,
+		};
 		// Get data from github
 		const githubData = await this.getGithubData(this.options.githubPath);
 		// Get data of the site
-		const writrData: WritrData = {
-			github: githubData,
-		};
+		writrData.github = githubData;
 		// Get the templates to use
 		writrData.templates = await this.getTemplates(this.options);
 
@@ -45,8 +48,9 @@ export class WritrBuilder {
 		// build the rss feed (/rss.xml)
 
 		// build the sitemap (/sitemap.xml)
+		await this.buildSiteMapPage(writrData);
 
-		// build the robots.txt (/robots.txt)
+		// Build the robots.txt (/robots.txt)
 		await this.buildRobotsPage(this.options);
 
 		console.log('build');
@@ -125,5 +129,31 @@ export class WritrBuilder {
 		await fs.ensureDir(outputPath);
 
 		await (await fs.pathExists(`${sitePath}/robots.txt`) ? fs.copy(`${sitePath}/robots.txt`, robotsPath) : fs.writeFile(robotsPath, 'User-agent: *\nDisallow:'));
+	}
+
+	public async buildSiteMapPage(data: WritrData): Promise<void> {
+		const {siteUrl} = data.options;
+		const {outputPath} = data.options;
+
+		const sitemapPath = `${outputPath}/sitemap.xml`;
+		const urls = [
+			{url: siteUrl},
+			{url: `${siteUrl}/releases`},
+		];
+
+		let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+		xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+
+		for (const {url} of urls) {
+			xml += '<url>';
+			xml += `<loc>${url}</loc>`;
+			xml += '</url>';
+		}
+
+		xml += '</urlset>';
+
+		await fs.ensureDir(outputPath);
+
+		await fs.writeFile(sitemapPath, xml, 'utf8');
 	}
 }
