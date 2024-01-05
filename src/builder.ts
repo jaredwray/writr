@@ -45,8 +45,6 @@ export class WritrBuilder {
 
 		// build the releases page (/releases/index.html)
 
-		// build the rss feed (/rss.xml)
-
 		// build the sitemap (/sitemap.xml)
 		await this.buildSiteMapPage(writrData);
 
