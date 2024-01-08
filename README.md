@@ -76,7 +76,6 @@ site
 ├───favicon.ico
 ├───writr.config.ts
 ├───docs
-│   ├───readme.md
 │   ├───getting-started.md
 │   ├───contributing.md
 │   ├───license.md
