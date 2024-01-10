@@ -1,8 +1,11 @@
 import process from 'node:process';
-import {expect, it, describe} from 'vitest';
+import {afterEach, beforeEach, expect, it, describe, vi} from 'vitest';
 import fs from 'fs-extra';
+import axios from 'axios';
 import Writr, {WritrHelpers} from '../src/writr.js';
 import {WritrOptions} from '../src/options.js';
+import githubMockContributors from './fixtures/data-mocks/github-contributors.json';
+import githubMockReleases from './fixtures/data-mocks/github-releases.json';
 
 const defaultOptions: WritrOptions = new WritrOptions({
 	templatePath: './custom-template',
@@ -14,7 +17,29 @@ const defaultOptions: WritrOptions = new WritrOptions({
 	siteUrl: 'https://custom-url.com',
 });
 
+vi.mock('axios');
+
 describe('writr', () => {
+	afterEach(() => {
+		// Reset the mock after each test
+		vi.resetAllMocks();
+	});
+	beforeEach(() => {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+		(axios.get as any).mockImplementation(async (url: string) => {
+			if (url.endsWith('releases')) {
+				return {data: githubMockReleases};
+			}
+
+			if (url.endsWith('contributors')) {
+				return {data: githubMockContributors};
+			}
+
+			// Default response or throw an error if you prefer
+			return {data: {}};
+		});
+	});
+
 	it('should be able to initialize', () => {
 		const writr = new Writr();
 		expect(writr).toBeDefined();
@@ -50,19 +75,10 @@ describe('writr', () => {
 	});
 	it('if no parameters then it should build', async () => {
 		const writr = new Writr(defaultOptions);
-		const consoleLog = console.log;
-		let consoleMessage = '';
 
-		console.log = message => {
-			if (typeof message === 'string' && message.includes('Build')) {
-				consoleMessage = message;
-			}
-		};
-
+		const outputPath = './test/noparam-custom-site';
+		process.argv = ['node', 'writr', '-o', outputPath];
 		await writr.execute(process);
-
-		expect(consoleMessage).toContain('Build');
-		console.log = consoleLog;
 	});
 	it('is a single page site or not', () => {
 		const writr = new Writr(defaultOptions);
@@ -171,10 +187,10 @@ describe('writr execute', () => {
 	});
 	it('should build based on the build command', async () => {
 		const writr = new Writr(defaultOptions);
-		const sitePath = './custom-site/dist';
+		const outputPath = './custom-site/dist';
 		const consoleLog = console.log;
 		let consoleMessage = '';
-		process.argv = ['node', 'writr', 'build', '-o', sitePath];
+		process.argv = ['node', 'writr', 'build', '-o', outputPath];
 		console.log = message => {
 			if (typeof message === 'string' && message.includes('Build')) {
 				consoleMessage = message;

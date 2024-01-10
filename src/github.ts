@@ -39,8 +39,13 @@ export class Github {
 		const url = `${this.options.api}/repos/${this.options.author}/${this.options.repo}/releases`;
 		try {
 			const result = await axios.get(url);
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-			return result.data;
+
+			if (result && result.data.length > 0) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+				return result.data;
+			}
+
+			return {};
 		} catch (error: unknown) {
 			const typedError = error as {response: {status: number}};
 			if (typedError.response?.status === 404) {
@@ -55,8 +60,10 @@ export class Github {
 		const url = `${this.options.api}/repos/${this.options.author}/${this.options.repo}/contributors`;
 		try {
 			const result = await axios.get(url);
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-			return result.data;
+			if (result && result.data.length > 0) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+				return result.data;
+			}
 		} catch (error: unknown) {
 			const typedError = error as {response: {status: number}};
 			if (typedError.response?.status === 404) {
