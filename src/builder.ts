@@ -1,6 +1,7 @@
 import {Ecto} from 'ecto';
 import fs from 'fs-extra';
 import {WritrOptions} from './options.js';
+import {WritrConsole} from './console.js';
 import {type GithubData, Github, type GithubOptions} from './github.js';
 
 export type WritrData = {
@@ -22,6 +23,7 @@ export type WritrTemplates = {
 export class WritrBuilder {
 	private readonly _options: WritrOptions = new WritrOptions();
 	private readonly _ecto: Ecto = new Ecto();
+	private readonly _console: WritrConsole = new WritrConsole();
 	constructor(options?: WritrOptions) {
 		if (options) {
 			this._options = options;
@@ -33,6 +35,8 @@ export class WritrBuilder {
 	}
 
 	public async build(): Promise<void> {
+		const startTime = Date.now();
+
 		// Validate the options
 		this.validateOptions(this.options);
 		// Set the site options
@@ -63,7 +67,11 @@ export class WritrBuilder {
 		// Build the robots.txt (/robots.txt)
 		await this.buildRobotsPage(this.options);
 
-		console.log('build');
+		const endTime = Date.now();
+
+		const executionTime = endTime - startTime;
+
+		this._console.log(`Build completed in ${executionTime}ms`);
 	}
 
 	public validateOptions(options: WritrOptions): void {
