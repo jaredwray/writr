@@ -63,8 +63,6 @@ export default class Writr {
 			this.options.outputPath = consoleProcess.args.output;
 		}
 
-		console.log(consoleProcess);
-
 		switch (consoleProcess.command) {
 			case 'init': {
 				const isTypescript = fs.existsSync('./tsconfig.json') ?? false;
@@ -88,7 +86,8 @@ export default class Writr {
 			}
 
 			default: {
-				const builder = new WritrBuilder();
+				console.log(this.options);
+				const builder = new WritrBuilder(this.options);
 				await builder.build();
 				break;
 			}
