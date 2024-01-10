@@ -23,7 +23,7 @@
 * No configuration requrired. Just setup the folder structure with a logo, favicon, and css file. 
 * Builds a static website that can be hosted anywhere.
 * For more complex projects easily add a `writr.config.js` or `writr.config.ts` file to customize the build process. With PRE and POST methods. 
-* Support for single page with readme or multiple pages with a table of contents.
+* Support for single page with readme or multiple markdown pages in a docs folder.
 * Will generate a sitemap.xml and robots.txt.
 * Uses Github release notes to generate a changelog / releases page.
 * Uses Github to show contributors and link to their profiles.
