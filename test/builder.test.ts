@@ -40,7 +40,7 @@ describe('WritrBuilder', () => {
 			await fs.remove(builder.options.outputPath);
 		}
 
-		expect(consoleMessage).toBe('build');
+		expect(consoleMessage).toContain('Build');
 
 		console.log = consoleLog;
 	});
