@@ -73,13 +73,6 @@ describe('writr', () => {
 		const writrHelpers = new WritrHelpers();
 		expect(writrHelpers.createDoc).toBeDefined();
 	});
-	it('if no parameters then it should build', async () => {
-		const writr = new Writr(defaultOptions);
-
-		const outputPath = './test/noparam-custom-site';
-		process.argv = ['node', 'writr', '-o', outputPath];
-		await writr.execute(process);
-	});
 	it('is a single page site or not', () => {
 		const writr = new Writr(defaultOptions);
 		const singlePageSite = 'test/fixtures/single-page-site';
@@ -149,20 +142,31 @@ describe('writr', () => {
 
 describe('writr execute', () => {
 	it('should be able to execute with no parameters', async () => {
-		const writr = new Writr(defaultOptions);
-		const consoleLog = console.log;
-		let consoleMessage = '';
-
-		console.log = message => {
-			if (typeof message === 'string' && message.includes('Build')) {
-				consoleMessage = message;
-			}
-		};
-
+		const buildOptions = new WritrOptions();
+		buildOptions.sitePath = 'test/fixtures/single-page-site';
+		buildOptions.outputPath = 'test/fixtures/single-page-site/dist';
+		buildOptions.templatePath = 'test/fixtures/template-example/';
+		const writr = new Writr(buildOptions);
+		process.argv = ['node', 'writr'];
 		await writr.execute(process);
 
-		expect(consoleMessage).toContain('Build');
-		console.log = consoleLog;
+		expect(fs.existsSync(buildOptions.outputPath)).toEqual(true);
+
+		fs.rmdirSync(buildOptions.outputPath, {recursive: true});
+	});
+	it('should be able to execute with output parameter', async () => {
+		const buildOptions = new WritrOptions();
+		buildOptions.sitePath = 'test/fixtures/single-page-site';
+		buildOptions.outputPath = 'test/fixtures/single-page-site/dist-foo';
+		buildOptions.templatePath = 'test/fixtures/template-example/';
+		const realOutputPath = 'test/fixtures/single-page-site/dist1';
+		const writr = new Writr(buildOptions);
+		process.argv = ['node', 'writr', '-o', realOutputPath];
+		await writr.execute(process);
+
+		expect(fs.existsSync(realOutputPath)).toEqual(true);
+
+		fs.rmdirSync(realOutputPath, {recursive: true});
 	});
 	it('should init based on the init command', async () => {
 		const writr = new Writr(defaultOptions);
@@ -184,22 +188,6 @@ describe('writr execute', () => {
 			fs.rmdirSync(sitePath, {recursive: true});
 			console.log = consoleLog;
 		}
-	});
-	it('should build based on the build command', async () => {
-		const writr = new Writr(defaultOptions);
-		const outputPath = './custom-site/dist';
-		const consoleLog = console.log;
-		let consoleMessage = '';
-		process.argv = ['node', 'writr', 'build', '-o', outputPath];
-		console.log = message => {
-			if (typeof message === 'string' && message.includes('Build')) {
-				consoleMessage = message;
-			}
-		};
-
-		await writr.execute(process);
-		expect(consoleMessage).toContain('Build');
-		console.log = consoleLog;
 	});
 	it('should print help command', async () => {
 		const writr = new Writr(defaultOptions);
