@@ -1,4 +1,4 @@
-import {afterEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import axios from 'axios';
 import {Github, type GithubOptions} from '../src/github.js';
 import githubMockContributors from './fixtures/data-mocks/github-contributors.json';
@@ -16,6 +16,21 @@ describe('Github', () => {
 	afterEach(() => {
 		// Reset the mock after each test
 		vi.resetAllMocks();
+	});
+	beforeEach(() => {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+		(axios.get as any).mockImplementation(async (url: string) => {
+			if (url.endsWith('releases')) {
+				return {data: githubMockReleases};
+			}
+
+			if (url.endsWith('contributors')) {
+				return {data: githubMockContributors};
+			}
+
+			// Default response or throw an error if you prefer
+			return {data: {}};
+		});
 	});
 
 	it('should be able to initialize', () => {

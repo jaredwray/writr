@@ -4,6 +4,7 @@ import {register} from 'ts-node';
 import packageJson from '../package.json';
 import {WritrOptions} from './options.js';
 import {WritrConsole} from './console.js';
+import {WritrBuilder} from './builder.js';
 
 export default class Writr {
 	private _options: WritrOptions = new WritrOptions();
@@ -62,6 +63,8 @@ export default class Writr {
 			this.options.outputPath = consoleProcess.args.output;
 		}
 
+		console.log(consoleProcess);
+
 		switch (consoleProcess.command) {
 			case 'init': {
 				const isTypescript = fs.existsSync('./tsconfig.json') ?? false;
@@ -79,18 +82,14 @@ export default class Writr {
 				break;
 			}
 
-			case 'build': {
-				this._console.log('Build');
-				break;
-			}
-
 			case 'serve': {
 				this._console.log('Serve');
 				break;
 			}
 
 			default: {
-				this._console.log('Build');
+				const builder = new WritrBuilder();
+				await builder.build();
 				break;
 			}
 		}
