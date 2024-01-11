@@ -86,7 +86,6 @@ export default class Writr {
 			}
 
 			default: {
-				console.log(this.options);
 				const builder = new WritrBuilder(this.options);
 				await builder.build();
 				break;
