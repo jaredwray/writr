@@ -147,12 +147,17 @@ describe('writr execute', () => {
 		buildOptions.outputPath = 'test/fixtures/single-page-site/dist';
 		buildOptions.templatePath = 'test/fixtures/template-example/';
 		const writr = new Writr(buildOptions);
+		const consoleLog = console.log;
+		// eslint-disable-next-line @typescript-eslint/no-empty-function
+		console.log = message => {};
+
 		process.argv = ['node', 'writr'];
 		await writr.execute(process);
 
 		expect(fs.existsSync(buildOptions.outputPath)).toEqual(true);
 
 		fs.rmdirSync(buildOptions.outputPath, {recursive: true});
+		console.log = consoleLog;
 	});
 	it('should be able to execute with output parameter', async () => {
 		const buildOptions = new WritrOptions();
@@ -161,12 +166,17 @@ describe('writr execute', () => {
 		buildOptions.templatePath = 'test/fixtures/template-example/';
 		const realOutputPath = 'test/fixtures/single-page-site/dist1';
 		const writr = new Writr(buildOptions);
+		const consoleLog = console.log;
+		// eslint-disable-next-line @typescript-eslint/no-empty-function
+		console.log = message => {};
+
 		process.argv = ['node', 'writr', '-o', realOutputPath];
 		await writr.execute(process);
 
 		expect(fs.existsSync(realOutputPath)).toEqual(true);
 
 		fs.rmdirSync(realOutputPath, {recursive: true});
+		console.log = consoleLog;
 	});
 	it('should init based on the init command', async () => {
 		const writr = new Writr(defaultOptions);
