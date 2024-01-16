@@ -93,6 +93,7 @@ describe('WritrOptions', () => {
 				siteTitle: 'Custom Title',
 				siteDescription: 'Custom Description',
 				siteUrl: 'https://custom-url.com',
+				port: 8080,
 			});
 			expect(options.templatePath).toEqual('./custom-template');
 			expect(options.outputPath).toEqual('./custom-dist');
@@ -101,6 +102,7 @@ describe('WritrOptions', () => {
 			expect(options.siteTitle).toEqual('Custom Title');
 			expect(options.siteDescription).toEqual('Custom Description');
 			expect(options.siteUrl).toEqual('https://custom-url.com');
+			expect(options.port).toEqual(8080);
 		});
 	});
 });

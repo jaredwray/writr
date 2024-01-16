@@ -7,6 +7,7 @@ export class WritrOptions {
 	public siteTitle = 'Writr';
 	public siteDescription = 'Beautiful Website for Your Projects';
 	public siteUrl = 'https://writr.org';
+	public port = 3000;
 
 	constructor(options?: Record<string, unknown>) {
 		if (options) {
@@ -41,6 +42,10 @@ export class WritrOptions {
 
 		if (options.siteUrl) {
 			this.siteUrl = options.siteUrl as string;
+		}
+
+		if (options.port) {
+			this.port = options.port as number;
 		}
 	}
 }

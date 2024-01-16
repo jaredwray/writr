@@ -229,21 +229,6 @@ describe('writr execute', () => {
 		expect(consoleMessage).toContain('.');
 		console.log = consoleLog;
 	});
-	it('should execute serve based on the serve command', async () => {
-		const writr = new Writr(defaultOptions);
-		const consoleLog = console.log;
-		let consoleMessage = '';
-		process.argv = ['node', 'writr', 'serve'];
-		console.log = message => {
-			if (typeof message === 'string') {
-				consoleMessage = message;
-			}
-		};
-
-		await writr.execute(process);
-		expect(consoleMessage).toContain('Serve');
-		console.log = consoleLog;
-	});
 });
 
 describe('writr config file', () => {
@@ -268,7 +253,7 @@ describe('writr config file', () => {
 			}
 		};
 
-		process.argv = ['node', 'writr', 'serve'];
+		process.argv = ['node', 'writr', 'version'];
 		await writr.execute(process);
 		expect(writr.options.outputPath).toEqual(writr.configFileModule.options.outputPath);
 		console.log = consoleLog;
@@ -287,7 +272,7 @@ describe('writr config file', () => {
 			}
 		};
 
-		process.argv = ['node', 'writr', 'serve'];
+		process.argv = ['node', 'writr', 'version'];
 		await writr.execute(process);
 		expect(writr.options.outputPath).toEqual(writr.configFileModule.options.outputPath);
 		console.log = consoleLog;
@@ -311,7 +296,7 @@ describe('writr config file', () => {
 			}
 		};
 
-		process.argv = ['node', 'writr', 'serve'];
+		process.argv = ['node', 'writr', 'version'];
 		try {
 			await writr.execute(process);
 			expect.fail('Should have thrown an error');

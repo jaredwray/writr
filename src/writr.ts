@@ -1,5 +1,7 @@
+import type http from 'node:http';
 import fs from 'fs-extra';
 import updateNotifier from 'update-notifier';
+import express from 'express';
 import {register} from 'ts-node';
 import packageJson from '../package.json';
 import {WritrOptions} from './options.js';
@@ -10,6 +12,7 @@ export default class Writr {
 	private _options: WritrOptions = new WritrOptions();
 	private readonly _console: WritrConsole = new WritrConsole();
 	private _configFileModule: any = {};
+	private _server: http.Server | undefined;
 
 	constructor(options?: WritrOptions) {
 		if (options) {
@@ -81,7 +84,7 @@ export default class Writr {
 			}
 
 			case 'serve': {
-				this._console.log('Serve');
+				this._console.log('Serving...');
 				break;
 			}
 
@@ -145,6 +148,22 @@ export default class Writr {
 				this._configFileModule = await import(configFile);
 			}
 		}
+	}
+
+	public async serve(options: WritrOptions): Promise<void> {
+		if (this._server) {
+			this._server.close();
+		}
+
+		const app = express();
+		const port = options.port || 3000;
+		const outputPath = options.outputPath || './dist';
+
+		app.use(express.static(outputPath));
+
+		this._server = app.listen(port, () => {
+			this._console.log(`Writr listening at http://localhost:${port}`);
+		});
 	}
 }
 
