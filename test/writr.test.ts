@@ -229,6 +229,57 @@ describe('writr execute', () => {
 		expect(consoleMessage).toContain('.');
 		console.log = consoleLog;
 	});
+	it('should serve the site', async () => {
+		const options = new WritrOptions();
+		options.sitePath = 'test/fixtures/single-page-site';
+		options.outputPath = 'test/fixtures/single-page-site/dist3';
+		const writr = new Writr(options);
+		process.argv = ['node', 'writr', 'serve'];
+
+		try {
+			await writr.execute(process);
+		} finally {
+			fs.rmdirSync(options.outputPath, {recursive: true});
+			if (writr.server) {
+				writr.server.close();
+			}
+		}
+	});
+	it('should serve the site and reset the server if exists', async () => {
+		const options = new WritrOptions();
+		options.sitePath = 'test/fixtures/single-page-site';
+		options.outputPath = 'test/fixtures/single-page-site/dist3';
+		const writr = new Writr(options);
+		process.argv = ['node', 'writr', 'serve'];
+
+		try {
+			await writr.serve(options);
+			await writr.execute(process);
+		} finally {
+			fs.rmdirSync(options.outputPath, {recursive: true});
+			if (writr.server) {
+				writr.server.close();
+			}
+		}
+	});
+	it('should serve the site on a specified port', async () => {
+		const options = new WritrOptions();
+		options.sitePath = 'test/fixtures/single-page-site';
+		options.outputPath = 'test/fixtures/single-page-site/dist3';
+		const writr = new Writr(options);
+		process.argv = ['node', 'writr', 'serve', '-p', '8181'];
+
+		try {
+			await writr.execute(process);
+
+			expect(writr.server).toBeDefined();
+		} finally {
+			fs.rmdirSync(options.outputPath, {recursive: true});
+			if (writr.server) {
+				writr.server.close();
+			}
+		}
+	});
 });
 
 describe('writr config file', () => {

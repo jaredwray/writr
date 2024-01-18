@@ -28,6 +28,10 @@ export default class Writr {
 		this._options = value;
 	}
 
+	public get server(): http.Server | undefined {
+		return this._server;
+	}
+
 	public get configFileModule(): any {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 		return this._configFileModule;
@@ -84,7 +88,9 @@ export default class Writr {
 			}
 
 			case 'serve': {
-				this._console.log('Serving...');
+				const builder = new WritrBuilder(this.options);
+				await builder.build();
+				await this.serve(this.options);
 				break;
 			}
 
@@ -156,8 +162,8 @@ export default class Writr {
 		}
 
 		const app = express();
-		const port = options.port || 3000;
-		const outputPath = options.outputPath || './dist';
+		const {port} = options;
+		const {outputPath} = options;
 
 		app.use(express.static(outputPath));
 
