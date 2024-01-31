@@ -1,1 +1,15 @@
-<title>{{ siteTitle }}</title>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {{> header }}
+    <title>{{ siteTitle }}</title>
+  </head>
+
+  <body>
+    {{> landing/hero }}
+    {{> landing/content }}
+    {{> footer}}
+
+    {{> scripts }}
+  </body>
+</html>

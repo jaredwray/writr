@@ -1,0 +1,42 @@
+<article class="home-container">
+  <h1>{{siteTitle}}</h1>
+  <div class="content">{{{content}}}</div>
+
+  {{#if github}}
+      <div class="content-container">
+        <h2 class="home-title">Contributors</h2>
+        <div class="facepile-container">
+          <div class="facepile">
+            {{#each github.contributors}}
+              <a
+                href="{{html_url}}"
+                target="_blank"
+                title="{{login}}"
+                rel="noopener noreferrer"
+              >
+                <img src="{{avatar_url}}" alt="{{login}}" />
+              </a>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+
+      <div class="content-container">
+        <h2 class="home-title">Latest Releases</h2>
+        {{#each github.releases}}
+          <div class="release">
+            <div class="release-header">
+              <a
+                class="release-title"
+                href="{{html_url}}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {{name}}
+              </a>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+  {{/if}}
+</article>
