@@ -2,6 +2,7 @@
   "name": "writr",
   "version": "2.0.0",
   "description": "Beautiful Website for Your Projects",
+  "type": "module",
   "exports": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "repository": "https://github.com/jaredwray/writr.git",
@@ -28,12 +29,12 @@
   ],
   "scripts": {
     "clean": "rimraf ./dist ./coverage ./node_modules ./package-lock.json ./yarn.lock",
-    "build": "rimraf ./dist && tsc --project ./tsconfig.build.json",
+    "build": "rimraf ./dist && tsc",
     "test": "xo --fix && vitest run --coverage",
     "prepare": "yarn run build"
   },
   "bin": {
-    "writr": "./bin/writr.js"
+    "writr": "./bin/writr.mjs"
   },
   "dependencies": {
     "axios": "^1.6.2",
@@ -63,7 +64,8 @@
   "xo": {
     "ignores": [
       "writr.config.*",
-      "vitest.config.mjs"
+      "vitest.config.mjs",
+      "bin/writr.js"
     ]
   },
   "files": [

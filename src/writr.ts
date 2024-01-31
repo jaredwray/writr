@@ -3,7 +3,6 @@ import fs from 'fs-extra';
 import updateNotifier from 'update-notifier';
 import express from 'express';
 import {register} from 'ts-node';
-import packageJson from '../package.json';
 import {WritrOptions} from './options.js';
 import {WritrConsole} from './console.js';
 import {WritrBuilder} from './builder.js';
@@ -37,9 +36,30 @@ export default class Writr {
 		return this._configFileModule;
 	}
 
+	public checkForUpdates(): void {
+		if (fs.existsSync('../package.json')) {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+			const packageJson = JSON.parse(fs.readFileSync('../package.json', 'utf8'));
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+			updateNotifier({pkg: packageJson}).notify();
+		} else if (fs.existsSync('./package.json')) {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+			const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+			updateNotifier({pkg: packageJson}).notify();
+		}
+	}
+
 	public async execute(process: NodeJS.Process): Promise<void> {
 		// Check for updates
-		updateNotifier({pkg: packageJson}).notify();
+		this.checkForUpdates();
+
+		const consoleProcess = this._console.parseProcessArgv(process.argv);
+
+		// Update options
+		if (consoleProcess.args.sitePath) {
+			this.options.sitePath = consoleProcess.args.sitePath;
+		}
 
 		// Load the Config File
 		await this.loadConfigFile(this.options.sitePath);
@@ -57,13 +77,6 @@ export default class Writr {
 			}
 		} catch (error) {
 			this._console.error((error as Error).message);
-		}
-
-		const consoleProcess = this._console.parseProcessArgv(process.argv);
-
-		// Update options
-		if (consoleProcess.args.sitePath) {
-			this.options.sitePath = consoleProcess.args.sitePath;
 		}
 
 		if (consoleProcess.args.output) {

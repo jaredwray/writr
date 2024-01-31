@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {afterEach, beforeEach, expect, it, describe, vi} from 'vitest';
 import * as fs from 'fs-extra';
 import axios from 'axios';
@@ -61,7 +62,7 @@ describe('WritrBuilder', () => {
 		try {
 			await builder.build();
 		} finally {
-			await fs.remove(builder.options.outputPath);
+			await fs.rm(builder.options.outputPath, {recursive: true});
 		}
 
 		expect(consoleMessage).toContain('Build');

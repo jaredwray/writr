@@ -10,4 +10,4 @@ export const options = {
 
 export function onPrepare(writrOptions?: any) {
 	console.log('onPrepare');
-};
+}
