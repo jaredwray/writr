@@ -54,7 +54,7 @@ describe('Github', () => {
 		// @ts-expect-error - mock
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 		axios.get.mockResolvedValue({data: githubMockContributors});
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
 		const result = await github.getContributors();
 		expect(result).toBeDefined();
 	});
@@ -91,7 +91,7 @@ describe('Github', () => {
 		// @ts-expect-error - mock
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 		axios.get.mockResolvedValue({data: githubMockReleases});
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
 		const result = await github.getReleases();
 
 		expect(result).toBeDefined();

@@ -87,7 +87,6 @@ describe('writr', () => {
 		let consoleMessage = '';
 		const temporarySitePath = './temp-site';
 		console.log = message => {
-			/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
 			consoleMessage = message;
 		};
 
@@ -112,7 +111,6 @@ describe('writr', () => {
 		let consoleMessage = '';
 		const temporarySitePath = './temp-site-js';
 		console.log = message => {
-			/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
 			consoleMessage = message;
 		};
 
@@ -185,7 +183,6 @@ describe('writr execute', () => {
 		let consoleMessage = '';
 		const consoleLog = console.log;
 		console.log = message => {
-			/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
 			consoleMessage = message;
 		};
 
