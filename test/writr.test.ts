@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import process from 'node:process';
 import {afterEach, beforeEach, expect, it, describe, vi} from 'vitest';
 import fs from 'fs-extra';
