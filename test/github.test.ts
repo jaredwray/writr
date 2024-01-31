@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import axios from 'axios';
 import {Github, type GithubOptions} from '../src/github.js';
