@@ -25,6 +25,7 @@ body {
   color: var(--color-text);
   font-size: 16px;
   background-color: var(--background);
+  min-height: 100vh;
 }
 
 a {

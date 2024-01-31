@@ -6,6 +6,8 @@ export default defineConfig({
 			exclude: [
 				'bin/**',
 				'init/**',
+				'template/**',
+				'test/fixtures/**'
 			],
 		},
 	},

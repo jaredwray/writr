@@ -3,6 +3,7 @@
   <div class="content">{{{content}}}</div>
 
   {{#if github}}
+    {{#if (github.contributors) and (github.contributors.length)}}
       <div class="content-container">
         <h2 class="home-title">Contributors</h2>
         <div class="facepile-container">
@@ -20,7 +21,9 @@
           </div>
         </div>
       </div>
+    {{/if}}
 
+    {{#if (github.releases) and (github.releases.length)}}
       <div class="content-container">
         <h2 class="home-title">Latest Releases</h2>
         {{#each github.releases}}
@@ -38,5 +41,6 @@
           </div>
         {{/each}}
       </div>
+    {{/if}}
   {{/if}}
 </article>

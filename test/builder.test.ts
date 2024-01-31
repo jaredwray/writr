@@ -49,10 +49,10 @@ describe('WritrBuilder', () => {
 		expect(builder.options).toBe(options);
 	});
 	it('should build', async () => {
-		const builder = new WritrBuilder();
-		const consoleLog = console.log;
 		const options = new WritrOptions();
 		options.outputPath = 'test/temp-build-test';
+		const builder = new WritrBuilder(options);
+		const consoleLog = console.log;
 		let consoleMessage = '';
 		console.log = message => {
 			consoleMessage = message as string;
@@ -130,7 +130,7 @@ describe('WritrBuilder', () => {
 		const options = new WritrOptions();
 		options.templatePath = 'test/fixtures/template-example/';
 		const templateData = await builder.getTemplates(options);
-		expect(templateData.releases).toBe('releases.handlebars');
+		expect(templateData.releases).toBe('releases.hbs');
 	});
 	it('should throw error when template path doesnt exist', async () => {
 		const builder = new WritrBuilder();
@@ -193,7 +193,7 @@ describe('WritrBuilder', () => {
 			releases: 'releases.hbs',
 		};
 		data.sitePath = 'site';
-		data.templatePath = 'template';
+		data.templatePath = 'test/fixtures/template-example';
 		data.outputPath = 'test/temp-index-test';
 
 		await fs.remove(data.outputPath);
