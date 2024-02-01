@@ -67,11 +67,9 @@ export class WritrBuilder {
 		// Build the robots.txt (/robots.txt)
 		await this.buildRobotsPage(this.options);
 
-		let siteRelativePath = this.options.sitePath;
+		const siteRelativePath = this.options.sitePath;
 
-		if (!fs.pathExistsSync(siteRelativePath) && siteRelativePath.startsWith('../')) {
-			siteRelativePath = siteRelativePath.replace('../', './');
-		}
+		console.log('siteRelativePath', siteRelativePath);
 
 		// Copy over favicon
 		if (await fs.pathExists(`${siteRelativePath}/favicon.ico`)) {

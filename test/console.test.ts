@@ -34,9 +34,9 @@ describe('WritrConsole', () => {
 	});
 	it('should be able to print help', () => {
 		const consoleLog = console.log;
-		const messages = [];
+		const messages = new Array<string>();
 		console.log = message => {
-			messages.push(message);
+			messages.push(message as string);
 		};
 
 		const c = new WritrConsole();
@@ -51,16 +51,16 @@ describe('WritrConsole', () => {
 		expect(result.argv.length).toEqual(12);
 		expect(result.command).toEqual('build');
 		expect(result.args.watch).toEqual(true);
-		expect(result.args.templatePath).toEqual('./site/template');
-		expect(result.args.sitePath).toEqual('./site');
-		expect(result.args.output).toEqual('./site/dist');
+		expect(result.args.templatePath).toContain('/site/template');
+		expect(result.args.sitePath).toContain('/site');
+		expect(result.args.output).toContain('/site/dist');
 		expect(result.args.port).toEqual(8080);
 	});
 	it('should be able to parse process templatePath', () => {
 		const c = new WritrConsole();
 		const result = c.parseProcessArgv(['node', 'writr', 'build', '--templatePath', './site/dist', '-p', '8080']);
 		expect(result.command).toEqual('build');
-		expect(result.args.templatePath).toEqual('./site/dist');
+		expect(result.args.templatePath).toContain('/site/dist');
 	});
 	it('should be able to parse serve', () => {
 		const c = new WritrConsole();

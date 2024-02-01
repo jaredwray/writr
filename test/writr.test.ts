@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import process from 'node:process';
+import path from 'node:path';
 import {afterEach, beforeEach, expect, it, describe, vi} from 'vitest';
 import fs from 'fs-extra';
 import axios from 'axios';
@@ -231,13 +232,14 @@ describe('writr execute', () => {
 		const options = new WritrOptions();
 		options.sitePath = 'test/fixtures/single-page-site';
 		options.outputPath = 'test/fixtures/single-page-site/dist3';
+		options.templatePath = 'test/fixtures/template-example/';
 		const writr = new Writr(options);
 		process.argv = ['node', 'writr', 'serve'];
 
 		try {
 			await writr.execute(process);
 		} finally {
-			fs.rmdirSync(options.outputPath, {recursive: true});
+			fs.rmSync(options.outputPath, {recursive: true});
 			if (writr.server) {
 				writr.server.close();
 			}
@@ -245,8 +247,8 @@ describe('writr execute', () => {
 	});
 	it('should serve the site and reset the server if exists', async () => {
 		const options = new WritrOptions();
-		options.sitePath = 'test/fixtures/single-page-site';
-		options.outputPath = 'test/fixtures/single-page-site/dist3';
+		options.sitePath = path.join(process.cwd(), 'test/fixtures/single-page-site');
+		options.outputPath = path.join(process.cwd(), 'test/fixtures/single-page-site/dist3');
 		const writr = new Writr(options);
 		process.argv = ['node', 'writr', 'serve'];
 
@@ -254,7 +256,7 @@ describe('writr execute', () => {
 			await writr.serve(options);
 			await writr.execute(process);
 		} finally {
-			fs.rmdirSync(options.outputPath, {recursive: true});
+			fs.rmSync(options.outputPath, {recursive: true});
 			if (writr.server) {
 				writr.server.close();
 			}
@@ -323,7 +325,7 @@ describe('writr config file', () => {
 
 		process.argv = ['node', 'writr', 'version'];
 		await writr.execute(process);
-		expect(writr.options.outputPath).toEqual(writr.configFileModule.options.outputPath);
+		expect(writr.options.outputPath).toContain('dist-js');
 		console.log = consoleLog;
 	});
 	it('should throw error onPrepare', async () => {

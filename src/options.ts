@@ -1,3 +1,5 @@
+import path from 'node:path';
+import process from 'node:process';
 
 export class WritrOptions {
 	public templatePath = './template';
@@ -18,14 +20,17 @@ export class WritrOptions {
 	public parseOptions(options: Record<string, any>) {
 		if (options.templatePath) {
 			this.templatePath = options.templatePath as string;
+			this.templatePath = path.join(process.cwd(), this.templatePath);
 		}
 
 		if (options.outputPath) {
 			this.outputPath = options.outputPath as string;
+			this.githubPath = path.join(process.cwd(), this.outputPath);
 		}
 
 		if (options.sitePath) {
 			this.sitePath = options.sitePath as string;
+			this.sitePath = path.join(process.cwd(), this.sitePath);
 		}
 
 		if (options.githubPath) {

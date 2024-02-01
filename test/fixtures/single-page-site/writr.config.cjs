@@ -1,5 +1,4 @@
-
-export const options = {
+module.exports.options = {
 	templatePath: './template',
 	outputPath: './dist',
 	sitePath: './site',
@@ -8,7 +7,3 @@ export const options = {
 	siteDescription: 'Beautiful Website for Your Projects',
 	siteUrl: 'https://writr.org',
 };
-
-export function onPrepare(writrOptions?: any) {
-	console.log('onPrepare');
-}

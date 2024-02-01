@@ -154,8 +154,8 @@ export default class Writr {
 
 	public async loadConfigFile(sitePath: string): Promise<void> {
 		if (fs.existsSync(sitePath)) {
-			const isTypescript = fs.existsSync(`${sitePath}/writr.config.ts`);
-			const configFile = isTypescript ? `${sitePath}/writr.config.ts` : `${sitePath}/writr.config.js`;
+			const isTypescript = fs.existsSync(`${sitePath}/writr.config.cts`);
+			const configFile = isTypescript ? `${sitePath}/writr.config.cts` : `${sitePath}/writr.config.cjs`;
 			if (isTypescript) {
 				// Typescript
 				register({transpileOnly: true});
