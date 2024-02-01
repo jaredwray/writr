@@ -67,6 +67,28 @@ export class WritrBuilder {
 		// Build the robots.txt (/robots.txt)
 		await this.buildRobotsPage(this.options);
 
+		const siteRelativePath = this.options.sitePath;
+
+		// Copy over favicon
+		if (await fs.pathExists(`${siteRelativePath}/favicon.ico`)) {
+			await fs.copy(`${siteRelativePath}/favicon.ico`, `${this.options.outputPath}/favicon.ico`);
+		}
+
+		// Copy over logo
+		if (await fs.pathExists(`${siteRelativePath}/logo.png`)) {
+			await fs.copy(`${siteRelativePath}/logo.png`, `${this.options.outputPath}/logo.png`);
+		}
+
+		// Copy over css
+		if (await fs.pathExists(`${this.options.templatePath}/css`)) {
+			await fs.copy(`${this.options.templatePath}/css`, `${this.options.outputPath}/css`);
+		}
+
+		// Copy over variables
+		if (await fs.pathExists(`${siteRelativePath}/variables.css`)) {
+			await fs.copy(`${siteRelativePath}/variables.css`, `${this.options.outputPath}/css/variables.css`);
+		}
+
 		const endTime = Date.now();
 
 		const executionTime = endTime - startTime;

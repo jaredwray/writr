@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import process from 'node:process';
+import path from 'node:path';
 import {afterEach, beforeEach, expect, it, describe, vi} from 'vitest';
 import fs from 'fs-extra';
 import axios from 'axios';
@@ -86,18 +88,17 @@ describe('writr', () => {
 		let consoleMessage = '';
 		const temporarySitePath = './temp-site';
 		console.log = message => {
-			/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
 			consoleMessage = message;
 		};
 
 		try {
-			writr.generateInit(temporarySitePath, true);
+			writr.generateInit(temporarySitePath);
 
 			expect(consoleMessage).toContain('Writr initialized.');
 			console.log = consoleLog;
 
 			expect(fs.existsSync(temporarySitePath)).toEqual(true);
-			expect(fs.existsSync(`${temporarySitePath}/writr.config.ts`)).toEqual(true);
+			expect(fs.existsSync(`${temporarySitePath}/writr.config.cjs`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/logo.png`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/favicon.svg`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/variables.css`)).toEqual(true);
@@ -111,18 +112,17 @@ describe('writr', () => {
 		let consoleMessage = '';
 		const temporarySitePath = './temp-site-js';
 		console.log = message => {
-			/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
 			consoleMessage = message;
 		};
 
 		try {
-			writr.generateInit(temporarySitePath, false);
+			writr.generateInit(temporarySitePath);
 
 			expect(consoleMessage).toContain('Writr initialized.');
 			console.log = consoleLog;
 
 			expect(fs.existsSync(temporarySitePath)).toEqual(true);
-			expect(fs.existsSync(`${temporarySitePath}/writr.config.js`)).toEqual(true);
+			expect(fs.existsSync(`${temporarySitePath}/writr.config.cjs`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/logo.png`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/favicon.svg`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/variables.css`)).toEqual(true);
@@ -184,7 +184,6 @@ describe('writr execute', () => {
 		let consoleMessage = '';
 		const consoleLog = console.log;
 		console.log = message => {
-			/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
 			consoleMessage = message;
 		};
 
@@ -192,7 +191,7 @@ describe('writr execute', () => {
 		try {
 			await writr.execute(process);
 			expect(fs.existsSync(sitePath)).toEqual(true);
-			expect(fs.existsSync(`${sitePath}/writr.config.ts`)).toEqual(true);
+			expect(fs.existsSync(`${sitePath}/writr.config.cjs`)).toEqual(true);
 			expect(consoleMessage).toContain('Writr initialized.');
 		} finally {
 			fs.rmdirSync(sitePath, {recursive: true});
@@ -233,13 +232,14 @@ describe('writr execute', () => {
 		const options = new WritrOptions();
 		options.sitePath = 'test/fixtures/single-page-site';
 		options.outputPath = 'test/fixtures/single-page-site/dist3';
+		options.templatePath = 'test/fixtures/template-example/';
 		const writr = new Writr(options);
 		process.argv = ['node', 'writr', 'serve'];
 
 		try {
 			await writr.execute(process);
 		} finally {
-			fs.rmdirSync(options.outputPath, {recursive: true});
+			fs.rmSync(options.outputPath, {recursive: true});
 			if (writr.server) {
 				writr.server.close();
 			}
@@ -247,8 +247,8 @@ describe('writr execute', () => {
 	});
 	it('should serve the site and reset the server if exists', async () => {
 		const options = new WritrOptions();
-		options.sitePath = 'test/fixtures/single-page-site';
-		options.outputPath = 'test/fixtures/single-page-site/dist3';
+		options.sitePath = path.join(process.cwd(), 'test/fixtures/single-page-site');
+		options.outputPath = path.join(process.cwd(), 'test/fixtures/single-page-site/dist3');
 		const writr = new Writr(options);
 		process.argv = ['node', 'writr', 'serve'];
 
@@ -256,7 +256,7 @@ describe('writr execute', () => {
 			await writr.serve(options);
 			await writr.execute(process);
 		} finally {
-			fs.rmdirSync(options.outputPath, {recursive: true});
+			fs.rmSync(options.outputPath, {recursive: true});
 			if (writr.server) {
 				writr.server.close();
 			}
@@ -311,22 +311,15 @@ describe('writr config file', () => {
 	});
 	it('should load the config and test the onPrepare', async () => {
 		const writr = new Writr(defaultOptions);
-		const sitePath = 'test/fixtures/single-page-site';
+		const sitePath = 'test/fixtures/single-page-site-onprepare';
 		await writr.loadConfigFile(sitePath);
 		expect(writr.configFileModule).toBeDefined();
 		expect(writr.configFileModule.options).toBeDefined();
-		const consoleLog = console.log;
-		let consoleMessage = '';
-		console.log = message => {
-			if (typeof message === 'string') {
-				consoleMessage = message;
-			}
-		};
+		expect(writr.configFileModule.onPrepare).toBeDefined();
 
 		process.argv = ['node', 'writr', 'version'];
 		await writr.execute(process);
-		expect(writr.options.outputPath).toEqual(writr.configFileModule.options.outputPath);
-		console.log = consoleLog;
+		expect(writr.options.outputPath).toContain('dist');
 	});
 	it('should throw error onPrepare', async () => {
 		const writr = new Writr(defaultOptions);

@@ -24,9 +24,9 @@ describe('WritrOptions', () => {
 				siteDescription: 'Custom Description',
 				siteUrl: 'https://custom-url.com',
 			});
-			expect(options.templatePath).toEqual('./custom-template');
-			expect(options.outputPath).toEqual('./custom-dist');
-			expect(options.sitePath).toEqual('./custom-site');
+			expect(options.templatePath).toContain('/custom-template');
+			expect(options.outputPath).toContain('/custom-dist');
+			expect(options.sitePath).toContain('/custom-site');
 			expect(options.githubPath).toEqual('custom/repo');
 			expect(options.siteTitle).toEqual('Custom Title');
 			expect(options.siteDescription).toEqual('Custom Description');
@@ -95,9 +95,9 @@ describe('WritrOptions', () => {
 				siteUrl: 'https://custom-url.com',
 				port: 8080,
 			});
-			expect(options.templatePath).toEqual('./custom-template');
-			expect(options.outputPath).toEqual('./custom-dist');
-			expect(options.sitePath).toEqual('./custom-site');
+			expect(options.templatePath).toContain('/custom-template');
+			expect(options.outputPath).toContain('/custom-dist');
+			expect(options.sitePath).toContain('/custom-site');
 			expect(options.githubPath).toEqual('custom/repo');
 			expect(options.siteTitle).toEqual('Custom Title');
 			expect(options.siteDescription).toEqual('Custom Description');

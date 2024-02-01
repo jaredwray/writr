@@ -1,3 +1,6 @@
+import path from 'node:path';
+import process from 'node:process';
+
 export class WritrConsole {
 	log(message: string): void {
 		console.log(message);
@@ -103,6 +106,7 @@ export class WritrConsole {
 				case '-o':
 				case '--output': {
 					args.output = argv[i + 1];
+					args.output = path.join(process.cwd(), args.output);
 					break;
 				}
 
@@ -115,12 +119,14 @@ export class WritrConsole {
 				case '-s':
 				case '--site': {
 					args.sitePath = argv[i + 1];
+					args.sitePath = path.join(process.cwd(), args.sitePath);
 					break;
 				}
 
 				case '-t':
 				case '--templatePath': {
 					args.templatePath = argv[i + 1];
+					args.templatePath = path.join(process.cwd(), args.templatePath);
 					break;
 				}
 			}

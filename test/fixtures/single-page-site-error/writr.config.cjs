@@ -1,7 +1,6 @@
-
-export const options = {
+module.exports.options = {
 	templatePath: './template',
-	outputPath: './dist',
+	outputPath: './dist-js',
 	sitePath: './site',
 	githubPath: 'jaredwray/writr',
 	siteTitle: 'Writr',
@@ -9,6 +8,6 @@ export const options = {
 	siteUrl: 'https://writr.org',
 };
 
-export function onPrepare(writrOptions?: any) {
-	console.log('onPrepare');
-}
+module.exports.onPrepare = async (opts) => {
+	throw new Error('onPrepare');
+};

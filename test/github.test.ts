@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import axios from 'axios';
 import {Github, type GithubOptions} from '../src/github.js';
@@ -53,7 +54,7 @@ describe('Github', () => {
 		// @ts-expect-error - mock
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 		axios.get.mockResolvedValue({data: githubMockContributors});
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
 		const result = await github.getContributors();
 		expect(result).toBeDefined();
 	});
@@ -90,7 +91,7 @@ describe('Github', () => {
 		// @ts-expect-error - mock
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 		axios.get.mockResolvedValue({data: githubMockReleases});
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
 		const result = await github.getReleases();
 
 		expect(result).toBeDefined();
