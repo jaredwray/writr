@@ -1,4 +1,6 @@
 import type http from 'node:http';
+import path from 'node:path';
+import process from 'node:process';
 import fs from 'fs-extra';
 import updateNotifier from 'update-notifier';
 import express from 'express';
@@ -37,14 +39,10 @@ export default class Writr {
 	}
 
 	public checkForUpdates(): void {
-		if (fs.existsSync('../package.json')) {
+		const packageJsonPath = path.join(process.cwd(), 'package.json');
+		if (fs.existsSync(packageJsonPath)) {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-			const packageJson = JSON.parse(fs.readFileSync('../package.json', 'utf8'));
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-			updateNotifier({pkg: packageJson}).notify();
-		} else if (fs.existsSync('./package.json')) {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-			const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
+			const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 			updateNotifier({pkg: packageJson}).notify();
 		}
@@ -70,13 +68,13 @@ export default class Writr {
 		}
 
 		// Run the onPrepare function
-		try {
-			if (this._configFileModule.onPrepare) {
+		if (this._configFileModule.onPrepare) {
+			try {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 				await this._configFileModule.onPrepare(this.options);
+			} catch (error) {
+				this._console.error((error as Error).message);
 			}
-		} catch (error) {
-			this._console.error((error as Error).message);
 		}
 
 		if (consoleProcess.args.output) {
@@ -86,7 +84,7 @@ export default class Writr {
 		switch (consoleProcess.command) {
 			case 'init': {
 				const isTypescript = fs.existsSync('./tsconfig.json') ?? false;
-				this.generateInit(this.options.sitePath, isTypescript);
+				this.generateInit(this.options.sitePath);
 				break;
 			}
 
@@ -125,15 +123,15 @@ export default class Writr {
 		return files.length === 0;
 	}
 
-	public generateInit(sitePath: string, isTypescript: boolean): void {
+	public generateInit(sitePath: string): void {
 		// Check if the site path exists
 		if (!fs.existsSync(sitePath)) {
 			fs.mkdirSync(sitePath);
 		}
 
 		// Add the writr.config file based on js or ts
-		const writrConfigFile = isTypescript ? './init/writr.config.ts' : './init/writr.config.js';
-		fs.copyFileSync(writrConfigFile, `${sitePath}/writr.config.${isTypescript ? 'ts' : 'js'}`);
+		const writrConfigFile = './init/writr.config.cjs';
+		fs.copyFileSync(writrConfigFile, `${sitePath}/writr.config.cjs`);
 
 		// Add in the image and favicon
 		fs.copyFileSync('./init/logo.png', `${sitePath}/logo.png`);
@@ -154,15 +152,8 @@ export default class Writr {
 
 	public async loadConfigFile(sitePath: string): Promise<void> {
 		if (fs.existsSync(sitePath)) {
-			const isTypescript = fs.existsSync(`${sitePath}/writr.config.cts`);
-			const configFile = isTypescript ? `${sitePath}/writr.config.cts` : `${sitePath}/writr.config.cjs`;
-			if (isTypescript) {
-				// Typescript
-				register({transpileOnly: true});
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				this._configFileModule = await import(configFile);
-			} else {
-				// Javascript
+			const configFile = `${sitePath}/writr.config.cjs`;
+			if (fs.existsSync(configFile)) {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				this._configFileModule = await import(configFile);
 			}

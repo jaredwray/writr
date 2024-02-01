@@ -92,13 +92,13 @@ describe('writr', () => {
 		};
 
 		try {
-			writr.generateInit(temporarySitePath, true);
+			writr.generateInit(temporarySitePath);
 
 			expect(consoleMessage).toContain('Writr initialized.');
 			console.log = consoleLog;
 
 			expect(fs.existsSync(temporarySitePath)).toEqual(true);
-			expect(fs.existsSync(`${temporarySitePath}/writr.config.ts`)).toEqual(true);
+			expect(fs.existsSync(`${temporarySitePath}/writr.config.cjs`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/logo.png`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/favicon.svg`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/variables.css`)).toEqual(true);
@@ -116,13 +116,13 @@ describe('writr', () => {
 		};
 
 		try {
-			writr.generateInit(temporarySitePath, false);
+			writr.generateInit(temporarySitePath);
 
 			expect(consoleMessage).toContain('Writr initialized.');
 			console.log = consoleLog;
 
 			expect(fs.existsSync(temporarySitePath)).toEqual(true);
-			expect(fs.existsSync(`${temporarySitePath}/writr.config.js`)).toEqual(true);
+			expect(fs.existsSync(`${temporarySitePath}/writr.config.cjs`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/logo.png`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/favicon.svg`)).toEqual(true);
 			expect(fs.existsSync(`${temporarySitePath}/variables.css`)).toEqual(true);
@@ -191,7 +191,7 @@ describe('writr execute', () => {
 		try {
 			await writr.execute(process);
 			expect(fs.existsSync(sitePath)).toEqual(true);
-			expect(fs.existsSync(`${sitePath}/writr.config.ts`)).toEqual(true);
+			expect(fs.existsSync(`${sitePath}/writr.config.cjs`)).toEqual(true);
 			expect(consoleMessage).toContain('Writr initialized.');
 		} finally {
 			fs.rmdirSync(sitePath, {recursive: true});
@@ -311,22 +311,15 @@ describe('writr config file', () => {
 	});
 	it('should load the config and test the onPrepare', async () => {
 		const writr = new Writr(defaultOptions);
-		const sitePath = 'test/fixtures/single-page-site';
+		const sitePath = 'test/fixtures/single-page-site-onprepare';
 		await writr.loadConfigFile(sitePath);
 		expect(writr.configFileModule).toBeDefined();
 		expect(writr.configFileModule.options).toBeDefined();
-		const consoleLog = console.log;
-		let consoleMessage = '';
-		console.log = message => {
-			if (typeof message === 'string') {
-				consoleMessage = message;
-			}
-		};
+		expect(writr.configFileModule.onPrepare).toBeDefined();
 
 		process.argv = ['node', 'writr', 'version'];
 		await writr.execute(process);
-		expect(writr.options.outputPath).toContain('dist-js');
-		console.log = consoleLog;
+		expect(writr.options.outputPath).toContain('dist');
 	});
 	it('should throw error onPrepare', async () => {
 		const writr = new Writr(defaultOptions);

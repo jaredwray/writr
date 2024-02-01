@@ -1,4 +1,4 @@
-export const writrOptions = {
+module.exports.options = {
 	templatePath: './template',
 	outputPath: './dist',
 	sitePath: './site',

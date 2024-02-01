@@ -7,3 +7,7 @@ module.exports.options = {
 	siteDescription: 'Beautiful Website for Your Projects',
 	siteUrl: 'https://writr.org',
 };
+
+module.exports.onPrepare = async (opts) => {
+	throw new Error('onPrepare');
+};

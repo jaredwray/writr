@@ -69,8 +69,6 @@ export class WritrBuilder {
 
 		const siteRelativePath = this.options.sitePath;
 
-		console.log('siteRelativePath', siteRelativePath);
-
 		// Copy over favicon
 		if (await fs.pathExists(`${siteRelativePath}/favicon.ico`)) {
 			await fs.copy(`${siteRelativePath}/favicon.ico`, `${this.options.outputPath}/favicon.ico`);
@@ -82,8 +80,8 @@ export class WritrBuilder {
 		}
 
 		// Copy over css
-		if (await fs.pathExists(`${siteRelativePath}/css`)) {
-			await fs.copy(`${siteRelativePath}/css`, `${this.options.outputPath}/css`);
+		if (await fs.pathExists(`${this.options.templatePath}/css`)) {
+			await fs.copy(`${this.options.templatePath}/css`, `${this.options.outputPath}/css`);
 		}
 
 		// Copy over variables
