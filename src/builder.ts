@@ -75,8 +75,8 @@ export class WritrBuilder {
 		}
 
 		// Copy over logo
-		if (await fs.pathExists(`${siteRelativePath}/logo.png`)) {
-			await fs.copy(`${siteRelativePath}/logo.png`, `${this.options.outputPath}/logo.png`);
+		if (await fs.pathExists(`${siteRelativePath}/logo.svg`)) {
+			await fs.copy(`${siteRelativePath}/logo.svg`, `${this.options.outputPath}/logo.svg`);
 		}
 
 		// Copy over css
