@@ -1,8 +1,8 @@
 <article class="home-container">
-  <h1>{{siteTitle}}</h1>
   <div class="content">{{{content}}}</div>
 
   {{#if github}}
+    {{#if github.contributors}}
       <div class="content-container">
         <h2 class="home-title">Contributors</h2>
         <div class="facepile-container">
@@ -20,23 +20,44 @@
           </div>
         </div>
       </div>
+    {{/if}}
 
+    {{#if github.releases}}
       <div class="content-container">
-        <h2 class="home-title">Latest Releases</h2>
-        {{#each github.releases}}
-          <div class="release">
-            <div class="release-header">
-              <a
-                class="release-title"
-                href="{{html_url}}"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {{name}}
-              </a>
+        <h2 class="home-title">Latest's Releases</h2>
+        {{#each github.releases as |release|}}
+          {{#if (lt @index 3)}}
+            <div class="release">
+              <div class="release-header">
+                <a
+                  class="release-title"
+                  href="{{release.html_url}}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >{{release.name}}</a>
+                <span class="release-date">{{#moment
+                    release.published_at "MMMM DD, yyyy"
+                  }}{{/moment}}
+                </span>
+              </div>
+              <div class="release-body">
+                {{#if release.body}}
+                  {{#markdown}}{{release.body}}{{/markdown}}
+                {{/if}}
+              </div>
             </div>
-          </div>
+          {{/if}}
         {{/each}}
+
+        {{#if (gt github.releases.length 6)}}
+          <div>
+            <a class="release-btn" href="/releases">
+              All Releases
+              <span>→</span>
+            </a>
+          </div>
+        {{/if}}
       </div>
+    {{/if}}
   {{/if}}
 </article>

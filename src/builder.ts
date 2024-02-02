@@ -71,22 +71,34 @@ export class WritrBuilder {
 
 		// Copy over favicon
 		if (await fs.pathExists(`${siteRelativePath}/favicon.ico`)) {
-			await fs.copy(`${siteRelativePath}/favicon.ico`, `${this.options.outputPath}/favicon.ico`);
+			await fs.copy(
+				`${siteRelativePath}/favicon.ico`,
+				`${this.options.outputPath}/favicon.ico`,
+			);
 		}
 
 		// Copy over logo
 		if (await fs.pathExists(`${siteRelativePath}/logo.svg`)) {
-			await fs.copy(`${siteRelativePath}/logo.svg`, `${this.options.outputPath}/logo.svg`);
+			await fs.copy(
+				`${siteRelativePath}/logo.svg`,
+				`${this.options.outputPath}/logo.svg`,
+			);
 		}
 
 		// Copy over css
 		if (await fs.pathExists(`${this.options.templatePath}/css`)) {
-			await fs.copy(`${this.options.templatePath}/css`, `${this.options.outputPath}/css`);
+			await fs.copy(
+				`${this.options.templatePath}/css`,
+				`${this.options.outputPath}/css`,
+			);
 		}
 
 		// Copy over variables
 		if (await fs.pathExists(`${siteRelativePath}/variables.css`)) {
-			await fs.copy(`${siteRelativePath}/variables.css`, `${this.options.outputPath}/css/variables.css`);
+			await fs.copy(
+				`${siteRelativePath}/variables.css`,
+				`${this.options.outputPath}/css/variables.css`,
+			);
 		}
 
 		const endTime = Date.now();
@@ -136,7 +148,10 @@ export class WritrBuilder {
 				templates.index = index;
 			}
 
-			const releases = await this.getTemplateFile(options.templatePath, 'releases');
+			const releases = await this.getTemplateFile(
+				options.templatePath,
+				'releases',
+			);
 			if (releases) {
 				templates.releases = releases;
 			}
@@ -147,7 +162,10 @@ export class WritrBuilder {
 		return templates;
 	}
 
-	public async getTemplateFile(path: string, name: string): Promise<string | undefined> {
+	public async getTemplateFile(
+		path: string,
+		name: string,
+	): Promise<string | undefined> {
 		let result;
 		const files = await fs.readdir(path);
 		for (const file of files) {
@@ -168,15 +186,14 @@ export class WritrBuilder {
 
 		await fs.ensureDir(outputPath);
 
-		await (await fs.pathExists(`${sitePath}/robots.txt`) ? fs.copy(`${sitePath}/robots.txt`, robotsPath) : fs.writeFile(robotsPath, 'User-agent: *\nDisallow:'));
+		await ((await fs.pathExists(`${sitePath}/robots.txt`))
+			? fs.copy(`${sitePath}/robots.txt`, robotsPath)
+			: fs.writeFile(robotsPath, 'User-agent: *\nDisallow:'));
 	}
 
 	public async buildSiteMapPage(data: WritrData): Promise<void> {
 		const sitemapPath = `${data.outputPath}/sitemap.xml`;
-		const urls = [
-			{url: data.siteUrl},
-			{url: `${data.siteUrl}/releases`},
-		];
+		const urls = [{url: data.siteUrl}, {url: `${data.siteUrl}/releases`}];
 
 		let xml = '<?xml version="1.0" encoding="UTF-8"?>';
 		xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
@@ -201,7 +218,21 @@ export class WritrBuilder {
 			await fs.ensureDir(data.outputPath);
 
 			const indexTemplate = `${data.templatePath}/${data.templates.index}`;
-			const indexContent = await this._ecto.renderFromFile(indexTemplate, data, data.templatePath);
+
+			let htmlReadme = '';
+			if (fs.existsSync(`${data.sitePath}/README.md`)) {
+				const readmeContent = fs.readFileSync(
+					`${data.sitePath}/README.md`,
+					'utf8',
+				);
+				htmlReadme = await this._ecto.markdown.render(readmeContent);
+			}
+
+			const indexContent = await this._ecto.renderFromFile(
+				indexTemplate,
+				{...data, content: htmlReadme},
+				data.templatePath,
+			);
 			await fs.writeFile(indexPath, indexContent, 'utf8');
 		} else {
 			throw new Error('No templates found');
@@ -216,7 +247,11 @@ export class WritrBuilder {
 			await fs.ensureDir(releaseOutputPath);
 
 			const releasesTemplate = `${data.templatePath}/${data.templates.releases}`;
-			const releasesContent = await this._ecto.renderFromFile(releasesTemplate, data, data.templatePath);
+			const releasesContent = await this._ecto.renderFromFile(
+				releasesTemplate,
+				data,
+				data.templatePath,
+			);
 			await fs.writeFile(releasesPath, releasesContent, 'utf8');
 		} else {
 			throw new Error('No github data found');

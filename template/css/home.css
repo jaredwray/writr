@@ -9,12 +9,15 @@
 }
 
 .home-hero {
-  padding: 56px 0 72px;
+  display: flex;
+  justify-content: center;
+  height: 20vh;
   background-color: var(--home-background)
 }
 
 .home-container {
-  margin: 32px 32px 48px;
+  max-width: 90%;
+  margin: 0 auto;
   color: var(--color-text);
 }
 
@@ -47,7 +50,15 @@
 
 .home-hero img {
   width: 100%;
-  max-width: 120px;
+  max-width: 200px;
+}
+
+.github-fork-ribbon {
+  position: fixed !important;
+}
+
+.github-fork-ribbon:before {
+  background-color: var(--color-primary) !important;
 }
 
 .content-container {
@@ -180,8 +191,6 @@ footer {
   justify-content: center;
   align-items: center;
   border-top: 1px solid var(--border);
-  position: absolute;
-  bottom: 0;
   width: 100%;
 }
 
@@ -191,20 +200,15 @@ footer img {
 }
 
 @media screen and (min-width: 640px) {
-  .home-hero {
-    padding: 64px 0 72px;
-  }
-
   .home-container {
-    margin-left: 64px;
-    margin-right: 64px;
+    max-width: 82%;
   }
 }
 
 
 @media screen and (min-width: 768px) {
   .home-hero {
-    padding: 72px 0;
+    height: 40vh;
   }
 
   .header-logo {
@@ -212,7 +216,7 @@ footer img {
   }
 
   .home-hero img {
-    max-width: 180px;
+    max-width: 340px;
   }
 
   .content-container {
@@ -231,7 +235,6 @@ footer img {
 
 @media screen and (min-width: 992px) {
   .home-container {
-    margin: 72px auto 56px;
     max-width: 70%;
   }
 
@@ -241,10 +244,6 @@ footer img {
 
   .home-docs-button {
     font-size: 24px;
-  }
-
-  .home-hero {
-    padding: 120px 0;
   }
 
   .nav {
@@ -258,7 +257,7 @@ footer img {
   }
 
   .home-hero img {
-    max-width: 250px;
+    max-width: 600px;
   }
 
   .home-title {
@@ -279,7 +278,7 @@ footer img {
   }
 
   footer img {
-    height: 40px;
+    height: 28px;
     width: auto;
   }
 }
