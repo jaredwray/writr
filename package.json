@@ -28,10 +28,10 @@
     "handlebars"
   ],
   "scripts": {
-    "clean": "rimraf ./dist ./coverage ./node_modules ./package-lock.json ./yarn.lock",
+    "clean": "rimraf ./dist ./coverage ./node_modules ./package-lock.json ./yarn.lock ./site/README.md",
     "build": "rimraf ./dist && tsc",
     "test": "xo --fix && vitest run --coverage",
-    "serve": "node bin/writr.mjs serve -s ./site -o ./dist/site-output",
+    "serve": "rimraf ./site/README.md && node bin/writr.mjs serve -s ./site -o ./dist/site-output",
     "prepare": "yarn run build"
   },
   "bin": {
