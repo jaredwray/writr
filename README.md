@@ -1,4 +1,4 @@
-![Writr](site/logo.png)
+![Writr](site/logo.svg)
 
 ---
 
