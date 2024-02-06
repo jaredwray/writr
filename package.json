@@ -38,8 +38,9 @@
     "writr": "./bin/writr.mjs"
   },
   "dependencies": {
+    "@markdoc/markdoc": "^0.4.0",
     "axios": "^1.6.2",
-    "ecto": "^2.4.0",
+    "ecto": "^2.4.1",
     "express": "^4.18.2",
     "feed": "^4.2.2",
     "fs-extra": "^11.2.0",

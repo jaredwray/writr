@@ -42,10 +42,10 @@ export class Github {
 
 			if (result && result.data.length > 0) {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-				return result.data;
+				return this.addAnchorLink(result.data);
 			}
 
-			return {};
+			return [];
 		} catch (error: unknown) {
 			const typedError = error as {response: {status: number}};
 			if (typedError.response?.status === 404) {
@@ -81,5 +81,14 @@ export class Github {
 
 		this.options.author = options.author;
 		this.options.repo = options.repo;
+	}
+
+	private addAnchorLink(data: any[]): any[] {
+		// @ts-ignore
+		return data.map((release) => {
+			const regex = /(?<!\]\()(https:\/\/[\w.-\/]+)(?!\))/g;
+			release.body = release.body.replace(regex, '[$1]($1)');
+			return release;
+		});
 	}
 }

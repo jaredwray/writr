@@ -2,7 +2,7 @@ import {Ecto} from 'ecto';
 import fs from 'fs-extra';
 import {WritrOptions} from './options.js';
 import {WritrConsole} from './console.js';
-import {type GithubData, Github, type GithubOptions} from './github.js';
+import {Github, type GithubData, type GithubOptions} from './github.js';
 
 export type WritrData = {
 	siteUrl: string;
@@ -22,12 +22,14 @@ export type WritrTemplates = {
 
 export class WritrBuilder {
 	private readonly _options: WritrOptions = new WritrOptions();
-	private readonly _ecto: Ecto = new Ecto();
+	private readonly _ecto: Ecto;
 	private readonly _console: WritrConsole = new WritrConsole();
-	constructor(options?: WritrOptions) {
+
+	constructor(options?: WritrOptions, engineOptions?: any) {
 		if (options) {
 			this._options = options;
 		}
+		this._ecto = new Ecto(engineOptions);
 	}
 
 	public get options(): WritrOptions {
@@ -219,14 +221,7 @@ export class WritrBuilder {
 
 			const indexTemplate = `${data.templatePath}/${data.templates.index}`;
 
-			let htmlReadme = '';
-			if (fs.existsSync(`${data.sitePath}/README.md`)) {
-				const readmeContent = fs.readFileSync(
-					`${data.sitePath}/README.md`,
-					'utf8',
-				);
-				htmlReadme = await this._ecto.markdown.render(readmeContent);
-			}
+			const htmlReadme = await this.buildReadmeSection(data);
 
 			const indexContent = await this._ecto.renderFromFile(
 				indexTemplate,
@@ -256,5 +251,17 @@ export class WritrBuilder {
 		} else {
 			throw new Error('No github data found');
 		}
+	}
+
+	public async buildReadmeSection(data: WritrData): Promise<string> {
+		let htmlReadme = '';
+		if (fs.existsSync(`${data.sitePath}/README.md`)) {
+			const readmeContent = fs.readFileSync(
+				`${data.sitePath}/README.md`,
+				'utf8',
+			);
+			htmlReadme = await this._ecto.markdown.render(readmeContent);
+		}
+		return htmlReadme;
 	}
 }

@@ -102,10 +102,6 @@ Writr comes with some helper functions that you can use in your markdown files.
 
 In some cases your markdown file will have html content in it such as the logo of your project or a badge. You can use the `wrtirHelpers.removeHtmlContent()` helper function to remove that content from the page. Here is an example:
 
-```js
-writrHelpers.removeHtmlContent('../readme.md', '<img src=');
-```
-
 ### Get and Set the Front Matter of a Markdown File
 
 You can use the `writrHelpers.getFrontMatter()` and `writrHelpers.setFrontMatter()` helper functions to get and set the front matter of a markdown file. Here is an example:

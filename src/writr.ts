@@ -4,10 +4,10 @@ import process from 'node:process';
 import fs from 'fs-extra';
 import updateNotifier from 'update-notifier';
 import express from 'express';
-import {register} from 'ts-node';
 import {WritrOptions} from './options.js';
 import {WritrConsole} from './console.js';
 import {WritrBuilder} from './builder.js';
+import {MarkdownHelper} from "./helpers/markdown.js";
 
 export default class Writr {
 	private _options: WritrOptions = new WritrOptions();
@@ -81,6 +81,12 @@ export default class Writr {
 			this.options.outputPath = consoleProcess.args.output;
 		}
 
+		const engineConfig = {
+			nodes: {
+				fence: MarkdownHelper.fence(),
+			},
+		}
+
 		switch (consoleProcess.command) {
 			case 'init': {
 				const isTypescript = fs.existsSync('./tsconfig.json') ?? false;
@@ -99,14 +105,14 @@ export default class Writr {
 			}
 
 			case 'serve': {
-				const builder = new WritrBuilder(this.options);
+				const builder = new WritrBuilder(this.options, engineConfig);
 				await builder.build();
 				await this.serve(this.options);
 				break;
 			}
 
 			default: {
-				const builder = new WritrBuilder(this.options);
+				const builder = new WritrBuilder(this.options, engineConfig);
 				await builder.build();
 				break;
 			}
