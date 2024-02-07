@@ -52,6 +52,7 @@ export class WritrBuilder {
 			templatePath: this.options.templatePath,
 			outputPath: this.options.outputPath,
 		};
+
 		// Get data from github
 		const githubData = await this.getGithubData(this.options.githubPath);
 		// Get data of the site
@@ -160,7 +161,7 @@ export class WritrBuilder {
 				templates.releases = releases;
 			}
 		} else {
-			throw new Error('No template path found');
+			throw new Error(`No template path found at ${options.templatePath}`);
 		}
 
 		return templates;
