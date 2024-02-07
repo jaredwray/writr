@@ -2,9 +2,9 @@ import path from 'node:path';
 import process from 'node:process';
 
 export class WritrOptions {
-	public templatePath = './template';
-	public outputPath = './dist';
-	public sitePath = './site';
+	public templatePath = path.join(process.cwd(), './template');
+	public outputPath = path.join(process.cwd(), './dist');
+	public sitePath = path.join(process.cwd(), './site');
 	public githubPath = 'jaredwray/writr';
 	public siteTitle = 'Writr';
 	public siteDescription = 'Beautiful Website for Your Projects';
