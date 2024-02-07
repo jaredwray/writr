@@ -1,7 +1,3 @@
-![Writr](site/logo.svg)
-
----
-
 ## Beautiful Website for Your Projects
 [![Build](https://github.com/jaredwray/writr/actions/workflows/tests.yml/badge.svg)](https://github.com/jaredwray/writr/actions/workflows/tests.yml)
 [![GitHub license](https://img.shields.io/github/license/jaredwray/writr)](https://github.com/jaredwray/writr/blob/master/LICENSE)

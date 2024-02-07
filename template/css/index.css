@@ -46,6 +46,12 @@ button {
   font-size: 14px;
 }
 
+hr {
+  border-top: 0;
+  border-bottom: 1px solid var(--border);
+  margin: 12px 0;
+}
+
 .nav {
   padding-left: 16px;
   padding-right: 16px;
