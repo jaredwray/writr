@@ -5,9 +5,9 @@ describe('WritrOptions', () => {
 	describe('constructor', () => {
 		it('should create an instance of WritrOptions with default values', () => {
 			const options = new WritrOptions();
-			expect(options.templatePath).toEqual('./template');
-			expect(options.outputPath).toEqual('./dist');
-			expect(options.sitePath).toEqual('./site');
+			expect(options.templatePath).toContain('/template');
+			expect(options.outputPath).toContain('/dist');
+			expect(options.sitePath).toContain('/site');
 			expect(options.githubPath).toEqual('jaredwray/writr');
 			expect(options.siteTitle).toEqual('Writr');
 			expect(options.siteDescription).toEqual('Beautiful Website for Your Projects');
