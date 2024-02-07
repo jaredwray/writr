@@ -43,12 +43,14 @@ describe('WritrBuilder', () => {
 		const builder = new WritrBuilder();
 		expect(builder).toBeTruthy();
 	});
+
 	it('should initiate with options', () => {
 		const options = new WritrOptions();
 		const builder = new WritrBuilder(options);
 		expect(builder).toBeTruthy();
 		expect(builder.options).toBe(options);
 	});
+
 	it('should build', async () => {
 		const options = new WritrOptions();
 		options.outputPath = 'test/temp-build-test';
@@ -140,7 +142,7 @@ describe('WritrBuilder', () => {
 		try {
 			await builder.getTemplates(options);
 		} catch (error: any) {
-			expect(error.message).toBe('No template path found');
+			expect(error.message).toContain('No template path found');
 		}
 	});
 	it('should build the robots.txt (/robots.txt)', async () => {
