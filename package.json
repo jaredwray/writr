@@ -30,6 +30,7 @@
   "scripts": {
     "clean": "rimraf ./dist ./coverage ./node_modules ./package-lock.json ./yarn.lock ./site/README.md",
     "build": "rimraf ./dist && tsc",
+    "build-site": "rimraf ./site/README.md && node bin/writr.mjs build -s ./site -o ./dist/site-output",
     "test": "xo --fix && vitest run --coverage",
     "serve": "rimraf ./site/README.md && node bin/writr.mjs serve -s ./site -o ./dist/site-output",
     "prepare": "yarn run build"
