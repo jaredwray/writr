@@ -29,6 +29,8 @@ export class WritrBuilder {
 		if (options) {
 			this._options = options;
 		}
+
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		this._ecto = new Ecto(engineOptions);
 	}
 
@@ -262,6 +264,7 @@ export class WritrBuilder {
 			);
 			htmlReadme = await this._ecto.markdown.render(readmeContent);
 		}
+
 		return htmlReadme;
 	}
 }

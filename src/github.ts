@@ -42,7 +42,7 @@ export class Github {
 
 			if (result && result.data.length > 0) {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-				return this.addAnchorLink(result.data);
+				return this.addAnchorLink(result.data as any[]);
 			}
 
 			return [];
@@ -84,10 +84,11 @@ export class Github {
 	}
 
 	private addAnchorLink(data: any[]): any[] {
-		// @ts-ignore
-		return data.map((release) => {
-			const regex = /(?<!\]\()(https:\/\/[\w.-\/]+)(?!\))/g;
-			release.body = release.body.replace(regex, '[$1]($1)');
+		return data.map(release => {
+			const regex = /(?<!]\()(https:\/\/[\w./]+)(?!\))/g;
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+			release.body = release.body.replaceAll(regex, '[$1]($1)');
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 			return release;
 		});
 	}

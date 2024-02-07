@@ -1,7 +1,3 @@
-![Writr](site/logo.png)
-
----
-
 ## Beautiful Website for Your Projects
 [![Build](https://github.com/jaredwray/writr/actions/workflows/tests.yml/badge.svg)](https://github.com/jaredwray/writr/actions/workflows/tests.yml)
 [![GitHub license](https://img.shields.io/github/license/jaredwray/writr)](https://github.com/jaredwray/writr/blob/master/LICENSE)
@@ -101,10 +97,6 @@ Writr comes with some helper functions that you can use in your markdown files.
 ### Remove html content
 
 In some cases your markdown file will have html content in it such as the logo of your project or a badge. You can use the `wrtirHelpers.removeHtmlContent()` helper function to remove that content from the page. Here is an example:
-
-```js
-writrHelpers.removeHtmlContent('../readme.md', '<img src=');
-```
 
 ### Get and Set the Front Matter of a Markdown File
 

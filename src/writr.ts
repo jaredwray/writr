@@ -7,7 +7,7 @@ import express from 'express';
 import {WritrOptions} from './options.js';
 import {WritrConsole} from './console.js';
 import {WritrBuilder} from './builder.js';
-import {MarkdownHelper} from "./helpers/markdown.js";
+import {MarkdownHelper} from './helpers/markdown.js';
 
 export default class Writr {
 	private _options: WritrOptions = new WritrOptions();
@@ -85,7 +85,7 @@ export default class Writr {
 			nodes: {
 				fence: MarkdownHelper.fence(),
 			},
-		}
+		};
 
 		switch (consoleProcess.command) {
 			case 'init': {
