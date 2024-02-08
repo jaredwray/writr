@@ -11,6 +11,7 @@ export type WritrData = {
 	sitePath: string;
 	templatePath: string;
 	outputPath: string;
+	githubPath: string;
 	github?: GithubData;
 	templates?: WritrTemplates;
 };
@@ -51,6 +52,7 @@ export class WritrBuilder {
 			sitePath: this.options.sitePath,
 			templatePath: this.options.templatePath,
 			outputPath: this.options.outputPath,
+			githubPath: this.options.githubPath,
 		};
 
 		// Get data from github
