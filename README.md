@@ -2,7 +2,7 @@
 
 ---
 
-## Beautiful Website for Your Projects
+## Markdown Rendering Simplified
 [![Build](https://github.com/jaredwray/writr/actions/workflows/tests.yml/badge.svg)](https://github.com/jaredwray/writr/actions/workflows/tests.yml)
 [![GitHub license](https://img.shields.io/github/license/jaredwray/writr)](https://github.com/jaredwray/writr/blob/master/LICENSE)
 [![codecov](https://codecov.io/gh/jaredwray/writr/branch/master/graph/badge.svg?token=1YdMesM07X)](https://codecov.io/gh/jaredwray/writr)
@@ -12,112 +12,130 @@
 ## Table of Contents
 - [Features](#features)
 - [Getting Started](#getting-started)
-- [Using Your own Template](#using-your-own-template)
-- [Building Multiple Pages](#building-multiple-pages)
-- [Helper Functions for Markdown](#helper-functions-for-markdown)
-- [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
-- [What Happened to it Generating a Blog](#what-happened-to-it-generating-a-blog)
 - [License - MIT](#license)
 
 ## Features
-* No configuration requrired. Just setup the folder structure with a logo, favicon, and css file. 
-* Builds a static website that can be hosted anywhere.
-* For more complex projects easily add a `writr.config.js` or `writr.config.ts` file to customize the build process. With PRE and POST methods. 
-* Support for single page with readme or multiple markdown pages in a docs folder.
-* Will generate a sitemap.xml and robots.txt for your site.
-* Uses Github release notes to generate a changelog / releases page.
-* Uses Github to show contributors and link to their profiles.
-* Simple search is provided by default out of the box. 
+* Takes the complexity of Remark and makes it easy to use.
+* Up and Rendering in seconds with a simple API.
+* Generates a Table of Contents for your markdown files (remark-toc).
+* Slug generation for your markdown files (rehype-slug).
+* Code Highlighting (rehype-highlight).
+* Markdown to HTML (rehype-stringify).
+* Github Flavor Markdown (remark-gfm).
+* Emoji Support (remark-emoji).
+* Description AI Generation.
+* Keywords AI Generation.
+* Translation AI Generation. 
 
 ## Getting Started 
 
 ## 1. Install Writr
 
-> npx writr init
-
-This will create a folder called site with the following structure:
-
-```
-site
-├───site.css
-├───logo.png
-├───favicon.ico
-├───README.md
-├───writr.config.js
-```
-Note: for typescript do 'writr init --typescript'
-
-## 2. Add your content
-
-Simply replace the logo, favicon, and css file with your own. The readme is your root project readme and you just need to at build time move it over to the site folder. If you have it at the root of the project and this is a folder inside just delete the  README.md file in the site folder and writr will copy it over for you automatically.
-
-## 3. Build your site
-
-> npx writr
-
-This will build your site and place it in the `dist` folder. You can then host it anywhere you like.
-
-## Using Your own Template
-
-If you want to use your own template you can do so by adding a `writr.config.ts` file to the root of your project. This file will be used to configure the build process.
-
-or at the command line:
-
-> npx writr --template path/to/template
-
-## Building Multiple Pages
-
-If you want to build multiple pages you can easily do that by adding in a `docs` folder to the root of the site folder. Inside of that folder you can add as many pages as you like. Each page will be a markdown file and it will generate a table of contents for you. Here is an example of what it looks like:
-
-```
-site
-├───site.css
-├───logo.png
-├───favicon.ico
-├───writr.config.ts
-├───docs
-│   ├───getting-started.md
-│   ├───contributing.md
-│   ├───license.md
-│   ├───code-of-conduct.md
+```bash
+> npm install writr
 ```
 
-The `readme.md` file will be the root page and the rest will be added to the table of contents. If you want to control the title or order of the pages you can do so by setting the `title` and `order` properties in the front matter of the markdown file. Here is an example:
+## 2. Render from Markdown
 
-```md
----
-title: Getting Started
-order: 2
----
+```javascript
+import { Writr } from 'writr';
+
+const writr = new Writr();
+const markdown = `# Hello World ::-):\n\n This is a test.`;
+
+const html = await writr.render(markdown); // <h1>Hello World 🙂</h1><p>This is a test.</p>
+```
+Its just that simple. Want to add some options? No problem.
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr();
+const markdown = `# Hello World ::-):\n\n This is a test.`;
+const options  = {
+	emoji: false
+}
+const html = await writr.render(markdown, options); // <h1>Hello World ::-):</h1><p>This is a test.</p>
 ```
 
-## Helper Functions for Markdown
+Want to render to a translation? No problem.
 
-Writr comes with some helper functions that you can use in your markdown files.
-* `writrHelpers.getFrontMatter(fileName)` - Gets the front matter of a markdown file.
-* `writrHelpers.setFrontMatter(fileName, frontMatter)` - Sets the front matter of a markdown file.
-* `writrHelpers.createDoc(source, destination, frontMatter?, contentFn[]?)` - Creates a markdown file with the specified front matter and content. The contentFn is a function that is executed on the original content of the file. This is useful if you want to remove content from the original file.
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr({ openai: 'your-api-key'});
+const markdown = `# Hello World ::-):\n\n This is a test.`;
+const langCode = 'es';
+const html = await writr.renderTranslation(markdown, langCode, options); // <h1>Hola Mundo 🙂</h1><p>Esta es una prueba.</p>
+```
 
-### Remove html content
+How about generating keywords and descriptions for your front matter?
 
-In some cases your markdown file will have html content in it such as the logo of your project or a badge. You can use the `wrtirHelpers.removeHtmlContent()` helper function to remove that content from the page. Here is an example:
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr({ openai: 'your-api-key'});
+const markdown = `# Hello World ::-):\n\n This is a test.`;
+const keywords = await writr.keywords(markdown); // ['Hello World', 'Test']
+const description = await writr.description(markdown); // 'Hello World Test'
+```
 
-### Get and Set the Front Matter of a Markdown File
+## API
 
-You can use the `writrHelpers.getFrontMatter()` and `writrHelpers.setFrontMatter()` helper functions to get and set the front matter of a markdown file. Here is an example:
+### `new Writr(options?: WritrOptions)`
 
 ```js
-const frontMatter = writrHelpers.getFrontMatter('../readme.md');
-frontMatter.title = 'My Title';
-writrHelpers.setFrontMatter('../readme.md', frontMatter);
+interface WritrOptions {
+  	openai?: string; // openai api key (default: undefined)
+	emoji?: boolean; // emoji support (default: true)
+  	toc?: boolean; // table of contents generation (default: true)
+  	slug?: boolean; // slug generation (default: true)
+  	highlight?: boolean; // code highlighting (default: true)
+	gfm?: boolean; // github flavor markdown (default: true)
+}
 ```
+
+You can access the `WritrOptions` from the instance of Writr.
+
+```javascript
+import { Writr, WritrOptions } from 'writr';
+```
+
+### `.options`
+
+Accessing the default options for this instance of Writr.
+
+### `.render(markdown: string, options?: RenderOptions): Promise<string>`
+
+Rendering markdown to HTML. the options are based on RenderOptions. Which you can access from the Writr instance.
+
+```javascript
+import { Writr, RenderOptions } from 'writr';
+
+## `RenderOptions`
+
+```js
+interface RenderOptions {
+  emoji?: boolean; // emoji support
+  toc?: boolean; // table of contents generation
+  slug?: boolean; // slug generation
+  highlight?: boolean; // code highlighting
+  gfm?: boolean; // github flavor markdown
+}
+```
+
+### `.renderTranslation(markdown: string, langCode: string, options?: RenderOptions): Promise<string>`
+
+Rendering markdown to HTML. the options are based on RenderOptions. Which you can access from the Writr instance.
+
+
+### `.keywords(markdown: string): Promise<string[]>`
+
+AI Generation of Keywords that can be used for SEO on your HTML.
+
+### `.description(markdown: string): Promise<string>`
+
+AI Generation of a Description that can be used for SEO on your HTML.
 
 ## Code of Conduct and Contributing
 [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines.
-
-## What Happened to it Generating a Blog
-
-The original version of writr was a blog generator. Since there are plenty of blog generators out there we made the decision to make it a static site generator for open source projects. This is something that we constantly need and we hope you find it useful as well.
 
 ## License
 
