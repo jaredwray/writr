@@ -68,6 +68,7 @@ blog_public
 dist
 test_output
 site/README.md
+site-output
 
 # IDEs
 .idea/
