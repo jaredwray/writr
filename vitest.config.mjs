@@ -4,10 +4,7 @@ export default defineConfig({
 	test: {
 		coverage: {
 			exclude: [
-				'bin/**',
-				'init/**',
-				'template/**',
-				'test/fixtures/**'
+				'site/docula.config.cjs',
 			],
 		},
 	},

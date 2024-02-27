@@ -3,7 +3,6 @@ const path = require('path');
 const process = require('node:process');
 
 module.exports.options = {
-	templatePath: './template',
 	githubPath: 'jaredwray/writr',
 	siteTitle: 'Writr',
 	siteDescription: 'Beautiful Website for Your Projects',

@@ -1,354 +1,106 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import process from 'node:process';
-import path from 'node:path';
-import {afterEach, beforeEach, expect, it, describe, vi} from 'vitest';
-import fs from 'fs-extra';
-import axios from 'axios';
-import Writr, {WritrHelpers} from '../src/writr.js';
-import {WritrOptions} from '../src/options.js';
-import githubMockContributors from './fixtures/data-mocks/github-contributors.json';
-import githubMockReleases from './fixtures/data-mocks/github-releases.json';
 
-const defaultOptions: WritrOptions = new WritrOptions({
-	templatePath: './custom-template',
-	outputPath: './custom-dist',
-	sitePath: './custom-site',
-	githubPath: 'custom/repo',
-	siteTitle: 'Custom Title',
-	siteDescription: 'Custom Description',
-	siteUrl: 'https://custom-url.com',
-});
-
-vi.mock('axios');
+import {it, describe, expect} from 'vitest';
+import {Writr} from '../src/writr.js';
 
 describe('writr', () => {
-	afterEach(() => {
-		// Reset the mock after each test
-		vi.resetAllMocks();
-	});
-	beforeEach(() => {
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-		(axios.get as any).mockImplementation(async (url: string) => {
-			if (url.endsWith('releases')) {
-				return {data: githubMockReleases};
-			}
-
-			if (url.endsWith('contributors')) {
-				return {data: githubMockContributors};
-			}
-
-			// Default response or throw an error if you prefer
-			return {data: {}};
-		});
-	});
-
 	it('should be able to initialize', () => {
 		const writr = new Writr();
 		expect(writr).toBeDefined();
 	});
-	it('should be able to initialize with options', () => {
-		const writr = new Writr(defaultOptions);
-		expect(writr).toBeDefined();
-	});
-	it('should be able to get and set options', () => {
-		const writr = new Writr(defaultOptions);
-		expect(writr.options).toEqual(defaultOptions);
-		const newOptions: WritrOptions = new WritrOptions({
-			templatePath: './new-template',
-			outputPath: './new-dist',
-			sitePath: './new-site',
-			githubPath: 'new/repo',
-			siteTitle: 'New Title',
-			siteDescription: 'New Description',
-			siteUrl: 'https://new-url.com',
-		});
-		writr.options = newOptions;
-		expect(writr.options).toEqual(newOptions);
-	});
-	it('should be able to get the helpers', () => {
-		const writr = new Writr(defaultOptions);
-		const writrHelpers = new WritrHelpers();
-		expect(writrHelpers).toBeDefined();
-	});
-	it('should be able to get the helpers via static', () => {
-		const writr = new Writr(defaultOptions);
-		const writrHelpers = new WritrHelpers();
-		expect(writrHelpers.createDoc).toBeDefined();
-	});
-	it('is a single page site or not', () => {
-		const writr = new Writr(defaultOptions);
-		const singlePageSite = 'test/fixtures/single-page-site';
-		const multiPageSite = 'test/fixtures/multi-page-site';
-		expect(writr.isSinglePageWebsite(singlePageSite)).toEqual(true);
-		expect(writr.isSinglePageWebsite(multiPageSite)).toEqual(false);
-	});
-	it('should generate the site init files and folders', () => {
-		const writr = new Writr(defaultOptions);
-		const consoleLog = console.log;
-		let consoleMessage = '';
-		const temporarySitePath = './temp-site';
-		console.log = message => {
-			consoleMessage = message;
+
+	it('should be able to set options', () => {
+		const options = {
+			emoji: false,
+			toc: false,
+			slug: false,
+			highlight: false,
+			gfm: false,
 		};
-
-		try {
-			writr.generateInit(temporarySitePath);
-
-			expect(consoleMessage).toContain('Writr initialized.');
-			console.log = consoleLog;
-
-			expect(fs.existsSync(temporarySitePath)).toEqual(true);
-			expect(fs.existsSync(`${temporarySitePath}/writr.config.cjs`)).toEqual(true);
-			expect(fs.existsSync(`${temporarySitePath}/logo.png`)).toEqual(true);
-			expect(fs.existsSync(`${temporarySitePath}/favicon.svg`)).toEqual(true);
-			expect(fs.existsSync(`${temporarySitePath}/variables.css`)).toEqual(true);
-		} finally {
-			fs.rmdirSync(temporarySitePath, {recursive: true});
-		}
-	});
-	it('should generate the site init files and folders for javascript', () => {
-		const writr = new Writr(defaultOptions);
-		const consoleLog = console.log;
-		let consoleMessage = '';
-		const temporarySitePath = './temp-site-js';
-		console.log = message => {
-			consoleMessage = message;
-		};
-
-		try {
-			writr.generateInit(temporarySitePath);
-
-			expect(consoleMessage).toContain('Writr initialized.');
-			console.log = consoleLog;
-
-			expect(fs.existsSync(temporarySitePath)).toEqual(true);
-			expect(fs.existsSync(`${temporarySitePath}/writr.config.cjs`)).toEqual(true);
-			expect(fs.existsSync(`${temporarySitePath}/logo.png`)).toEqual(true);
-			expect(fs.existsSync(`${temporarySitePath}/favicon.svg`)).toEqual(true);
-			expect(fs.existsSync(`${temporarySitePath}/variables.css`)).toEqual(true);
-		} finally {
-			fs.rmdirSync(temporarySitePath, {recursive: true});
-		}
-	});
-	it('should get the package version', () => {
-		const writr = new Writr(defaultOptions);
-		const packageJson = fs.readFileSync('./package.json', 'utf8');
-		const packageObject = JSON.parse(packageJson) as {version: string};
-		const packageVersion = writr.getVersion();
-		expect(packageVersion).toBeDefined();
-		expect(packageVersion).toEqual(packageObject.version);
-	});
-});
-
-describe('writr execute', () => {
-	it('should be able to execute with no parameters', async () => {
-		const buildOptions = new WritrOptions();
-		buildOptions.sitePath = 'test/fixtures/single-page-site';
-		buildOptions.outputPath = 'test/fixtures/single-page-site/dist';
-		buildOptions.templatePath = 'test/fixtures/template-example/';
-		const writr = new Writr(buildOptions);
-		const consoleLog = console.log;
-		// eslint-disable-next-line @typescript-eslint/no-empty-function
-		console.log = message => {};
-
-		process.argv = ['node', 'writr'];
-		await writr.execute(process);
-
-		expect(fs.existsSync(buildOptions.outputPath)).toEqual(true);
-
-		fs.rmdirSync(buildOptions.outputPath, {recursive: true});
-		console.log = consoleLog;
-	});
-	it('should be able to execute with output parameter', async () => {
-		const buildOptions = new WritrOptions();
-		buildOptions.sitePath = 'test/fixtures/single-page-site';
-		buildOptions.outputPath = 'test/fixtures/single-page-site/dist-foo';
-		buildOptions.templatePath = 'test/fixtures/template-example/';
-		const realOutputPath = 'test/fixtures/single-page-site/dist1';
-		const writr = new Writr(buildOptions);
-		const consoleLog = console.log;
-		// eslint-disable-next-line @typescript-eslint/no-empty-function
-		console.log = message => {};
-
-		process.argv = ['node', 'writr', '-o', realOutputPath];
-		await writr.execute(process);
-
-		expect(fs.existsSync(realOutputPath)).toEqual(true);
-
-		fs.rmdirSync(realOutputPath, {recursive: true});
-		console.log = consoleLog;
-	});
-	it('should init based on the init command', async () => {
-		const writr = new Writr(defaultOptions);
-		const sitePath = './custom-site';
-		let consoleMessage = '';
-		const consoleLog = console.log;
-		console.log = message => {
-			consoleMessage = message;
-		};
-
-		process.argv = ['node', 'writr', 'init', '-s', sitePath];
-		try {
-			await writr.execute(process);
-			expect(fs.existsSync(sitePath)).toEqual(true);
-			expect(fs.existsSync(`${sitePath}/writr.config.cjs`)).toEqual(true);
-			expect(consoleMessage).toContain('Writr initialized.');
-		} finally {
-			fs.rmdirSync(sitePath, {recursive: true});
-			console.log = consoleLog;
-		}
-	});
-	it('should print help command', async () => {
-		const writr = new Writr(defaultOptions);
-		const consoleLog = console.log;
-		let consoleMessage = '';
-		process.argv = ['node', 'writr', 'help'];
-		console.log = message => {
-			if (typeof message === 'string' && message.includes('Usage:')) {
-				consoleMessage = message;
-			}
-		};
-
-		await writr.execute(process);
-		expect(consoleMessage).toContain('Usage:');
-		console.log = consoleLog;
-	});
-	it('should show version by the version command', async () => {
-		const writr = new Writr(defaultOptions);
-		const consoleLog = console.log;
-		let consoleMessage = '';
-		process.argv = ['node', 'writr', 'version'];
-		console.log = message => {
-			if (typeof message === 'string') {
-				consoleMessage = message;
-			}
-		};
-
-		await writr.execute(process);
-		expect(consoleMessage).toContain('.');
-		console.log = consoleLog;
-	});
-	it('should serve the site', async () => {
-		const options = new WritrOptions();
-		options.sitePath = 'test/fixtures/single-page-site';
-		options.outputPath = 'test/fixtures/single-page-site/dist3';
-		options.templatePath = 'test/fixtures/template-example/';
 		const writr = new Writr(options);
-		process.argv = ['node', 'writr', 'serve'];
-
-		try {
-			await writr.execute(process);
-		} finally {
-			fs.rmSync(options.outputPath, {recursive: true});
-			if (writr.server) {
-				writr.server.close();
-			}
-		}
+		expect(writr.options).toBeDefined();
+		expect(writr.options.emoji).toEqual(false);
+		expect(writr.options.toc).toEqual(false);
+		expect(writr.options.slug).toEqual(false);
+		expect(writr.options.highlight).toEqual(false);
+		expect(writr.options.gfm).toEqual(false);
 	});
-	it('should serve the site and reset the server if exists', async () => {
-		const options = new WritrOptions();
-		options.sitePath = path.join(process.cwd(), 'test/fixtures/single-page-site');
-		options.outputPath = path.join(process.cwd(), 'test/fixtures/single-page-site/dist3');
+
+	it('should be able to set options on emoji', () => {
+		const options = {
+			emoji: true,
+		};
 		const writr = new Writr(options);
-		process.argv = ['node', 'writr', 'serve'];
-
-		try {
-			await writr.serve(options);
-			await writr.execute(process);
-		} finally {
-			fs.rmSync(options.outputPath, {recursive: true});
-			if (writr.server) {
-				writr.server.close();
-			}
-		}
+		expect(writr.options.emoji).toEqual(true);
 	});
-	it('should serve the site on a specified port', async () => {
-		const options = new WritrOptions();
-		options.sitePath = 'test/fixtures/single-page-site';
-		options.outputPath = 'test/fixtures/single-page-site/dist3';
+	it('should be able to set options on toc', () => {
+		const options = {
+			toc: true,
+		};
 		const writr = new Writr(options);
-		process.argv = ['node', 'writr', 'serve', '-p', '8181'];
+		expect(writr.options.toc).toEqual(true);
+	});
+	it('should render a simple markdown example', async () => {
+		const writr = new Writr();
+		const result = await writr.render('# Hello World');
+		expect(result).toEqual('<h1 id="hello-world">Hello World</h1>');
+	});
+	it('should render a simple markdown example with options - slug', async () => {
+		const writr = new Writr();
+		const options = {
+			slug: false,
+		};
+		const result = await writr.render('# Hello World', options);
+		expect(result).toEqual('<h1>Hello World</h1>');
+	});
+	it('should render a simple markdown example with options - emoji', async () => {
+		const writr = new Writr();
+		const options = {
+			emoji: false,
+		};
+		const result = await writr.render('# Hello World :dog:', options);
+		expect(result).toEqual('<h1 id="hello-world-dog">Hello World :dog:</h1>');
+	});
+	it('should render a simple markdown example with options - gfm', async () => {
+		const writr = new Writr();
+		const options = {
+			gfm: false,
+		};
+		const result = await writr.render('# Hello World :dog:', options);
+		expect(result).toEqual('<h1 id="hello-world-">Hello World 🐶</h1>');
+	});
+	it('should render a simple markdown example with options - toc', async () => {
+		const writr = new Writr();
+		const options = {
+			toc: false,
+		};
+		const markdownString = '# Pluto\n\nPluto is a dwarf planet in the Kuiper belt.\n\n## Contents\n\n## History\n\n### Discovery\n\nIn the 1840s, Urbain Le Verrier used Newtonian mechanics to predict the\nposition of…';
+		const resultToc = await writr.render(markdownString);
+		expect(resultToc).contains('<li><a href="#discovery">Discovery</a></li>');
+		const result = await writr.render(markdownString, options);
+		expect(result).not.contain('<li><a href="#discovery">Discovery</a></li>');
+	});
+	it('should render a simple markdown example with options - code highlight', async () => {
+		const writr = new Writr();
+		const options = {
+			highlight: false,
+		};
+		const markdownString = '# Code Example\n\nThis is an inline code example: `const x = 10;`\n\nAnd here is a multi-line code block:\n\n```javascript\nconst greet = () => {\n  console.log("Hello, world!");\n};\ngreet();\n```';
+		const resultFull = await writr.render(markdownString);
+		expect(resultFull).contains('<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span>');
+		const result = await writr.render(markdownString, options);
+		expect(result).contain('<pre><code class="language-javascript">const greet = () => {');
+	});
+	it('should throw an error on bad plugin or parsing', async () => {
+		const writr = new Writr();
+		const customPlugin = () => {
+			throw new Error('Custom Plugin Error: Required configuration missing.');
+		};
 
+		writr.engine.use(customPlugin);
 		try {
-			await writr.execute(process);
-
-			expect(writr.server).toBeDefined();
-		} finally {
-			fs.rmdirSync(options.outputPath, {recursive: true});
-			if (writr.server) {
-				writr.server.close();
-			}
-		}
-	});
-});
-
-describe('writr config file', () => {
-	it('should be able to load the config file', async () => {
-		const writr = new Writr(defaultOptions);
-		const sitePath = 'test/fixtures/multi-page-site';
-		await writr.loadConfigFile(sitePath);
-		expect(writr.configFileModule).toBeDefined();
-		expect(writr.configFileModule.options).toBeDefined();
-	});
-	it('should load the config and set the options', async () => {
-		const writr = new Writr(defaultOptions);
-		const sitePath = 'test/fixtures/multi-page-site';
-		await writr.loadConfigFile(sitePath);
-		expect(writr.configFileModule).toBeDefined();
-		expect(writr.configFileModule.options).toBeDefined();
-		const consoleLog = console.log;
-		let consoleMessage = '';
-		console.log = message => {
-			if (typeof message === 'string') {
-				consoleMessage = message;
-			}
-		};
-
-		process.argv = ['node', 'writr', 'version'];
-		await writr.execute(process);
-		expect(writr.options.outputPath).toEqual(writr.configFileModule.options.outputPath);
-		console.log = consoleLog;
-	});
-	it('should load the config and test the onPrepare', async () => {
-		const writr = new Writr(defaultOptions);
-		const sitePath = 'test/fixtures/single-page-site-onprepare';
-		await writr.loadConfigFile(sitePath);
-		expect(writr.configFileModule).toBeDefined();
-		expect(writr.configFileModule.options).toBeDefined();
-		expect(writr.configFileModule.onPrepare).toBeDefined();
-
-		process.argv = ['node', 'writr', 'version'];
-		await writr.execute(process);
-		expect(writr.options.outputPath).toContain('dist');
-	});
-	it('should throw error onPrepare', async () => {
-		const writr = new Writr(defaultOptions);
-		writr.options.sitePath = 'test/fixtures/single-page-site-error';
-		const consoleLog = console.log;
-		let consoleMessage = '';
-		console.log = message => {
-			if (typeof message === 'string') {
-				consoleMessage = message;
-			}
-		};
-
-		const consoleError = console.error;
-		let consoleErrorMessage = '';
-		console.error = message => {
-			if (typeof message === 'string') {
-				consoleErrorMessage = message;
-			}
-		};
-
-		process.argv = ['node', 'writr', 'version'];
-		try {
-			await writr.execute(process);
-			expect.fail('Should have thrown an error');
+			await writr.render('# Hello World');
 		} catch (error) {
-			expect(error).toBeDefined();
+			expect((error as Error).message).toEqual('Failed to render markdown: Custom Plugin Error: Required configuration missing.');
 		}
-
-		console.log = consoleLog;
-		console.error = consoleError;
 	});
 });
