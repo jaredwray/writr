@@ -29,8 +29,8 @@ class Writr {
 	public engine = unified()
 		.use(remarkParse)
 		.use(remarkGfm) // Use GitHub Flavored Markdown
-		.use(remarkToc, {heading: 'toc|table of contents'})
-		.use(remarkEmoji)
+		.use(remarkToc) // Add table of contents
+		.use(remarkEmoji) // Add emoji support
 		.use(remarkRehype) // Convert markdown to HTML
 		.use(rehypeSlug) // Add slugs to headings in HTML
 		.use(rehypeHighlight) // Apply syntax highlighting
@@ -61,6 +61,7 @@ class Writr {
 		try {
 			let {engine} = this;
 			if (options) {
+				options = {...this._options, ...options};
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				engine = this.createProcessor(options);
 			}
@@ -75,25 +76,25 @@ class Writr {
 	private createProcessor(options: RenderOptions | WritrOptions): any {
 		const processor = unified().use(remarkParse);
 
-		if (options.gfm ?? this._options.gfm) {
+		if (options.gfm) {
 			processor.use(remarkGfm);
 		}
 
-		if (options.toc ?? this._options.toc) {
+		if (options.toc) {
 			processor.use(remarkToc, {heading: 'toc|table of contents'});
 		}
 
-		if (options.emoji ?? this._options.emoji) {
+		if (options.emoji) {
 			processor.use(remarkEmoji);
 		}
 
 		processor.use(remarkRehype);
 
-		if (options.slug ?? this._options.slug) {
+		if (options.slug) {
 			processor.use(rehypeSlug);
 		}
 
-		if (options.highlight ?? this._options.highlight) {
+		if (options.highlight) {
 			processor.use(rehypeHighlight);
 		}
 

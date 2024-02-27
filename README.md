@@ -23,9 +23,7 @@
 * Markdown to HTML (rehype-stringify).
 * Github Flavor Markdown (remark-gfm).
 * Emoji Support (remark-emoji).
-* Description AI Generation.
-* Keywords AI Generation.
-* Translation AI Generation. 
+* Generation of Keywords, Descriptions, and Translations using AI.
 
 ## Getting Started 
 
