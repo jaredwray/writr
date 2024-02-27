@@ -1,4 +1,4 @@
-import { unified } from 'unified';
+import {unified} from 'unified';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import rehypeSlug from 'rehype-slug';
@@ -9,16 +9,16 @@ import remarkGfm from 'remark-gfm';
 import remarkEmoji from 'remark-emoji';
 
 type WritrOptions = {
-	openai?: string; // openai api key (default: undefined)
-	emoji?: boolean; // emoji support (default: true)
-	toc?: boolean; // table of contents generation (default: true)
-	slug?: boolean; // slug generation (default: true)
-	highlight?: boolean; // code highlighting (default: true)
-	gfm?: boolean; // github flavor markdown (default: true)
+	openai?: string; // Openai api key (default: undefined)
+	emoji?: boolean; // Emoji support (default: true)
+	toc?: boolean; // Table of contents generation (default: true)
+	slug?: boolean; // Slug generation (default: true)
+	highlight?: boolean; // Code highlighting (default: true)
+	gfm?: boolean; // Github flavor markdown (default: true)
 };
 
 class Writr {
-	private _options: WritrOptions = {
+	private readonly _options: WritrOptions = {
 		openai: undefined,
 		emoji: true,
 		toc: true,
@@ -27,10 +27,10 @@ class Writr {
 		gfm: true,
 	};
 
-	private processor = unified()
+	private readonly processor = unified()
 		.use(remarkParse)
 		.use(remarkGfm) // Use GitHub Flavored Markdown
-		.use(remarkToc, { heading: 'toc|table of contents' })
+		.use(remarkToc, {heading: 'toc|table of contents'})
 		.use(remarkEmoji)
 		.use(remarkRehype) // Convert markdown to HTML
 		.use(rehypeSlug) // Add slugs to headings in HTML
@@ -39,7 +39,7 @@ class Writr {
 
 	constructor(options?: WritrOptions) {
 		if (options) {
-			this._options = { ...this._options, ...options };
+			this._options = {...this._options, ...options};
 		}
 	}
 
@@ -57,5 +57,5 @@ class Writr {
 	}
 }
 
-export { Writr };
+export {Writr};
 
