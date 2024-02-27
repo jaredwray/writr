@@ -38,5 +38,5 @@ jobs:
         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         accountId: b09b24c345713c704e71dea8bd81f713
         projectName: writr-org
-        directory: dist/site-output
+        directory: site-output
         gitHubToken: ${{ secrets.GH_TOKEN }}
