@@ -9,6 +9,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkEmoji from 'remark-emoji';
+import remarkMDX from 'remark-mdx';
 import parse, {type HTMLReactParserOptions} from 'html-react-parser';
 import type React from 'react';
 
@@ -24,6 +25,7 @@ type RenderOptions = {
 	highlight?: boolean; // Code highlighting (default: true)
 	gfm?: boolean; // Github flavor markdown (default: true)
 	math?: boolean; // Math support (default: true)
+	mdx?: boolean; // MDX support (default: true)
 };
 
 class Writr {
@@ -37,6 +39,7 @@ class Writr {
 		.use(remarkMath) // Add math support
 		.use(rehypeKatex) // Add math support
 		.use(rehypeHighlight) // Apply syntax highlighting
+		.use(remarkMDX) // Add MDX support
 		.use(rehypeStringify); // Stringify HTML
 
 	private readonly _options: WritrOptions = {
@@ -48,6 +51,7 @@ class Writr {
 			highlight: true,
 			gfm: true,
 			math: true,
+			mdx: true,
 		},
 	};
 
@@ -131,6 +135,14 @@ class Writr {
 
 		if (options.highlight) {
 			processor.use(rehypeHighlight);
+		}
+
+		if (options.math) {
+			processor.use(remarkMath).use(rehypeKatex);
+		}
+
+		if (options.mdx) {
+			processor.use(remarkMDX);
 		}
 
 		processor.use(rehypeStringify);
