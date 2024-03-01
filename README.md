@@ -79,21 +79,22 @@ const description = await writr.description(markdown); // 'Hello World Test'
 
 ### `new Writr(options?: WritrOptions)`
 
-```js
-interface WritrOptions {
-  	openai?: string; // openai api key (default: undefined)
-	emoji?: boolean; // emoji support (default: true)
-  	toc?: boolean; // table of contents generation (default: true)
-  	slug?: boolean; // slug generation (default: true)
-  	highlight?: boolean; // code highlighting (default: true)
-	gfm?: boolean; // github flavor markdown (default: true)
-}
-```
-
-You can access the `WritrOptions` from the instance of Writr.
+You can access the `WritrOptions` from the instance of Writr. Here is an example of WritrOptions.
 
 ```javascript
 import { Writr, WritrOptions } from 'writr';
+const writrOptions = {
+  openai: 'your-api-key', // openai api key (default: undefined)
+  renderOptions: {
+	emoji: true,
+	toc: true,
+	slug: true,
+	highlight: true,
+	gfm: true,
+	math: true
+  }
+};
+const writr = new Writr(writrOptions);
 ```
 
 ### `.engine`
