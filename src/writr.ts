@@ -5,6 +5,8 @@ import rehypeSlug from 'rehype-slug';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
 import remarkToc from 'remark-toc';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkEmoji from 'remark-emoji';
 
@@ -33,6 +35,8 @@ class Writr {
 		.use(remarkEmoji) // Add emoji support
 		.use(remarkRehype) // Convert markdown to HTML
 		.use(rehypeSlug) // Add slugs to headings in HTML
+		.use(remarkMath) // Add math support
+		.use(rehypeKatex) // Add math support
 		.use(rehypeHighlight) // Apply syntax highlighting
 		.use(rehypeStringify); // Stringify HTML
 

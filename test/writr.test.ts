@@ -103,4 +103,9 @@ describe('writr', () => {
 			expect((error as Error).message).toEqual('Failed to render markdown: Custom Plugin Error: Required configuration missing.');
 		}
 	});
+	it('should be able to do math', async () => {
+		const writr = new Writr();
+		const result = await writr.render('$$\n\\frac{1}{2}\n$$');
+		expect(result).toContain('<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"');
+	});
 });

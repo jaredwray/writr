@@ -20,6 +20,7 @@
 * Generates a Table of Contents for your markdown files (remark-toc).
 * Slug generation for your markdown files (rehype-slug).
 * Code Highlighting (rehype-highlight).
+* Math Support (rehype-katex).
 * Markdown to HTML (rehype-stringify).
 * Github Flavor Markdown (remark-gfm).
 * Emoji Support (remark-emoji).
