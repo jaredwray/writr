@@ -10,34 +10,44 @@ describe('writr', () => {
 
 	it('should be able to set options', () => {
 		const options = {
-			emoji: false,
-			toc: false,
-			slug: false,
-			highlight: false,
-			gfm: false,
+			renderOptions: {
+				toc: false,
+				slug: false,
+				highlight: false,
+				gfm: false,
+				math: false,
+				emoji: false,
+			},
 		};
 		const writr = new Writr(options);
 		expect(writr.options).toBeDefined();
-		expect(writr.options.emoji).toEqual(false);
-		expect(writr.options.toc).toEqual(false);
-		expect(writr.options.slug).toEqual(false);
-		expect(writr.options.highlight).toEqual(false);
-		expect(writr.options.gfm).toEqual(false);
+		expect(writr.options.openai).toEqual(undefined);
+		expect(writr.options.renderOptions).toBeInstanceOf(Object);
+		expect(writr.options.renderOptions?.emoji).toEqual(false);
+		expect(writr.options.renderOptions?.gfm).toEqual(false);
+		expect(writr.options.renderOptions?.highlight).toEqual(false);
+		expect(writr.options.renderOptions?.math).toEqual(false);
+		expect(writr.options.renderOptions?.slug).toEqual(false);
+		expect(writr.options.renderOptions?.toc).toEqual(false);
 	});
 
 	it('should be able to set options on emoji', () => {
 		const options = {
-			emoji: true,
+			renderOptions: {
+				emoji: true,
+			},
 		};
 		const writr = new Writr(options);
-		expect(writr.options.emoji).toEqual(true);
+		expect(writr.options.renderOptions?.emoji).toEqual(true);
 	});
 	it('should be able to set options on toc', () => {
 		const options = {
-			toc: true,
+			renderOptions: {
+				toc: true,
+			},
 		};
 		const writr = new Writr(options);
-		expect(writr.options.toc).toEqual(true);
+		expect(writr.options.renderOptions?.toc).toEqual(true);
 	});
 	it('should render a simple markdown example', async () => {
 		const writr = new Writr();

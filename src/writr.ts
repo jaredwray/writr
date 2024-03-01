@@ -12,11 +12,7 @@ import remarkEmoji from 'remark-emoji';
 
 type WritrOptions = {
 	openai?: string; // Openai api key (default: undefined)
-	emoji?: boolean; // Emoji support (default: true)
-	toc?: boolean; // Table of contents generation (default: true)
-	slug?: boolean; // Slug generation (default: true)
-	highlight?: boolean; // Code highlighting (default: true)
-	gfm?: boolean; // Github flavor markdown (default: true)
+	renderOptions?: RenderOptions; // Default render options (default: undefined)
 };
 
 type RenderOptions = {
@@ -25,6 +21,7 @@ type RenderOptions = {
 	slug?: boolean; // Slug generation (default: true)
 	highlight?: boolean; // Code highlighting (default: true)
 	gfm?: boolean; // Github flavor markdown (default: true)
+	math?: boolean; // Math support (default: true)
 };
 
 class Writr {
@@ -42,18 +39,23 @@ class Writr {
 
 	private readonly _options: WritrOptions = {
 		openai: undefined,
-		emoji: true,
-		toc: true,
-		slug: true,
-		highlight: true,
-		gfm: true,
+		renderOptions: {
+			emoji: true,
+			toc: true,
+			slug: true,
+			highlight: true,
+			gfm: true,
+			math: true,
+		},
 	};
 
 	constructor(options?: WritrOptions) {
 		if (options) {
 			this._options = {...this._options, ...options};
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-			this.engine = this.createProcessor(this._options);
+			if (this._options.renderOptions) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				this.engine = this.createProcessor(this._options.renderOptions);
+			}
 		}
 	}
 
@@ -65,7 +67,7 @@ class Writr {
 		try {
 			let {engine} = this;
 			if (options) {
-				options = {...this._options, ...options};
+				options = {...this._options.renderOptions, ...options};
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				engine = this.createProcessor(options);
 			}
@@ -77,7 +79,7 @@ class Writr {
 		}
 	}
 
-	private createProcessor(options: RenderOptions | WritrOptions): any {
+	private createProcessor(options: RenderOptions): any {
 		const processor = unified().use(remarkParse);
 
 		if (options.gfm) {
