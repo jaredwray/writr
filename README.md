@@ -18,6 +18,7 @@
 ## Features
 * Takes the complexity of Remark and makes it easy to use.
 * Up and Rendering in seconds with a simple API.
+* Easily Render to `React` or `HTML`.
 * Generates a Table of Contents for your markdown files (remark-toc).
 * Slug generation for your markdown files (rehype-slug).
 * Code Highlighting (rehype-highlight).
@@ -135,6 +136,28 @@ import { Writr } from 'writr';
 const writr = new Writr();
 const markdown = `# Hello World ::-):\n\n This is a test.`;
 const html = writr.renderSync(markdown); // <h1>Hello World 🙂</h1><p>This is a test.</p>
+```
+
+### '.renderReact(markdown: string, options?: RenderOptions, reactOptions?: HTMLReactParserOptions): Promise<React.JSX.Element>'
+
+Rendering markdown to React. The options are based on RenderOptions and now HTMLReactParserOptions from `html-react-parser`.
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr();
+const markdown = `# Hello World ::-):\n\n This is a test.`;
+const reactElement = await writr.renderReact(markdown); // Will return a React.JSX.Element
+```
+
+### '.renderReactSync(markdown: string, options?: RenderOptions, reactOptions?: HTMLReactParserOptions): React.JSX.Element'
+
+Rendering markdown to React. The options are based on RenderOptions and now HTMLReactParserOptions from `html-react-parser`.
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr();
+const markdown = `# Hello World ::-):\n\n This is a test.`;
+const reactElement = writr.renderReactSync(markdown); // Will return a React.JSX.Element
 ```
 
 ## Code of Conduct and Contributing

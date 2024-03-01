@@ -33,7 +33,11 @@
     "seo-friendly",
     "markdown-anchors",
     "remark",
-    "rehype"
+    "rehype",
+    "react",
+    "react-component",
+    "react-markdown",
+    "markdown-to-react"
   ],
   "scripts": {
     "clean": "rimraf ./dist ./coverage ./node_modules ./package-lock.json ./yarn.lock ./site/README.md ./site-output",
