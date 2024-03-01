@@ -9,6 +9,8 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkEmoji from 'remark-emoji';
+import parse, {type HTMLReactParserOptions} from 'html-react-parser';
+import type React from 'react';
 
 type WritrOptions = {
 	openai?: string; // Openai api key (default: undefined)
@@ -93,6 +95,17 @@ class Writr {
 		} catch (error) {
 			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
 		}
+	}
+
+	async renderReact(markdown: string, options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): Promise<string | React.JSX.Element | React.JSX.Element[]> {
+		const html = await this.render(markdown, options);
+
+		return parse(html, reactParseOptions);
+	}
+
+	renderReactSync(markdown: string, options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): string | React.JSX.Element | React.JSX.Element[] {
+		const html = this.renderSync(markdown, options);
+		return parse(html, reactParseOptions);
 	}
 
 	private createProcessor(options: RenderOptions): any {
