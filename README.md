@@ -96,6 +96,11 @@ You can access the `WritrOptions` from the instance of Writr.
 import { Writr, WritrOptions } from 'writr';
 ```
 
+### `.engine`
+
+Accessing the underlying engine for this instance of Writr. This is a `Processor<Root, Root, Root, undefined, undefined>` fromt the unified `.use()` function. You can use this to add additional plugins to the engine.
+
+
 ### `.options`
 
 Accessing the default options for this instance of Writr.
