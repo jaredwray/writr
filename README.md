@@ -26,6 +26,7 @@
 * Markdown to HTML (rehype-stringify).
 * Github Flavor Markdown (remark-gfm).
 * Emoji Support (remark-emoji).
+* MDX Support (remark-mdx).
 
 ## Getting Started 
 
@@ -88,12 +89,13 @@ import { Writr, WritrOptions } from 'writr';
 const writrOptions = {
   openai: 'your-api-key', // openai api key (default: undefined)
   renderOptions: {
-	emoji: true,
-	toc: true,
-	slug: true,
-	highlight: true,
-	gfm: true,
-	math: true
+    emoji: true,
+    toc: true,
+    slug: true,
+    highlight: true,
+    gfm: true,
+    math: true,
+    mdx: true
   }
 };
 const writr = new Writr(writrOptions);
