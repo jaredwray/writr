@@ -1,5 +1,6 @@
 
 import {it, describe, expect} from 'vitest';
+import {e} from 'vitest/dist/reporters-1evA5lom.js';
 import {Writr} from '../src/writr.js';
 
 describe('writr', () => {
@@ -143,5 +144,19 @@ describe('writr', () => {
 		const writr = new Writr();
 		const result = await writr.render('$$\n\\frac{1}{2}\n$$');
 		expect(result).toContain('<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"');
+	});
+	it('should be able to render react components', async () => {
+		const writr = new Writr();
+		const markdownString = '## Hello World\n\n';
+
+		const result = await writr.renderReact(markdownString) as React.JSX.Element;
+		expect(result.type).toEqual('h2');
+	});
+	it('should be able to render react components sync', async () => {
+		const writr = new Writr();
+		const markdownString = '## Hello World\n\n';
+
+		const result = writr.renderReactSync(markdownString) as React.JSX.Element;
+		expect(result.type).toEqual('h2');
 	});
 });
