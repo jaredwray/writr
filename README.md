@@ -125,18 +125,16 @@ interface RenderOptions {
 }
 ```
 
-### `.renderTranslation(markdown: string, langCode: string, options?: RenderOptions): Promise<string>`
+### `.renderSync(markdown: string, options?: RenderOptions): string`
 
-Rendering markdown to HTML. the options are based on RenderOptions. Which you can access from the Writr instance.
+Rendering markdown to HTML synchronously. the options are based on RenderOptions. Which you can access from the Writr instance. The parameters are the same as the `.render()` function.
 
-
-### `.keywords(markdown: string): Promise<string[]>`
-
-AI Generation of Keywords that can be used for SEO on your HTML.
-
-### `.description(markdown: string): Promise<string>`
-
-AI Generation of a Description that can be used for SEO on your HTML.
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr();
+const markdown = `# Hello World ::-):\n\n This is a test.`;
+const html = writr.renderSync(markdown); // <h1>Hello World 🙂</h1><p>This is a test.</p>
+```
 
 ## Code of Conduct and Contributing
 [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines.

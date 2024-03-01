@@ -79,6 +79,22 @@ class Writr {
 		}
 	}
 
+	renderSync(markdown: string, options?: RenderOptions): string {
+		try {
+			let {engine} = this;
+			if (options) {
+				options = {...this._options.renderOptions, ...options};
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				engine = this.createProcessor(options);
+			}
+
+			const file = engine.processSync(markdown);
+			return String(file);
+		} catch (error) {
+			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
+		}
+	}
+
 	private createProcessor(options: RenderOptions): any {
 		const processor = unified().use(remarkParse);
 

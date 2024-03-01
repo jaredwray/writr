@@ -54,6 +54,11 @@ describe('writr', () => {
 		const result = await writr.render('# Hello World');
 		expect(result).toEqual('<h1 id="hello-world">Hello World</h1>');
 	});
+	it('should renderSync a simple markdown example', async () => {
+		const writr = new Writr();
+		const result = writr.renderSync('# Hello World');
+		expect(result).toEqual('<h1 id="hello-world">Hello World</h1>');
+	});
 	it('should render a simple markdown example with options - slug', async () => {
 		const writr = new Writr();
 		const options = {
@@ -61,6 +66,14 @@ describe('writr', () => {
 		};
 		const result = await writr.render('# Hello World', options);
 		expect(result).toEqual('<h1>Hello World</h1>');
+	});
+	it('should renderSync a simple markdown example with options - emoji', async () => {
+		const writr = new Writr();
+		const options = {
+			emoji: false,
+		};
+		const result = writr.renderSync('# Hello World :dog:', options);
+		expect(result).toEqual('<h1 id="hello-world-dog">Hello World :dog:</h1>');
 	});
 	it('should render a simple markdown example with options - emoji', async () => {
 		const writr = new Writr();
@@ -109,6 +122,19 @@ describe('writr', () => {
 		writr.engine.use(customPlugin);
 		try {
 			await writr.render('# Hello World');
+		} catch (error) {
+			expect((error as Error).message).toEqual('Failed to render markdown: Custom Plugin Error: Required configuration missing.');
+		}
+	});
+	it('should throw an error on bad plugin or parsing on renderSync', () => {
+		const writr = new Writr();
+		const customPlugin = () => {
+			throw new Error('Custom Plugin Error: Required configuration missing.');
+		};
+
+		writr.engine.use(customPlugin);
+		try {
+			writr.renderSync('# Hello World');
 		} catch (error) {
 			expect((error as Error).message).toEqual('Failed to render markdown: Custom Plugin Error: Required configuration missing.');
 		}
