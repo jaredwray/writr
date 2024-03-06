@@ -72,3 +72,4 @@ site-output
 
 # IDEs
 .idea/
+pnpm-lock.yaml
