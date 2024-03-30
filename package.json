@@ -48,7 +48,7 @@
     "website:serve": "rimraf ./site/README.md ./site-output && npx docula serve -s ./site -o ./site-output"
   },
   "dependencies": {
-    "html-react-parser": "^5.1.8",
+    "html-react-parser": "^5.1.10",
     "react": "^18.2.0",
     "rehype-highlight": "^7.0.0",
     "rehype-katex": "^7.0.0",
