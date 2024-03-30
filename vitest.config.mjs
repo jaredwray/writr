@@ -5,6 +5,7 @@ export default defineConfig({
 		coverage: {
 			exclude: [
 				'site/docula.config.cjs',
+				'site-output/**',
 			],
 		},
 	},
