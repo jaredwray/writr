@@ -140,7 +140,7 @@ const markdown = `# Hello World ::-):\n\n This is a test.`;
 const html = writr.renderSync(markdown); // <h1>Hello World 🙂</h1><p>This is a test.</p>
 ```
 
-### '.renderReact(markdown: string, options?: RenderOptions, reactOptions?: HTMLReactParserOptions): Promise<React.JSX.Element>'
+### '.renderReact(markdown: string, options?: RenderOptions, reactOptions?: HTMLReactParserOptions): Promise<React.JSX.Element />'
 
 Rendering markdown to React. The options are based on RenderOptions and now HTMLReactParserOptions from `html-react-parser`.
 
