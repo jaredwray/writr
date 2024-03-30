@@ -30,7 +30,7 @@ jobs:
       run: npm run build
     
     - name: Build Website
-      run: npm run site-build
+      run: npm run website:build
 
     - name: Publish to Cloudflare Pages
       uses: cloudflare/pages-action@1
