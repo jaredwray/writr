@@ -1,7 +1,7 @@
 
-import {it, describe, expect} from 'vitest';
 import {e} from 'vitest/dist/reporters-1evA5lom.js';
 import {Writr} from '../src/writr.js';
+import {it, describe, expect} from 'vitest';
 
 describe('writr', () => {
 	it('should be able to initialize', () => {

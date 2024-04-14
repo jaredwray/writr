@@ -6,6 +6,8 @@ export default defineConfig({
 			exclude: [
 				'site/docula.config.cjs',
 				'site-output/**',
+				'.pnp.*',
+				'.yarn/**',
 			],
 		},
 	},

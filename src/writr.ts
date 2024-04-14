@@ -10,8 +10,8 @@ import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkEmoji from 'remark-emoji';
 import remarkMDX from 'remark-mdx';
-import parse, {type HTMLReactParserOptions} from 'html-react-parser';
 import type React from 'react';
+import parse, {type HTMLReactParserOptions} from 'html-react-parser';
 
 type WritrOptions = {
 	openai?: string; // Openai api key (default: undefined)
