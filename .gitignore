@@ -75,3 +75,4 @@ site-output
 pnpm-lock.yaml
 .pnp.*
 .yarn
+bun.lockb
