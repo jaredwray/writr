@@ -65,12 +65,12 @@
     "unified": "^11.0.4"
   },
   "devDependencies": {
-    "@types/node": "^20.12.2",
+    "@types/node": "^20.12.11",
     "@types/react": "^18.2.73",
     "@vitest/coverage-v8": "^1.6.0",
     "docula": "^0.5.2",
     "rimraf": "^5.0.5",
-    "typescript": "^5.4.3",
+    "typescript": "^5.4.5",
     "vitest": "^1.6.0",
     "webpack": "^5.91.0",
     "xo": "^0.58.0"
