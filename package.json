@@ -68,7 +68,7 @@
     "@types/node": "^20.12.11",
     "@types/react": "^18.2.73",
     "@vitest/coverage-v8": "^1.6.0",
-    "docula": "^0.5.2",
+    "docula": "^0.5.3",
     "rimraf": "^5.0.7",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0",
