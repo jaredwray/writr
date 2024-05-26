@@ -1,4 +1,4 @@
-import {unified, Processor} from 'unified';
+import {unified} from 'unified';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import rehypeSlug from 'rehype-slug';
