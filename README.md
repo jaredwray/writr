@@ -17,7 +17,7 @@
 
 ## Features
 * Takes the complexity of Remark and makes it easy to use.
-* Simpke to use and easy API
+* Simple to use and easy API
 * Easily Render to `React` or `HTML`.
 * Generates a Table of Contents for your markdown files (remark-toc).
 * Slug generation for your markdown files (rehype-slug).
@@ -27,6 +27,7 @@
 * Github Flavor Markdown (remark-gfm).
 * Emoji Support (remark-emoji).
 * MDX Support (remark-mdx).
+* ESM and Node 18+
 
 ## Getting Started 
 
@@ -103,7 +104,7 @@ const writr = new Writr(writrOptions);
 
 ### `.engine`
 
-Accessing the underlying engine for this instance of Writr. This is a `Processor<Root, Root, Root, undefined, undefined>` fromt the unified `.use()` function. You can use this to add additional plugins to the engine.
+Accessing the underlying engine for this instance of Writr. This is a `Processor<Root, Root, Root, undefined, undefined>` fro the unified `.use()` function. You can use this to add additional plugins to the engine.
 
 
 ### `.options`
