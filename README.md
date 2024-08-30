@@ -16,8 +16,7 @@
 - [License - MIT](#license)
 
 ## Features
-* Takes the complexity of Remark and makes it easy to use.
-* Simple to use and easy API
+* Removes the remark complexity and easy to use.
 * Easily Render to `React` or `HTML`.
 * Generates a Table of Contents for your markdown files (remark-toc).
 * Slug generation for your markdown files (rehype-slug).
