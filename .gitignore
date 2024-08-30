@@ -76,3 +76,4 @@ pnpm-lock.yaml
 .pnp.*
 .yarn
 bun.lockb
+site/dist
