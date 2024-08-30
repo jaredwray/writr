@@ -17,6 +17,7 @@
 
 ## Features
 * Removes the remark complexity and easy to use.
+* It's fast with built in caching 💥
 * Easily Render to `React` or `HTML`.
 * Generates a Table of Contents for your markdown files (remark-toc).
 * Slug generation for your markdown files (rehype-slug).
