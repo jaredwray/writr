@@ -27,7 +27,7 @@
 * Github Flavor Markdown (remark-gfm).
 * Emoji Support (remark-emoji).
 * MDX Support (remark-mdx).
-* ESM and Node 18+
+* ESM and Node 20+
 
 ## Getting Started 
 
