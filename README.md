@@ -73,7 +73,8 @@ const writrOptions = {
     highlight: true,
     gfm: true,
     math: true,
-    mdx: true
+    mdx: true,
+    caching: true,
   }
 };
 const writr = new Writr(writrOptions);
@@ -102,13 +103,16 @@ import { Writr, RenderOptions } from 'writr';
 ## `RenderOptions`
 
 ```js
-interface RenderOptions {
-  emoji?: boolean; // emoji support
-  toc?: boolean; // table of contents generation
-  slug?: boolean; // slug generation
-  highlight?: boolean; // code highlighting
-  gfm?: boolean; // github flavor markdown
-}
+type RenderOptions = {
+	emoji?: boolean; // Emoji support (default: true)
+	toc?: boolean; // Table of contents generation (default: true)
+	slug?: boolean; // Slug generation (default: true)
+	highlight?: boolean; // Code highlighting (default: true)
+	gfm?: boolean; // Github flavor markdown (default: true)
+	math?: boolean; // Math support (default: true)
+	mdx?: boolean; // MDX support (default: true)
+	caching?: boolean; // Caching (default: true)
+};
 ```
 
 ### `.renderSync(options?: RenderOptions): string`

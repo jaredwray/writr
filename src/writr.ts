@@ -12,6 +12,7 @@ import remarkEmoji from 'remark-emoji';
 import remarkMDX from 'remark-mdx';
 import type React from 'react';
 import parse, {type HTMLReactParserOptions} from 'html-react-parser';
+import {WritrCache} from './writr-cache.js';
 
 type WritrOptions = {
 	openai?: string; // Openai api key (default: undefined)
@@ -26,6 +27,7 @@ type RenderOptions = {
 	gfm?: boolean; // Github flavor markdown (default: true)
 	math?: boolean; // Math support (default: true)
 	mdx?: boolean; // MDX support (default: true)
+	caching?: boolean; // Caching (default: true)
 };
 
 class Writr {
@@ -52,10 +54,13 @@ class Writr {
 			gfm: true,
 			math: true,
 			mdx: true,
+			caching: true,
 		},
 	};
 
 	private _markdown = '';
+
+	private readonly _cache = new WritrCache();
 
 	constructor(arguments1?: string | WritrOptions, arguments2?: WritrOptions) {
 		if (typeof arguments1 === 'string') {
@@ -89,8 +94,20 @@ class Writr {
 		this._markdown = value;
 	}
 
+	public get cache(): WritrCache {
+		return this._cache;
+	}
+
 	async render(options?: RenderOptions): Promise<string> {
 		try {
+			let result = '';
+			if (this.isCacheEnabled(options)) {
+				const cached = await this._cache.getMarkdown(this._markdown, options);
+				if (cached) {
+					return cached;
+				}
+			}
+
 			let {engine} = this;
 			if (options) {
 				options = {...this._options.renderOptions, ...options};
@@ -99,7 +116,12 @@ class Writr {
 			}
 
 			const file = await engine.process(this._markdown);
-			return String(file);
+			result = String(file);
+			if (this.isCacheEnabled(options)) {
+				await this._cache.setMarkdown(this._markdown, result, options);
+			}
+
+			return result;
 		} catch (error) {
 			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
 		}
@@ -107,6 +129,14 @@ class Writr {
 
 	renderSync(options?: RenderOptions): string {
 		try {
+			let result = '';
+			if (this.isCacheEnabled(options)) {
+				const cached = this._cache.getMarkdownSync(this._markdown, options);
+				if (cached) {
+					return cached;
+				}
+			}
+
 			let {engine} = this;
 			if (options) {
 				options = {...this._options.renderOptions, ...options};
@@ -115,7 +145,12 @@ class Writr {
 			}
 
 			const file = engine.processSync(this._markdown);
-			return String(file);
+			result = String(file);
+			if (this.isCacheEnabled(options)) {
+				this._cache.setMarkdownSync(this._markdown, result, options);
+			}
+
+			return result;
 		} catch (error) {
 			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
 		}
@@ -130,6 +165,14 @@ class Writr {
 	renderReactSync(options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): string | React.JSX.Element | React.JSX.Element[] {
 		const html = this.renderSync(options);
 		return parse(html, reactParseOptions);
+	}
+
+	private isCacheEnabled(options?: RenderOptions): boolean {
+		if (options?.caching !== undefined) {
+			return options.caching;
+		}
+
+		return this._options?.renderOptions?.caching ?? false;
 	}
 
 	private createProcessor(options: RenderOptions): any {

@@ -185,4 +185,38 @@ describe('writr', () => {
 		const result = writr.renderReactSync() as React.JSX.Element;
 		expect(result.type).toEqual('h2');
 	});
+
+	it('should be able to get/set cache', async () => {
+		const writr = new Writr();
+		writr.cache.setMarkdownSync('# Hello World', '<h1>Hello World</h1>');
+		expect(writr.cache.getMarkdownSync('# Hello World')).toEqual('<h1>Hello World</h1>');
+	});
+
+	it('should return a valid cached result', async () => {
+		const writr = new Writr('# Hello World'); // By defualt cache is enabled
+		const result = await writr.render();
+		expect(result).toEqual('<h1 id="hello-world">Hello World</h1>');
+		const hashKey = '59ed9b58b8baabd1c42379a22ae2bc004a45b95866dc028c57485039494413da';
+		expect(await writr.cache.get(hashKey)).toEqual('<h1 id="hello-world">Hello World</h1>');
+		const result2 = await writr.render();
+		expect(result2).toEqual('<h1 id="hello-world">Hello World</h1>');
+	});
+
+	it('should return non cached result via options', async () => {
+		const writr = new Writr('# Hello World'); // By defualt cache is enabled
+		const result = await writr.render();
+		expect(result).toEqual('<h1 id="hello-world">Hello World</h1>');
+		const result2 = await writr.render({caching: false});
+		expect(result2).toEqual('<h1 id="hello-world">Hello World</h1>');
+	});
+
+	it('should return a valid cached result', () => {
+		const writr = new Writr('# Hello World'); // By defualt cache is enabled
+		const result = writr.renderSync();
+		expect(result).toEqual('<h1 id="hello-world">Hello World</h1>');
+		const hashKey = '59ed9b58b8baabd1c42379a22ae2bc004a45b95866dc028c57485039494413da';
+		expect(writr.cache.getSync(hashKey)).toEqual('<h1 id="hello-world">Hello World</h1>');
+		const result2 = writr.renderSync();
+		expect(result2).toEqual('<h1 id="hello-world">Hello World</h1>');
+	});
 });
