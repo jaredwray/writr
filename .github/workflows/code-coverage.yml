@@ -1,4 +1,4 @@
-name: tests
+name: code-coverage
 
 on:
   workflow_dispatch:
@@ -8,13 +8,13 @@ on:
     branches: [ main ]
 
 jobs:
-  tests:
+  code-coverage:
 
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: ['20', '22']
+        node-version: [20]
 
     steps:
     - uses: actions/checkout@v4
@@ -26,11 +26,11 @@ jobs:
     - name: Install Dependencies
       run: npm install
 
-    - name: Build
+    - name: Build    
       run: npm run build
 
     - name: Testing    
-      run: npm test
+      run: npm run test
 
     - name: Code Coverage
       uses: codecov/codecov-action@v3
