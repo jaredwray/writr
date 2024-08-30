@@ -55,9 +55,21 @@ class Writr {
 		},
 	};
 
-	constructor(options?: WritrOptions) {
-		if (options) {
-			this._options = {...this._options, ...options};
+	private _markdown = '';
+
+	constructor(arguments1?: string | WritrOptions, arguments2?: WritrOptions) {
+		if (typeof arguments1 === 'string') {
+			this._markdown = arguments1;
+		} else if (arguments1) {
+			this._options = {...this._options, ...arguments1};
+			if (this._options.renderOptions) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				this.engine = this.createProcessor(this._options.renderOptions);
+			}
+		}
+
+		if (arguments2) {
+			this._options = {...this._options, ...arguments2};
 			if (this._options.renderOptions) {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				this.engine = this.createProcessor(this._options.renderOptions);
@@ -69,7 +81,15 @@ class Writr {
 		return this._options;
 	}
 
-	async render(markdown: string, options?: RenderOptions): Promise<string> {
+	public get markdown(): string {
+		return this._markdown;
+	}
+
+	public set markdown(value: string) {
+		this._markdown = value;
+	}
+
+	async render(options?: RenderOptions): Promise<string> {
 		try {
 			let {engine} = this;
 			if (options) {
@@ -78,14 +98,14 @@ class Writr {
 				engine = this.createProcessor(options);
 			}
 
-			const file = await engine.process(markdown);
+			const file = await engine.process(this._markdown);
 			return String(file);
 		} catch (error) {
 			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
 		}
 	}
 
-	renderSync(markdown: string, options?: RenderOptions): string {
+	renderSync(options?: RenderOptions): string {
 		try {
 			let {engine} = this;
 			if (options) {
@@ -94,21 +114,21 @@ class Writr {
 				engine = this.createProcessor(options);
 			}
 
-			const file = engine.processSync(markdown);
+			const file = engine.processSync(this._markdown);
 			return String(file);
 		} catch (error) {
 			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
 		}
 	}
 
-	async renderReact(markdown: string, options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): Promise<string | React.JSX.Element | React.JSX.Element[]> {
-		const html = await this.render(markdown, options);
+	async renderReact(options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): Promise<string | React.JSX.Element | React.JSX.Element[]> {
+		const html = await this.render(options);
 
 		return parse(html, reactParseOptions);
 	}
 
-	renderReactSync(markdown: string, options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): string | React.JSX.Element | React.JSX.Element[] {
-		const html = this.renderSync(markdown, options);
+	renderReactSync(options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): string | React.JSX.Element | React.JSX.Element[] {
+		const html = this.renderSync(options);
 		return parse(html, reactParseOptions);
 	}
 
