@@ -42,48 +42,26 @@
 ```javascript
 import { Writr } from 'writr';
 
-const writr = new Writr();
-const markdown = `# Hello World ::-):\n\n This is a test.`;
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 
-const html = await writr.render(markdown); // <h1>Hello World 🙂</h1><p>This is a test.</p>
+const html = await writr.render(); // <h1>Hello World 🙂</h1><p>This is a test.</p>
 ```
 Its just that simple. Want to add some options? No problem.
 
 ```javascript
 import { Writr } from 'writr';
-const writr = new Writr();
-const markdown = `# Hello World ::-):\n\n This is a test.`;
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 const options  = {
 	emoji: false
 }
-const html = await writr.render(markdown, options); // <h1>Hello World ::-):</h1><p>This is a test.</p>
-```
-
-Want to render to a translation? No problem.
-
-```javascript
-import { Writr } from 'writr';
-const writr = new Writr({ openai: 'your-api-key'});
-const markdown = `# Hello World ::-):\n\n This is a test.`;
-const langCode = 'es';
-const html = await writr.renderTranslation(markdown, langCode, options); // <h1>Hola Mundo 🙂</h1><p>Esta es una prueba.</p>
-```
-
-How about generating keywords and descriptions for your front matter?
-
-```javascript
-import { Writr } from 'writr';
-const writr = new Writr({ openai: 'your-api-key'});
-const markdown = `# Hello World ::-):\n\n This is a test.`;
-const keywords = await writr.keywords(markdown); // ['Hello World', 'Test']
-const description = await writr.description(markdown); // 'Hello World Test'
+const html = await writr.render(options); // <h1>Hello World ::-):</h1><p>This is a test.</p>
 ```
 
 ## API
 
-### `new Writr(options?: WritrOptions)`
+### `new Writr(arg?: string | WritrOptions, options?: WritrOptions)` 
 
-You can access the `WritrOptions` from the instance of Writr. Here is an example of WritrOptions.
+By default the constructor takes in a markdown `string` or `WritrOptions` in the first parameter. You can also send in nothing and set the markdown via `.markdown` property. If you want to pass in your markdown and options you can easily do this with `new Writr('## Your Markdown Here', { ...options here})`. You can access the `WritrOptions` from the instance of Writr. Here is an example of WritrOptions.
 
 ```javascript
 import { Writr, WritrOptions } from 'writr';
@@ -102,6 +80,10 @@ const writrOptions = {
 const writr = new Writr(writrOptions);
 ```
 
+### `.markdown`
+
+Setting the markdown for the instance of Writr. This can be set via the constructor or directly on the instance.
+
 ### `.engine`
 
 Accessing the underlying engine for this instance of Writr. This is a `Processor<Root, Root, Root, undefined, undefined>` fro the unified `.use()` function. You can use this to add additional plugins to the engine.
@@ -111,7 +93,7 @@ Accessing the underlying engine for this instance of Writr. This is a `Processor
 
 Accessing the default options for this instance of Writr.
 
-### `.render(markdown: string, options?: RenderOptions): Promise<string>`
+### `.render(options?: RenderOptions): Promise<string>`
 
 Rendering markdown to HTML. the options are based on RenderOptions. Which you can access from the Writr instance.
 
@@ -130,37 +112,35 @@ interface RenderOptions {
 }
 ```
 
-### `.renderSync(markdown: string, options?: RenderOptions): string`
+### `.renderSync(options?: RenderOptions): string`
 
 Rendering markdown to HTML synchronously. the options are based on RenderOptions. Which you can access from the Writr instance. The parameters are the same as the `.render()` function.
 
 ```javascript
 import { Writr } from 'writr';
 const writr = new Writr();
-const markdown = `# Hello World ::-):\n\n This is a test.`;
-const html = writr.renderSync(markdown); // <h1>Hello World 🙂</h1><p>This is a test.</p>
+writr.markdown = `# Hello World ::-):\n\n This is a test.`;
+const html = writr.renderSync(); // <h1>Hello World 🙂</h1><p>This is a test.</p>
 ```
 
-### '.renderReact(markdown: string, options?: RenderOptions, reactOptions?: HTMLReactParserOptions): Promise<React.JSX.Element />'
+### '.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions): Promise<React.JSX.Element />'
 
 Rendering markdown to React. The options are based on RenderOptions and now HTMLReactParserOptions from `html-react-parser`.
 
 ```javascript
 import { Writr } from 'writr';
-const writr = new Writr();
-const markdown = `# Hello World ::-):\n\n This is a test.`;
-const reactElement = await writr.renderReact(markdown); // Will return a React.JSX.Element
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
+const reactElement = await writr.renderReact(); // Will return a React.JSX.Element
 ```
 
-### '.renderReactSync(markdown: string, options?: RenderOptions, reactOptions?: HTMLReactParserOptions): React.JSX.Element'
+### '.renderReactSync( options?: RenderOptions, reactOptions?: HTMLReactParserOptions): React.JSX.Element'
 
 Rendering markdown to React. The options are based on RenderOptions and now HTMLReactParserOptions from `html-react-parser`.
 
 ```javascript
 import { Writr } from 'writr';
-const writr = new Writr();
-const markdown = `# Hello World ::-):\n\n This is a test.`;
-const reactElement = writr.renderReactSync(markdown); // Will return a React.JSX.Element
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
+const reactElement = writr.renderReactSync(); // Will return a React.JSX.Element
 ```
 
 ## Code of Conduct and Contributing
