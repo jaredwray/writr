@@ -1,5 +1,6 @@
 import {it, describe, expect} from 'vitest';
 import {Writr} from '../src/writr.js';
+import {productPageWithMarkdown} from './frontmatter-fixtures.js';
 
 describe('writr', () => {
 	it('should be able to initialize', () => {
@@ -218,5 +219,16 @@ describe('writr', () => {
 		expect(writr.cache.getSync(hashKey)).toEqual('<h1 id="hello-world">Hello World</h1>');
 		const result2 = writr.renderSync();
 		expect(result2).toEqual('<h1 id="hello-world">Hello World</h1>');
+	});
+
+	it('should update the content on markdown front matter', () => {
+		const writr = new Writr(productPageWithMarkdown);
+		expect(writr.markdown).toContain('title: "Super Comfortable Chair"');
+		expect(writr.frontMatter.metaData.title).toEqual('Super Comfortable Chair');
+		const meta = writr.frontMatter.metaData;
+		meta.title = 'New Title 123';
+		writr.frontMatter.metaData = meta;
+		expect(writr.frontMatter.frontMatterRaw).toContain('New Title 123');
+		expect(writr.markdownObject.content).toContain('New Title 123');
 	});
 });
