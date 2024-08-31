@@ -13,7 +13,6 @@ import remarkMDX from 'remark-mdx';
 import type React from 'react';
 import parse, {type HTMLReactParserOptions} from 'html-react-parser';
 import {WritrCache} from './writr-cache.js';
-import {WritrFrontMatter} from './writr-frontmatter.js';
 
 type WritrOptions = {
 	openai?: string; // Openai api key (default: undefined)
@@ -60,10 +59,8 @@ class Writr {
 	};
 
 	private _markdown = '';
-	private readonly _markdownObject: {content: string} = {content: ''};
 
 	private readonly _cache = new WritrCache();
-	private readonly _frontMatter: WritrFrontMatter;
 
 	constructor(arguments1?: string | WritrOptions, arguments2?: WritrOptions) {
 		if (typeof arguments1 === 'string') {
@@ -83,17 +80,10 @@ class Writr {
 				this.engine = this.createProcessor(this._options.renderOptions);
 			}
 		}
-
-		this._markdownObject = {content: this._markdown};
-		this._frontMatter = new WritrFrontMatter(this._markdownObject);
 	}
 
 	public get options(): WritrOptions {
 		return this._options;
-	}
-
-	public get frontMatter(): WritrFrontMatter {
-		return this._frontMatter;
 	}
 
 	public get markdown(): string {
@@ -102,10 +92,6 @@ class Writr {
 
 	public set markdown(value: string) {
 		this._markdown = value;
-	}
-
-	public get markdownObject(): {content: string} {
-		return this._markdownObject;
 	}
 
 	public get cache(): WritrCache {
