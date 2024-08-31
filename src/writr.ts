@@ -12,6 +12,7 @@ import remarkEmoji from 'remark-emoji';
 import remarkMDX from 'remark-mdx';
 import type React from 'react';
 import parse, {type HTMLReactParserOptions} from 'html-react-parser';
+import * as yaml from 'js-yaml';
 import {WritrCache} from './writr-cache.js';
 
 type WritrOptions = {
@@ -58,13 +59,13 @@ class Writr {
 		},
 	};
 
-	private _markdown = '';
+	private _content = '';
 
 	private readonly _cache = new WritrCache();
 
 	constructor(arguments1?: string | WritrOptions, arguments2?: WritrOptions) {
 		if (typeof arguments1 === 'string') {
-			this._markdown = arguments1;
+			this._content = arguments1;
 		} else if (arguments1) {
 			this._options = {...this._options, ...arguments1};
 			if (this._options.renderOptions) {
@@ -86,23 +87,56 @@ class Writr {
 		return this._options;
 	}
 
-	public get markdown(): string {
-		return this._markdown;
+	public get content(): string {
+		return this._content;
 	}
 
-	public set markdown(value: string) {
-		this._markdown = value;
+	public set content(value: string) {
+		this._content = value;
 	}
 
 	public get cache(): WritrCache {
 		return this._cache;
 	}
 
+	get frontMatterRaw(): string {
+		return (/---\n[\s\S]*\n---\n/.exec(this._content))?.[0] ?? '';
+	}
+
+	get body(): string {
+		return this._content.replace(/---\n[\s\S]*\n---\n/, '');
+	}
+
+	get markdown(): string {
+		return this.body;
+	}
+
+	get frontMatter(): Record<string, any> {
+		const frontMatter = this.frontMatterRaw;
+		const match = /^---\s*([\s\S]*?)\s*---\s*/.exec(frontMatter);
+		if (match) {
+			return yaml.load(match[1].trim()) as Record<string, any>;
+		}
+
+		return {};
+	}
+
+	set frontMatter(data: Record<string, any>) {
+		const frontMatter = this.frontMatterRaw;
+		const yamlString = yaml.dump(data);
+		const newFrontMatter = `---\n${yamlString}---\n`;
+		this._content = this._content.replace(frontMatter, newFrontMatter);
+	}
+
+	public getFrontMatterValue<T>(key: string): T {
+		return this.frontMatter[key] as T;
+	}
+
 	async render(options?: RenderOptions): Promise<string> {
 		try {
 			let result = '';
 			if (this.isCacheEnabled(options)) {
-				const cached = await this._cache.getMarkdown(this._markdown, options);
+				const cached = await this._cache.getMarkdown(this._content, options);
 				if (cached) {
 					return cached;
 				}
@@ -115,10 +149,10 @@ class Writr {
 				engine = this.createProcessor(options);
 			}
 
-			const file = await engine.process(this._markdown);
+			const file = await engine.process(this._content);
 			result = String(file);
 			if (this.isCacheEnabled(options)) {
-				await this._cache.setMarkdown(this._markdown, result, options);
+				await this._cache.setMarkdown(this._content, result, options);
 			}
 
 			return result;
@@ -131,7 +165,7 @@ class Writr {
 		try {
 			let result = '';
 			if (this.isCacheEnabled(options)) {
-				const cached = this._cache.getMarkdownSync(this._markdown, options);
+				const cached = this._cache.getMarkdownSync(this._content, options);
 				if (cached) {
 					return cached;
 				}
@@ -144,10 +178,10 @@ class Writr {
 				engine = this.createProcessor(options);
 			}
 
-			const file = engine.processSync(this._markdown);
+			const file = engine.processSync(this._content);
 			result = String(file);
 			if (this.isCacheEnabled(options)) {
-				this._cache.setMarkdownSync(this._markdown, result, options);
+				this._cache.setMarkdownSync(this._content, result, options);
 			}
 
 			return result;
