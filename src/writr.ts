@@ -149,7 +149,7 @@ class Writr {
 				engine = this.createProcessor(options);
 			}
 
-			const file = await engine.process(this._content);
+			const file = await engine.process(this.body);
 			result = String(file);
 			if (this.isCacheEnabled(options)) {
 				await this._cache.setMarkdown(this._content, result, options);
@@ -178,7 +178,7 @@ class Writr {
 				engine = this.createProcessor(options);
 			}
 
-			const file = engine.processSync(this._content);
+			const file = engine.processSync(this.body);
 			result = String(file);
 			if (this.isCacheEnabled(options)) {
 				this._cache.setMarkdownSync(this._content, result, options);

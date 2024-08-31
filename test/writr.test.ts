@@ -223,6 +223,12 @@ describe('writr', () => {
 		const result2 = writr.renderSync();
 		expect(result2).toEqual('<h1 id="hello-world">Hello World</h1>');
 	});
+	it('should strip out the front matter on render', async () => {
+		const writr = new Writr(blogPostWithMarkdown);
+		const result = await writr.render();
+		expect(result).to.not.contain('title: "Understanding Async/Await in JavaScript"');
+		expect(result).to.contain('<h1 id="introduction">Introduction</h1>');
+	});
 });
 
 describe('WritrFrontMatter', () => {
