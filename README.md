@@ -16,8 +16,9 @@
 - [License - MIT](#license)
 
 ## Features
-* Removes the remark complexity and easy to use.
-* It's fast with built in caching 💥
+* Removes the remark / unified complexity and easy to use.
+* Built in caching 💥 making it render very fast when there isnt a change
+* Frontmatter support built in by default. :tada:
 * Easily Render to `React` or `HTML`.
 * Generates a Table of Contents for your markdown files (remark-toc).
 * Slug generation for your markdown files (rehype-slug).
