@@ -61,12 +61,11 @@ const html = await writr.render(options); // <h1>Hello World ::-):</h1><p>This i
 
 ### `new Writr(arg?: string | WritrOptions, options?: WritrOptions)` 
 
-By default the constructor takes in a markdown `string` or `WritrOptions` in the first parameter. You can also send in nothing and set the markdown via `.markdown` property. If you want to pass in your markdown and options you can easily do this with `new Writr('## Your Markdown Here', { ...options here})`. You can access the `WritrOptions` from the instance of Writr. Here is an example of WritrOptions.
+By default the constructor takes in a markdown `string` or `WritrOptions` in the first parameter. You can also send in nothing and set the markdown via `.content` property. If you want to pass in your markdown and options you can easily do this with `new Writr('## Your Markdown Here', { ...options here})`. You can access the `WritrOptions` from the instance of Writr. Here is an example of WritrOptions.
 
 ```javascript
 import { Writr, WritrOptions } from 'writr';
 const writrOptions = {
-  openai: 'your-api-key', // openai api key (default: undefined)
   renderOptions: {
     emoji: true,
     toc: true,
@@ -81,18 +80,50 @@ const writrOptions = {
 const writr = new Writr(writrOptions);
 ```
 
-### `.markdown`
+### `.content`
 
-Setting the markdown for the instance of Writr. This can be set via the constructor or directly on the instance.
+Setting the markdown content for the instance of Writr. This can be set via the constructor or directly on the instance and can even handle `frontmatter`.
 
-### `.engine`
+```javascript
 
-Accessing the underlying engine for this instance of Writr. This is a `Processor<Root, Root, Root, undefined, undefined>` fro the unified `.use()` function. You can use this to add additional plugins to the engine.
-
+import { Writr } from 'writr';
+const writr = new Writr();
+writr.content = `---
+title: Hello World
+---
+# Hello World ::-):\n\n This is a test.`;
+```
 
 ### `.options`
 
 Accessing the default options for this instance of Writr.
+
+### `.cache`
+
+Accessing the cache for this instance of Writr. By default this is an in memory cache and is enabled by default. You can disable this by setting `caching: false` in the `RenderOptions` of the `WritrOptions` or when calling render passing the `RenderOptions` like here:
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
+const options  = {
+  caching: false
+}
+const html = await writr.render(options); // <h1>Hello World ::-):</h1><p>This is a test.</p>
+```
+
+If you would like to use a specific storage adapter from https://keyv.org you can pass in the adapter like so:
+
+```javascript
+import { Writr } from 'writr';
+import Keyv from '@keyv/redis';
+const keyvRedis = new Keyv('redis://user:pass@localhost:6379');
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
+writr.cache.setStorageAdapter(keyvRedis);
+```
+
+### `.engine`
+
+Accessing the underlying engine for this instance of Writr. This is a `Processor<Root, Root, Root, undefined, undefined>` fro the unified `.use()` function. You can use this to add additional plugins to the engine.
 
 ### `.render(options?: RenderOptions): Promise<string>`
 
@@ -122,8 +153,7 @@ Rendering markdown to HTML synchronously. the options are based on RenderOptions
 
 ```javascript
 import { Writr } from 'writr';
-const writr = new Writr();
-writr.markdown = `# Hello World ::-):\n\n This is a test.`;
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 const html = writr.renderSync(); // <h1>Hello World 🙂</h1><p>This is a test.</p>
 ```
 
