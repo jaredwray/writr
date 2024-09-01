@@ -178,6 +178,34 @@ const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 const reactElement = writr.renderReactSync(); // Will return a React.JSX.Element
 ```
 
+### `.loadFromFile(filePath: string): Promise<void>`
+
+Load your markdown content from a file path.
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr();
+await writr.loadFromFile('path/to/file.md');
+```
+
+### `.loadFromFileSync(filePath: string): void`
+
+Load your markdown content from a file path synchronously.
+
+### `.saveToFile(filePath: string): Promise<void>`
+
+Save your markdown and frontmatter (if included) content to a file path.
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
+await writr.saveToFile('path/to/file.md');
+```
+
+### `.saveToFileSync(filePath: string): void`
+
+Save your markdown and frontmatter (if included) content to a file path synchronously.
+
 ## Code of Conduct and Contributing
 [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines.
 

@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import {dirname} from 'node:path';
 import {unified} from 'unified';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -220,6 +222,28 @@ class Writr {
 	renderReactSync(options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): string | React.JSX.Element | React.JSX.Element[] {
 		const html = this.renderSync(options);
 		return parse(html, reactParseOptions);
+	}
+
+	async loadFromFile(filePath: string): Promise<void> {
+		const {readFile} = fs.promises;
+		this._content = await readFile(filePath, 'utf8');
+	}
+
+	loadFromFileSync(filePath: string): void {
+		this._content = fs.readFileSync(filePath, 'utf8');
+	}
+
+	async saveToFile(filePath: string): Promise<void> {
+		const {writeFile, mkdir} = fs.promises;
+		const directoryPath = dirname(filePath);
+		await mkdir(directoryPath, {recursive: true});
+		await writeFile(filePath, this._content, 'utf8');
+	}
+
+	saveToFileSync(filePath: string): void {
+		const directoryPath = dirname(filePath);
+		fs.mkdirSync(directoryPath, {recursive: true});
+		fs.writeFileSync(filePath, this._content, 'utf8');
 	}
 
 	private isCacheEnabled(options?: RenderOptions): boolean {
