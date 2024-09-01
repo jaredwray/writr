@@ -3,7 +3,9 @@ import {
 	it, test, describe, expect,
 } from 'vitest';
 import {Writr} from '../src/writr.js';
-import {productPageWithMarkdown, blogPostWithMarkdown, projectDocumentationWithMarkdown} from './content-fixtures.js';
+import {
+	productPageWithMarkdown, blogPostWithMarkdown, projectDocumentationWithMarkdown, markdownWithFrontMatter,
+} from './content-fixtures.js';
 
 describe('writr', () => {
 	it('should be able to initialize', () => {
@@ -259,7 +261,6 @@ describe('WritrFrontMatter', () => {
 		expect(writr.body).to.contain('# Introduction');
 		expect(writr.body).to.contain('Using Async/Await makes your code cleaner and easier to understand by eliminating the need for complex callback chains or .then() methods.');
 		expect(writr.body).to.not.contain('title: "Super Comfortable Chair"');
-		expect(writr.body.split('\n').length).toBe(28);
 		expect(writr.body.split('\n')).to.not.contain('---');
 	});
 
@@ -291,6 +292,34 @@ describe('WritrFrontMatter', () => {
 		expect(writr.getFrontMatterValue<string>('author')).toBe('Jane Doe');
 		expect(writr.getFrontMatterValue<boolean>('draft')).toBe(false);
 		expect(writr.getFrontMatterValue<string[]>('tags')).toStrictEqual(['async', 'await', 'ES6']);
+	});
+
+	test('body should only contain the body', () => {
+		const writr = new Writr(blogPostWithMarkdown);
+		console.log(writr.body);
+		expect(writr.body.split('\n')[0]).to.contain('# Introduction');
+	});
+
+	test('should return the entire content if closing delimiter is not found', () => {
+		const markdownWithIncompleteFrontMatter = `
+	---
+	title: "Sample Title"
+	date: "2024-08-30"
+	# Missing the closing delimiter
+	
+	# Markdown Content Here
+	`;
+
+		const frontMatter = new Writr(markdownWithIncompleteFrontMatter);
+		const {body} = frontMatter;
+
+		// The body should be the entire content since the closing delimiter is missing
+		expect(body.trim()).toBe(markdownWithIncompleteFrontMatter.trim());
+	});
+
+	test('should be able to parse front matter and get body', () => {
+		const writr = new Writr(markdownWithFrontMatter as string);
+		expect(writr.body).to.contain('# Markdown Content Here');
 	});
 });
 

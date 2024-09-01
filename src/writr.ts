@@ -104,7 +104,18 @@ class Writr {
 	}
 
 	get body(): string {
-		return this._content.replace(/---\n[\s\S]*\n---\n/, '');
+		const start = this._content.indexOf('---\n');
+		if (start === -1) {
+			return this._content;
+		}
+
+		const end = this._content.indexOf('\n---\n', start + 4);
+		if (end === -1) {
+			return this._content;
+		}
+
+		// Return the content after the closing --- marker
+		return this._content.slice(Math.max(0, end + 5)).trim();
 	}
 
 	get markdown(): string {
