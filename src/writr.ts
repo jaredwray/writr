@@ -100,7 +100,17 @@ class Writr {
 	}
 
 	get frontMatterRaw(): string {
-		return (/---\n[\s\S]*\n---\n/.exec(this._content))?.[0] ?? '';
+		const start = this._content.indexOf('---\n');
+		if (start === -1) {
+			return '';
+		} // Return empty string if no starting delimiter is found
+
+		const end = this._content.indexOf('\n---\n', start + 4);
+		if (end === -1) {
+			return '';
+		} // Return empty string if no ending delimiter is found
+
+		return this._content.slice(start, end + 5); // Extract front matter including delimiters
 	}
 
 	get body(): string {

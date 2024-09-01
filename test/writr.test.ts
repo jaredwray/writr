@@ -296,7 +296,6 @@ describe('WritrFrontMatter', () => {
 
 	test('body should only contain the body', () => {
 		const writr = new Writr(blogPostWithMarkdown);
-		console.log(writr.body);
 		expect(writr.body.split('\n')[0]).to.contain('# Introduction');
 	});
 
@@ -315,6 +314,7 @@ describe('WritrFrontMatter', () => {
 
 		// The body should be the entire content since the closing delimiter is missing
 		expect(body.trim()).toBe(markdownWithIncompleteFrontMatter.trim());
+		expect(frontMatter.frontMatterRaw).toBe('');
 	});
 
 	test('should be able to parse front matter and get body', () => {
