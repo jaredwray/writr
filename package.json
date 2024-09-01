@@ -1,6 +1,6 @@
 {
   "name": "writr",
-  "version": "3.2.3",
+  "version": "4.0.0",
   "description": "Markdown Rendering Simplified",
   "type": "module",
   "exports": "./dist/writr.js",
@@ -87,6 +87,8 @@
     ]
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ]
 }
