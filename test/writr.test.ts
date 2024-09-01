@@ -1,4 +1,5 @@
 
+import fs from 'node:fs';
 import {
 	it, test, describe, expect,
 } from 'vitest';
@@ -320,6 +321,27 @@ describe('WritrFrontMatter', () => {
 	test('should be able to parse front matter and get body', () => {
 		const writr = new Writr(markdownWithFrontMatter as string);
 		expect(writr.body).to.contain('# Markdown Content Here');
+	});
+});
+
+describe('Writr Files', async () => {
+	test('should be able to save and load a file', async () => {
+		const writr = new Writr(productPageWithMarkdown);
+		const path = './test/fixtures/sample.md';
+		await writr.saveToFile(path);
+		const writr2 = new Writr();
+		await writr2.loadFromFile(path);
+		expect(writr2.content).to.contain('Super Comfortable Chair');
+		await fs.promises.unlink(path);
+	});
+	test('should be able to save and load a file with front matter sync', () => {
+		const writr = new Writr(blogPostWithMarkdown);
+		const path = './test/fixtures/sample2.md';
+		writr.saveToFileSync(path);
+		const writr2 = new Writr();
+		writr2.loadFromFileSync(path);
+		expect(writr2.content).to.contain('Understanding Async/Await in JavaScript');
+		fs.unlinkSync(path);
 	});
 });
 
