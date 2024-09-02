@@ -38,7 +38,7 @@
 > npm install writr
 ```
 
-## Render from Markdown
+Then you can use it like this:
 
 ```javascript
 import { Writr } from 'writr';
