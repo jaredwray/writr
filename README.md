@@ -32,13 +32,13 @@
 
 ## Getting Started 
 
-## 1. Install Writr
+## Install Writr
 
 ```bash
 > npm install writr
 ```
 
-## 2. Render from Markdown
+## Render from Markdown
 
 ```javascript
 import { Writr } from 'writr';
