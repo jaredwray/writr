@@ -1,27 +1,22 @@
 import {createHash} from 'node:crypto';
-import {Keyv, type KeyvStoreAdapter} from 'keyv';
+import {Cacheable, CacheableMemory} from 'cacheable';
+import type {KeyvStoreAdapter} from 'keyv';
 import {type RenderOptions} from './writr.js';
 
 export class WritrCache {
-	private _markdownStore: Keyv;
-	private _markdownStoreSync: Map<string, string>;
-	private _hashStore: Map<string, string>;
+	private _markdownStore: Cacheable = new Cacheable();
+	private readonly _markdownStoreSync: CacheableMemory = new CacheableMemory();
+	private readonly _hashStore: CacheableMemory = new CacheableMemory();
 
-	constructor() {
-		this._markdownStore = new Keyv();
-		this._markdownStoreSync = new Map();
-		this._hashStore = new Map();
-	}
-
-	public get markdownStore(): Keyv {
+	public get markdownStore(): Cacheable {
 		return this._markdownStore;
 	}
 
-	public get markdownStoreSync(): Map<string, string> {
+	public get markdownStoreSync(): CacheableMemory {
 		return this._markdownStoreSync;
 	}
 
-	public get hashStore(): Map<string, string> {
+	public get hashStore(): CacheableMemory {
 		return this._hashStore;
 	}
 
@@ -51,7 +46,7 @@ export class WritrCache {
 	}
 
 	public getSync(key: string): string | undefined {
-		return this._markdownStoreSync.get(key);
+		return this._markdownStoreSync.get(key) as string | undefined;
 	}
 
 	public async set(key: string, value: string): Promise<boolean> {
@@ -65,17 +60,17 @@ export class WritrCache {
 
 	public async clear(): Promise<void> {
 		await this._markdownStore.clear();
-		this._markdownStoreSync = new Map();
-		this._hashStore = new Map();
+		this._markdownStoreSync.clear();
+		this._hashStore.clear();
 	}
 
 	public setStorageAdapter(adapter: KeyvStoreAdapter): void {
-		this._markdownStore = new Keyv({store: adapter});
+		this._markdownStore = new Cacheable({primary: adapter});
 	}
 
 	public hash(markdown: string, options?: RenderOptions): string {
 		const key = JSON.stringify({markdown, options});
-		let result = this._hashStore.get(key);
+		let result = this._hashStore.get(key) as string | undefined;
 		if (result) {
 			return result;
 		}
