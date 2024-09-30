@@ -58,6 +58,26 @@ const options  = {
 const html = await writr.render(options); // <h1>Hello World ::-):</h1><p>This is a test.</p>
 ```
 
+An example passing in the options also via the constructor:
+
+```javascript
+import { Writr, WritrOptions } from 'writr';
+const writrOptions = {
+  renderOptions: {
+    emoji: true,
+    toc: true,
+    slug: true,
+    highlight: true,
+    gfm: true,
+    math: true,
+    mdx: true,
+    caching: true,
+  }
+};
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`, writrOptions);
+const html = await writr.render(options); // <h1>Hello World ::-):</h1><p>This is a test.</p>
+```
+
 ## API
 
 ### `new Writr(arg?: string | WritrOptions, options?: WritrOptions)` 
