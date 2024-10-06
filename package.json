@@ -3,12 +3,10 @@
   "version": "4.1.0",
   "description": "Markdown Rendering Simplified",
   "type": "module",
-  "main": "./dist/writr.cjs",
-  "module": "./dist/writr.js",
+  "main": "./dist/writr.js",
   "types": "./dist/writr.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/writr.cjs",
       "import": "./dist/writr.js"
     }
   },
@@ -48,19 +46,18 @@
   ],
   "scripts": {
     "clean": "rimraf ./dist ./coverage ./node_modules ./package-lock.json ./yarn.lock ./site/README.md ./site/dist",
-    "build": "rimraf ./dist && tsup src/writr.ts --format cjs,esm --dts --clean",
+    "build": "rimraf ./dist && tsup src/writr.ts --format esm --dts --clean",
     "prepare": "npm run build",
     "test": "xo --fix && vitest run --coverage",
     "website:build": "rimraf ./site/README.md ./site/dist && npx docula build -s ./site -o ./site/dist",
     "website:serve": "rimraf ./site/README.md ./site/dist && npx docula serve -s ./site -o ./site/dist"
   },
   "dependencies": {
-    "cacheable": "^1.7.1",
+    "cacheable": "^1.8.0",
     "crypto": "^1.0.1",
     "fs": "^0.0.1-security",
     "html-react-parser": "^5.1.16",
     "js-yaml": "^4.1.0",
-    "keyv": "^5.0.3",
     "react": "^18.3.1",
     "rehype-highlight": "^7.0.0",
     "rehype-katex": "^7.0.1",

@@ -1,6 +1,5 @@
 import {createHash} from 'node:crypto';
-import {Cacheable, CacheableMemory} from 'cacheable';
-import type {KeyvStoreAdapter} from 'keyv';
+import {Cacheable, CacheableMemory, type KeyvStoreAdapter} from 'cacheable';
 import {type RenderOptions} from './writr.js';
 
 export class WritrCache {
@@ -46,7 +45,7 @@ export class WritrCache {
 	}
 
 	public getSync(key: string): string | undefined {
-		return this._markdownStoreSync.get(key) as string | undefined;
+		return this._markdownStoreSync.get(key);
 	}
 
 	public async set(key: string, value: string): Promise<boolean> {
@@ -70,7 +69,7 @@ export class WritrCache {
 
 	public hash(markdown: string, options?: RenderOptions): string {
 		const key = JSON.stringify({markdown, options});
-		let result = this._hashStore.get(key) as string | undefined;
+		let result = this._hashStore.get<string>(key);
 		if (result) {
 			return result;
 		}
