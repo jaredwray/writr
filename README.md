@@ -28,7 +28,10 @@
 * Github Flavor Markdown (remark-gfm).
 * Emoji Support (remark-emoji).
 * MDX Support (remark-mdx).
-* ESM and Node 20+
+
+## ESM and Node 20+
+
+This package is ESM only and tested on Nodejs 20+. Please don't open issues for questions regarding CommonJS / ESM. To learn more about using ESM please read this from `sindresorhus`: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
 
 ## Getting Started 
 
