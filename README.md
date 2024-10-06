@@ -35,8 +35,6 @@ This package is ESM only and tested on the current lts version and its previous.
 
 ## Getting Started 
 
-## Install Writr
-
 ```bash
 > npm install writr
 ```
