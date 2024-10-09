@@ -203,8 +203,7 @@ describe('writr', () => {
 		const writr = new Writr('# Hello World'); // By defualt cache is enabled
 		const result = await writr.render();
 		expect(result).toEqual('<h1 id="hello-world">Hello World</h1>');
-		const hashKey = '59ed9b58b8baabd1c42379a22ae2bc004a45b95866dc028c57485039494413da';
-		expect(await writr.cache.get(hashKey)).toEqual('<h1 id="hello-world">Hello World</h1>');
+		expect(await writr.cache.get('0a210f5c18c7eceb1355ed9a5e23810c3f42a5379d7a0ab2e0d21b0b9051586f')).toEqual('<h1 id="hello-world">Hello World</h1>');
 		const result2 = await writr.render();
 		expect(result2).toEqual('<h1 id="hello-world">Hello World</h1>');
 	});
@@ -221,8 +220,7 @@ describe('writr', () => {
 		const writr = new Writr('# Hello World'); // By defualt cache is enabled
 		const result = writr.renderSync();
 		expect(result).toEqual('<h1 id="hello-world">Hello World</h1>');
-		const hashKey = '59ed9b58b8baabd1c42379a22ae2bc004a45b95866dc028c57485039494413da';
-		expect(writr.cache.getSync(hashKey)).toEqual('<h1 id="hello-world">Hello World</h1>');
+		expect(writr.cache.getSync('0a210f5c18c7eceb1355ed9a5e23810c3f42a5379d7a0ab2e0d21b0b9051586f')).toEqual('<h1 id="hello-world">Hello World</h1>');
 		const result2 = writr.renderSync();
 		expect(result2).toEqual('<h1 id="hello-world">Hello World</h1>');
 	});

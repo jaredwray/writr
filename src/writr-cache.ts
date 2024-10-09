@@ -1,4 +1,3 @@
-import {createHash} from 'node:crypto';
 import {Cacheable, CacheableMemory} from 'cacheable';
 import type {KeyvStoreAdapter} from 'keyv';
 import {type RenderOptions} from './writr.js';
@@ -75,7 +74,7 @@ export class WritrCache {
 			return result;
 		}
 
-		result = createHash('sha256').update(key).digest('hex');
+		result = this._hashStore.hash(key);
 		this._hashStore.set(key, result);
 
 		return result;
