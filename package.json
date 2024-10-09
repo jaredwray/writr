@@ -54,8 +54,6 @@
   },
   "dependencies": {
     "cacheable": "^1.8.0",
-    "crypto": "^1.0.1",
-    "fs": "^0.0.1-security",
     "html-react-parser": "^5.1.18",
     "js-yaml": "^4.1.0",
     "keyv": "^5.1.0",
