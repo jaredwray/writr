@@ -68,13 +68,14 @@ export class WritrCache {
 	}
 
 	public hash(markdown: string, options?: RenderOptions): string {
-		const key = JSON.stringify({markdown, options});
+		const content = {markdown, options};
+		const key = JSON.stringify(content);
 		let result = this._hashStore.get<string>(key);
 		if (result) {
 			return result;
 		}
 
-		result = this._hashStore.hash(key);
+		result = this._hashStore.hash(content);
 		this._hashStore.set(key, result);
 
 		return result;
