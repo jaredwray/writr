@@ -5,7 +5,7 @@ import {
 } from 'vitest';
 import {Writr} from '../src/writr.js';
 import {
-	productPageWithMarkdown, blogPostWithMarkdown, projectDocumentationWithMarkdown, markdownWithFrontMatter,
+	productPageWithMarkdown, blogPostWithMarkdown, projectDocumentationWithMarkdown, markdownWithFrontMatter, markdownWithFrontMatterAndAdditional,
 } from './content-fixtures.js';
 
 describe('writr', () => {
@@ -269,6 +269,14 @@ describe('WritrFrontMatter', () => {
 		const writr = new Writr(projectDocumentationWithMarkdown);
 		const {frontMatter} = writr;
 		expect(frontMatter).to.haveOwnProperty('title', 'Project Documentation');
+	});
+
+	test('should return the front matter as an object with additional properties', () => {
+		const writr = new Writr(markdownWithFrontMatterAndAdditional);
+		expect(writr.frontMatter).to.haveOwnProperty('title', 'Sample Title');
+		expect(writr.frontMatter).to.haveOwnProperty('date', '2024-08-30');
+		expect(writr.content).to.contain('---');
+		expect(writr.content).to.contain('This is additional content.');
 	});
 
 	test('should set the front matter', () => {
