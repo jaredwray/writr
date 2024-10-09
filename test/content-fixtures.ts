@@ -133,3 +133,16 @@ date: "2024-08-30"
 # Markdown Content Here
 `;
 
+export const markdownWithFrontMatterAndAdditional = `
+---
+title: "Sample Title"
+date: "2024-08-30"
+---
+
+# Markdown Content Here
+
+---
+
+This is additional content.
+`;
+
