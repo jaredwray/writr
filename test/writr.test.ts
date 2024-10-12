@@ -5,7 +5,12 @@ import {
 } from 'vitest';
 import {Writr} from '../src/writr.js';
 import {
-	productPageWithMarkdown, blogPostWithMarkdown, projectDocumentationWithMarkdown, markdownWithFrontMatter, markdownWithFrontMatterAndAdditional,
+	productPageWithMarkdown,
+	blogPostWithMarkdown,
+	projectDocumentationWithMarkdown,
+	markdownWithFrontMatter,
+	markdownWithFrontMatterAndAdditional,
+	markdownWithFrontMatterInOtherPlaces,
 } from './content-fixtures.js';
 
 describe('writr', () => {
@@ -329,6 +334,17 @@ describe('WritrFrontMatter', () => {
 	test('should be able to parse front matter and get body', () => {
 		const writr = new Writr(markdownWithFrontMatter as string);
 		expect(writr.body).to.contain('# Markdown Content Here');
+	});
+	test('should not parse wrong front matter', () => {
+		const writr = new Writr(markdownWithFrontMatterInOtherPlaces as string);
+		console.log(writr.content);
+		console.log('====================');
+		console.log(writr.frontMatterRaw);
+		console.log('====================');
+		console.log(writr.body);
+		console.log('====================');
+		console.log(writr.renderSync());
+		expect(writr.body).to.contain('---');
 	});
 });
 

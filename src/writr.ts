@@ -102,10 +102,12 @@ class Writr {
 	}
 
 	get frontMatterRaw(): string {
-		const start = this._content.indexOf('---\n');
-		if (start === -1) {
+		// Is there front matter content?
+		if (!this._content.trimStart().startsWith('---')) {
 			return '';
-		} // Return empty string if no starting delimiter is found
+		}
+
+		const start = this._content.indexOf('---\n');
 
 		const end = this._content.indexOf('\n---\n', start + 4);
 		if (end === -1) {
@@ -116,15 +118,12 @@ class Writr {
 	}
 
 	get body(): string {
-		const start = this._content.indexOf('---\n');
-		if (start === -1) {
+		// Is there front matter content?
+		if (this.frontMatterRaw === '') {
 			return this._content;
 		}
 
-		const end = this._content.indexOf('\n---\n', start + 4);
-		if (end === -1) {
-			return this._content;
-		}
+		const end = this._content.indexOf('\n---\n');
 
 		// Return the content after the closing --- marker
 		return this._content.slice(Math.max(0, end + 5)).trim();

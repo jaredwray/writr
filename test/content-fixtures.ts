@@ -82,8 +82,7 @@ We welcome contributions! Please follow the guidelines outlined in the \`CONTRIB
 This project is licensed under the MIT License. See the \`LICENSE\` file for more details.
 `;
 
-export const blogPostWithMarkdown = `
----
+export const blogPostWithMarkdown = `---
 title: "Understanding Async/Await in JavaScript"
 date: "2024-08-30"
 author: "Jane Doe"
@@ -144,5 +143,20 @@ date: "2024-08-30"
 ---
 
 This is additional content.
+`;
+
+export const markdownWithFrontMatterInOtherPlaces = `
+# Markdown Content Here
+
+---
+
+This is additional content.
+
+---
+title: "Sample Is Wrong"
+date: "2024-08-30"
+---
+
+Did this work?
 `;
 
