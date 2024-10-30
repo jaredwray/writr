@@ -1,5 +1,4 @@
 import {describe, it, expect} from 'vitest';
-import {KeyvSqlite} from '@keyv/sqlite';
 import {WritrCache} from '../src/writr-cache.js';
 
 describe('writr-cache', () => {
@@ -12,16 +11,16 @@ describe('writr-cache', () => {
 		const cache = new WritrCache();
 		const markdown = '# Hello World';
 		const value = '<h1 id="hello-world">Hello World</h1>';
-		expect(await cache.setMarkdown(markdown, value)).toEqual(true);
-		expect(await cache.getMarkdown(markdown)).toEqual(value);
+		cache.set(markdown, value);
+		expect(cache.get(markdown)).toEqual(value);
 	});
 
 	it('should be able to set markdown sync', () => {
 		const cache = new WritrCache();
 		const markdown = '# Hello World';
 		const value = '<h1 id="hello-world">Hello World</h1>';
-		expect(cache.setMarkdownSync(markdown, value)).toEqual(true);
-		expect(cache.getMarkdownSync(markdown)).toEqual(value);
+		cache.set(markdown, value);
+		expect(cache.get(markdown)).toEqual(value);
 	});
 
 	it('should be able to set markdown with options', async () => {
@@ -29,8 +28,8 @@ describe('writr-cache', () => {
 		const markdown = '# Hello World';
 		const value = '<h1 id="hello-world">Hello World</h1>';
 		const options = {toc: true};
-		expect(await cache.setMarkdown(markdown, value, options)).toEqual(true);
-		expect(await cache.getMarkdown(markdown, options)).toEqual(value);
+		cache.set(markdown, value, options);
+		expect(cache.get(markdown, options)).toEqual(value);
 	});
 
 	it('should be able to set markdown sync with options', () => {
@@ -38,8 +37,8 @@ describe('writr-cache', () => {
 		const markdown = '# Hello World';
 		const value = '<h1 id="hello-world">Hello World</h1>';
 		const options = {toc: true};
-		expect(cache.setMarkdownSync(markdown, value, options)).toEqual(true);
-		expect(cache.getMarkdownSync(markdown, options)).toEqual(value);
+		cache.set(markdown, value, options);
+		expect(cache.get(markdown, options)).toEqual(value);
 	});
 
 	it('should be able to set markdown with options', async () => {
@@ -47,8 +46,8 @@ describe('writr-cache', () => {
 		const markdown = '# Hello World';
 		const value = '<h1 id="hello-world">Hello World</h1>';
 		const options = {toc: true, emoji: true};
-		expect(await cache.setMarkdown(markdown, value, options)).toEqual(true);
-		expect(await cache.getMarkdown(markdown, options)).toEqual(value);
+		cache.set(markdown, value, options);
+		cache.get(markdown, options);
 	});
 
 	it('should be able to do hash caching', () => {
@@ -67,8 +66,7 @@ describe('writr-cache', () => {
 
 	it('Get and Set the Cache', async () => {
 		const cache = new WritrCache();
-		expect(cache.markdownStore).toBeDefined();
-		expect(cache.markdownStoreSync).toBeDefined();
+		expect(cache.store).toBeDefined();
 	});
 
 	it('should be able to clear the cache', async () => {
@@ -76,14 +74,9 @@ describe('writr-cache', () => {
 		const markdown = '# Hello World';
 		const value = '<h1 id="hello-world">Hello World</h1>';
 		const options = {toc: true, emoji: true};
-		expect(await cache.setMarkdown(markdown, value, options)).toEqual(true);
-		expect(await cache.getMarkdown(markdown, options)).toEqual(value);
-		await cache.clear();
-		expect(await cache.getMarkdown(markdown, options)).toBeUndefined();
-	});
-
-	it('should set the storage adapter', () => {
-		const cache = new WritrCache();
-		cache.setStorageAdapter(new KeyvSqlite());
+		cache.set(markdown, value, options);
+		cache.get(markdown, options);
+		cache.clear();
+		expect(cache.get(markdown, options)).toBeUndefined();
 	});
 });

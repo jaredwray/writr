@@ -88,7 +88,7 @@ export class Writr extends Hookified {
 	 * Initialize Writr. Accepts a string or options object.
 	 * @param {string | WritrOptions} [arguments1] If you send in a string, it will be used as the markdown content. If you send in an object, it will be used as the options.
 	 * @param {WritrOptions} [arguments2] This is if you send in the content in the first argument and also want to send in options.
-	 * 
+	 *
 	 * @example
 	 * const writr = new Writr('Hello, world!', {caching: false});
 	 */
@@ -237,7 +237,7 @@ export class Writr extends Hookified {
 		try {
 			let result = '';
 			if (this.isCacheEnabled(options)) {
-				const cached = await this._cache.getMarkdown(this._content, options);
+				const cached = this._cache.get(this._content, options);
 				if (cached) {
 					return cached;
 				}
@@ -253,7 +253,7 @@ export class Writr extends Hookified {
 			const file = await engine.process(this.body);
 			result = String(file);
 			if (this.isCacheEnabled(options)) {
-				await this._cache.setMarkdown(this._content, result, options);
+				this._cache.set(this._content, result, options);
 			}
 
 			return result;
@@ -271,7 +271,7 @@ export class Writr extends Hookified {
 		try {
 			let result = '';
 			if (this.isCacheEnabled(options)) {
-				const cached = this._cache.getMarkdownSync(this._content, options);
+				const cached = this._cache.get(this._content, options);
 				if (cached) {
 					return cached;
 				}
@@ -287,7 +287,7 @@ export class Writr extends Hookified {
 			const file = engine.processSync(this.body);
 			result = String(file);
 			if (this.isCacheEnabled(options)) {
-				this._cache.setMarkdownSync(this._content, result, options);
+				this._cache.set(this._content, result, options);
 			}
 
 			return result;

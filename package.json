@@ -57,7 +57,6 @@
     "hookified": "^1.5.0",
     "html-react-parser": "^5.1.18",
     "js-yaml": "^4.1.0",
-    "keyv": "^5.1.2",
     "react": "^18.3.1",
     "rehype-highlight": "^7.0.1",
     "rehype-katex": "^7.0.1",
@@ -73,7 +72,6 @@
     "unified": "^11.0.5"
   },
   "devDependencies": {
-    "@keyv/sqlite": "^4.0.1",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.8.4",
     "@types/react": "^18.3.12",
