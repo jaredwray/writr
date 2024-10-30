@@ -18,12 +18,30 @@ import * as yaml from 'js-yaml';
 import {Hookified} from 'hookified';
 import {WritrCache} from './writr-cache.js';
 
-type WritrOptions = {
+/**
+ * Writr options.
+ * @typedef {Object} WritrOptions
+ * @property {string} [openai] - Openai api key (default: undefined)
+ * @property {RenderOptions} [renderOptions] - Default render options (default: undefined)
+ */
+export type WritrOptions = {
 	openai?: string; // Openai api key (default: undefined)
 	renderOptions?: RenderOptions; // Default render options (default: undefined)
 };
 
-type RenderOptions = {
+/**
+ * Render options.
+ * @typedef {Object} RenderOptions
+ * @property {boolean} [emoji] - Emoji support (default: true)
+ * @property {boolean} [toc] - Table of contents generation (default: true)
+ * @property {boolean} [slug] - Slug generation (default: true)
+ * @property {boolean} [highlight] - Code highlighting (default: true)
+ * @property {boolean} [gfm] - Github flavor markdown (default: true)
+ * @property {boolean} [math] - Math support (default: true)
+ * @property {boolean} [mdx] - MDX support (default: true)
+ * @property {boolean} [caching] - Caching (default: true)
+ */
+export type RenderOptions = {
 	emoji?: boolean; // Emoji support (default: true)
 	toc?: boolean; // Table of contents generation (default: true)
 	slug?: boolean; // Slug generation (default: true)
@@ -34,7 +52,7 @@ type RenderOptions = {
 	caching?: boolean; // Caching (default: true)
 };
 
-class Writr extends Hookified {
+export class Writr extends Hookified {
 	public engine = unified()
 		.use(remarkParse)
 		.use(remarkGfm) // Use GitHub Flavored Markdown
@@ -66,6 +84,14 @@ class Writr extends Hookified {
 
 	private readonly _cache = new WritrCache();
 
+	/**
+	 * Initialize Writr. Accepts a string or options object.
+	 * @param {string | WritrOptions} [arguments1] If you send in a string, it will be used as the markdown content. If you send in an object, it will be used as the options.
+	 * @param {WritrOptions} [arguments2] This is if you send in the content in the first argument and also want to send in options.
+	 * 
+	 * @example
+	 * const writr = new Writr('Hello, world!', {caching: false});
+	 */
 	constructor(arguments1?: string | WritrOptions, arguments2?: WritrOptions) {
 		super();
 		if (typeof arguments1 === 'string') {
@@ -87,22 +113,42 @@ class Writr extends Hookified {
 		}
 	}
 
+	/**
+	 * Get the options.
+	 * @type {WritrOptions}
+	 */
 	public get options(): WritrOptions {
 		return this._options;
 	}
 
+	/**
+	 * Get the Content. This is the markdown content and front matter if it exists.
+	 * @type {WritrOptions}
+	 */
 	public get content(): string {
 		return this._content;
 	}
 
+	/**
+	 * Set the Content. This is the markdown content and front matter if it exists.
+	 * @type {WritrOptions}
+	 */
 	public set content(value: string) {
 		this._content = value;
 	}
 
+	/**
+	 * Get the cache.
+	 * @type {WritrCache}
+	 */
 	public get cache(): WritrCache {
 		return this._cache;
 	}
 
+	/**
+	 * Get the front matter raw content.
+	 * @type {string} The front matter content including the delimiters.
+	 */
 	get frontMatterRaw(): string {
 		// Is there front matter content?
 		if (!this._content.trimStart().startsWith('---')) {
@@ -119,6 +165,10 @@ class Writr extends Hookified {
 		return this._content.slice(start, end + 5); // Extract front matter including delimiters
 	}
 
+	/**
+	 * Get the body content without the front matter.
+	 * @type {string} The markdown content without the front matter.
+	 */
 	get body(): string {
 		// Is there front matter content?
 		if (this.frontMatterRaw === '') {
@@ -131,10 +181,18 @@ class Writr extends Hookified {
 		return this._content.slice(Math.max(0, end + 5)).trim();
 	}
 
+	/**
+	 * Get the markdown content. This is an alias for the body property.
+	 * @type {string} The markdown content.
+	 */
 	get markdown(): string {
 		return this.body;
 	}
 
+	/**
+	 * Get the front matter content as an object.
+	 * @type {Record<string, any>} The front matter content as an object.
+	 */
 	get frontMatter(): Record<string, any> {
 		const frontMatter = this.frontMatterRaw;
 		const match = /^---\s*([\s\S]*?)\s*---\s*/.exec(frontMatter);
@@ -150,6 +208,10 @@ class Writr extends Hookified {
 		return {};
 	}
 
+	/**
+	 * Set the front matter content as an object.
+	 * @type {Record<string, any>} The front matter content as an object.
+	 */
 	set frontMatter(data: Record<string, any>) {
 		const frontMatter = this.frontMatterRaw;
 		const yamlString = yaml.dump(data);
@@ -157,10 +219,20 @@ class Writr extends Hookified {
 		this._content = this._content.replace(frontMatter, newFrontMatter);
 	}
 
+	/**
+	 * Get the front matter value for a key.
+	 * @param {string} key The key to get the value for.
+	 * @returns {T} The value for the key.
+	 */
 	public getFrontMatterValue<T>(key: string): T {
 		return this.frontMatter[key] as T;
 	}
 
+	/**
+	 * Render the markdown content to HTML.
+	 * @param {RenderOptions} [options] The render options.
+	 * @returns {Promise<string>} The rendered HTML content.
+	 */
 	async render(options?: RenderOptions): Promise<string> {
 		try {
 			let result = '';
@@ -190,6 +262,11 @@ class Writr extends Hookified {
 		}
 	}
 
+	/**
+	 * Render the markdown content to HTML synchronously.
+	 * @param {RenderOptions} [options] The render options.
+	 * @returns {string} The rendered HTML content.
+	 */
 	renderSync(options?: RenderOptions): string {
 		try {
 			let result = '';
@@ -219,26 +296,53 @@ class Writr extends Hookified {
 		}
 	}
 
+	/**
+	 * Render the markdown content to React.
+	 * @param {RenderOptions} [options] The render options.
+	 * @param {HTMLReactParserOptions} [reactParseOptions] The HTML React parser options.
+	 * @returns {Promise<string | React.JSX.Element | React.JSX.Element[]>} The rendered React content.
+	 */
 	async renderReact(options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): Promise<string | React.JSX.Element | React.JSX.Element[]> {
 		const html = await this.render(options);
 
 		return parse(html, reactParseOptions);
 	}
 
+	/**
+	 * Render the markdown content to React synchronously.
+	 * @param {RenderOptions} [options] The render options.
+	 * @param {HTMLReactParserOptions} [reactParseOptions] The HTML React parser options.
+	 * @returns {string | React.JSX.Element | React.JSX.Element[]} The rendered React content.
+	 */
 	renderReactSync(options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): string | React.JSX.Element | React.JSX.Element[] {
 		const html = this.renderSync(options);
 		return parse(html, reactParseOptions);
 	}
 
+	/**
+	 * Load markdown content from a file.
+	 * @param {string} filePath The file path to load the markdown content from.
+	 * @returns {Promise<void>}
+	 */
 	async loadFromFile(filePath: string): Promise<void> {
 		const {readFile} = fs.promises;
 		this._content = await readFile(filePath, 'utf8');
 	}
 
+	/**
+	 * Load markdown content from a file synchronously.
+	 * @param {string} filePath The file path to load the markdown content from.
+	 * @returns {void}
+	 */
 	loadFromFileSync(filePath: string): void {
 		this._content = fs.readFileSync(filePath, 'utf8');
 	}
 
+	/**
+	 * Save the markdown content to a file. If the directory doesn't exist it will be created.
+	 * @param {string} filePath The file path to save the markdown content to.
+	 * @returns {Promise<void>}
+	 */
 	async saveToFile(filePath: string): Promise<void> {
 		const {writeFile, mkdir} = fs.promises;
 		const directoryPath = dirname(filePath);
@@ -246,6 +350,11 @@ class Writr extends Hookified {
 		await writeFile(filePath, this._content, 'utf8');
 	}
 
+	/**
+	 * Save the markdown content to a file synchronously. If the directory doesn't exist it will be created.
+	 * @param {string} filePath The file path to save the markdown content to.
+	 * @returns {void}
+	 */
 	saveToFileSync(filePath: string): void {
 		const directoryPath = dirname(filePath);
 		fs.mkdirSync(directoryPath, {recursive: true});
@@ -298,6 +407,4 @@ class Writr extends Hookified {
 		return processor;
 	}
 }
-
-export {Writr, type WritrOptions, type RenderOptions};
 
