@@ -1,15 +1,15 @@
-const fs = require('fs');
-const path = require('path');
-const process = require('node:process');
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
 
-module.exports.options = {
+export const options = {
 	githubPath: 'jaredwray/writr',
 	siteTitle: 'Writr',
 	siteDescription: 'Beautiful Website for Your Projects',
 	siteUrl: 'https://writr.org',
 };
 
-module.exports.onPrepare = async (config) => {
+export const onPrepare = async (config) => {
 	const readmePath = path.join(process.cwd(), './README.md');
 	const readmeSitePath = path.join(config.sitePath, 'README.md');
 	const readme = await fs.promises.readFile(readmePath, 'utf8');
