@@ -120,6 +120,42 @@ title: Hello World
 
 Accessing the default options for this instance of Writr.
 
+### `.frontmatter`
+
+Accessing the frontmatter for this instance of Writr. This is a `Record<string, any>` and can be set via the `.content` property.
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr();
+writr.content = `---
+title: Hello World
+---
+# Hello World ::-):\n\n This is a test.`;
+console.log(writr.frontmatter); // { title: 'Hello World' }
+```
+
+you can also set the front matter directly like this:
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr();
+writr.frontmatter = { title: 'Hello World' };
+```
+
+### `.frontMatterRaw`
+
+Accessing the raw frontmatter for this instance of Writr. This is a `string` and can be set via the `.content` property.
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr();
+writr.content = `---
+title: Hello World
+---
+# Hello World ::-):\n\n This is a test.`;
+console.log(writr.frontMatterRaw); // '---\ntitle: Hello World\n---'
+```
+
 ### `.cache`
 
 Accessing the cache for this instance of Writr. By default this is an in memory cache and is enabled by default. You can disable this by setting `caching: false` in the `RenderOptions` of the `WritrOptions` or when calling render passing the `RenderOptions` like here:
