@@ -160,3 +160,30 @@ date: "2024-08-30"
 Did this work?
 `;
 
+export const markdownWithBadFrontMatter = `
+# Markdown Content Here
+---
+title: My Awesome Blog Post
+date: 2024/10/30
+tags: 
+  - blog
+  - markdown, yaml
+description This is an awesome blog post.
+published: yes
+author:
+  - name: Jane Doe
+    email: jane@example.com
+summary: "A brief summary
+  of the post.
+---
+
+This is additional content.
+
+---
+title: "Sample Is Wrong"
+date: "2024-08-30"
+---
+
+Did this work?
+`;
+

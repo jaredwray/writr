@@ -11,6 +11,7 @@ import {
 	markdownWithFrontMatter,
 	markdownWithFrontMatterAndAdditional,
 	markdownWithFrontMatterInOtherPlaces,
+	markdownWithBadFrontMatter,
 } from './content-fixtures.js';
 
 describe('writr', () => {
@@ -338,6 +339,10 @@ describe('WritrFrontMatter', () => {
 	test('should not parse wrong front matter', () => {
 		const writr = new Writr(markdownWithFrontMatterInOtherPlaces as string);
 		expect(writr.body).to.contain('---');
+	});
+	test('if frontMatter is not correct yaml it should emit an error and return {}', () => {
+		const writr = new Writr(markdownWithBadFrontMatter as string);
+		expect(writr.frontMatter).toStrictEqual({});
 	});
 });
 
