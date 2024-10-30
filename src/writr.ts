@@ -15,6 +15,7 @@ import remarkMDX from 'remark-mdx';
 import type React from 'react';
 import parse, {type HTMLReactParserOptions} from 'html-react-parser';
 import * as yaml from 'js-yaml';
+import {Hookified} from 'hookified';
 import {WritrCache} from './writr-cache.js';
 
 type WritrOptions = {
@@ -33,7 +34,7 @@ type RenderOptions = {
 	caching?: boolean; // Caching (default: true)
 };
 
-class Writr {
+class Writr extends Hookified {
 	public engine = unified()
 		.use(remarkParse)
 		.use(remarkGfm) // Use GitHub Flavored Markdown
@@ -66,6 +67,7 @@ class Writr {
 	private readonly _cache = new WritrCache();
 
 	constructor(arguments1?: string | WritrOptions, arguments2?: WritrOptions) {
+		super();
 		if (typeof arguments1 === 'string') {
 			this._content = arguments1;
 		} else if (arguments1) {
@@ -137,7 +139,12 @@ class Writr {
 		const frontMatter = this.frontMatterRaw;
 		const match = /^---\s*([\s\S]*?)\s*---\s*/.exec(frontMatter);
 		if (match) {
-			return yaml.load(match[1].trim()) as Record<string, any>;
+			try {
+				return yaml.load(match[1].trim()) as Record<string, any>;
+			/* c8 ignore next 4 */
+			} catch (error) {
+				this.emit('error', error);
+			}
 		}
 
 		return {};
