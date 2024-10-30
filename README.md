@@ -303,8 +303,8 @@ If you want to set the caching options for the instance of Writr you can do so l
 // we will set the lruSize of the cache and the default ttl
 import {Writr} from 'writr';
 const writr = new Writr(`# Hello World ::-):\n\n This is a test.`, { caching: true});
-writr.cache.lruSize = 100;
-writr.cache.ttl = '5m'; // setting it to 5 minutes
+writr.cache.store.lruSize = 100;
+writr.cache.store.ttl = '5m'; // setting it to 5 minutes
 ```
 
 # Code of Conduct and Contributing
