@@ -337,13 +337,6 @@ describe('WritrFrontMatter', () => {
 	});
 	test('should not parse wrong front matter', () => {
 		const writr = new Writr(markdownWithFrontMatterInOtherPlaces as string);
-		console.log(writr.content);
-		console.log('====================');
-		console.log(writr.frontMatterRaw);
-		console.log('====================');
-		console.log(writr.body);
-		console.log('====================');
-		console.log(writr.renderSync());
 		expect(writr.body).to.contain('---');
 	});
 });
