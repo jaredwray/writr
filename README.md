@@ -14,6 +14,7 @@
 - [API](#api)
   - [`new Writr(arg?: string | WritrOptions, options?: WritrOptions)`](#new-writrarg-string--writroptions-options-writroptions)
   - [`.content`](#content)
+  - [`.body`](#body)
   - [`.options`](#options)
   - [`.frontmatter`](#frontmatter)
   - [`.frontMatterRaw`](#frontmatterraw)
@@ -130,6 +131,20 @@ writr.content = `---
 title: Hello World
 ---
 # Hello World ::-):\n\n This is a test.`;
+```
+
+## `.body`
+
+gets the body of the markdown content. This is the content without the frontmatter.
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr();
+writr.content = `---
+title: Hello World
+---
+# Hello World ::-):\n\n This is a test.`;
+console.log(writr.body); // '# Hello World ::-):\n\n This is a test.'
 ```
 
 ## `.options`
