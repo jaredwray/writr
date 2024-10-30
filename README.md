@@ -286,7 +286,7 @@ Caching is built into Writr and is an in-memory cache using `CacheableMemory` fr
 
 ```javascript
 import { Writr } from 'writr';
-const writr = new Writr(`# Hello World ::-):\n\n This is a test.`, { caching: true});
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`, { renderOptions: { caching: true } });
 ```
 
 or via `RenderOptions` such as:
@@ -302,7 +302,7 @@ If you want to set the caching options for the instance of Writr you can do so l
 ```javascript
 // we will set the lruSize of the cache and the default ttl
 import {Writr} from 'writr';
-const writr = new Writr(`# Hello World ::-):\n\n This is a test.`, { caching: true});
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`, { renderOptions: { caching: true } });
 writr.cache.store.lruSize = 100;
 writr.cache.store.ttl = '5m'; // setting it to 5 minutes
 ```

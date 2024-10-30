@@ -76,7 +76,7 @@ export class Writr extends Hookified {
 			gfm: true,
 			math: true,
 			mdx: true,
-			caching: true,
+			caching: false,
 		},
 	};
 
@@ -97,7 +97,7 @@ export class Writr extends Hookified {
 		if (typeof arguments1 === 'string') {
 			this._content = arguments1;
 		} else if (arguments1) {
-			this._options = {...this._options, ...arguments1};
+			this._options = this.mergeOptions(this._options, arguments1);
 			if (this._options.renderOptions) {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				this.engine = this.createProcessor(this._options.renderOptions);
@@ -105,7 +105,7 @@ export class Writr extends Hookified {
 		}
 
 		if (arguments2) {
-			this._options = {...this._options, ...arguments2};
+			this._options = this.mergeOptions(this._options, arguments2);
 			if (this._options.renderOptions) {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				this.engine = this.createProcessor(this._options.renderOptions);
@@ -405,6 +405,56 @@ export class Writr extends Hookified {
 		processor.use(rehypeStringify);
 
 		return processor;
+	}
+
+	private mergeOptions(current: WritrOptions, options: WritrOptions): WritrOptions {
+		if (options.openai) {
+			current.openai = options.openai;
+		}
+
+		if (options.renderOptions) {
+			current.renderOptions ??= {};
+
+			this.mergeRenderOptions(current.renderOptions, options.renderOptions);
+		}
+
+		return current;
+	}
+
+	private mergeRenderOptions(current: RenderOptions, options: RenderOptions): RenderOptions {
+		if (options.emoji !== undefined) {
+			current.emoji = options.emoji;
+		}
+
+		if (options.toc !== undefined) {
+			current.toc = options.toc;
+		}
+
+		if (options.slug !== undefined) {
+			current.slug = options.slug;
+		}
+
+		if (options.highlight !== undefined) {
+			current.highlight = options.highlight;
+		}
+
+		if (options.gfm !== undefined) {
+			current.gfm = options.gfm;
+		}
+
+		if (options.math !== undefined) {
+			current.math = options.math;
+		}
+
+		if (options.mdx !== undefined) {
+			current.mdx = options.mdx;
+		}
+
+		if (options.caching !== undefined) {
+			current.caching = options.caching;
+		}
+
+		return current;
 	}
 }
 

@@ -22,10 +22,12 @@ describe('writr', () => {
 
 	it('should be able to set options', () => {
 		const options = {
+			openai: 'foo',
 			renderOptions: {
 				toc: false,
 				slug: false,
 				highlight: false,
+				mdx: false,
 				gfm: false,
 				math: false,
 				emoji: false,
@@ -33,10 +35,11 @@ describe('writr', () => {
 		};
 		const writr = new Writr(options);
 		expect(writr.options).toBeDefined();
-		expect(writr.options.openai).toEqual(undefined);
+		expect(writr.options.openai).toEqual('foo');
 		expect(writr.options.renderOptions).toBeInstanceOf(Object);
 		expect(writr.options.renderOptions?.emoji).toEqual(false);
 		expect(writr.options.renderOptions?.gfm).toEqual(false);
+		expect(writr.options.renderOptions?.mdx).toEqual(false);
 		expect(writr.options.renderOptions?.highlight).toEqual(false);
 		expect(writr.options.renderOptions?.math).toEqual(false);
 		expect(writr.options.renderOptions?.slug).toEqual(false);
@@ -219,7 +222,7 @@ describe('writr', () => {
 
 	it('should return a valid cached result', async () => {
 		const content = '# Hello World';
-		const writr = new Writr(content); // By defualt cache is enabled
+		const writr = new Writr(content, {renderOptions: {caching: true}}); // By defualt cache is enabled
 		const result = await writr.render();
 		expect(result).toEqual('<h1 id="hello-world">Hello World</h1>');
 		const hashKey = writr.cache.hash(content);
