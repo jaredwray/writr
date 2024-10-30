@@ -22,10 +22,12 @@ describe('writr', () => {
 
 	it('should be able to set options', () => {
 		const options = {
+			openai: 'foo',
 			renderOptions: {
 				toc: false,
 				slug: false,
 				highlight: false,
+				mdx: false,
 				gfm: false,
 				math: false,
 				emoji: false,
@@ -33,10 +35,11 @@ describe('writr', () => {
 		};
 		const writr = new Writr(options);
 		expect(writr.options).toBeDefined();
-		expect(writr.options.openai).toEqual(undefined);
+		expect(writr.options.openai).toEqual('foo');
 		expect(writr.options.renderOptions).toBeInstanceOf(Object);
 		expect(writr.options.renderOptions?.emoji).toEqual(false);
 		expect(writr.options.renderOptions?.gfm).toEqual(false);
+		expect(writr.options.renderOptions?.mdx).toEqual(false);
 		expect(writr.options.renderOptions?.highlight).toEqual(false);
 		expect(writr.options.renderOptions?.math).toEqual(false);
 		expect(writr.options.renderOptions?.slug).toEqual(false);
@@ -128,6 +131,18 @@ describe('writr', () => {
 		const result = await writr.render(options);
 		expect(result).toEqual('<h1 id="hello-world-">Hello World 🐶</h1>');
 	});
+
+	it('should render from cache a simple markdown example with options - gfm', async () => {
+		const writr = new Writr('# Hello World :dog:');
+		const options = {
+			gfm: false,
+		};
+		const result = await writr.render(options);
+		expect(result).toEqual('<h1 id="hello-world-">Hello World 🐶</h1>');
+		const result2 = await writr.render(options);
+		expect(result2).toEqual('<h1 id="hello-world-">Hello World 🐶</h1>');
+	});
+
 	it('should render a simple markdown example with options - toc', async () => {
 		const writr = new Writr();
 		const options = {
@@ -201,18 +216,17 @@ describe('writr', () => {
 
 	it('should be able to get/set cache', async () => {
 		const writr = new Writr();
-		writr.cache.setMarkdownSync('# Hello World', '<h1>Hello World</h1>');
-		expect(writr.cache.getMarkdownSync('# Hello World')).toEqual('<h1>Hello World</h1>');
+		writr.cache.set('# Hello World', '<h1>Hello World</h1>');
+		expect(writr.cache.get('# Hello World')).toEqual('<h1>Hello World</h1>');
 	});
 
 	it('should return a valid cached result', async () => {
-		const writr = new Writr('# Hello World'); // By defualt cache is enabled
+		const content = '# Hello World';
+		const writr = new Writr(content, {renderOptions: {caching: true}}); // By defualt cache is enabled
 		const result = await writr.render();
 		expect(result).toEqual('<h1 id="hello-world">Hello World</h1>');
-		const hashKey = writr.cache.hashStore.hash({markdown: '# Hello World'});
-		expect(await writr.cache.get(hashKey)).toEqual('<h1 id="hello-world">Hello World</h1>');
-		const result2 = await writr.render();
-		expect(result2).toEqual('<h1 id="hello-world">Hello World</h1>');
+		const hashKey = writr.cache.hash(content);
+		expect(writr.cache.store.get(hashKey)).toEqual(result);
 	});
 
 	it('should return non cached result via options', async () => {
@@ -223,15 +237,6 @@ describe('writr', () => {
 		expect(result2).toEqual('<h1 id="hello-world">Hello World</h1>');
 	});
 
-	it('should return a valid cached result', () => {
-		const writr = new Writr('# Hello World'); // By defualt cache is enabled
-		const result = writr.renderSync();
-		expect(result).toEqual('<h1 id="hello-world">Hello World</h1>');
-		const hashKey = writr.cache.hashStore.hash({markdown: '# Hello World'});
-		expect(writr.cache.getSync(hashKey)).toEqual('<h1 id="hello-world">Hello World</h1>');
-		const result2 = writr.renderSync();
-		expect(result2).toEqual('<h1 id="hello-world">Hello World</h1>');
-	});
 	it('should strip out the front matter on render', async () => {
 		const writr = new Writr(blogPostWithMarkdown);
 		const result = await writr.render();

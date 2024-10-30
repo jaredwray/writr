@@ -76,7 +76,7 @@ export class Writr extends Hookified {
 			gfm: true,
 			math: true,
 			mdx: true,
-			caching: true,
+			caching: false,
 		},
 	};
 
@@ -88,7 +88,7 @@ export class Writr extends Hookified {
 	 * Initialize Writr. Accepts a string or options object.
 	 * @param {string | WritrOptions} [arguments1] If you send in a string, it will be used as the markdown content. If you send in an object, it will be used as the options.
 	 * @param {WritrOptions} [arguments2] This is if you send in the content in the first argument and also want to send in options.
-	 * 
+	 *
 	 * @example
 	 * const writr = new Writr('Hello, world!', {caching: false});
 	 */
@@ -97,7 +97,7 @@ export class Writr extends Hookified {
 		if (typeof arguments1 === 'string') {
 			this._content = arguments1;
 		} else if (arguments1) {
-			this._options = {...this._options, ...arguments1};
+			this._options = this.mergeOptions(this._options, arguments1);
 			if (this._options.renderOptions) {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				this.engine = this.createProcessor(this._options.renderOptions);
@@ -105,7 +105,7 @@ export class Writr extends Hookified {
 		}
 
 		if (arguments2) {
-			this._options = {...this._options, ...arguments2};
+			this._options = this.mergeOptions(this._options, arguments2);
 			if (this._options.renderOptions) {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				this.engine = this.createProcessor(this._options.renderOptions);
@@ -237,7 +237,7 @@ export class Writr extends Hookified {
 		try {
 			let result = '';
 			if (this.isCacheEnabled(options)) {
-				const cached = await this._cache.getMarkdown(this._content, options);
+				const cached = this._cache.get(this._content, options);
 				if (cached) {
 					return cached;
 				}
@@ -253,7 +253,7 @@ export class Writr extends Hookified {
 			const file = await engine.process(this.body);
 			result = String(file);
 			if (this.isCacheEnabled(options)) {
-				await this._cache.setMarkdown(this._content, result, options);
+				this._cache.set(this._content, result, options);
 			}
 
 			return result;
@@ -271,7 +271,7 @@ export class Writr extends Hookified {
 		try {
 			let result = '';
 			if (this.isCacheEnabled(options)) {
-				const cached = this._cache.getMarkdownSync(this._content, options);
+				const cached = this._cache.get(this._content, options);
 				if (cached) {
 					return cached;
 				}
@@ -287,7 +287,7 @@ export class Writr extends Hookified {
 			const file = engine.processSync(this.body);
 			result = String(file);
 			if (this.isCacheEnabled(options)) {
-				this._cache.setMarkdownSync(this._content, result, options);
+				this._cache.set(this._content, result, options);
 			}
 
 			return result;
@@ -405,6 +405,56 @@ export class Writr extends Hookified {
 		processor.use(rehypeStringify);
 
 		return processor;
+	}
+
+	private mergeOptions(current: WritrOptions, options: WritrOptions): WritrOptions {
+		if (options.openai) {
+			current.openai = options.openai;
+		}
+
+		if (options.renderOptions) {
+			current.renderOptions ??= {};
+
+			this.mergeRenderOptions(current.renderOptions, options.renderOptions);
+		}
+
+		return current;
+	}
+
+	private mergeRenderOptions(current: RenderOptions, options: RenderOptions): RenderOptions {
+		if (options.emoji !== undefined) {
+			current.emoji = options.emoji;
+		}
+
+		if (options.toc !== undefined) {
+			current.toc = options.toc;
+		}
+
+		if (options.slug !== undefined) {
+			current.slug = options.slug;
+		}
+
+		if (options.highlight !== undefined) {
+			current.highlight = options.highlight;
+		}
+
+		if (options.gfm !== undefined) {
+			current.gfm = options.gfm;
+		}
+
+		if (options.math !== undefined) {
+			current.math = options.math;
+		}
+
+		if (options.mdx !== undefined) {
+			current.mdx = options.mdx;
+		}
+
+		if (options.caching !== undefined) {
+			current.caching = options.caching;
+		}
+
+		return current;
 	}
 }
 

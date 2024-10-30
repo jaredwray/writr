@@ -189,26 +189,17 @@ console.log(writr.frontMatterRaw); // '---\ntitle: Hello World\n---'
 
 ## `.cache`
 
-Accessing the cache for this instance of Writr. By default this is an in memory cache and is enabled by default. You can disable this by setting `caching: false` in the `RenderOptions` of the `WritrOptions` or when calling render passing the `RenderOptions` like here:
+Accessing the cache for this instance of Writr. By default this is an in memory cache and is disabled (set to false) by default. You can enable this by setting `caching: true` in the `RenderOptions` of the `WritrOptions` or when calling render passing the `RenderOptions` like here:
 
 ```javascript
 import { Writr } from 'writr';
 const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 const options  = {
-  caching: false
+  caching: true
 }
 const html = await writr.render(options); // <h1>Hello World ::-):</h1><p>This is a test.</p>
 ```
 
-If you would like to use a specific storage adapter from https://keyv.org you can pass in the adapter like so:
-
-```javascript
-import { Writr } from 'writr';
-import Keyv from '@keyv/redis';
-const keyvRedis = new Keyv('redis://user:pass@localhost:6379');
-const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
-writr.cache.setStorageAdapter(keyvRedis);
-```
 
 ## `.engine`
 
@@ -288,6 +279,33 @@ await writr.saveToFile('path/to/file.md');
 ## `.saveToFileSync(filePath: string): void`
 
 Save your markdown and frontmatter (if included) content to a file path synchronously.
+
+# Caching On Render
+
+Caching is built into Writr and is an in-memory cache using `CacheableMemory` from [Cacheable](https://cacheable.org). It is turned off by default and can be enabled by setting `caching: true` in the `RenderOptions` of the `WritrOptions` or when calling render passing the `RenderOptions` like here:
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`, { renderOptions: { caching: true } });
+```
+
+or via `RenderOptions` such as:
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
+await writr.render({ caching: true});
+```
+
+If you want to set the caching options for the instance of Writr you can do so like this:
+
+```javascript
+// we will set the lruSize of the cache and the default ttl
+import {Writr} from 'writr';
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`, { renderOptions: { caching: true } });
+writr.cache.store.lruSize = 100;
+writr.cache.store.ttl = '5m'; // setting it to 5 minutes
+```
 
 # Code of Conduct and Contributing
 [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines.
