@@ -9,8 +9,27 @@
 
 # Table of Contents
 - [Features](#features)
+- [ESM and Node Version Support](#esm-and-node-version-support)
 - [Getting Started](#getting-started)
-- [License - MIT](#license)
+- [API](#api)
+  - [`new Writr(arg?: string | WritrOptions, options?: WritrOptions)`](#new-writrarg-string--writroptions-options-writroptions)
+  - [`.content`](#content)
+  - [`.options`](#options)
+  - [`.frontmatter`](#frontmatter)
+  - [`.frontMatterRaw`](#frontmatterraw)
+  - [`.cache`](#cache)
+  - [`.engine`](#engine)
+  - [`.render(options?: RenderOptions): Promise<string>`](#renderoptions-renderoptions-promisestring)
+  - [`.renderSync(options?: RenderOptions): string`](#rendersyncoptions-renderoptions-string)
+  - [`.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions): Promise<React.JSX.Element />`](#renderreactoptions-renderoptions-reactoptions-htmlreactparseroptions-promise-reactjsxelement-)
+  - [`.renderReactSync( options?: RenderOptions, reactOptions?: HTMLReactParserOptions): React.JSX.Element`](#renderreactsync-options-renderoptions-reactoptions-htmlreactparseroptions-reactjsxelement)
+  - [`.loadFromFile(filePath: string): Promise<void>`](#loadfromfilefilepath-string-promisevoid)
+  - [`.loadFromFileSync(filePath: string): void`](#loadfromfilesyncfilepath-string-void)
+  - [`.saveToFile(filePath: string): Promise<void>`](#savetofilefilepath-string-promisevoid)
+  - [`.saveToFileSync(filePath: string): void`](#savetofilesyncfilepath-string-void)
+- [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
+- [License](#license)
+
 
 # Features
 * Removes the remark / unified complexity and easy to use.
