@@ -22,6 +22,7 @@ describe('writr', () => {
 
 	it('should be able to set options', () => {
 		const options = {
+			throwErrors: true,
 			renderOptions: {
 				toc: false,
 				slug: false,
@@ -35,6 +36,7 @@ describe('writr', () => {
 		};
 		const writr = new Writr(options);
 		expect(writr.options).toBeDefined();
+		expect(writr.options.throwErrors).toEqual(true);
 		expect(writr.options.renderOptions).toBeInstanceOf(Object);
 		expect(writr.options.renderOptions?.emoji).toEqual(false);
 		expect(writr.options.renderOptions?.gfm).toEqual(false);
