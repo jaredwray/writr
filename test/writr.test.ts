@@ -22,7 +22,6 @@ describe('writr', () => {
 
 	it('should be able to set options', () => {
 		const options = {
-			openai: 'foo',
 			renderOptions: {
 				toc: false,
 				slug: false,
@@ -31,11 +30,11 @@ describe('writr', () => {
 				gfm: false,
 				math: false,
 				emoji: false,
+				caching: false,
 			},
 		};
 		const writr = new Writr(options);
 		expect(writr.options).toBeDefined();
-		expect(writr.options.openai).toEqual('foo');
 		expect(writr.options.renderOptions).toBeInstanceOf(Object);
 		expect(writr.options.renderOptions?.emoji).toEqual(false);
 		expect(writr.options.renderOptions?.gfm).toEqual(false);
@@ -44,6 +43,7 @@ describe('writr', () => {
 		expect(writr.options.renderOptions?.math).toEqual(false);
 		expect(writr.options.renderOptions?.slug).toEqual(false);
 		expect(writr.options.renderOptions?.toc).toEqual(false);
+		expect(writr.options.renderOptions?.caching).toEqual(false);
 	});
 
 	it('should be able to set markdown', () => {

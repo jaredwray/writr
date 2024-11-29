@@ -21,11 +21,9 @@ import {WritrCache} from './writr-cache.js';
 /**
  * Writr options.
  * @typedef {Object} WritrOptions
- * @property {string} [openai] - Openai api key (default: undefined)
  * @property {RenderOptions} [renderOptions] - Default render options (default: undefined)
  */
 export type WritrOptions = {
-	openai?: string; // Openai api key (default: undefined)
 	renderOptions?: RenderOptions; // Default render options (default: undefined)
 };
 
@@ -39,7 +37,7 @@ export type WritrOptions = {
  * @property {boolean} [gfm] - Github flavor markdown (default: true)
  * @property {boolean} [math] - Math support (default: true)
  * @property {boolean} [mdx] - MDX support (default: true)
- * @property {boolean} [caching] - Caching (default: true)
+ * @property {boolean} [caching] - Caching (default: false)
  */
 export type RenderOptions = {
 	emoji?: boolean; // Emoji support (default: true)
@@ -49,7 +47,7 @@ export type RenderOptions = {
 	gfm?: boolean; // Github flavor markdown (default: true)
 	math?: boolean; // Math support (default: true)
 	mdx?: boolean; // MDX support (default: true)
-	caching?: boolean; // Caching (default: true)
+	caching?: boolean; // Caching (default: false)
 };
 
 export class Writr extends Hookified {
@@ -67,7 +65,6 @@ export class Writr extends Hookified {
 		.use(rehypeStringify); // Stringify HTML
 
 	private readonly _options: WritrOptions = {
-		openai: undefined,
 		renderOptions: {
 			emoji: true,
 			toc: true,
@@ -408,10 +405,6 @@ export class Writr extends Hookified {
 	}
 
 	private mergeOptions(current: WritrOptions, options: WritrOptions): WritrOptions {
-		if (options.openai) {
-			current.openai = options.openai;
-		}
-
 		if (options.renderOptions) {
 			current.renderOptions ??= {};
 
