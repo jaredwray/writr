@@ -22,6 +22,8 @@
   - [`.engine`](#engine)
   - [`.render(options?: RenderOptions): Promise<string>`](#renderoptions-renderoptions-promisestring)
   - [`.renderSync(options?: RenderOptions): string`](#rendersyncoptions-renderoptions-string)
+  - [`.renderToFile(filePath: string, options?: RenderOptions): Promise<void>`](#rendertofilefilepath-string-options-renderoptions-promisevoid)
+  - [`.renderToFileSync(filePath: string, options?: RenderOptions): void`](#rendertofilesyncfilepath-string-options-renderoptions-void)
   - [`.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions): Promise<React.JSX.Element />`](#renderreactoptions-renderoptions-reactoptions-htmlreactparseroptions-promise-reactjsxelement-)
   - [`.renderReactSync( options?: RenderOptions, reactOptions?: HTMLReactParserOptions): React.JSX.Element`](#renderreactsync-options-renderoptions-reactoptions-htmlreactparseroptions-reactjsxelement)
   - [`.loadFromFile(filePath: string): Promise<void>`](#loadfromfilefilepath-string-promisevoid)
@@ -81,6 +83,7 @@ An example passing in the options also via the constructor:
 ```javascript
 import { Writr, WritrOptions } from 'writr';
 const writrOptions = {
+  throwErrors: true,
   renderOptions: {
     emoji: true,
     toc: true,
@@ -105,6 +108,7 @@ By default the constructor takes in a markdown `string` or `WritrOptions` in the
 ```javascript
 import { Writr, WritrOptions } from 'writr';
 const writrOptions = {
+  throwErrors: true,
   renderOptions: {
     emoji: true,
     toc: true,
@@ -149,7 +153,23 @@ console.log(writr.body); // '# Hello World ::-):\n\n This is a test.'
 
 ## `.options`
 
-Accessing the default options for this instance of Writr.
+Accessing the default options for this instance of Writr. Here is the default settings for `WritrOptions`.
+
+```javascript
+{
+  throwErrors: false,
+  renderOptions: {
+    emoji: true,
+    toc: false,
+    slug: false,
+    highlight: false,
+    gfm: true,
+    math: false,
+    mdx: false,
+    caching: false,
+  }
+}
+```
 
 ## `.frontmatter`
 
@@ -230,6 +250,26 @@ Rendering markdown to HTML synchronously. the options are based on RenderOptions
 import { Writr } from 'writr';
 const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 const html = writr.renderSync(); // <h1>Hello World 🙂</h1><p>This is a test.</p>
+```
+
+## '.renderToFile(filePath: string, options?: RenderOptions): Promise<void>'
+
+Rendering markdown to a file. The options are based on RenderOptions.
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
+await writr.renderToFile('path/to/file.html');
+```
+
+## '.renderToFileSync(filePath: string, options?: RenderOptions): void'
+
+Rendering markdown to a file synchronously. The options are based on RenderOptions.
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
+writr.renderToFileSync('path/to/file.html');
 ```
 
 ## '.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions): Promise<React.JSX.Element />'

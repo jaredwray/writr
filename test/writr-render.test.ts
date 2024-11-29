@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import {
 	test, describe, expect,
 } from 'vitest';
@@ -51,5 +52,35 @@ describe('Writr Async render with Caching', async () => {
 		expect(writr.cache.store.size).toBe(1);
 		const result2 = writr.renderSync();
 		expect(result2).toBe(testContentOneResult);
+	});
+});
+
+describe('Render and Save to File', async () => {
+	test('should render a template and save to file', async () => {
+		const writr = new Writr(testContentOne, options);
+		const fileName = './test/fixtures/temp-render/test-output.html';
+		if (fs.existsSync(fileName)) {
+			fs.unlinkSync(fileName);
+		}
+
+		await writr.renderToFile(fileName);
+
+		expect(fs.existsSync(fileName)).toBe(true);
+
+		fs.unlinkSync(fileName);
+	});
+
+	test('should render a template and save to file sync', async () => {
+		const writr = new Writr(testContentOne, options);
+		const fileName = './test/fixtures/temp-render/test-output-sync.html';
+		if (fs.existsSync(fileName)) {
+			fs.unlinkSync(fileName);
+		}
+
+		writr.renderToFileSync(fileName);
+
+		expect(fs.existsSync(fileName)).toBe(true);
+
+		fs.unlinkSync(fileName);
 	});
 });

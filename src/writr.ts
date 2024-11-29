@@ -22,9 +22,11 @@ import {WritrCache} from './writr-cache.js';
  * Writr options.
  * @typedef {Object} WritrOptions
  * @property {RenderOptions} [renderOptions] - Default render options (default: undefined)
+ * @property {boolean} [throwErrors] - Throw error (default: false)
  */
 export type WritrOptions = {
 	renderOptions?: RenderOptions; // Default render options (default: undefined)
+	throwErrors?: boolean; // Throw error (default: false)
 };
 
 /**
@@ -65,6 +67,7 @@ export class Writr extends Hookified {
 		.use(rehypeStringify); // Stringify HTML
 
 	private readonly _options: WritrOptions = {
+		throwErrors: false,
 		renderOptions: {
 			emoji: true,
 			toc: true,
@@ -294,6 +297,47 @@ export class Writr extends Hookified {
 	}
 
 	/**
+	 * Render the markdown content and save it to a file. If the directory doesn't exist it will be created.
+	 * @param {string} filePath The file path to save the rendered markdown content to.
+	 * @param {RenderOptions} [options] the render options.
+	 */
+	async renderToFile(filePath: string, options?: RenderOptions): Promise<void> {
+		try {
+			const {writeFile, mkdir} = fs.promises;
+			const directoryPath = dirname(filePath);
+			const content = await this.render(options);
+			await mkdir(directoryPath, {recursive: true});
+			await writeFile(filePath, content, 'utf8');
+		/* c8 ignore next 6 */
+		} catch (error) {
+			this.emit('error', error);
+			if (this._options.throwErrors) {
+				throw error;
+			}
+		}
+	}
+
+	/**
+	 * Render the markdown content and save it to a file synchronously. If the directory doesn't exist it will be created.
+	 * @param {string} filePath The file path to save the rendered markdown content to.
+	 * @param {RenderOptions} [options] the render options.
+	 */
+	renderToFileSync(filePath: string, options?: RenderOptions): void {
+		try {
+			const directoryPath = dirname(filePath);
+			const content = this.renderSync(options);
+			fs.mkdirSync(directoryPath, {recursive: true});
+			fs.writeFileSync(filePath, content, 'utf8');
+		/* c8 ignore next 6 */
+		} catch (error) {
+			this.emit('error', error);
+			if (this._options.throwErrors) {
+				throw error;
+			}
+		}
+	}
+
+	/**
 	 * Render the markdown content to React.
 	 * @param {RenderOptions} [options] The render options.
 	 * @param {HTMLReactParserOptions} [reactParseOptions] The HTML React parser options.
@@ -341,10 +385,18 @@ export class Writr extends Hookified {
 	 * @returns {Promise<void>}
 	 */
 	async saveToFile(filePath: string): Promise<void> {
-		const {writeFile, mkdir} = fs.promises;
-		const directoryPath = dirname(filePath);
-		await mkdir(directoryPath, {recursive: true});
-		await writeFile(filePath, this._content, 'utf8');
+		try {
+			const {writeFile, mkdir} = fs.promises;
+			const directoryPath = dirname(filePath);
+			await mkdir(directoryPath, {recursive: true});
+			await writeFile(filePath, this._content, 'utf8');
+		/* c8 ignore next 6 */
+		} catch (error) {
+			this.emit('error', error);
+			if (this._options.throwErrors) {
+				throw error;
+			}
+		}
 	}
 
 	/**
@@ -353,9 +405,17 @@ export class Writr extends Hookified {
 	 * @returns {void}
 	 */
 	saveToFileSync(filePath: string): void {
-		const directoryPath = dirname(filePath);
-		fs.mkdirSync(directoryPath, {recursive: true});
-		fs.writeFileSync(filePath, this._content, 'utf8');
+		try {
+			const directoryPath = dirname(filePath);
+			fs.mkdirSync(directoryPath, {recursive: true});
+			fs.writeFileSync(filePath, this._content, 'utf8');
+		/* c8 ignore next 6 */
+		} catch (error) {
+			this.emit('error', error);
+			if (this._options.throwErrors) {
+				throw error;
+			}
+		}
 	}
 
 	private isCacheEnabled(options?: RenderOptions): boolean {
@@ -405,6 +465,10 @@ export class Writr extends Hookified {
 	}
 
 	private mergeOptions(current: WritrOptions, options: WritrOptions): WritrOptions {
+		if (options.throwErrors !== undefined) {
+			current.throwErrors = options.throwErrors;
+		}
+
 		if (options.renderOptions) {
 			current.renderOptions ??= {};
 
