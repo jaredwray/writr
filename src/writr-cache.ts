@@ -1,4 +1,4 @@
-import {Cacheable, CacheableMemory} from 'cacheable';
+import {CacheableMemory} from 'cacheable';
 import {type RenderOptions} from './writr.js';
 
 export class WritrCache {
