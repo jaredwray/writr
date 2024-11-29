@@ -22,7 +22,7 @@
   - [`.engine`](#engine)
   - [`.render(options?: RenderOptions): Promise<string>`](#renderoptions-renderoptions-promisestring)
   - [`.renderSync(options?: RenderOptions): string`](#rendersyncoptions-renderoptions-string)
-  - [`.renderToFile(filePath: string, options?: RenderOptions): Promise<void>`](#rendertofilefilepath-string-options-renderoptions-promisevoid)
+  - [`.renderToFile(filePath: string, options?: RenderOptions)`](#rendertofilefilepath-string-options-renderoptions)
   - [`.renderToFileSync(filePath: string, options?: RenderOptions): void`](#rendertofilesyncfilepath-string-options-renderoptions-void)
   - [`.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions): Promise<React.JSX.Element />`](#renderreactoptions-renderoptions-reactoptions-htmlreactparseroptions-promise-reactjsxelement-)
   - [`.renderReactSync( options?: RenderOptions, reactOptions?: HTMLReactParserOptions): React.JSX.Element`](#renderreactsync-options-renderoptions-reactoptions-htmlreactparseroptions-reactjsxelement)
@@ -252,7 +252,7 @@ const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 const html = writr.renderSync(); // <h1>Hello World 🙂</h1><p>This is a test.</p>
 ```
 
-## '.renderToFile(filePath: string, options?: RenderOptions): Promise<void>'
+## '.renderToFile(filePath: string, options?: RenderOptions)'
 
 Rendering markdown to a file. The options are based on RenderOptions.
 
