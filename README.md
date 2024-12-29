@@ -47,6 +47,7 @@
 * Github Flavor Markdown (remark-gfm).
 * Emoji Support (remark-emoji).
 * MDX Support (remark-mdx).
+* Built in Hooks for adding code to render pipeline.
 
 # ESM and Node Version Support
 
@@ -345,6 +346,20 @@ import {Writr} from 'writr';
 const writr = new Writr(`# Hello World ::-):\n\n This is a test.`, { renderOptions: { caching: true } });
 writr.cache.store.lruSize = 100;
 writr.cache.store.ttl = '5m'; // setting it to 5 minutes
+```
+
+# Hooks
+
+Hooks are a way to add additional parsing to the render pipeline. You can add hooks to the the Writr instance. Here is an example of adding a hook to the instance of Writr:
+
+```javascript
+import { Writr, WritrHooks } from 'writr';
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
+writr.onHook(WritrHooks.beforeRender, data => {
+  data.body = 'Hello, Universe!';
+});
+const result = await writr.render();
+console.log(result); // Hello, Universe!
 ```
 
 # Code of Conduct and Contributing
