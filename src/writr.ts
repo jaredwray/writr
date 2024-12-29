@@ -52,6 +52,15 @@ export type RenderOptions = {
 	caching?: boolean; // Caching (default: false)
 };
 
+export enum WritrHooks {
+	beforeRender = 'beforeRender',
+	afterRender = 'afterRender',
+	beforeSaveToFile = 'beforeSaveToFile',
+	afterSaveToFile = 'afterSaveToFile',
+	beforeLoadFromFile = 'beforeLoadFromFile',
+	afterLoadFromFile = 'afterLoadFromFile',
+}
+
 export class Writr extends Hookified {
 	public engine = unified()
 		.use(remarkParse)
