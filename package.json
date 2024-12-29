@@ -73,7 +73,7 @@
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^22.10.1",
+    "@types/node": "^22.10.2",
     "@types/react": "^18.3.12",
     "@vitest/coverage-v8": "^2.1.6",
     "docula": "^0.9.5",
@@ -82,8 +82,8 @@
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "vitest": "^2.1.6",
-    "webpack": "^5.96.1",
-    "xo": "^0.59.3"
+    "webpack": "^5.97.1",
+    "xo": "^0.60.0"
   },
   "xo": {
     "ignores": [
