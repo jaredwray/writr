@@ -362,6 +362,24 @@ const result = await writr.render();
 console.log(result); // Hello, Universe!
 ```
 
+For `beforeRender` the data object is a `renderData` object. Here is the interface for `renderData`:
+
+```typescript
+export type renderData {
+  body: string;
+  content: string;
+  options: RenderOptions;
+}
+```
+
+For `afterRender` the data object is a `resultData` object. Here is the interface for `resultData`:
+
+```typescript
+export type resultData {
+  result: string;
+}
+```
+
 # Code of Conduct and Contributing
 [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines.
 
