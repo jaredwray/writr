@@ -52,6 +52,15 @@ export type RenderOptions = {
 	caching?: boolean; // Caching (default: false)
 };
 
+export enum WritrHooks {
+	beforeRender = 'beforeRender',
+	afterRender = 'afterRender',
+	beforeSaveToFile = 'beforeSaveToFile',
+	afterSaveToFile = 'afterSaveToFile',
+	beforeLoadFromFile = 'beforeLoadFromFile',
+	afterLoadFromFile = 'afterLoadFromFile',
+}
+
 export class Writr extends Hookified {
 	public engine = unified()
 		.use(remarkParse)
@@ -235,14 +244,6 @@ export class Writr extends Hookified {
 	 */
 	async render(options?: RenderOptions): Promise<string> {
 		try {
-			let result = '';
-			if (this.isCacheEnabled(options)) {
-				const cached = this._cache.get(this._content, options);
-				if (cached) {
-					return cached;
-				}
-			}
-
 			let {engine} = this;
 			if (options) {
 				options = {...this._options.renderOptions, ...options};
@@ -250,13 +251,33 @@ export class Writr extends Hookified {
 				engine = this.createProcessor(options);
 			}
 
-			const file = await engine.process(this.body);
-			result = String(file);
-			if (this.isCacheEnabled(options)) {
-				this._cache.set(this._content, result, options);
+			const renderData = {
+				content: this._content,
+				body: this.body,
+				options,
+			};
+
+			await this.hook(WritrHooks.beforeRender, renderData);
+
+			const resultData = {
+				result: '',
+			};
+			if (this.isCacheEnabled(renderData.options)) {
+				const cached = this._cache.get(renderData.content, renderData.options);
+				if (cached) {
+					return cached;
+				}
 			}
 
-			return result;
+			const file = await engine.process(renderData.body);
+			resultData.result = String(file);
+			if (this.isCacheEnabled(renderData.options)) {
+				this._cache.set(renderData.content, resultData.result, renderData.options);
+			}
+
+			await this.hook(WritrHooks.afterRender, resultData);
+
+			return resultData.result;
 		} catch (error) {
 			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
 		}
@@ -269,14 +290,6 @@ export class Writr extends Hookified {
 	 */
 	renderSync(options?: RenderOptions): string {
 		try {
-			let result = '';
-			if (this.isCacheEnabled(options)) {
-				const cached = this._cache.get(this._content, options);
-				if (cached) {
-					return cached;
-				}
-			}
-
 			let {engine} = this;
 			if (options) {
 				options = {...this._options.renderOptions, ...options};
@@ -284,13 +297,35 @@ export class Writr extends Hookified {
 				engine = this.createProcessor(options);
 			}
 
-			const file = engine.processSync(this.body);
-			result = String(file);
-			if (this.isCacheEnabled(options)) {
-				this._cache.set(this._content, result, options);
+			const renderData = {
+				content: this._content,
+				body: this.body,
+				options,
+			};
+
+			// eslint-disable-next-line @typescript-eslint/no-floating-promises
+			this.hook(WritrHooks.beforeRender, renderData);
+
+			const resultData = {
+				result: '',
+			};
+			if (this.isCacheEnabled(renderData.options)) {
+				const cached = this._cache.get(renderData.content, renderData.options);
+				if (cached) {
+					return cached;
+				}
 			}
 
-			return result;
+			const file = engine.processSync(renderData.body);
+			resultData.result = String(file);
+			if (this.isCacheEnabled(renderData.options)) {
+				this._cache.set(renderData.content, resultData.result, renderData.options);
+			}
+
+			// eslint-disable-next-line @typescript-eslint/no-floating-promises
+			this.hook(WritrHooks.afterRender, resultData);
+
+			return resultData.result;
 		} catch (error) {
 			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
 		}
