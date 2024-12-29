@@ -244,14 +244,6 @@ export class Writr extends Hookified {
 	 */
 	async render(options?: RenderOptions): Promise<string> {
 		try {
-			let result = '';
-			if (this.isCacheEnabled(options)) {
-				const cached = this._cache.get(this._content, options);
-				if (cached) {
-					return cached;
-				}
-			}
-
 			let {engine} = this;
 			if (options) {
 				options = {...this._options.renderOptions, ...options};
@@ -259,13 +251,35 @@ export class Writr extends Hookified {
 				engine = this.createProcessor(options);
 			}
 
-			const file = await engine.process(this.body);
-			result = String(file);
-			if (this.isCacheEnabled(options)) {
-				this._cache.set(this._content, result, options);
+			const renderData = {
+				content: this._content,
+				body: this.body,
+				options,
+			};
+
+			await this.hook(WritrHooks.beforeRender, renderData);
+
+			let result = '';
+			if (this.isCacheEnabled(renderData.options)) {
+				const cached = this._cache.get(renderData.content, renderData.options);
+				if (cached) {
+					return cached;
+				}
 			}
 
-			return result;
+			const file = await engine.process(renderData.body);
+			result = String(file);
+			if (this.isCacheEnabled(renderData.options)) {
+				this._cache.set(renderData.content, result, renderData.options);
+			}
+
+			const renderResult = {
+				result,
+			};
+
+			await this.hook(WritrHooks.afterRender, renderResult);
+
+			return renderResult.result;
 		} catch (error) {
 			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
 		}
