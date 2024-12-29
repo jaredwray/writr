@@ -352,4 +352,4 @@ writr.cache.store.ttl = '5m'; // setting it to 5 minutes
 
 # License
 
-MIT © [Jared Wray](https://jaredwray.com)
+[MIT](LICENSE) & © [Jared Wray](https://jaredwray.com)
