@@ -30,6 +30,7 @@
   - [`.loadFromFileSync(filePath: string): void`](#loadfromfilesyncfilepath-string-void)
   - [`.saveToFile(filePath: string): Promise<void>`](#savetofilefilepath-string-promisevoid)
   - [`.saveToFileSync(filePath: string): void`](#savetofilesyncfilepath-string-void)
+- [Hooks](#hooks)
 - [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
 - [License](#license)
 
