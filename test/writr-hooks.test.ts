@@ -53,4 +53,34 @@ describe('Writr Render Hooks', async () => {
 		// Cleanup
 		await fs.promises.rm(filePath);
 	});
+
+	test('it should change the content before render to file', async () => {
+		const filePath = './test-render-to-file.txt';
+		const writr = new Writr('Hello, World!');
+		writr.onHook(WritrHooks.beforeRenderToFile, data => {
+			data.content = 'Hello, File!';
+		});
+		await writr.renderToFile(filePath);
+		const fileContent = await fs.promises.readFile(filePath);
+
+		expect(fileContent.toString()).toContain('Hello, File!');
+
+		// Cleanup
+		await fs.promises.rm(filePath);
+	});
+
+	test('it should change the content before render to file sync', async () => {
+		const filePath = './test-render-to-file-sync.txt';
+		const writr = new Writr('Hello, World!');
+		writr.onHook(WritrHooks.beforeRenderToFile, data => {
+			data.content = 'Hello, File Sync!';
+		});
+		writr.renderToFileSync(filePath);
+		const fileContent = await fs.promises.readFile(filePath);
+
+		expect(fileContent.toString()).toContain('Hello, File Sync!');
+
+		// Cleanup
+		await fs.promises.rm(filePath);
+	});
 });

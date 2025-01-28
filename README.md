@@ -380,6 +380,28 @@ export type resultData = {
 }
 ```
 
+For `beforeSaveToFile` the data object is an object with the `filePath` and `content`. Here is the interface for `saveToFileData`:
+
+```typescript
+export type saveToFileData = {
+  filePath: string;
+  content: string;
+}
+```
+
+This is called when you call `saveToFile`, `saveToFileSync`.
+
+For `beforeRenderToFile` the data object is an object with the `filePath` and `content`. Here is the interface for `renderToFileData`:
+
+```typescript
+export type renderToFileData = {
+  filePath: string;
+  content: string;
+}
+```
+
+This is called when you call `renderToFile`, `renderToFileSync`.
+
 # Code of Conduct and Contributing
 [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines.
 
