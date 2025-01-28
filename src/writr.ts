@@ -56,7 +56,6 @@ export enum WritrHooks {
 	beforeRender = 'beforeRender',
 	afterRender = 'afterRender',
 	beforeSaveToFile = 'beforeSaveToFile',
-	afterSaveToFile = 'afterSaveToFile',
 	beforeLoadFromFile = 'beforeLoadFromFile',
 	afterLoadFromFile = 'afterLoadFromFile',
 }
@@ -424,7 +423,13 @@ export class Writr extends Hookified {
 			const {writeFile, mkdir} = fs.promises;
 			const directoryPath = dirname(filePath);
 			await mkdir(directoryPath, {recursive: true});
-			await writeFile(filePath, this._content, 'utf8');
+			const data = {
+				filePath,
+				content: this._content,
+			};
+			await this.hook(WritrHooks.beforeSaveToFile, data);
+
+			await writeFile(data.filePath, data.content);
 		/* c8 ignore next 6 */
 		} catch (error) {
 			this.emit('error', error);
@@ -443,7 +448,14 @@ export class Writr extends Hookified {
 		try {
 			const directoryPath = dirname(filePath);
 			fs.mkdirSync(directoryPath, {recursive: true});
-			fs.writeFileSync(filePath, this._content, 'utf8');
+			const data = {
+				filePath,
+				content: this._content,
+			};
+			// eslint-disable-next-line @typescript-eslint/no-floating-promises
+			this.hook(WritrHooks.beforeSaveToFile, data);
+
+			fs.writeFileSync(data.filePath, data.content);
 		/* c8 ignore next 6 */
 		} catch (error) {
 			this.emit('error', error);
