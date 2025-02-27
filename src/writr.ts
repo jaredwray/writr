@@ -55,10 +55,9 @@ export type RenderOptions = {
 export enum WritrHooks {
 	beforeRender = 'beforeRender',
 	afterRender = 'afterRender',
-	beforeSaveToFile = 'beforeSaveToFile',
-	beforeRenderToFile = 'beforeRenderToFile',
-	beforeLoadFromFile = 'beforeLoadFromFile',
-	afterLoadFromFile = 'afterLoadFromFile',
+	saveToFile = 'saveToFile',
+	renderToFile = 'renderToFile',
+	loadFromFile = 'loadFromFile',
 }
 
 export class Writr extends Hookified {
@@ -346,7 +345,7 @@ export class Writr extends Hookified {
 				filePath,
 				content,
 			};
-			await this.hook(WritrHooks.beforeRenderToFile, data);
+			await this.hook(WritrHooks.renderToFile, data);
 			await writeFile(data.filePath, data.content);
 		/* c8 ignore next 6 */
 		} catch (error) {
@@ -372,7 +371,7 @@ export class Writr extends Hookified {
 				content,
 			};
 			// eslint-disable-next-line @typescript-eslint/no-floating-promises
-			this.hook(WritrHooks.beforeRenderToFile, data);
+			this.hook(WritrHooks.renderToFile, data);
 
 			fs.writeFileSync(data.filePath, data.content);
 		/* c8 ignore next 6 */
@@ -414,7 +413,13 @@ export class Writr extends Hookified {
 	 */
 	public async loadFromFile(filePath: string): Promise<void> {
 		const {readFile} = fs.promises;
-		this._content = await readFile(filePath, 'utf8');
+		const data = {
+			content: '',
+		};
+		data.content = await readFile(filePath, 'utf8');
+
+		await this.hook(WritrHooks.loadFromFile, data);
+		this._content = data.content;
 	}
 
 	/**
@@ -423,7 +428,14 @@ export class Writr extends Hookified {
 	 * @returns {void}
 	 */
 	public loadFromFileSync(filePath: string): void {
-		this._content = fs.readFileSync(filePath, 'utf8');
+		const data = {
+			content: '',
+		};
+		data.content = fs.readFileSync(filePath, 'utf8');
+
+		// eslint-disable-next-line @typescript-eslint/no-floating-promises
+		this.hook(WritrHooks.loadFromFile, data);
+		this._content = data.content;
 	}
 
 	/**
@@ -440,7 +452,7 @@ export class Writr extends Hookified {
 				filePath,
 				content: this._content,
 			};
-			await this.hook(WritrHooks.beforeSaveToFile, data);
+			await this.hook(WritrHooks.saveToFile, data);
 
 			await writeFile(data.filePath, data.content);
 		/* c8 ignore next 6 */
@@ -466,7 +478,7 @@ export class Writr extends Hookified {
 				content: this._content,
 			};
 			// eslint-disable-next-line @typescript-eslint/no-floating-promises
-			this.hook(WritrHooks.beforeSaveToFile, data);
+			this.hook(WritrHooks.saveToFile, data);
 
 			fs.writeFileSync(data.filePath, data.content);
 		/* c8 ignore next 6 */

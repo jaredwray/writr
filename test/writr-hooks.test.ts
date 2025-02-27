@@ -27,7 +27,7 @@ describe('Writr Render Hooks', async () => {
 	test('it should change the content before saving to file', async () => {
 		const filePath = './test-save-to-file.txt';
 		const writr = new Writr('Hello, World!');
-		writr.onHook(WritrHooks.beforeSaveToFile, data => {
+		writr.onHook(WritrHooks.saveToFile, data => {
 			data.content = 'Hello, File!';
 		});
 		await writr.saveToFile(filePath);
@@ -42,7 +42,7 @@ describe('Writr Render Hooks', async () => {
 	test('it should change the content before saving to file sync', async () => {
 		const filePath = './test-save-to-file-sync.txt';
 		const writr = new Writr('Hello, World!');
-		writr.onHook(WritrHooks.beforeSaveToFile, data => {
+		writr.onHook(WritrHooks.saveToFile, data => {
 			data.content = 'Hello, File Sync!';
 		});
 		writr.saveToFileSync(filePath);
@@ -57,7 +57,7 @@ describe('Writr Render Hooks', async () => {
 	test('it should change the content before render to file', async () => {
 		const filePath = './test-render-to-file.txt';
 		const writr = new Writr('Hello, World!');
-		writr.onHook(WritrHooks.beforeRenderToFile, data => {
+		writr.onHook(WritrHooks.renderToFile, data => {
 			data.content = 'Hello, File!';
 		});
 		await writr.renderToFile(filePath);
@@ -72,7 +72,7 @@ describe('Writr Render Hooks', async () => {
 	test('it should change the content before render to file sync', async () => {
 		const filePath = './test-render-to-file-sync.txt';
 		const writr = new Writr('Hello, World!');
-		writr.onHook(WritrHooks.beforeRenderToFile, data => {
+		writr.onHook(WritrHooks.renderToFile, data => {
 			data.content = 'Hello, File Sync!';
 		});
 		writr.renderToFileSync(filePath);
@@ -82,5 +82,27 @@ describe('Writr Render Hooks', async () => {
 
 		// Cleanup
 		await fs.promises.rm(filePath);
+	});
+
+	test('it should change the content after loading from file', async () => {
+		const filePath = './test/fixtures/load-from-file.md';
+		const content = 'Hello, Loaded!';
+		const writr = new Writr();
+		writr.onHook(WritrHooks.loadFromFile, data => {
+			data.content = content;
+		});
+		await writr.loadFromFile(filePath);
+		expect(writr.content).toBe(content);
+	});
+
+	test('it should change the content after loading from file sync', () => {
+		const filePath = './test/fixtures/load-from-file.md';
+		const content = 'Hello, Loaded!';
+		const writr = new Writr();
+		writr.onHook(WritrHooks.loadFromFile, data => {
+			data.content = content;
+		});
+		writr.loadFromFileSync(filePath);
+		expect(writr.content).toBe(content);
 	});
 });

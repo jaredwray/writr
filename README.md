@@ -380,7 +380,7 @@ export type resultData = {
 }
 ```
 
-For `beforeSaveToFile` the data object is an object with the `filePath` and `content`. Here is the interface for `saveToFileData`:
+For `saveToFile` the data object is an object with the `filePath` and `content`. Here is the interface for `saveToFileData`:
 
 ```typescript
 export type saveToFileData = {
@@ -391,7 +391,7 @@ export type saveToFileData = {
 
 This is called when you call `saveToFile`, `saveToFileSync`.
 
-For `beforeRenderToFile` the data object is an object with the `filePath` and `content`. Here is the interface for `renderToFileData`:
+For `renderToFile` the data object is an object with the `filePath` and `content`. Here is the interface for `renderToFileData`:
 
 ```typescript
 export type renderToFileData = {
@@ -401,6 +401,16 @@ export type renderToFileData = {
 ```
 
 This is called when you call `renderToFile`, `renderToFileSync`.
+
+For `loadFromFile` the data object is an object with `content` so you can change before it is set on `writr.content`. Here is the interface for `loadFromFileData`:
+
+```typescript
+export type loadFromFileData = {
+  content: string;
+}
+```
+
+This is called when you call `loadFromFile`, `loadFromFileSync`.
 
 # Code of Conduct and Contributing
 [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines.
