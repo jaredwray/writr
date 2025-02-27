@@ -158,7 +158,7 @@ export class Writr extends Hookified {
 	 * Get the front matter raw content.
 	 * @type {string} The front matter content including the delimiters.
 	 */
-	get frontMatterRaw(): string {
+	public get frontMatterRaw(): string {
 		// Is there front matter content?
 		if (!this._content.trimStart().startsWith('---')) {
 			return '';
@@ -178,7 +178,7 @@ export class Writr extends Hookified {
 	 * Get the body content without the front matter.
 	 * @type {string} The markdown content without the front matter.
 	 */
-	get body(): string {
+	public get body(): string {
 		// Is there front matter content?
 		if (this.frontMatterRaw === '') {
 			return this._content;
@@ -194,7 +194,7 @@ export class Writr extends Hookified {
 	 * Get the markdown content. This is an alias for the body property.
 	 * @type {string} The markdown content.
 	 */
-	get markdown(): string {
+	public get markdown(): string {
 		return this.body;
 	}
 
@@ -202,7 +202,7 @@ export class Writr extends Hookified {
 	 * Get the front matter content as an object.
 	 * @type {Record<string, any>} The front matter content as an object.
 	 */
-	get frontMatter(): Record<string, any> {
+	public get frontMatter(): Record<string, any> {
 		const frontMatter = this.frontMatterRaw;
 		const match = /^---\s*([\s\S]*?)\s*---\s*/.exec(frontMatter);
 		if (match) {
@@ -221,7 +221,7 @@ export class Writr extends Hookified {
 	 * Set the front matter content as an object.
 	 * @type {Record<string, any>} The front matter content as an object.
 	 */
-	set frontMatter(data: Record<string, any>) {
+	public set frontMatter(data: Record<string, any>) {
 		const frontMatter = this.frontMatterRaw;
 		const yamlString = yaml.dump(data);
 		const newFrontMatter = `---\n${yamlString}---\n`;
@@ -242,7 +242,7 @@ export class Writr extends Hookified {
 	 * @param {RenderOptions} [options] The render options.
 	 * @returns {Promise<string>} The rendered HTML content.
 	 */
-	async render(options?: RenderOptions): Promise<string> {
+	public async render(options?: RenderOptions): Promise<string> {
 		try {
 			let {engine} = this;
 			if (options) {
@@ -288,7 +288,7 @@ export class Writr extends Hookified {
 	 * @param {RenderOptions} [options] The render options.
 	 * @returns {string} The rendered HTML content.
 	 */
-	renderSync(options?: RenderOptions): string {
+	public renderSync(options?: RenderOptions): string {
 		try {
 			let {engine} = this;
 			if (options) {
@@ -336,7 +336,7 @@ export class Writr extends Hookified {
 	 * @param {string} filePath The file path to save the rendered markdown content to.
 	 * @param {RenderOptions} [options] the render options.
 	 */
-	async renderToFile(filePath: string, options?: RenderOptions): Promise<void> {
+	public async renderToFile(filePath: string, options?: RenderOptions): Promise<void> {
 		try {
 			const {writeFile, mkdir} = fs.promises;
 			const directoryPath = dirname(filePath);
@@ -362,7 +362,7 @@ export class Writr extends Hookified {
 	 * @param {string} filePath The file path to save the rendered markdown content to.
 	 * @param {RenderOptions} [options] the render options.
 	 */
-	renderToFileSync(filePath: string, options?: RenderOptions): void {
+	public renderToFileSync(filePath: string, options?: RenderOptions): void {
 		try {
 			const directoryPath = dirname(filePath);
 			const content = this.renderSync(options);
@@ -390,7 +390,7 @@ export class Writr extends Hookified {
 	 * @param {HTMLReactParserOptions} [reactParseOptions] The HTML React parser options.
 	 * @returns {Promise<string | React.JSX.Element | React.JSX.Element[]>} The rendered React content.
 	 */
-	async renderReact(options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): Promise<string | React.JSX.Element | React.JSX.Element[]> {
+	public async renderReact(options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): Promise<string | React.JSX.Element | React.JSX.Element[]> {
 		const html = await this.render(options);
 
 		return parse(html, reactParseOptions);
@@ -402,7 +402,7 @@ export class Writr extends Hookified {
 	 * @param {HTMLReactParserOptions} [reactParseOptions] The HTML React parser options.
 	 * @returns {string | React.JSX.Element | React.JSX.Element[]} The rendered React content.
 	 */
-	renderReactSync(options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): string | React.JSX.Element | React.JSX.Element[] {
+	public renderReactSync(options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): string | React.JSX.Element | React.JSX.Element[] {
 		const html = this.renderSync(options);
 		return parse(html, reactParseOptions);
 	}
@@ -412,7 +412,7 @@ export class Writr extends Hookified {
 	 * @param {string} filePath The file path to load the markdown content from.
 	 * @returns {Promise<void>}
 	 */
-	async loadFromFile(filePath: string): Promise<void> {
+	public async loadFromFile(filePath: string): Promise<void> {
 		const {readFile} = fs.promises;
 		this._content = await readFile(filePath, 'utf8');
 	}
@@ -422,7 +422,7 @@ export class Writr extends Hookified {
 	 * @param {string} filePath The file path to load the markdown content from.
 	 * @returns {void}
 	 */
-	loadFromFileSync(filePath: string): void {
+	public loadFromFileSync(filePath: string): void {
 		this._content = fs.readFileSync(filePath, 'utf8');
 	}
 
@@ -431,7 +431,7 @@ export class Writr extends Hookified {
 	 * @param {string} filePath The file path to save the markdown content to.
 	 * @returns {Promise<void>}
 	 */
-	async saveToFile(filePath: string): Promise<void> {
+	public async saveToFile(filePath: string): Promise<void> {
 		try {
 			const {writeFile, mkdir} = fs.promises;
 			const directoryPath = dirname(filePath);
@@ -457,7 +457,7 @@ export class Writr extends Hookified {
 	 * @param {string} filePath The file path to save the markdown content to.
 	 * @returns {void}
 	 */
-	saveToFileSync(filePath: string): void {
+	public saveToFileSync(filePath: string): void {
 		try {
 			const directoryPath = dirname(filePath);
 			fs.mkdirSync(directoryPath, {recursive: true});
