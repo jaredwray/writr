@@ -412,14 +412,22 @@ export class Writr extends Hookified {
 	 * @returns {Promise<void>}
 	 */
 	public async loadFromFile(filePath: string): Promise<void> {
-		const {readFile} = fs.promises;
-		const data = {
-			content: '',
-		};
-		data.content = await readFile(filePath, 'utf8');
+		try {
+			const {readFile} = fs.promises;
+			const data = {
+				content: '',
+			};
+			data.content = await readFile(filePath, 'utf8');
 
-		await this.hook(WritrHooks.loadFromFile, data);
-		this._content = data.content;
+			await this.hook(WritrHooks.loadFromFile, data);
+			this._content = data.content;
+		/* c8 ignore next 6 */
+		} catch (error) {
+			this.emit('error', error);
+			if (this._options.throwErrors) {
+				throw error;
+			}
+		}
 	}
 
 	/**
@@ -428,14 +436,22 @@ export class Writr extends Hookified {
 	 * @returns {void}
 	 */
 	public loadFromFileSync(filePath: string): void {
-		const data = {
-			content: '',
-		};
-		data.content = fs.readFileSync(filePath, 'utf8');
+		try {
+			const data = {
+				content: '',
+			};
+			data.content = fs.readFileSync(filePath, 'utf8');
 
-		// eslint-disable-next-line @typescript-eslint/no-floating-promises
-		this.hook(WritrHooks.loadFromFile, data);
-		this._content = data.content;
+			// eslint-disable-next-line @typescript-eslint/no-floating-promises
+			this.hook(WritrHooks.loadFromFile, data);
+			this._content = data.content;
+		/* c8 ignore next 6 */
+		} catch (error) {
+			this.emit('error', error);
+			if (this._options.throwErrors) {
+				throw error;
+			}
+		}
 	}
 
 	/**
