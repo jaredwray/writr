@@ -4,13 +4,28 @@
 [![tests](https://github.com/jaredwray/writr/actions/workflows/tests.yml/badge.svg)](https://github.com/jaredwray/writr/actions/workflows/tests.yml)
 [![GitHub license](https://img.shields.io/github/license/jaredwray/writr)](https://github.com/jaredwray/writr/blob/master/LICENSE)
 [![codecov](https://codecov.io/gh/jaredwray/writr/branch/master/graph/badge.svg?token=1YdMesM07X)](https://codecov.io/gh/jaredwray/writr)
+[![jsDelivr](https://data.jsdelivr.com/v1/package/npm/writr/badge)](https://www.jsdelivr.com/package/npm/writr)
 [![npm](https://img.shields.io/npm/dm/writr)](https://npmjs.com/package/writr)
 [![npm](https://img.shields.io/npm/v/writr)](https://npmjs.com/package/writr)
 
+# Features
+* Removes the remark / unified complexity and easy to use.
+* Built in caching 💥 making it render very fast when there isnt a change
+* Frontmatter support built in by default. :tada:
+* Easily Render to `React` or `HTML`.
+* Generates a Table of Contents for your markdown files (remark-toc).
+* Slug generation for your markdown files (rehype-slug).
+* Code Highlighting (rehype-highlight).
+* Math Support (rehype-katex).
+* Markdown to HTML (rehype-stringify).
+* Github Flavor Markdown (remark-gfm).
+* Emoji Support (remark-emoji).
+* MDX Support (remark-mdx).
+* Built in Hooks for adding code to render pipeline.
+
 # Table of Contents
-- [Features](#features)
-- [ESM and Node Version Support](#esm-and-node-version-support)
 - [Getting Started](#getting-started)
+- [Running via Browser as an ESM Module](#running-via-browser-as-an-esm-module)
 - [API](#api)
   - [`new Writr(arg?: string | WritrOptions, options?: WritrOptions)`](#new-writrarg-string--writroptions-options-writroptions)
   - [`.content`](#content)
@@ -31,28 +46,9 @@
   - [`.saveToFile(filePath: string): Promise<void>`](#savetofilefilepath-string-promisevoid)
   - [`.saveToFileSync(filePath: string): void`](#savetofilesyncfilepath-string-void)
 - [Hooks](#hooks)
+- [ESM and Node Version Support](#esm-and-node-version-support)
 - [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
 - [License](#license)
-
-
-# Features
-* Removes the remark / unified complexity and easy to use.
-* Built in caching 💥 making it render very fast when there isnt a change
-* Frontmatter support built in by default. :tada:
-* Easily Render to `React` or `HTML`.
-* Generates a Table of Contents for your markdown files (remark-toc).
-* Slug generation for your markdown files (rehype-slug).
-* Code Highlighting (rehype-highlight).
-* Math Support (rehype-katex).
-* Markdown to HTML (rehype-stringify).
-* Github Flavor Markdown (remark-gfm).
-* Emoji Support (remark-emoji).
-* MDX Support (remark-mdx).
-* Built in Hooks for adding code to render pipeline.
-
-# ESM and Node Version Support
-
-This package is ESM only and tested on the current lts version and its previous. Please don't open issues for questions regarding CommonJS / ESM or previous Nodejs versions. To learn more about using ESM please read this from `sindresorhus`: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
 
 # Getting Started 
 
@@ -100,6 +96,33 @@ const writrOptions = {
 const writr = new Writr(`# Hello World ::-):\n\n This is a test.`, writrOptions);
 const html = await writr.render(options); // <h1>Hello World ::-):</h1><p>This is a test.</p>
 ```
+
+# Running via Browser as an ESM Module
+
+You can also run Writr via the browser. Here is an example of how to do that.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Writr Example</title>
+  <script type="module">
+    import {Writr} from 'https://cdn.jsdelivr.net/npm/writr@4.4.1/+esm'
+
+    const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
+    writr.render().then(html => {
+      document.body.innerHTML = html;
+    });
+  </script>
+</head>
+<body>
+</body>
+</html>
+```
+
+This will render the markdown to HTML and display it in the body of the page.
 
 # API
 
@@ -411,6 +434,10 @@ export type loadFromFileData = {
 ```
 
 This is called when you call `loadFromFile`, `loadFromFileSync`.
+
+# ESM and Node Version Support
+
+This package is ESM only and tested on the current lts version and its previous. Please don't open issues for questions regarding CommonJS / ESM or previous Nodejs versions. To learn more about using ESM please read this from `sindresorhus`: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
 
 # Code of Conduct and Contributing
 [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines.
