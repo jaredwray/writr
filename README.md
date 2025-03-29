@@ -109,7 +109,7 @@ You can also run Writr via the browser. Here is an example of how to do that.
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Writr Example</title>
   <script type="module">
-    import {Writr} from 'https://cdn.jsdelivr.net/npm/writr/+esm'
+    import {Writr} from 'https://cdn.jsdelivr.net/npm/writr@latest/+esm'
 
     const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
     writr.render().then(html => {
