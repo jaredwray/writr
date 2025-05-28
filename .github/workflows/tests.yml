@@ -7,6 +7,9 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
   tests:
 
@@ -31,10 +34,4 @@ jobs:
 
     - name: Testing    
       run: pnpm test
-
-    - name: Code Coverage
-      uses: codecov/codecov-action@v3
-      with:
-        token: ${{ secrets.CODECOV_KEY }}
-        files: coverage/coverage-final.json
 
