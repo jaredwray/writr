@@ -9,11 +9,11 @@ export const options = {
 	siteUrl: 'https://writr.org',
 };
 
-export const onPrepare = async (config) => {
+export const onPrepare = async config => {
 	const readmePath = path.join(process.cwd(), './README.md');
 	const readmeSitePath = path.join(config.sitePath, 'README.md');
 	const readme = await fs.promises.readFile(readmePath, 'utf8');
 	const updatedReadme = readme.replace('![Writr](site/logo.svg)', '');
-	console.log('writing updated readme to ', readmeSitePath);
+	console.log('writing updated readme to', readmeSitePath);
 	await fs.promises.writeFile(readmeSitePath, updatedReadme);
-}
+};
