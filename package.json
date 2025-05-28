@@ -55,7 +55,7 @@
   "dependencies": {
     "cacheable": "^1.8.10",
     "hookified": "^1.8.2",
-    "html-react-parser": "^5.2.3",
+    "html-react-parser": "^5.2.5",
     "js-yaml": "^4.1.0",
     "react": "^19.1.0",
     "rehype-highlight": "^7.0.2",
