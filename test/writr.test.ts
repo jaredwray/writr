@@ -150,7 +150,8 @@ describe('writr', () => {
 		const options = {
 			toc: false,
 		};
-		const markdownString = '# Pluto\n\nPluto is a dwarf planet in the Kuiper belt.\n\n## Contents\n\n## History\n\n### Discovery\n\nIn the 1840s, Urbain Le Verrier used Newtonian mechanics to predict the\nposition of…';
+		const markdownString = `# Pluto\n\nPluto is a dwarf planet in the Kuiper belt.\n\n## Contents\n\n## History
+		\n\n### Discovery\n\nIn the 1840s, Urbain Le Verrier used Newtonian mechanics to predict the\nposition of…`;
 		writr.content = markdownString;
 		const resultToc = await writr.render();
 		expect(resultToc).contains('<li><a href="#discovery">Discovery</a></li>');
@@ -162,6 +163,7 @@ describe('writr', () => {
 		const options = {
 			highlight: false,
 		};
+		// eslint-disable-next-line @stylistic/max-len
 		const markdownString = '# Code Example\n\nThis is an inline code example: `const x = 10;`\n\nAnd here is a multi-line code block:\n\n```javascript\nconst greet = () => {\n  console.log("Hello, world!");\n};\ngreet();\n```';
 		writr.content = markdownString;
 		const resultFull = await writr.render();
