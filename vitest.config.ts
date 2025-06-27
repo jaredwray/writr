@@ -8,7 +8,7 @@ export default defineConfig({
 				'site-output/**',
 				'.pnp.*',
 				'.yarn/**',
-				'vitest.config.mjs',
+				'vitest.config.ts',
 				'dist/**',
 				'site/**',
 				'test/**',
