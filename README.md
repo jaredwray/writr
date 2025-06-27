@@ -149,19 +149,19 @@ console.log(writr.body); // '# Hello World ::-):\n\n This is a test.'
 
 ## `.options`
 
-Accessing the default options for this instance of Writr. Here is the default settings for `WritrOptions`.
+Accessing the default options for this instance of Writr. Here is the default settings for `WritrOptions`. These are the default settings for the `WritrOptions`:
 
 ```javascript
 {
   throwErrors: false,
   renderOptions: {
     emoji: true,
-    toc: false,
-    slug: false,
-    highlight: false,
+    toc: true,
+    slug: true,
+    highlight: true,
     gfm: true,
-    math: false,
-    mdx: false,
+    math: true,
+    mdx: true,
     caching: false,
   }
 }
@@ -219,7 +219,8 @@ const html = await writr.render(options); // <h1>Hello World ::-):</h1><p>This i
 
 ## `.engine`
 
-Accessing the underlying engine for this instance of Writr. This is a `Processor<Root, Root, Root, undefined, undefined>` fro the unified `.use()` function. You can use this to add additional plugins to the engine.
+Accessing the underlying engine for this instance of Writr. This is a `Processor<Root, Root, Root, undefined, undefined>` fro the unified `.use()` function. You can use this to add additional plugins to the engine. You can learn more about the unified engine [here](https://unifiedjs.com/) and a getting started guide [here](https://unifiedjs.com/learn/guide/using-unified/).
+
 
 ## `.render(options?: RenderOptions): Promise<string>`
 
