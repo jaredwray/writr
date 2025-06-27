@@ -4,7 +4,6 @@
 [![tests](https://github.com/jaredwray/writr/actions/workflows/tests.yml/badge.svg)](https://github.com/jaredwray/writr/actions/workflows/tests.yml)
 [![GitHub license](https://img.shields.io/github/license/jaredwray/writr)](https://github.com/jaredwray/writr/blob/master/LICENSE)
 [![codecov](https://codecov.io/gh/jaredwray/writr/branch/master/graph/badge.svg?token=1YdMesM07X)](https://codecov.io/gh/jaredwray/writr)
-[![jsDelivr](https://data.jsdelivr.com/v1/package/npm/writr/badge)](https://www.jsdelivr.com/package/npm/writr)
 [![npm](https://img.shields.io/npm/dm/writr)](https://npmjs.com/package/writr)
 [![npm](https://img.shields.io/npm/v/writr)](https://npmjs.com/package/writr)
 
@@ -25,7 +24,6 @@
 
 # Table of Contents
 - [Getting Started](#getting-started)
-- [Running via Browser as an ESM Module](#running-via-browser-as-an-esm-module)
 - [API](#api)
   - [`new Writr(arg?: string | WritrOptions, options?: WritrOptions)`](#new-writrarg-string--writroptions-options-writroptions)
   - [`.content`](#content)
@@ -96,33 +94,6 @@ const writrOptions = {
 const writr = new Writr(`# Hello World ::-):\n\n This is a test.`, writrOptions);
 const html = await writr.render(options); // <h1>Hello World ::-):</h1><p>This is a test.</p>
 ```
-
-# Running via Browser as an ESM Module
-
-You can also run Writr via the browser. Here is an example of how to do that.
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Writr Example</title>
-  <script type="module">
-    import {Writr} from 'https://cdn.jsdelivr.net/npm/writr@latest/+esm'
-
-    const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
-    writr.render().then(html => {
-      document.body.innerHTML = html;
-    });
-  </script>
-</head>
-<body>
-</body>
-</html>
-```
-
-This will render the markdown to HTML and display it in the body of the page.
 
 # API
 
