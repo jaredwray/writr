@@ -1,9 +1,10 @@
-import {CacheableMemory} from 'cacheable';
+import {CacheableMemory, Cacheable} from 'cacheable';
 import {type RenderOptions} from './writr.js';
 
 export class WritrCache {
 	private readonly _store: CacheableMemory = new CacheableMemory();
 	private readonly _hashStore: CacheableMemory = new CacheableMemory();
+	private readonly _hash: Cacheable = new Cacheable();
 
 	public get store(): CacheableMemory {
 		return this._store;
@@ -36,7 +37,7 @@ export class WritrCache {
 			return result;
 		}
 
-		result = this._hashStore.hash(content);
+		result = this._hash.hash(content);
 		this._hashStore.set(key, result);
 
 		return result;
