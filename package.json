@@ -1,6 +1,6 @@
 {
   "name": "writr",
-  "version": "4.4.4",
+  "version": "4.4.5",
   "description": "Markdown Rendering Simplified",
   "type": "module",
   "main": "./dist/writr.js",
