@@ -163,14 +163,12 @@ export class Writr extends Hookified {
 			return '';
 		}
 
-		const start = this._content.indexOf('---\n');
+		const match = /^\s*(---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$))/.exec(this._content);
+		if (match) {
+			return match[1];
+		}
 
-		const end = this._content.indexOf('\n---\n', start + 4);
-		if (end === -1) {
-			return '';
-		} // Return empty string if no ending delimiter is found
-
-		return this._content.slice(start, end + 5); // Extract front matter including delimiters
+		return '';
 	}
 
 	/**
@@ -178,15 +176,14 @@ export class Writr extends Hookified {
 	 * @type {string} The markdown content without the front matter.
 	 */
 	public get body(): string {
-		// Is there front matter content?
-		if (this.frontMatterRaw === '') {
+		const frontMatter = this.frontMatterRaw;
+		if (frontMatter === '') {
 			return this._content;
 		}
 
-		const end = this._content.indexOf('\n---\n');
-
-		// Return the content after the closing --- marker
-		return this._content.slice(Math.max(0, end + 5)).trim();
+		return this._content
+			.slice(this._content.indexOf(frontMatter) + frontMatter.length)
+			.trim();
 	}
 
 	/**
