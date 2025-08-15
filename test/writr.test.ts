@@ -349,6 +349,18 @@ describe('WritrFrontMatter', () => {
 		const writr = new Writr(markdownWithFrontMatterInOtherPlaces as string);
 		expect(writr.body).to.contain('---');
 	});
+	test('should handle windows style line endings in front matter', () => {
+		const markdown = '---\r\nfoo: bar\r\n---\r\n\r\n# Heading';
+		const writr = new Writr(markdown);
+		expect(writr.frontMatterRaw).toBe('---\r\nfoo: bar\r\n---\r\n');
+		expect(writr.body).toBe('# Heading');
+	});
+	test('should handle front matter without trailing newline', () => {
+		const markdown = '---\nfoo: bar\n---';
+		const writr = new Writr(markdown);
+		expect(writr.frontMatterRaw).toBe('---\nfoo: bar\n---');
+		expect(writr.body).toBe('');
+	});
 	test('if frontMatter is not correct yaml it should emit an error and return {}', () => {
 		const writr = new Writr(markdownWithBadFrontMatter as string);
 		expect(writr.frontMatter).toStrictEqual({});
