@@ -9,6 +9,7 @@
 
 # Features
 * Removes the remark / unified complexity and easy to use.
+* Powered by the [unified processor](https://github.com/unifiedjs/unified) for an extensible plugin pipeline.
 * Built in caching 💥 making it render very fast when there isnt a change
 * Frontmatter support built in by default. :tada:
 * Easily Render to `React` or `HTML`.
@@ -22,7 +23,17 @@
 * MDX Support (remark-mdx).
 * Built in Hooks for adding code to render pipeline.
 
+# Unified Processor Engine
+
+Writr builds on top of the open source [unified](https://github.com/unifiedjs/unified) processor – the core project that powers
+[remark](https://github.com/remarkjs/remark), [rehype](https://github.com/rehypejs/rehype), and many other content tools. Unified
+provides a pluggable pipeline where each plugin transforms a syntax tree. Writr configures a default set of plugins to turn
+Markdown into HTML, but you can access the processor through the `.engine` property to add your own behavior with
+`writr.engine.use(myPlugin)`. The [unified documentation](https://unifiedjs.com/) has more details and guides for building
+plugins and working with the processor directly.
+
 # Table of Contents
+- [Unified Processor Engine](#unified-processor-engine)
 - [Getting Started](#getting-started)
 - [API](#api)
   - [`new Writr(arg?: string | WritrOptions, options?: WritrOptions)`](#new-writrarg-string--writroptions-options-writroptions)
@@ -219,7 +230,7 @@ const html = await writr.render(options); // <h1>Hello World ::-):</h1><p>This i
 
 ## `.engine`
 
-Accessing the underlying engine for this instance of Writr. This is a `Processor<Root, Root, Root, undefined, undefined>` fro the unified `.use()` function. You can use this to add additional plugins to the engine. You can learn more about the unified engine [here](https://unifiedjs.com/) and a getting started guide [here](https://unifiedjs.com/learn/guide/using-unified/).
+Accessing the underlying engine for this instance of Writr. This is a `Processor<Root, Root, Root, undefined, undefined>` from the core [`unified`](https://github.com/unifiedjs/unified) project and uses the familiar `.use()` plugin pattern. You can chain additional unified plugins on this processor to customize the render pipeline. Learn more about the unified engine at [unifiedjs.com](https://unifiedjs.com/) and check out the [getting started guide](https://unifiedjs.com/learn/guide/using-unified/) for examples.
 
 
 ## `.render(options?: RenderOptions): Promise<string>`
