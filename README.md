@@ -46,10 +46,10 @@ plugins and working with the processor directly.
   - [`.engine`](#engine)
   - [`.render(options?: RenderOptions)`](#renderoptions-renderoptions)
   - [`.renderSync(options?: RenderOptions)`](#rendersyncoptions-renderoptions)
-  - ['.renderToFile(filePath: string, options?)'](#rendertofilefilepath-string-options-renderoptions)
-  - ['.renderToFileSync(filePath: string, options?)'](#rendertofilesyncfilepath-string-options-renderoptions)
-  - ['.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions)'](#renderreactoptions-renderoptions-reactoptions-htmlreactparseroptions)
-  - ['.renderReactSync( options?: RenderOptions, reactOptions?: HTMLReactParserOptions)'](#renderreactsync-options-renderoptions-reactoptions-htmlreactparseroptions)
+  - [`.renderToFile(filePath: string, options?)`](#rendertofilefilepath-string-options-renderoptions)
+  - [`.renderToFileSync(filePath: string, options?)`](#rendertofilesyncfilepath-string-options-renderoptions)
+  - [`.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions)`](#renderreactoptions-renderoptions-reactoptions-htmlreactparseroptions)
+  - [`.renderReactSync( options?: RenderOptions, reactOptions?: HTMLReactParserOptions)`](#renderreactsync-options-renderoptions-reactoptions-htmlreactparseroptions)
   - [`.validate(content?: string, options?: RenderOptions)`](#validatecontent-string-options-renderoptions)
   - [`.validateSync(content?: string, options?: RenderOptions)`](#validatesynccontent-string-options-renderoptions)
   - [`.loadFromFile(filePath: string)`](#loadfromfilefilepath-string)
@@ -262,7 +262,7 @@ const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 const html = writr.renderSync(); // <h1>Hello World 🙂</h1><p>This is a test.</p>
 ```
 
-## '.renderToFile(filePath: string, options?: RenderOptions)'
+## `.renderToFile(filePath: string, options?: RenderOptions)`
 
 Rendering markdown to a file. The options are based on RenderOptions.
 
@@ -272,7 +272,7 @@ const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 await writr.renderToFile('path/to/file.html');
 ```
 
-## '.renderToFileSync(filePath: string, options?: RenderOptions)'
+## `.renderToFileSync(filePath: string, options?: RenderOptions)`
 
 Rendering markdown to a file synchronously. The options are based on RenderOptions.
 
@@ -282,7 +282,7 @@ const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 writr.renderToFileSync('path/to/file.html');
 ```
 
-## '.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions)'
+## `.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions)`
 
 Rendering markdown to React. The options are based on RenderOptions and now HTMLReactParserOptions from `html-react-parser`.
 
@@ -292,7 +292,7 @@ const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 const reactElement = await writr.renderReact(); // Will return a React.JSX.Element
 ```
 
-## '.renderReactSync( options?: RenderOptions, reactOptions?: HTMLReactParserOptions)'
+## `.renderReactSync( options?: RenderOptions, reactOptions?: HTMLReactParserOptions)`
 
 Rendering markdown to React. The options are based on RenderOptions and now HTMLReactParserOptions from `html-react-parser`.
 
@@ -346,7 +346,7 @@ console.log(externalResult.valid); // true
 console.log(writr.content); // Still "# Hello World\n\nThis is a test."
 ```
 
-## '.loadFromFile(filePath: string)'
+## `.loadFromFile(filePath: string)`
 
 Load your markdown content from a file path.
 
