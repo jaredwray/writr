@@ -45,10 +45,12 @@
     "markdown-to-react"
   ],
   "scripts": {
-    "clean": "rimraf ./dist ./coverage ./node_modules ./package-lock.json ./yarn.lock ./site/README.md ./site/dist",
+    "clean": "rimraf ./dist ./coverage ./node_modules ./pnpm-lock.yaml ./site/README.md ./site/dist",
     "build": "rimraf ./dist && tsup src/writr.ts --format esm --dts --clean",
-    "prepare": "npm run build",
-    "test": "xo --fix && vitest run --coverage",
+    "prepare": "pnpm build",
+    "lint": "biome check --write --error-on-warnings",
+    "test": "pnpm lint && vitest run --coverage",
+    "test:ci": "biome check --error-on-warnings && vitest run --coverage",
     "website:build": "rimraf ./site/README.md ./site/dist && npx docula build -s ./site -o ./site/dist",
     "website:serve": "rimraf ./site/README.md ./site/dist && npx docula serve -s ./site -o ./site/dist"
   },
@@ -72,6 +74,7 @@
     "unified": "^11.0.5"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.2.2",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.1.0",
     "@types/react": "^19.1.8",
@@ -82,8 +85,7 @@
     "tsup": "^8.5.0",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4",
-    "webpack": "^5.100.2",
-    "xo": "^1.2.1"
+    "webpack": "^5.100.2"
   },
   "xo": {
     "ignores": [

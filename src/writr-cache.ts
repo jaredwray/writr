@@ -1,5 +1,5 @@
-import {CacheableMemory, Cacheable} from 'cacheable';
-import {type RenderOptions} from './writr.js';
+import { Cacheable, CacheableMemory } from "cacheable";
+import type { RenderOptions } from "./writr.js";
 
 export class WritrCache {
 	private readonly _store: CacheableMemory = new CacheableMemory();
@@ -30,7 +30,7 @@ export class WritrCache {
 	}
 
 	public hash(markdown: string, options?: RenderOptions): string {
-		const content = {markdown, options};
+		const content = { markdown, options };
 		const key = JSON.stringify(content);
 		let result = this._hashStore.get<string>(key);
 		if (result) {

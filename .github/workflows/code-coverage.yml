@@ -29,11 +29,11 @@ jobs:
       run: pnpm build
 
     - name: Testing    
-      run: pnpm test
+      run: pnpm test:ci
 
     - name: Code Coverage
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_KEY }}
-        files: coverage/coverage-final.json
+        files: coverage/lcov.info
 

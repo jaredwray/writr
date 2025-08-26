@@ -1,8 +1,6 @@
-import fs from 'node:fs';
-import {
-	test, describe, expect,
-} from 'vitest';
-import {Writr} from '../src/writr.js';
+import fs from "node:fs";
+import { describe, expect, test } from "vitest";
+import { Writr } from "../src/writr.js";
 
 const testContentOne = `---
 title: "Super Comfortable Chair"
@@ -23,8 +21,8 @@ const options = {
 	},
 };
 
-describe('Writr Async render with Caching', async () => {
-	test('should render a template with caching', async () => {
+describe("Writr Async render with Caching", async () => {
+	test("should render a template with caching", async () => {
 		const writr = new Writr(testContentOne, options);
 		const result = await writr.render();
 		expect(result).toBe(testContentOneResult);
@@ -34,7 +32,7 @@ describe('Writr Async render with Caching', async () => {
 		expect(result2).toBe(testContentOneResult);
 	});
 
-	test('should sync render a template with caching', async () => {
+	test("should sync render a template with caching", async () => {
 		const writr = new Writr(testContentOne, options);
 		const result = writr.renderSync();
 		expect(result).toBe(testContentOneResult);
@@ -44,7 +42,7 @@ describe('Writr Async render with Caching', async () => {
 		expect(result2).toBe(testContentOneResult);
 	});
 
-	test('should render with async and then cache. Then render with sync via cache', async () => {
+	test("should render with async and then cache. Then render with sync via cache", async () => {
 		const writr = new Writr(testContentOne, options);
 		const result = await writr.render();
 		expect(result).toBe(testContentOneResult);
@@ -55,10 +53,10 @@ describe('Writr Async render with Caching', async () => {
 	});
 });
 
-describe('Render and Save to File', async () => {
-	test('should render a template and save to file', async () => {
+describe("Render and Save to File", async () => {
+	test("should render a template and save to file", async () => {
 		const writr = new Writr(testContentOne, options);
-		const fileName = './test/fixtures/temp-render/test-output.html';
+		const fileName = "./test/fixtures/temp-render/test-output.html";
 		if (fs.existsSync(fileName)) {
 			fs.unlinkSync(fileName);
 		}
@@ -70,9 +68,9 @@ describe('Render and Save to File', async () => {
 		fs.unlinkSync(fileName);
 	});
 
-	test('should render a template and save to file sync', async () => {
+	test("should render a template and save to file sync", async () => {
 		const writr = new Writr(testContentOne, options);
-		const fileName = './test/fixtures/temp-render/test-output-sync.html';
+		const fileName = "./test/fixtures/temp-render/test-output-sync.html";
 		if (fs.existsSync(fileName)) {
 			fs.unlinkSync(fileName);
 		}
