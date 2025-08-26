@@ -44,16 +44,18 @@ plugins and working with the processor directly.
   - [`.frontMatterRaw`](#frontmatterraw)
   - [`.cache`](#cache)
   - [`.engine`](#engine)
-  - [`.render(options?: RenderOptions): Promise<string>`](#renderoptions-renderoptions-promisestring)
-  - [`.renderSync(options?: RenderOptions): string`](#rendersyncoptions-renderoptions-string)
-  - [`.renderToFile(filePath: string, options?: RenderOptions)`](#rendertofilefilepath-string-options-renderoptions)
-  - [`.renderToFileSync(filePath: string, options?: RenderOptions): void`](#rendertofilesyncfilepath-string-options-renderoptions-void)
-  - [`.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions): Promise<React.JSX.Element />`](#renderreactoptions-renderoptions-reactoptions-htmlreactparseroptions-promise-reactjsxelement-)
-  - [`.renderReactSync( options?: RenderOptions, reactOptions?: HTMLReactParserOptions): React.JSX.Element`](#renderreactsync-options-renderoptions-reactoptions-htmlreactparseroptions-reactjsxelement)
-  - [`.loadFromFile(filePath: string): Promise<void>`](#loadfromfilefilepath-string-promisevoid)
-  - [`.loadFromFileSync(filePath: string): void`](#loadfromfilesyncfilepath-string-void)
-  - [`.saveToFile(filePath: string): Promise<void>`](#savetofilefilepath-string-promisevoid)
-  - [`.saveToFileSync(filePath: string): void`](#savetofilesyncfilepath-string-void)
+  - [`.render(options?: RenderOptions)`](#renderoptions-renderoptions)
+  - [`.renderSync(options?: RenderOptions)`](#rendersyncoptions-renderoptions)
+  - ['.renderToFile(filePath: string, options?)'](#rendertofilefilepath-string-options-renderoptions)
+  - ['.renderToFileSync(filePath: string, options?)'](#rendertofilesyncfilepath-string-options-renderoptions)
+  - ['.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions)'](#renderreactoptions-renderoptions-reactoptions-htmlreactparseroptions)
+  - ['.renderReactSync( options?: RenderOptions, reactOptions?: HTMLReactParserOptions)'](#renderreactsync-options-renderoptions-reactoptions-htmlreactparseroptions)
+  - [`.validate(content?: string, options?: RenderOptions)`](#validatecontent-string-options-renderoptions)
+  - [`.validateSync(content?: string, options?: RenderOptions)`](#validatesynccontent-string-options-renderoptions)
+  - [`.loadFromFile(filePath: string)`](#loadfromfilefilepath-string)
+  - [`.loadFromFileSync(filePath: string)`](#loadfromfilesyncfilepath-string)
+  - [`.saveToFile(filePath: string)`](#savetofilefilepath-string)
+  - [`.saveToFileSync(filePath: string)`](#savetofilesyncfilepath-string)
 - [Hooks](#hooks)
 - [ESM and Node Version Support](#esm-and-node-version-support)
 - [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
@@ -233,7 +235,7 @@ const html = await writr.render(options); // <h1>Hello World ::-):</h1><p>This i
 Accessing the underlying engine for this instance of Writr. This is a `Processor<Root, Root, Root, undefined, undefined>` from the core [`unified`](https://github.com/unifiedjs/unified) project and uses the familiar `.use()` plugin pattern. You can chain additional unified plugins on this processor to customize the render pipeline. Learn more about the unified engine at [unifiedjs.com](https://unifiedjs.com/) and check out the [getting started guide](https://unifiedjs.com/learn/guide/using-unified/) for examples.
 
 
-## `.render(options?: RenderOptions): Promise<string>`
+## `.render(options?: RenderOptions)`
 
 Rendering markdown to HTML. the options are based on RenderOptions. Which you can access from the Writr instance.
 
@@ -250,7 +252,7 @@ const options  = {
 const html = await writr.render(options); // <h1>Hello World ::-):</h1><p>This is a test.</p>
 ```
 
-## `.renderSync(options?: RenderOptions): string`
+## `.renderSync(options?: RenderOptions)`
 
 Rendering markdown to HTML synchronously. the options are based on RenderOptions. Which you can access from the Writr instance. The parameters are the same as the `.render()` function.
 
@@ -270,7 +272,7 @@ const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 await writr.renderToFile('path/to/file.html');
 ```
 
-## '.renderToFileSync(filePath: string, options?: RenderOptions): void'
+## '.renderToFileSync(filePath: string, options?: RenderOptions)'
 
 Rendering markdown to a file synchronously. The options are based on RenderOptions.
 
@@ -280,7 +282,7 @@ const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 writr.renderToFileSync('path/to/file.html');
 ```
 
-## '.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions): Promise<React.JSX.Element />'
+## '.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions)'
 
 Rendering markdown to React. The options are based on RenderOptions and now HTMLReactParserOptions from `html-react-parser`.
 
@@ -290,7 +292,7 @@ const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 const reactElement = await writr.renderReact(); // Will return a React.JSX.Element
 ```
 
-## '.renderReactSync( options?: RenderOptions, reactOptions?: HTMLReactParserOptions): React.JSX.Element'
+## '.renderReactSync( options?: RenderOptions, reactOptions?: HTMLReactParserOptions)'
 
 Rendering markdown to React. The options are based on RenderOptions and now HTMLReactParserOptions from `html-react-parser`.
 
@@ -300,7 +302,51 @@ const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 const reactElement = writr.renderReactSync(); // Will return a React.JSX.Element
 ```
 
-## `.loadFromFile(filePath: string): Promise<void>`
+## `.validate(content?: string, options?: RenderOptions)`
+
+Validate markdown content by attempting to render it. Returns a `WritrValidateResult` object with a `valid` boolean and optional `error` property. Note that this will disable caching on render to ensure accurate validation.
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr(`# Hello World\n\nThis is a test.`);
+
+// Validate current content
+const result = await writr.validate();
+console.log(result.valid); // true
+
+// Validate external content without changing the instance
+const externalResult = await writr.validate('## Different Content');
+console.log(externalResult.valid); // true
+console.log(writr.content); // Still "# Hello World\n\nThis is a test."
+
+// Handle validation errors
+const invalidWritr = new Writr('Put invalid markdown here');
+const errorResult = await invalidWritr.validate();
+console.log(errorResult.valid); // false
+console.log(errorResult.error?.message); // "Failed to render markdown: Invalid plugin"
+```
+
+## `.validateSync(content?: string, options?: RenderOptions)`
+
+Synchronously validate markdown content by attempting to render it. Returns a `WritrValidateResult` object with a `valid` boolean and optional `error` property.
+
+This is the synchronous version of `.validate()` with the same parameters and behavior.
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr(`# Hello World\n\nThis is a test.`);
+
+// Validate current content synchronously
+const result = writr.validateSync();
+console.log(result.valid); // true
+
+// Validate external content without changing the instance
+const externalResult = writr.validateSync('## Different Content');
+console.log(externalResult.valid); // true
+console.log(writr.content); // Still "# Hello World\n\nThis is a test."
+```
+
+## '.loadFromFile(filePath: string)'
 
 Load your markdown content from a file path.
 
@@ -310,11 +356,17 @@ const writr = new Writr();
 await writr.loadFromFile('path/to/file.md');
 ```
 
-## `.loadFromFileSync(filePath: string): void`
+## `.loadFromFileSync(filePath: string)`
 
 Load your markdown content from a file path synchronously.
 
-## `.saveToFile(filePath: string): Promise<void>`
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr();
+writr.loadFromFileSync('path/to/file.md');
+```
+
+## `.saveToFile(filePath: string)`
 
 Save your markdown and frontmatter (if included) content to a file path.
 
@@ -324,9 +376,15 @@ const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
 await writr.saveToFile('path/to/file.md');
 ```
 
-## `.saveToFileSync(filePath: string): void`
+## `.saveToFileSync(filePath: string)`
 
 Save your markdown and frontmatter (if included) content to a file path synchronously.
+
+```javascript
+import { Writr } from 'writr';
+const writr = new Writr(`# Hello World ::-):\n\n This is a test.`);
+writr.saveToFileSync('path/to/file.md');
+```
 
 # Caching On Render
 
