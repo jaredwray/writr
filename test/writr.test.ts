@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { describe, expect, it, test } from "vitest";
-import { Writr } from "../src/writr.js";
+import { Writr, type WritrValidateResult } from "../src/writr.js";
 import {
 	blogPostWithMarkdown,
 	markdownWithBadFrontMatter,
@@ -383,6 +383,207 @@ describe("WritrFrontMatter", () => {
 	test("if frontMatter is not correct yaml it should emit an error and return {}", () => {
 		const writr = new Writr(markdownWithBadFrontMatter as string);
 		expect(writr.frontMatter).toStrictEqual({});
+	});
+});
+
+describe("Writr Validation", () => {
+	test("should validate valid markdown content", async () => {
+		const writr = new Writr("# Hello World\n\nThis is valid markdown");
+		const result: WritrValidateResult = await writr.validate();
+		expect(result.valid).toBe(true);
+		expect(result.error).toBeUndefined();
+	});
+
+	test("should validate valid markdown content synchronously", () => {
+		const writr = new Writr("# Hello World\n\nThis is valid markdown");
+		const result: WritrValidateResult = writr.validateSync();
+		expect(result.valid).toBe(true);
+		expect(result.error).toBeUndefined();
+	});
+
+	test("should validate markdown content passed as parameter", async () => {
+		const writr = new Writr("# Original Content");
+		const result = await writr.validate(
+			"## Different Content\n\nThis is different",
+		);
+		expect(result.valid).toBe(true);
+		expect(result.error).toBeUndefined();
+		// Original content should be preserved
+		expect(writr.markdown).toBe("# Original Content");
+	});
+
+	test("should validate markdown content passed as parameter synchronously", () => {
+		const writr = new Writr("# Original Content");
+		const result = writr.validateSync(
+			"## Different Content\n\nThis is different",
+		);
+		expect(result.valid).toBe(true);
+		expect(result.error).toBeUndefined();
+		// Original content should be preserved
+		expect(writr.markdown).toBe("# Original Content");
+	});
+
+	test("should handle validation with custom render options", async () => {
+		const writr = new Writr("# Hello :smile:");
+		const result = await writr.validate(undefined, { emoji: true });
+		expect(result.valid).toBe(true);
+		expect(result.error).toBeUndefined();
+	});
+
+	test("should validate complex markdown with tables and code blocks", async () => {
+		const complexMarkdown = `
+# Complex Document
+
+## Table
+| Column 1 | Column 2 |
+|----------|----------|
+| Value 1  | Value 2  |
+
+## Code Block
+\`\`\`javascript
+const hello = "world";
+console.log(hello);
+\`\`\`
+
+## Math
+$x^2 + y^2 = z^2$
+`;
+		const writr = new Writr();
+		const result = await writr.validate(complexMarkdown);
+		expect(result.valid).toBe(true);
+		expect(result.error).toBeUndefined();
+	});
+
+	test("should preserve original content after validation with different content", async () => {
+		const originalContent = "# Original";
+		const testContent = "## Test";
+		const writr = new Writr(originalContent);
+
+		await writr.validate(testContent);
+		expect(writr.markdown).toBe(originalContent);
+
+		const result = await writr.render();
+		expect(result).toContain("<h1");
+		expect(result).toContain("Original</h1>");
+	});
+
+	test("should preserve original content after validation with different content synchronously", () => {
+		const originalContent = "# Original";
+		const testContent = "## Test";
+		const writr = new Writr(originalContent);
+
+		writr.validateSync(testContent);
+		expect(writr.markdown).toBe(originalContent);
+
+		const result = writr.renderSync();
+		expect(result).toContain("<h1");
+		expect(result).toContain("Original</h1>");
+	});
+
+	test("should return error when validation fails", async () => {
+		const writr = new Writr("# Valid Content");
+		const customPlugin = () => {
+			throw new Error("Custom Plugin Error: Validation failed.");
+		};
+
+		writr.engine.use(customPlugin);
+		const result = await writr.validate();
+
+		expect(result.valid).toBe(false);
+		expect(result.error).toBeDefined();
+		expect(result.error?.message).toContain(
+			"Custom Plugin Error: Validation failed",
+		);
+	});
+
+	test("should return error when validation fails synchronously", () => {
+		const writr = new Writr("# Valid Content");
+		const customPlugin = () => {
+			throw new Error("Custom Plugin Error: Validation failed.");
+		};
+
+		writr.engine.use(customPlugin);
+		const result = writr.validateSync();
+
+		expect(result.valid).toBe(false);
+		expect(result.error).toBeDefined();
+		expect(result.error?.message).toContain(
+			"Custom Plugin Error: Validation failed",
+		);
+	});
+
+	test("should return error when validating external content that fails", async () => {
+		const originalContent = "# Original";
+		const writr = new Writr(originalContent);
+		const customPlugin = () => {
+			throw new Error("Plugin Error: Invalid markdown");
+		};
+
+		writr.engine.use(customPlugin);
+		const result = await writr.validate("## Test Content");
+
+		expect(result.valid).toBe(false);
+		expect(result.error).toBeDefined();
+		expect(result.error?.message).toContain("Plugin Error: Invalid markdown");
+		// Original content should be restored even after error
+		expect(writr.markdown).toBe(originalContent);
+	});
+
+	test("should return error when validating external content that fails synchronously", () => {
+		const originalContent = "# Original";
+		const writr = new Writr(originalContent);
+		const customPlugin = () => {
+			throw new Error("Plugin Error: Invalid markdown");
+		};
+
+		writr.engine.use(customPlugin);
+		const result = writr.validateSync("## Test Content");
+
+		expect(result.valid).toBe(false);
+		expect(result.error).toBeDefined();
+		expect(result.error?.message).toContain("Plugin Error: Invalid markdown");
+		// Original content should be restored even after error
+		expect(writr.markdown).toBe(originalContent);
+	});
+
+	test("should properly restore content after validation error with external content", async () => {
+		const originalContent = "# Original Content";
+		const testContent = "## Test Content";
+		const writr = new Writr(originalContent);
+
+		// Add a plugin that fails
+		const customPlugin = () => {
+			throw new Error("Render failed");
+		};
+		writr.engine.use(customPlugin);
+
+		// Validate with external content (should fail)
+		const result = await writr.validate(testContent);
+		expect(result.valid).toBe(false);
+
+		// Original content should be restored
+		expect(writr.markdown).toBe(originalContent);
+		expect(writr.content).toBe(originalContent);
+	});
+
+	test("should properly restore content after validation error with external content synchronously", () => {
+		const originalContent = "# Original Content";
+		const testContent = "## Test Content";
+		const writr = new Writr(originalContent);
+
+		// Add a plugin that fails
+		const customPlugin = () => {
+			throw new Error("Render failed");
+		};
+		writr.engine.use(customPlugin);
+
+		// Validate with external content (should fail)
+		const result = writr.validateSync(testContent);
+		expect(result.valid).toBe(false);
+
+		// Original content should be restored
+		expect(writr.markdown).toBe(originalContent);
+		expect(writr.content).toBe(originalContent);
 	});
 });
 

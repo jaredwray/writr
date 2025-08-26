@@ -67,7 +67,6 @@ blog_output
 blog_public
 dist
 test_output
-site/README.md
 site-output
 
 # IDEs
@@ -76,4 +75,12 @@ pnpm-lock.yaml
 .pnp.*
 .yarn
 bun.lockb
+
+# Docula
 site/dist
+site/README.md
+
+# AI
+.claude
+
+

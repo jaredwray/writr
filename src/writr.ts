@@ -52,6 +52,17 @@ export type RenderOptions = {
 	caching?: boolean; // Caching (default: false)
 };
 
+/**
+ * Validation result.
+ * @typedef {Object} WritrValidateResult
+ * @property {boolean} valid - Whether the markdown is valid
+ * @property {Error} [error] - Error if validation failed
+ */
+export type WritrValidateResult = {
+	valid: boolean;
+	error?: Error;
+};
+
 export enum WritrHooks {
 	beforeRender = "beforeRender",
 	afterRender = "afterRender",
@@ -331,6 +342,68 @@ export class Writr extends Hookified {
 			return resultData.result;
 		} catch (error) {
 			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
+		}
+	}
+
+	/**
+	 * Validate the markdown content by attempting to render it.
+	 * @param {string} [content] The markdown content to validate. If not provided, uses the current content.
+	 * @param {RenderOptions} [options] The render options.
+	 * @returns {Promise<WritrValidateResult>} An object with a valid boolean and optional error.
+	 */
+	public async validate(
+		content?: string,
+		options?: RenderOptions,
+	): Promise<WritrValidateResult> {
+		const originalContent = this._content;
+		try {
+			if (content !== undefined) {
+				this._content = content;
+			}
+
+			await this.render(options);
+
+			if (content !== undefined) {
+				this._content = originalContent;
+			}
+
+			return { valid: true };
+		} catch (error) {
+			if (content !== undefined) {
+				this._content = originalContent;
+			}
+			return { valid: false, error: error as Error };
+		}
+	}
+
+	/**
+	 * Validate the markdown content by attempting to render it synchronously.
+	 * @param {string} [content] The markdown content to validate. If not provided, uses the current content.
+	 * @param {RenderOptions} [options] The render options.
+	 * @returns {WritrValidateResult} An object with a valid boolean and optional error.
+	 */
+	public validateSync(
+		content?: string,
+		options?: RenderOptions,
+	): WritrValidateResult {
+		const originalContent = this._content;
+		try {
+			if (content !== undefined) {
+				this._content = content;
+			}
+
+			this.renderSync(options);
+
+			if (content !== undefined) {
+				this._content = originalContent;
+			}
+
+			return { valid: true };
+		} catch (error) {
+			if (content !== undefined) {
+				this._content = originalContent;
+			}
+			return { valid: false, error: error as Error };
 		}
 	}
 
