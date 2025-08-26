@@ -361,7 +361,11 @@ export class Writr extends Hookified {
 				this._content = content;
 			}
 
-			await this.render(options);
+			// Ensure caching is disabled for validation
+			const validationOptions = options
+				? { ...options, caching: false }
+				: undefined;
+			await this.render(validationOptions);
 
 			if (content !== undefined) {
 				this._content = originalContent;
@@ -392,7 +396,11 @@ export class Writr extends Hookified {
 				this._content = content;
 			}
 
-			this.renderSync(options);
+			// Ensure caching is disabled for validation
+			const validationOptions = options
+				? { ...options, caching: false }
+				: undefined;
+			this.renderSync(validationOptions);
 
 			if (content !== undefined) {
 				this._content = originalContent;

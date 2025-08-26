@@ -585,6 +585,42 @@ $x^2 + y^2 = z^2$
 		expect(writr.markdown).toBe(originalContent);
 		expect(writr.content).toBe(originalContent);
 	});
+
+	test("should disable caching during validation even with caching options", async () => {
+		const writr = new Writr("# Test Content");
+
+		// First render with caching to populate cache
+		await writr.render({ caching: true });
+
+		// Modify content
+		writr.content = "# Modified Content";
+
+		// Validate with caching option - should still validate the new content
+		const result = await writr.validate(undefined, { caching: true });
+		expect(result.valid).toBe(true);
+
+		// Verify validation used current content, not cached
+		const html = await writr.render();
+		expect(html).toContain("Modified Content");
+	});
+
+	test("should disable caching during validation even with caching options synchronously", () => {
+		const writr = new Writr("# Test Content");
+
+		// First render with caching to populate cache
+		writr.renderSync({ caching: true });
+
+		// Modify content
+		writr.content = "# Modified Content";
+
+		// Validate with caching option - should still validate the new content
+		const result = writr.validateSync(undefined, { caching: true });
+		expect(result.valid).toBe(true);
+
+		// Verify validation used current content, not cached
+		const html = writr.renderSync();
+		expect(html).toContain("Modified Content");
+	});
 });
 
 describe("Writr Files", async () => {
