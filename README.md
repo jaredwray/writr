@@ -10,7 +10,7 @@
 # Features
 * Removes the remark / unified complexity and easy to use.
 * Powered by the [unified processor](https://github.com/unifiedjs/unified) for an extensible plugin pipeline.
-* Built in caching 💥 making it render very fast when there isnt a change
+* Built in caching 💥 making it render very fast when there isn't a change
 * Frontmatter support built in by default. :tada:
 * Easily Render to `React` or `HTML`.
 * Generates a Table of Contents for your markdown files (remark-toc).
