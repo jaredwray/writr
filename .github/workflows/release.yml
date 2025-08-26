@@ -27,13 +27,7 @@ jobs:
       run: pnpm build
 
     - name: Testing    
-      run: pnpm test
-
-    - name: Code Coverage
-      uses: codecov/codecov-action@v3
-      with:
-        token: ${{ secrets.CODECOV_KEY }}
-        files: coverage/coverage-final.json
+      run: pnpm test:ci
 
     - name: Publish
       run: |

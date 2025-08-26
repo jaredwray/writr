@@ -1,22 +1,22 @@
-import fs from 'node:fs';
-import {dirname} from 'node:path';
-import {unified} from 'unified';
-import remarkParse from 'remark-parse';
-import remarkRehype from 'remark-rehype';
-import rehypeSlug from 'rehype-slug';
-import rehypeHighlight from 'rehype-highlight';
-import rehypeStringify from 'rehype-stringify';
-import remarkToc from 'remark-toc';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import remarkGfm from 'remark-gfm';
-import remarkEmoji from 'remark-emoji';
-import remarkMDX from 'remark-mdx';
-import type React from 'react';
-import parse, {type HTMLReactParserOptions} from 'html-react-parser';
-import * as yaml from 'js-yaml';
-import {Hookified} from 'hookified';
-import {WritrCache} from './writr-cache.js';
+import fs from "node:fs";
+import { dirname } from "node:path";
+import { Hookified } from "hookified";
+import parse, { type HTMLReactParserOptions } from "html-react-parser";
+import * as yaml from "js-yaml";
+import type React from "react";
+import rehypeHighlight from "rehype-highlight";
+import rehypeKatex from "rehype-katex";
+import rehypeSlug from "rehype-slug";
+import rehypeStringify from "rehype-stringify";
+import remarkEmoji from "remark-emoji";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import remarkMDX from "remark-mdx";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import remarkToc from "remark-toc";
+import { unified } from "unified";
+import { WritrCache } from "./writr-cache.js";
 
 /**
  * Writr options.
@@ -53,11 +53,11 @@ export type RenderOptions = {
 };
 
 export enum WritrHooks {
-	beforeRender = 'beforeRender',
-	afterRender = 'afterRender',
-	saveToFile = 'saveToFile',
-	renderToFile = 'renderToFile',
-	loadFromFile = 'loadFromFile',
+	beforeRender = "beforeRender",
+	afterRender = "afterRender",
+	saveToFile = "saveToFile",
+	renderToFile = "renderToFile",
+	loadFromFile = "loadFromFile",
 }
 
 export class Writr extends Hookified {
@@ -88,7 +88,7 @@ export class Writr extends Hookified {
 		},
 	};
 
-	private _content = '';
+	private _content = "";
 
 	private readonly _cache = new WritrCache();
 
@@ -102,12 +102,11 @@ export class Writr extends Hookified {
 	 */
 	constructor(arguments1?: string | WritrOptions, arguments2?: WritrOptions) {
 		super();
-		if (typeof arguments1 === 'string') {
+		if (typeof arguments1 === "string") {
 			this._content = arguments1;
 		} else if (arguments1) {
 			this._options = this.mergeOptions(this._options, arguments1);
 			if (this._options.renderOptions) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				this.engine = this.createProcessor(this._options.renderOptions);
 			}
 		}
@@ -115,7 +114,6 @@ export class Writr extends Hookified {
 		if (arguments2) {
 			this._options = this.mergeOptions(this._options, arguments2);
 			if (this._options.renderOptions) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				this.engine = this.createProcessor(this._options.renderOptions);
 			}
 		}
@@ -159,16 +157,18 @@ export class Writr extends Hookified {
 	 */
 	public get frontMatterRaw(): string {
 		// Is there front matter content?
-		if (!this._content.trimStart().startsWith('---')) {
-			return '';
+		if (!this._content.trimStart().startsWith("---")) {
+			return "";
 		}
 
-		const match = /^\s*(---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$))/.exec(this._content);
+		const match = /^\s*(---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$))/.exec(
+			this._content,
+		);
 		if (match) {
 			return match[1];
 		}
 
-		return '';
+		return "";
 	}
 
 	/**
@@ -177,7 +177,7 @@ export class Writr extends Hookified {
 	 */
 	public get body(): string {
 		const frontMatter = this.frontMatterRaw;
-		if (frontMatter === '') {
+		if (frontMatter === "") {
 			return this._content;
 		}
 
@@ -198,15 +198,17 @@ export class Writr extends Hookified {
 	 * Get the front matter content as an object.
 	 * @type {Record<string, any>} The front matter content as an object.
 	 */
+	// biome-ignore lint/suspicious/noExplicitAny: expected
 	public get frontMatter(): Record<string, any> {
 		const frontMatter = this.frontMatterRaw;
 		const match = /^---\s*([\s\S]*?)\s*---\s*/.exec(frontMatter);
 		if (match) {
 			try {
+				// biome-ignore lint/suspicious/noExplicitAny: expected
 				return yaml.load(match[1].trim()) as Record<string, any>;
-			/* c8 ignore next 4 */
+				/* c8 ignore next 4 */
 			} catch (error) {
-				this.emit('error', error);
+				this.emit("error", error);
 			}
 		}
 
@@ -217,6 +219,7 @@ export class Writr extends Hookified {
 	 * Set the front matter content as an object.
 	 * @type {Record<string, any>} The front matter content as an object.
 	 */
+	// biome-ignore lint/suspicious/noExplicitAny: expected
 	public set frontMatter(data: Record<string, any>) {
 		const frontMatter = this.frontMatterRaw;
 		const yamlString = yaml.dump(data);
@@ -240,10 +243,9 @@ export class Writr extends Hookified {
 	 */
 	public async render(options?: RenderOptions): Promise<string> {
 		try {
-			let {engine} = this;
+			let { engine } = this;
 			if (options) {
-				options = {...this._options.renderOptions, ...options};
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				options = { ...this._options.renderOptions, ...options };
 				engine = this.createProcessor(options);
 			}
 
@@ -256,7 +258,7 @@ export class Writr extends Hookified {
 			await this.hook(WritrHooks.beforeRender, renderData);
 
 			const resultData = {
-				result: '',
+				result: "",
 			};
 			if (this.isCacheEnabled(renderData.options)) {
 				const cached = this._cache.get(renderData.content, renderData.options);
@@ -268,7 +270,11 @@ export class Writr extends Hookified {
 			const file = await engine.process(renderData.body);
 			resultData.result = String(file);
 			if (this.isCacheEnabled(renderData.options)) {
-				this._cache.set(renderData.content, resultData.result, renderData.options);
+				this._cache.set(
+					renderData.content,
+					resultData.result,
+					renderData.options,
+				);
 			}
 
 			await this.hook(WritrHooks.afterRender, resultData);
@@ -286,10 +292,9 @@ export class Writr extends Hookified {
 	 */
 	public renderSync(options?: RenderOptions): string {
 		try {
-			let {engine} = this;
+			let { engine } = this;
 			if (options) {
-				options = {...this._options.renderOptions, ...options};
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				options = { ...this._options.renderOptions, ...options };
 				engine = this.createProcessor(options);
 			}
 
@@ -299,11 +304,10 @@ export class Writr extends Hookified {
 				options,
 			};
 
-			// eslint-disable-next-line @typescript-eslint/no-floating-promises
 			this.hook(WritrHooks.beforeRender, renderData);
 
 			const resultData = {
-				result: '',
+				result: "",
 			};
 			if (this.isCacheEnabled(renderData.options)) {
 				const cached = this._cache.get(renderData.content, renderData.options);
@@ -315,10 +319,13 @@ export class Writr extends Hookified {
 			const file = engine.processSync(renderData.body);
 			resultData.result = String(file);
 			if (this.isCacheEnabled(renderData.options)) {
-				this._cache.set(renderData.content, resultData.result, renderData.options);
+				this._cache.set(
+					renderData.content,
+					resultData.result,
+					renderData.options,
+				);
 			}
 
-			// eslint-disable-next-line @typescript-eslint/no-floating-promises
 			this.hook(WritrHooks.afterRender, resultData);
 
 			return resultData.result;
@@ -332,21 +339,24 @@ export class Writr extends Hookified {
 	 * @param {string} filePath The file path to save the rendered markdown content to.
 	 * @param {RenderOptions} [options] the render options.
 	 */
-	public async renderToFile(filePath: string, options?: RenderOptions): Promise<void> {
+	public async renderToFile(
+		filePath: string,
+		options?: RenderOptions,
+	): Promise<void> {
 		try {
-			const {writeFile, mkdir} = fs.promises;
+			const { writeFile, mkdir } = fs.promises;
 			const directoryPath = dirname(filePath);
 			const content = await this.render(options);
-			await mkdir(directoryPath, {recursive: true});
+			await mkdir(directoryPath, { recursive: true });
 			const data = {
 				filePath,
 				content,
 			};
 			await this.hook(WritrHooks.renderToFile, data);
 			await writeFile(data.filePath, data.content);
-		/* c8 ignore next 6 */
+			/* c8 ignore next 6 */
 		} catch (error) {
-			this.emit('error', error);
+			this.emit("error", error);
 			if (this._options.throwErrors) {
 				throw error;
 			}
@@ -362,18 +372,18 @@ export class Writr extends Hookified {
 		try {
 			const directoryPath = dirname(filePath);
 			const content = this.renderSync(options);
-			fs.mkdirSync(directoryPath, {recursive: true});
+			fs.mkdirSync(directoryPath, { recursive: true });
 			const data = {
 				filePath,
 				content,
 			};
-			// eslint-disable-next-line @typescript-eslint/no-floating-promises
+
 			this.hook(WritrHooks.renderToFile, data);
 
 			fs.writeFileSync(data.filePath, data.content);
-		/* c8 ignore next 6 */
+			/* c8 ignore next 6 */
 		} catch (error) {
-			this.emit('error', error);
+			this.emit("error", error);
 			if (this._options.throwErrors) {
 				throw error;
 			}
@@ -386,7 +396,10 @@ export class Writr extends Hookified {
 	 * @param {HTMLReactParserOptions} [reactParseOptions] The HTML React parser options.
 	 * @returns {Promise<string | React.JSX.Element | React.JSX.Element[]>} The rendered React content.
 	 */
-	public async renderReact(options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): Promise<string | React.JSX.Element | React.JSX.Element[]> {
+	public async renderReact(
+		options?: RenderOptions,
+		reactParseOptions?: HTMLReactParserOptions,
+	): Promise<string | React.JSX.Element | React.JSX.Element[]> {
 		const html = await this.render(options);
 
 		return parse(html, reactParseOptions);
@@ -398,7 +411,10 @@ export class Writr extends Hookified {
 	 * @param {HTMLReactParserOptions} [reactParseOptions] The HTML React parser options.
 	 * @returns {string | React.JSX.Element | React.JSX.Element[]} The rendered React content.
 	 */
-	public renderReactSync(options?: RenderOptions, reactParseOptions?: HTMLReactParserOptions): string | React.JSX.Element | React.JSX.Element[] {
+	public renderReactSync(
+		options?: RenderOptions,
+		reactParseOptions?: HTMLReactParserOptions,
+	): string | React.JSX.Element | React.JSX.Element[] {
 		const html = this.renderSync(options);
 		return parse(html, reactParseOptions);
 	}
@@ -410,17 +426,17 @@ export class Writr extends Hookified {
 	 */
 	public async loadFromFile(filePath: string): Promise<void> {
 		try {
-			const {readFile} = fs.promises;
+			const { readFile } = fs.promises;
 			const data = {
-				content: '',
+				content: "",
 			};
-			data.content = await readFile(filePath, 'utf8');
+			data.content = await readFile(filePath, "utf8");
 
 			await this.hook(WritrHooks.loadFromFile, data);
 			this._content = data.content;
-		/* c8 ignore next 6 */
+			/* c8 ignore next 6 */
 		} catch (error) {
-			this.emit('error', error);
+			this.emit("error", error);
 			if (this._options.throwErrors) {
 				throw error;
 			}
@@ -435,16 +451,15 @@ export class Writr extends Hookified {
 	public loadFromFileSync(filePath: string): void {
 		try {
 			const data = {
-				content: '',
+				content: "",
 			};
-			data.content = fs.readFileSync(filePath, 'utf8');
+			data.content = fs.readFileSync(filePath, "utf8");
 
-			// eslint-disable-next-line @typescript-eslint/no-floating-promises
 			this.hook(WritrHooks.loadFromFile, data);
 			this._content = data.content;
-		/* c8 ignore next 6 */
+			/* c8 ignore next 6 */
 		} catch (error) {
-			this.emit('error', error);
+			this.emit("error", error);
 			if (this._options.throwErrors) {
 				throw error;
 			}
@@ -458,9 +473,9 @@ export class Writr extends Hookified {
 	 */
 	public async saveToFile(filePath: string): Promise<void> {
 		try {
-			const {writeFile, mkdir} = fs.promises;
+			const { writeFile, mkdir } = fs.promises;
 			const directoryPath = dirname(filePath);
-			await mkdir(directoryPath, {recursive: true});
+			await mkdir(directoryPath, { recursive: true });
 			const data = {
 				filePath,
 				content: this._content,
@@ -468,9 +483,9 @@ export class Writr extends Hookified {
 			await this.hook(WritrHooks.saveToFile, data);
 
 			await writeFile(data.filePath, data.content);
-		/* c8 ignore next 6 */
+			/* c8 ignore next 6 */
 		} catch (error) {
-			this.emit('error', error);
+			this.emit("error", error);
 			if (this._options.throwErrors) {
 				throw error;
 			}
@@ -485,18 +500,18 @@ export class Writr extends Hookified {
 	public saveToFileSync(filePath: string): void {
 		try {
 			const directoryPath = dirname(filePath);
-			fs.mkdirSync(directoryPath, {recursive: true});
+			fs.mkdirSync(directoryPath, { recursive: true });
 			const data = {
 				filePath,
 				content: this._content,
 			};
-			// eslint-disable-next-line @typescript-eslint/no-floating-promises
+
 			this.hook(WritrHooks.saveToFile, data);
 
 			fs.writeFileSync(data.filePath, data.content);
-		/* c8 ignore next 6 */
+			/* c8 ignore next 6 */
 		} catch (error) {
-			this.emit('error', error);
+			this.emit("error", error);
 			if (this._options.throwErrors) {
 				throw error;
 			}
@@ -511,6 +526,7 @@ export class Writr extends Hookified {
 		return this._options?.renderOptions?.caching ?? false;
 	}
 
+	// biome-ignore lint/suspicious/noExplicitAny: expected unified processor
 	private createProcessor(options: RenderOptions): any {
 		const processor = unified().use(remarkParse);
 
@@ -519,7 +535,7 @@ export class Writr extends Hookified {
 		}
 
 		if (options.toc) {
-			processor.use(remarkToc, {heading: 'toc|table of contents'});
+			processor.use(remarkToc, { heading: "toc|table of contents" });
 		}
 
 		if (options.emoji) {
@@ -549,7 +565,10 @@ export class Writr extends Hookified {
 		return processor;
 	}
 
-	private mergeOptions(current: WritrOptions, options: WritrOptions): WritrOptions {
+	private mergeOptions(
+		current: WritrOptions,
+		options: WritrOptions,
+	): WritrOptions {
 		if (options.throwErrors !== undefined) {
 			current.throwErrors = options.throwErrors;
 		}
@@ -563,7 +582,10 @@ export class Writr extends Hookified {
 		return current;
 	}
 
-	private mergeRenderOptions(current: RenderOptions, options: RenderOptions): RenderOptions {
+	private mergeRenderOptions(
+		current: RenderOptions,
+		options: RenderOptions,
+	): RenderOptions {
 		if (options.emoji !== undefined) {
 			current.emoji = options.emoji;
 		}
@@ -599,4 +621,3 @@ export class Writr extends Hookified {
 		return current;
 	}
 }
-
