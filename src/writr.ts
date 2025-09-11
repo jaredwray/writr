@@ -361,11 +361,17 @@ export class Writr extends Hookified {
 				this._content = content;
 			}
 
-			// Ensure caching is disabled for validation
-			const validationOptions = options
-				? { ...options, caching: false }
-				: undefined;
-			await this.render(validationOptions);
+			let { engine } = this;
+			if (options) {
+				options = {
+					...this._options.renderOptions,
+					...options,
+					caching: false,
+				};
+				engine = this.createProcessor(options);
+			}
+
+			await engine.run(engine.parse(this.body));
 
 			if (content !== undefined) {
 				this._content = originalContent;
@@ -396,11 +402,17 @@ export class Writr extends Hookified {
 				this._content = content;
 			}
 
-			// Ensure caching is disabled for validation
-			const validationOptions = options
-				? { ...options, caching: false }
-				: undefined;
-			this.renderSync(validationOptions);
+			let { engine } = this;
+			if (options) {
+				options = {
+					...this._options.renderOptions,
+					...options,
+					caching: false,
+				};
+				engine = this.createProcessor(options);
+			}
+
+			engine.runSync(engine.parse(this.body));
 
 			if (content !== undefined) {
 				this._content = originalContent;
