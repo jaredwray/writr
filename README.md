@@ -56,6 +56,11 @@ plugins and working with the processor directly.
   - [`.loadFromFileSync(filePath: string)`](#loadfromfilesyncfilepath-string)
   - [`.saveToFile(filePath: string)`](#savetofilefilepath-string)
   - [`.saveToFileSync(filePath: string)`](#savetofilesyncfilepath-string)
+- [Caching On Render](#caching-on-render)
+- [GitHub Flavored Markdown (GFM)](#github-flavored-markdown-gfm)
+  - [GFM Features](#gfm-features)
+  - [Using GFM](#using-gfm)
+  - [Disabling GFM](#disabling-gfm)
 - [Hooks](#hooks)
 - [ESM and Node Version Support](#esm-and-node-version-support)
 - [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
@@ -412,6 +417,117 @@ const writr = new Writr(`# Hello World ::-):\n\n This is a test.`, { renderOptio
 writr.cache.store.lruSize = 100;
 writr.cache.store.ttl = '5m'; // setting it to 5 minutes
 ```
+
+# GitHub Flavored Markdown (GFM)
+
+Writr includes full support for [GitHub Flavored Markdown](https://github.github.com/gfm/) (GFM) through the `remark-gfm` and `remark-github-blockquote-alert` plugins. GFM is enabled by default and adds several powerful features to standard Markdown.
+
+## GFM Features
+
+When GFM is enabled (which it is by default), you get access to the following features:
+
+### Tables
+
+Create tables using pipes and hyphens:
+
+```markdown
+| Feature | Supported |
+|---------|-----------|
+| Tables  | Yes       |
+| Alerts  | Yes       |
+```
+
+### Strikethrough
+
+Use `~~` to create strikethrough text:
+
+```markdown
+~~This text is crossed out~~
+```
+
+### Task Lists
+
+Create interactive checkboxes:
+
+```markdown
+- [x] Completed task
+- [ ] Incomplete task
+- [ ] Another task
+```
+
+### Autolinks
+
+URLs are automatically converted to clickable links:
+
+```markdown
+https://github.com
+```
+
+### GitHub Blockquote Alerts
+
+GitHub-style alerts are supported to emphasize critical information. These are blockquote-based admonitions that render with special styling:
+
+```markdown
+> [!NOTE]
+> Useful information that users should know, even when skimming content.
+
+> [!TIP]
+> Helpful advice for doing things better or more easily.
+
+> [!IMPORTANT]
+> Key information users need to know to achieve their goal.
+
+> [!WARNING]
+> Urgent info that needs immediate user attention to avoid problems.
+
+> [!CAUTION]
+> Advises about risks or negative outcomes of certain actions.
+```
+
+## Using GFM
+
+GFM is enabled by default. Here's an example:
+
+```javascript
+import { Writr } from 'writr';
+
+const markdown = `
+# Task List Example
+
+- [x] Learn Writr basics
+- [ ] Master GFM features
+
+> [!NOTE]
+> GitHub Flavored Markdown is enabled by default!
+
+| Feature | Status |
+|---------|--------|
+| GFM     | ✓      |
+`;
+
+const writr = new Writr(markdown);
+const html = await writr.render(); // Renders with full GFM support
+```
+
+## Disabling GFM
+
+If you need to disable GFM features, you can set `gfm: false` in the render options:
+
+```javascript
+import { Writr } from 'writr';
+
+const writr = new Writr('~~strikethrough~~ text');
+
+// Disable GFM
+const html = await writr.render({ gfm: false });
+// Output: <p>~~strikethrough~~ text</p>
+
+// With GFM enabled (default)
+const htmlWithGfm = await writr.render({ gfm: true });
+// Output: <p><del>strikethrough</del> text</p>
+```
+
+Note: When GFM is disabled, GitHub blockquote alerts will not be processed and will render as regular blockquotes.
 
 # Hooks
 

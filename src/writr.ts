@@ -10,6 +10,7 @@ import rehypeSlug from "rehype-slug";
 import rehypeStringify from "rehype-stringify";
 import remarkEmoji from "remark-emoji";
 import remarkGfm from "remark-gfm";
+import remarkGithubBlockquoteAlert from "remark-github-blockquote-alert";
 import remarkMath from "remark-math";
 import remarkMDX from "remark-mdx";
 import remarkParse from "remark-parse";
@@ -625,6 +626,7 @@ export class Writr extends Hookified {
 
 		if (options.gfm) {
 			processor.use(remarkGfm);
+			processor.use(remarkGithubBlockquoteAlert);
 		}
 
 		if (options.toc) {

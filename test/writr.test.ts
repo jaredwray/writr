@@ -132,6 +132,22 @@ describe("writr", () => {
 		const result = await writr.render(options);
 		expect(result).toEqual('<h1 id="hello-world-">Hello World 🐶</h1>');
 	});
+	it("should render GitHub blockquote alerts when gfm is enabled", async () => {
+		const writr = new Writr(
+			"> [!NOTE]\n> This is a note alert with useful information.",
+		);
+		const result = await writr.render({ gfm: true });
+		expect(result).toContain("NOTE");
+		expect(result).toContain("This is a note alert with useful information.");
+	});
+	it("should not render GitHub blockquote alerts when gfm is disabled", async () => {
+		const writr = new Writr(
+			"> [!NOTE]\n> This is a note alert with useful information.",
+		);
+		const result = await writr.render({ gfm: false });
+		expect(result).not.toContain('class="markdown-alert');
+		expect(result).toContain("[!NOTE]");
+	});
 
 	it("should render from cache a simple markdown example with options - gfm", async () => {
 		const writr = new Writr("# Hello World :dog:");
