@@ -233,10 +233,15 @@ export class Writr extends Hookified {
 	 */
 	// biome-ignore lint/suspicious/noExplicitAny: expected
 	public set frontMatter(data: Record<string, any>) {
-		const frontMatter = this.frontMatterRaw;
-		const yamlString = yaml.dump(data);
-		const newFrontMatter = `---\n${yamlString}---\n`;
-		this._content = this._content.replace(frontMatter, newFrontMatter);
+		try {
+			const frontMatter = this.frontMatterRaw;
+			const yamlString = yaml.dump(data);
+			const newFrontMatter = `---\n${yamlString}---\n`;
+			this._content = this._content.replace(frontMatter, newFrontMatter);
+			/* c8 ignore next 3 */
+		} catch (error) {
+			this.emit("error", error);
+		}
 	}
 
 	/**
@@ -293,6 +298,7 @@ export class Writr extends Hookified {
 
 			return resultData.result;
 		} catch (error) {
+			this.emit("error", error);
 			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
 		}
 	}
@@ -342,6 +348,7 @@ export class Writr extends Hookified {
 
 			return resultData.result;
 		} catch (error) {
+			this.emit("error", error);
 			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
 		}
 	}
@@ -380,6 +387,7 @@ export class Writr extends Hookified {
 
 			return { valid: true };
 		} catch (error) {
+			this.emit("error", error);
 			if (content !== undefined) {
 				this._content = originalContent;
 			}
@@ -421,6 +429,7 @@ export class Writr extends Hookified {
 
 			return { valid: true };
 		} catch (error) {
+			this.emit("error", error);
 			if (content !== undefined) {
 				this._content = originalContent;
 			}
@@ -494,9 +503,14 @@ export class Writr extends Hookified {
 		options?: RenderOptions,
 		reactParseOptions?: HTMLReactParserOptions,
 	): Promise<string | React.JSX.Element | React.JSX.Element[]> {
-		const html = await this.render(options);
+		try {
+			const html = await this.render(options);
 
-		return parse(html, reactParseOptions);
+			return parse(html, reactParseOptions);
+		} catch (error) {
+			this.emit("error", error);
+			throw new Error(`Failed to render React: ${(error as Error).message}`);
+		}
 	}
 
 	/**
@@ -509,8 +523,13 @@ export class Writr extends Hookified {
 		options?: RenderOptions,
 		reactParseOptions?: HTMLReactParserOptions,
 	): string | React.JSX.Element | React.JSX.Element[] {
-		const html = this.renderSync(options);
-		return parse(html, reactParseOptions);
+		try {
+			const html = this.renderSync(options);
+			return parse(html, reactParseOptions);
+		} catch (error) {
+			this.emit("error", error);
+			throw new Error(`Failed to render React: ${(error as Error).message}`);
+		}
 	}
 
 	/**
