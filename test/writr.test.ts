@@ -661,3 +661,213 @@ describe("Writr Files", async () => {
 		fs.unlinkSync(path);
 	});
 });
+
+describe("Writr Error Emission", () => {
+	test("should emit error when render fails", async () => {
+		const writr = new Writr("# Hello World");
+		let emittedError: unknown;
+
+		writr.on("error", (error) => {
+			emittedError = error;
+		});
+
+		const customPlugin = () => {
+			throw new Error("Custom Plugin Error: Render failed");
+		};
+
+		writr.engine.use(customPlugin);
+
+		try {
+			await writr.render();
+		} catch {
+			// Expected to throw
+		}
+
+		expect(emittedError).toBeDefined();
+		expect((emittedError as Error).message).toContain("Render failed");
+	});
+
+	test("should emit error when renderSync fails", () => {
+		const writr = new Writr("# Hello World");
+		let emittedError: unknown;
+
+		writr.on("error", (error) => {
+			emittedError = error;
+		});
+
+		const customPlugin = () => {
+			throw new Error("Custom Plugin Error: RenderSync failed");
+		};
+
+		writr.engine.use(customPlugin);
+
+		try {
+			writr.renderSync();
+		} catch {
+			// Expected to throw
+		}
+
+		expect(emittedError).toBeDefined();
+		expect((emittedError as Error).message).toContain("RenderSync failed");
+	});
+
+	test("should emit error when validate fails", async () => {
+		const writr = new Writr("# Hello World");
+		let emittedError: unknown;
+
+		writr.on("error", (error) => {
+			emittedError = error;
+		});
+
+		const customPlugin = () => {
+			throw new Error("Custom Plugin Error: Validation failed");
+		};
+
+		writr.engine.use(customPlugin);
+
+		const result = await writr.validate();
+
+		expect(result.valid).toBe(false);
+		expect(emittedError).toBeDefined();
+		expect((emittedError as Error).message).toContain("Validation failed");
+	});
+
+	test("should emit error when validateSync fails", () => {
+		const writr = new Writr("# Hello World");
+		let emittedError: unknown;
+
+		writr.on("error", (error) => {
+			emittedError = error;
+		});
+
+		const customPlugin = () => {
+			throw new Error("Custom Plugin Error: ValidateSync failed");
+		};
+
+		writr.engine.use(customPlugin);
+
+		const result = writr.validateSync();
+
+		expect(result.valid).toBe(false);
+		expect(emittedError).toBeDefined();
+		expect((emittedError as Error).message).toContain("ValidateSync failed");
+	});
+
+	test("should emit error when renderReact fails", async () => {
+		const writr = new Writr("# Hello World");
+		let emittedError: unknown;
+
+		writr.on("error", (error) => {
+			emittedError = error;
+		});
+
+		const customPlugin = () => {
+			throw new Error("Custom Plugin Error: RenderReact failed");
+		};
+
+		writr.engine.use(customPlugin);
+
+		try {
+			await writr.renderReact();
+		} catch {
+			// Expected to throw
+		}
+
+		expect(emittedError).toBeDefined();
+		expect((emittedError as Error).message).toContain("RenderReact failed");
+	});
+
+	test("should emit error when renderReactSync fails", () => {
+		const writr = new Writr("# Hello World");
+		let emittedError: unknown;
+
+		writr.on("error", (error) => {
+			emittedError = error;
+		});
+
+		const customPlugin = () => {
+			throw new Error("Custom Plugin Error: RenderReactSync failed");
+		};
+
+		writr.engine.use(customPlugin);
+
+		try {
+			writr.renderReactSync();
+		} catch {
+			// Expected to throw
+		}
+
+		expect(emittedError).toBeDefined();
+		expect((emittedError as Error).message).toContain("RenderReactSync failed");
+	});
+
+	test("should emit error when renderToFile fails", async () => {
+		const writr = new Writr("# Hello World");
+		let emittedError: unknown;
+
+		writr.on("error", (error) => {
+			emittedError = error;
+		});
+
+		const customPlugin = () => {
+			throw new Error("Custom Plugin Error: RenderToFile failed");
+		};
+
+		writr.engine.use(customPlugin);
+
+		await writr.renderToFile("./test/fixtures/output.html");
+
+		expect(emittedError).toBeDefined();
+		expect((emittedError as Error).message).toContain("RenderToFile failed");
+	});
+
+	test("should emit error when renderToFileSync fails", () => {
+		const writr = new Writr("# Hello World");
+		let emittedError: unknown;
+
+		writr.on("error", (error) => {
+			emittedError = error;
+		});
+
+		const customPlugin = () => {
+			throw new Error("Custom Plugin Error: RenderToFileSync failed");
+		};
+
+		writr.engine.use(customPlugin);
+
+		writr.renderToFileSync("./test/fixtures/output.html");
+
+		expect(emittedError).toBeDefined();
+		expect((emittedError as Error).message).toContain(
+			"RenderToFileSync failed",
+		);
+	});
+
+	test("should emit error when loadFromFile fails with invalid path", async () => {
+		const writr = new Writr();
+		let emittedError: unknown;
+
+		writr.on("error", (error) => {
+			emittedError = error;
+		});
+
+		await writr.loadFromFile("./non-existent-file.md");
+
+		expect(emittedError).toBeDefined();
+		expect((emittedError as Error).message).toContain("ENOENT");
+	});
+
+	test("should emit error when loadFromFileSync fails with invalid path", () => {
+		const writr = new Writr();
+		let emittedError: unknown;
+
+		writr.on("error", (error) => {
+			emittedError = error;
+		});
+
+		writr.loadFromFileSync("./non-existent-file.md");
+
+		expect(emittedError).toBeDefined();
+		expect((emittedError as Error).message).toContain("ENOENT");
+	});
+});

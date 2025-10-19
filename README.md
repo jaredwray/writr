@@ -62,6 +62,12 @@ plugins and working with the processor directly.
   - [Using GFM](#using-gfm)
   - [Disabling GFM](#disabling-gfm)
 - [Hooks](#hooks)
+- [Emitters](#emitters)
+  - [Error Events](#error-events)
+  - [Listening to Error Events](#listening-to-error-events)
+  - [Methods that Emit Errors](#methods-that-emit-errors)
+  - [Error Event Examples](#error-event-examples)
+  - [Event Emitter Methods](#event-emitter-methods)
 - [ESM and Node Version Support](#esm-and-node-version-support)
 - [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
 - [License](#license)
@@ -591,6 +597,135 @@ export type loadFromFileData = {
 ```
 
 This is called when you call `loadFromFile`, `loadFromFileSync`.
+
+# Emitters
+
+Writr extends the [Hookified](https://github.com/jaredwray/hookified) class, which provides event emitter capabilities. This means you can listen to events emitted by Writr during its lifecycle, particularly error events.
+
+## Error Events
+
+Writr emits an `error` event whenever an error occurs in any of its methods. This provides a centralized way to handle errors without wrapping every method call in a try/catch block.
+
+### Listening to Error Events
+
+You can listen to error events using the `.on()` method:
+
+```javascript
+import { Writr } from 'writr';
+
+const writr = new Writr('# Hello World');
+
+// Listen for any errors
+writr.on('error', (error) => {
+  console.error('An error occurred:', error.message);
+  // Handle the error appropriately
+  // Log to error tracking service, display to user, etc.
+});
+
+// Now when any error occurs, your listener will be notified
+try {
+  await writr.render();
+} catch (error) {
+  // Error is also thrown, so you can handle it here too
+}
+```
+
+### Methods that Emit Errors
+
+The following methods emit error events when they fail:
+
+**Rendering Methods:**
+- `render()` - Emits error before throwing when markdown rendering fails
+- `renderSync()` - Emits error before throwing when markdown rendering fails
+- `renderReact()` - Emits error before throwing when React rendering fails
+- `renderReactSync()` - Emits error before throwing when React rendering fails
+
+**Validation Methods:**
+- `validate()` - Emits error when validation fails (returns error in result object)
+- `validateSync()` - Emits error when validation fails (returns error in result object)
+
+**File Operations:**
+- `renderToFile()` - Emits error when file writing fails (does not throw if `throwErrors: false`)
+- `renderToFileSync()` - Emits error when file writing fails (does not throw if `throwErrors: false`)
+- `loadFromFile()` - Emits error when file reading fails (does not throw if `throwErrors: false`)
+- `loadFromFileSync()` - Emits error when file reading fails (does not throw if `throwErrors: false`)
+- `saveToFile()` - Emits error when file writing fails (does not throw if `throwErrors: false`)
+- `saveToFileSync()` - Emits error when file writing fails (does not throw if `throwErrors: false`)
+
+**Front Matter Operations:**
+- `frontMatter` getter - Emits error when YAML parsing fails
+- `frontMatter` setter - Emits error when YAML serialization fails
+
+### Error Event Examples
+
+**Example 1: Global Error Handler**
+
+```javascript
+import { Writr } from 'writr';
+
+const writr = new Writr();
+
+// Set up a global error handler
+writr.on('error', (error) => {
+  // Log to your monitoring service
+  console.error('Writr error:', error);
+
+  // Send to error tracking (e.g., Sentry, Rollbar)
+  // errorTracker.captureException(error);
+});
+
+// All errors will be emitted to the listener above
+await writr.loadFromFile('./content.md');
+const html = await writr.render();
+```
+
+**Example 2: Validation with Error Listening**
+
+```javascript
+import { Writr } from 'writr';
+
+const writr = new Writr('# My Content');
+let lastError = null;
+
+writr.on('error', (error) => {
+  lastError = error;
+});
+
+const result = await writr.validate();
+
+if (!result.valid) {
+  console.log('Validation failed');
+  console.log('Error details:', lastError);
+  // result.error is also available
+}
+```
+
+**Example 3: File Operations Without Try/Catch**
+
+```javascript
+import { Writr } from 'writr';
+
+const writr = new Writr('# Content', { throwErrors: false });
+
+writr.on('error', (error) => {
+  console.error('File operation failed:', error.message);
+  // Handle gracefully - maybe use default content
+});
+
+// Won't throw, but will emit error event if file doesn't exist
+await writr.loadFromFile('./maybe-missing.md');
+```
+
+### Event Emitter Methods
+
+Since Writr extends Hookified, you have access to standard event emitter methods:
+
+- `writr.on(event, handler)` - Add an event listener
+- `writr.once(event, handler)` - Add a one-time event listener
+- `writr.off(event, handler)` - Remove an event listener
+- `writr.emit(event, data)` - Emit an event (used internally)
+
+For more information about event handling capabilities, see the [Hookified documentation](https://github.com/jaredwray/hookified).
 
 # ESM and Node Version Support
 
