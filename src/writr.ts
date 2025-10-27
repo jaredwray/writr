@@ -118,6 +118,7 @@ export class Writr extends Hookified {
 			this._content = arguments1;
 		} else if (arguments1) {
 			this._options = this.mergeOptions(this._options, arguments1);
+			/* v8 ignore next -- @preserve */
 			if (this._options.renderOptions) {
 				this.engine = this.createProcessor(this._options.renderOptions);
 			}
@@ -125,6 +126,7 @@ export class Writr extends Hookified {
 
 		if (arguments2) {
 			this._options = this.mergeOptions(this._options, arguments2);
+			/* v8 ignore next -- @preserve */
 			if (this._options.renderOptions) {
 				this.engine = this.createProcessor(this._options.renderOptions);
 			}
@@ -218,8 +220,8 @@ export class Writr extends Hookified {
 			try {
 				// biome-ignore lint/suspicious/noExplicitAny: expected
 				return yaml.load(match[1].trim()) as Record<string, any>;
-				/* c8 ignore next 4 */
 			} catch (error) {
+				/* v8 ignore next -- @preserve */
 				this.emit("error", error);
 			}
 		}
@@ -238,8 +240,8 @@ export class Writr extends Hookified {
 			const yamlString = yaml.dump(data);
 			const newFrontMatter = `---\n${yamlString}---\n`;
 			this._content = this._content.replace(frontMatter, newFrontMatter);
-			/* c8 ignore next 3 */
 		} catch (error) {
+			/* v8 ignore next -- @preserve */
 			this.emit("error", error);
 		}
 	}
@@ -457,9 +459,9 @@ export class Writr extends Hookified {
 			};
 			await this.hook(WritrHooks.renderToFile, data);
 			await writeFile(data.filePath, data.content);
-			/* c8 ignore next 6 */
 		} catch (error) {
 			this.emit("error", error);
+			/* v8 ignore next -- @preserve */
 			if (this._options.throwErrors) {
 				throw error;
 			}
@@ -484,10 +486,11 @@ export class Writr extends Hookified {
 			this.hook(WritrHooks.renderToFile, data);
 
 			fs.writeFileSync(data.filePath, data.content);
-			/* c8 ignore next 6 */
 		} catch (error) {
 			this.emit("error", error);
+			/* v8 ignore next -- @preserve */
 			if (this._options.throwErrors) {
+				/* v8 ignore next -- @preserve */
 				throw error;
 			}
 		}
@@ -547,10 +550,11 @@ export class Writr extends Hookified {
 
 			await this.hook(WritrHooks.loadFromFile, data);
 			this._content = data.content;
-			/* c8 ignore next 6 */
 		} catch (error) {
 			this.emit("error", error);
+			/* v8 ignore next -- @preserve */
 			if (this._options.throwErrors) {
+				/* v8 ignore next -- @preserve */
 				throw error;
 			}
 		}
@@ -570,10 +574,11 @@ export class Writr extends Hookified {
 
 			this.hook(WritrHooks.loadFromFile, data);
 			this._content = data.content;
-			/* c8 ignore next 6 */
 		} catch (error) {
 			this.emit("error", error);
+			/* v8 ignore next -- @preserve */
 			if (this._options.throwErrors) {
+				/* v8 ignore next -- @preserve */
 				throw error;
 			}
 		}
@@ -596,10 +601,12 @@ export class Writr extends Hookified {
 			await this.hook(WritrHooks.saveToFile, data);
 
 			await writeFile(data.filePath, data.content);
-			/* c8 ignore next 6 */
 		} catch (error) {
+			/* v8 ignore next -- @preserve */
 			this.emit("error", error);
+			/* v8 ignore next -- @preserve */
 			if (this._options.throwErrors) {
+				/* v8 ignore next -- @preserve */
 				throw error;
 			}
 		}
@@ -622,10 +629,12 @@ export class Writr extends Hookified {
 			this.hook(WritrHooks.saveToFile, data);
 
 			fs.writeFileSync(data.filePath, data.content);
-			/* c8 ignore next 6 */
 		} catch (error) {
+			/* v8 ignore next -- @preserve */
 			this.emit("error", error);
+			/* v8 ignore next -- @preserve */
 			if (this._options.throwErrors) {
+				/* v8 ignore next -- @preserve */
 				throw error;
 			}
 		}
@@ -636,6 +645,7 @@ export class Writr extends Hookified {
 			return options.caching;
 		}
 
+		/* v8 ignore next -- @preserve */
 		return this._options?.renderOptions?.caching ?? false;
 	}
 
@@ -687,6 +697,7 @@ export class Writr extends Hookified {
 			current.throwErrors = options.throwErrors;
 		}
 
+		/* v8 ignore next -- @preserve */
 		if (options.renderOptions) {
 			current.renderOptions ??= {};
 
