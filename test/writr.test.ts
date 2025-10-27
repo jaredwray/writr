@@ -160,6 +160,17 @@ describe("writr", () => {
 		expect(result2).toEqual('<h1 id="hello-world-">Hello World 🐶</h1>');
 	});
 
+	it("should render with mdx as true", async () => {
+		const writr = new Writr("# Hello World :dog:");
+		const options = {
+			mdx: true,
+		};
+		const result = await writr.render(options);
+		expect(result).toEqual('<h1 id="hello-world-">Hello World 🐶</h1>');
+		const result2 = await writr.render(options);
+		expect(result2).toEqual('<h1 id="hello-world-">Hello World 🐶</h1>');
+	});
+
 	it("should render a simple markdown example with options - toc", async () => {
 		const writr = new Writr();
 		const options = {

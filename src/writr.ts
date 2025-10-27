@@ -39,7 +39,7 @@ export type WritrOptions = {
  * @property {boolean} [highlight] - Code highlighting (default: true)
  * @property {boolean} [gfm] - Github flavor markdown (default: true)
  * @property {boolean} [math] - Math support (default: true)
- * @property {boolean} [mdx] - MDX support (default: true)
+ * @property {boolean} [mdx] - MDX support (default: false)
  * @property {boolean} [caching] - Caching (default: false)
  */
 export type RenderOptions = {
@@ -49,7 +49,7 @@ export type RenderOptions = {
 	highlight?: boolean; // Code highlighting (default: true)
 	gfm?: boolean; // Github flavor markdown (default: true)
 	math?: boolean; // Math support (default: true)
-	mdx?: boolean; // MDX support (default: true)
+	mdx?: boolean; // MDX support (default: false)
 	caching?: boolean; // Caching (default: false)
 };
 
@@ -83,7 +83,6 @@ export class Writr extends Hookified {
 		.use(remarkMath) // Add math support
 		.use(rehypeKatex) // Add math support
 		.use(rehypeHighlight) // Apply syntax highlighting
-		.use(remarkMDX) // Add MDX support
 		.use(rehypeStringify); // Stringify HTML
 
 	private readonly _options: WritrOptions = {
@@ -95,7 +94,7 @@ export class Writr extends Hookified {
 			highlight: true,
 			gfm: true,
 			math: true,
-			mdx: true,
+			mdx: false,
 			caching: false,
 		},
 	};
