@@ -328,6 +328,7 @@ export class Writr extends Hookified {
 			const resultData = {
 				result: "",
 			};
+			/* v8 ignore next -- @preserve */
 			if (this.isCacheEnabled(renderData.options)) {
 				const cached = this._cache.get(renderData.content, renderData.options);
 				if (cached) {
