@@ -40,7 +40,7 @@ export type WritrOptions = {
  * @property {boolean} [gfm] - Github flavor markdown (default: true)
  * @property {boolean} [math] - Math support (default: true)
  * @property {boolean} [mdx] - MDX support (default: false)
- * @property {boolean} [caching] - Caching (default: false)
+ * @property {boolean} [caching] - Caching (default: true)
  */
 export type RenderOptions = {
 	emoji?: boolean; // Emoji support (default: true)
@@ -50,7 +50,7 @@ export type RenderOptions = {
 	gfm?: boolean; // Github flavor markdown (default: true)
 	math?: boolean; // Math support (default: true)
 	mdx?: boolean; // MDX support (default: false)
-	caching?: boolean; // Caching (default: false)
+	caching?: boolean; // Caching (default: true)
 };
 
 /**
@@ -95,7 +95,7 @@ export class Writr extends Hookified {
 			gfm: true,
 			math: true,
 			mdx: false,
-			caching: false,
+			caching: true,
 		},
 	};
 
