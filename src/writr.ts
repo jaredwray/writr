@@ -640,6 +640,24 @@ export class Writr extends Hookified {
 		}
 	}
 
+	public mergeOptions(
+		current: WritrOptions,
+		options: WritrOptions,
+	): WritrOptions {
+		if (options.throwErrors !== undefined) {
+			current.throwErrors = options.throwErrors;
+		}
+
+		/* v8 ignore next -- @preserve */
+		if (options.renderOptions) {
+			current.renderOptions ??= {};
+
+			this.mergeRenderOptions(current.renderOptions, options.renderOptions);
+		}
+
+		return current;
+	}
+
 	private isCacheEnabled(options?: RenderOptions): boolean {
 		if (options?.caching !== undefined) {
 			return options.caching;
@@ -687,24 +705,6 @@ export class Writr extends Hookified {
 		processor.use(rehypeStringify);
 
 		return processor;
-	}
-
-	private mergeOptions(
-		current: WritrOptions,
-		options: WritrOptions,
-	): WritrOptions {
-		if (options.throwErrors !== undefined) {
-			current.throwErrors = options.throwErrors;
-		}
-
-		/* v8 ignore next -- @preserve */
-		if (options.renderOptions) {
-			current.renderOptions ??= {};
-
-			this.mergeRenderOptions(current.renderOptions, options.renderOptions);
-		}
-
-		return current;
 	}
 
 	private mergeRenderOptions(
