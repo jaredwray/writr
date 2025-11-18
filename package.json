@@ -55,7 +55,7 @@
     "website:serve": "rimraf ./site/README.md ./site/dist && npx docula serve -s ./site -o ./site/dist"
   },
   "dependencies": {
-    "cacheable": "^2.1.1",
+    "cacheable": "^2.2.0",
     "hookified": "^1.12.2",
     "html-react-parser": "^5.2.7",
     "js-yaml": "^4.1.0",
@@ -75,7 +75,7 @@
     "unified": "^11.0.5"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.1",
+    "@biomejs/biome": "^2.3.6",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.9.1",
     "@types/react": "^19.2.2",
