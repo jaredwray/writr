@@ -30,7 +30,8 @@ export class WritrCache {
 	}
 
 	public hash(markdown: string, options?: RenderOptions): string {
-		const content = { markdown, options };
+		const sanitizedOptions = this.sanitizeOptions(options);
+		const content = { markdown, options: sanitizedOptions };
 		const key = JSON.stringify(content);
 		let result = this._hashStore.get<string>(key);
 		if (result) {
@@ -41,5 +42,55 @@ export class WritrCache {
 		this._hashStore.set(key, result);
 
 		return result;
+	}
+
+	/**
+	 * Sanitizes render options to only include serializable properties for caching.
+	 * This prevents issues with structuredClone when options contain Promises, functions, or circular references.
+	 * @param {RenderOptions} [options] The render options to sanitize
+	 * @returns {RenderOptions | undefined} A new object with only the known RenderOptions properties
+	 */
+	private sanitizeOptions(options?: RenderOptions): RenderOptions | undefined {
+		if (!options) {
+			return undefined;
+		}
+
+		// Only extract the known, serializable properties from RenderOptions
+		const sanitized: RenderOptions = {};
+
+		if (options.emoji !== undefined) {
+			sanitized.emoji = options.emoji;
+		}
+
+		/* v8 ignore next -- @preserve */
+		if (options.toc !== undefined) {
+			sanitized.toc = options.toc;
+		}
+
+		if (options.slug !== undefined) {
+			sanitized.slug = options.slug;
+		}
+
+		if (options.highlight !== undefined) {
+			sanitized.highlight = options.highlight;
+		}
+
+		if (options.gfm !== undefined) {
+			sanitized.gfm = options.gfm;
+		}
+
+		if (options.math !== undefined) {
+			sanitized.math = options.math;
+		}
+
+		if (options.mdx !== undefined) {
+			sanitized.mdx = options.mdx;
+		}
+
+		if (options.caching !== undefined) {
+			sanitized.caching = options.caching;
+		}
+
+		return sanitized;
 	}
 }
