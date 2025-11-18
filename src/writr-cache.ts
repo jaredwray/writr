@@ -33,15 +33,15 @@ export class WritrCache {
 		const sanitizedOptions = this.sanitizeOptions(options);
 		const content = { markdown, options: sanitizedOptions };
 		const key = JSON.stringify(content);
-		let result = this._hashStore.get<string>(key);
+		const result = this._hashStore.get<string>(key);
 		if (result) {
 			return result;
 		}
 
-		result = this._hash.hash(content);
-		this._hashStore.set(key, result);
+		const hash = this._hash.hashSync(content);
+		this._hashStore.set(key, hash);
 
-		return result;
+		return hash;
 	}
 
 	/**

@@ -55,7 +55,7 @@
     "website:serve": "rimraf ./site/README.md ./site/dist && npx docula serve -s ./site -o ./site/dist"
   },
   "dependencies": {
-    "cacheable": "^2.1.1",
+    "cacheable": "^2.2.0",
     "hookified": "^1.12.2",
     "html-react-parser": "^5.2.7",
     "js-yaml": "^4.1.0",
