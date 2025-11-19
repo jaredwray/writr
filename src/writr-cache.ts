@@ -1,10 +1,11 @@
-import { Cacheable, CacheableMemory } from "cacheable";
+import { CacheableMemory } from "cacheable";
+import { Hashery } from "hashery";
 import type { RenderOptions } from "./writr.js";
 
 export class WritrCache {
 	private readonly _store: CacheableMemory = new CacheableMemory();
 	private readonly _hashStore: CacheableMemory = new CacheableMemory();
-	private readonly _hash: Cacheable = new Cacheable();
+	private readonly _hash: Hashery = new Hashery();
 
 	public get store(): CacheableMemory {
 		return this._store;
@@ -38,7 +39,7 @@ export class WritrCache {
 			return result;
 		}
 
-		const hash = this._hash.hashSync(content);
+		const hash = this._hash.toHashSync(content);
 		this._hashStore.set(key, hash);
 
 		return hash;
