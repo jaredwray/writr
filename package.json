@@ -80,12 +80,12 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.9.1",
     "@types/react": "^19.2.2",
-    "@vitest/coverage-v8": "^4.0.4",
+    "@vitest/coverage-v8": "^4.0.14",
     "docula": "^0.31.0",
     "rimraf": "^6.0.1",
     "tsup": "^8.5.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.4"
+    "vitest": "^4.0.14"
   },
   "files": [
     "dist",
