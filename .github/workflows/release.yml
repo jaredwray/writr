@@ -31,6 +31,13 @@ jobs:
     - name: Testing    
       run: pnpm test:ci
 
+    - name: Debug OIDC Token
+      run: |
+        echo "Repository: $GITHUB_REPOSITORY"
+        echo "Workflow: $GITHUB_WORKFLOW"
+        echo "Run ID: $GITHUB_RUN_ID"
+        curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=npm" | jq -r '.value | split(".")[1] | @base64d | fromjson | {repository, repository_owner, job_workflow_ref}'
+
     - name: Publish
       run: pnpm publish --provenance --access public
 
