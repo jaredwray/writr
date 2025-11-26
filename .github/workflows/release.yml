@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   release:
@@ -19,6 +20,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 22
+        registry-url: 'https://registry.npmjs.org'
 
     - name: Install Dependencies
       run: npm install -g pnpm && pnpm install
@@ -31,5 +33,7 @@ jobs:
 
     - name: Publish
       run: pnpm publish --ignore-scripts --no-git-checks --provenance --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
 
