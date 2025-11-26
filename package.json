@@ -1,12 +1,13 @@
 {
   "name": "writr",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Markdown Rendering Simplified",
   "type": "module",
   "main": "./dist/writr.js",
   "types": "./dist/writr.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/writr.d.ts",
       "import": "./dist/writr.js"
     }
   },
