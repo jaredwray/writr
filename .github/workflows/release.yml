@@ -32,6 +32,6 @@ jobs:
       run: pnpm test:ci
 
     - name: Publish
-      run: pnpm publish --ignore-scripts --no-git-checks --provenance --access public
+      run: pnpm publish --provenance --access public
 
 
