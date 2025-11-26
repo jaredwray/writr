@@ -20,7 +20,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 22
-        registry-url: 'https://registry.npmjs.org'
 
     - name: Install Dependencies
       run: npm install -g pnpm && pnpm install
@@ -30,6 +29,9 @@ jobs:
 
     - name: Testing    
       run: pnpm test:ci
+
+    - name: Clear npmrc
+      run: rm -f ~/.npmrc /home/runner/work/_temp/.npmrc 2>/dev/null || true
 
     - name: Debug OIDC Token
       run: |
