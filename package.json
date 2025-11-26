@@ -59,7 +59,7 @@
     "hashery": "^1.2.0",
     "hookified": "^1.12.2",
     "html-react-parser": "^5.2.10",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.1.1",
     "react": "^19.2.0",
     "rehype-highlight": "^7.0.2",
     "rehype-katex": "^7.0.1",
