@@ -68,6 +68,7 @@ plugins and working with the processor directly.
   - [Methods that Emit Errors](#methods-that-emit-errors)
   - [Error Event Examples](#error-event-examples)
   - [Event Emitter Methods](#event-emitter-methods)
+- [Benchmarks](#benchmarks)
 - [ESM and Node Version Support](#esm-and-node-version-support)
 - [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
 - [License](#license)
@@ -726,6 +727,17 @@ Since Writr extends Hookified, you have access to standard event emitter methods
 - `writr.emit(event, data)` - Emit an event (used internally)
 
 For more information about event handling capabilities, see the [Hookified documentation](https://github.com/jaredwray/hookified).
+
+# Benchmarks
+
+The benchmark shows rendering performance via Sync and Async methods with caching enabled and disabled.
+
+|           name            |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
+|---------------------------|:---------:|----------:|----------:|:--------:|----------:|
+|  render (Sync) (cached)   |    🥇     |      34K  |     30µs  |  ±0.08%  |      33K  |
+|  render (Async) (cached)  |   -1.5%   |      33K  |     31µs  |  ±0.08%  |      33K  |
+|  render (Sync)            |   -93%    |       2K  |    474µs  |  ±0.96%  |      10K  |
+|  render (Async)           |   -93%    |       2K  |    481µs  |  ±0.96%  |      10K  |
 
 # ESM and Node Version Support
 
