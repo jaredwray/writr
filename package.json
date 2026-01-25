@@ -87,7 +87,7 @@
     "@types/node": "^25.0.10",
     "@types/react": "^19.2.9",
     "@vitest/coverage-v8": "^4.0.18",
-    "docula": "^0.31.1",
+    "docula": "^0.40.0",
     "rimraf": "^6.1.2",
     "tinybench": "^6.0.0",
     "tsup": "^8.5.1",
