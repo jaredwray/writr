@@ -53,7 +53,7 @@
     "build": "rimraf ./dist && tsup src/writr.ts --format esm --dts --clean",
     "prepare": "pnpm build",
     "lint": "biome check --write --error-on-warnings",
-    "benchmark": "tsx benchmark/benchmark.ts",
+    "benchmark": "tsx benchmark/benchmark-minimal.ts && tsx benchmark/benchmark-standard.ts",
     "test": "pnpm lint && vitest run --coverage",
     "test:ci": "biome check --error-on-warnings && vitest run --coverage",
     "website:build": "rimraf ./site/README.md ./site/dist && npx docula build -s ./site -o ./site/dist",
