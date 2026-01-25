@@ -11,22 +11,22 @@ const bench = new Bench({ name: `Writr v${pkg.version} Render`, iterations: 10_0
 const writr = new Writr({ renderOptions: { caching: false } });
 const writrCached = new Writr({ renderOptions: { caching: true } });
 
-bench.add("render (Async)", async () => {
+bench.add("Writr (Async)", async () => {
 	writr.content = benchmarkContents[Math.floor(Math.random() * benchmarkContents.length)];
 	await writr.render();
 });
 
-bench.add("render (Async) (cached)", async () => {
+bench.add("Writr (Async) (Caching)", async () => {
 	writr.content = benchmarkContents[Math.floor(Math.random() * benchmarkContents.length)];
 	await writrCached.render();
 });
 
-bench.add("render (Sync)", () => {
+bench.add("Writr (Sync)", () => {
 	writr.content = benchmarkContents[Math.floor(Math.random() * benchmarkContents.length)];
 	writr.renderSync();
 });
 
-bench.add("render (Sync) (cached)", () => {
+bench.add("Writr (Sync) (Caching)", () => {
 	writr.content = benchmarkContents[Math.floor(Math.random() * benchmarkContents.length)];
 	writrCached.renderSync();
 });

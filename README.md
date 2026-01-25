@@ -730,14 +730,27 @@ For more information about event handling capabilities, see the [Hookified docum
 
 # Benchmarks
 
-The benchmark shows rendering performance via Sync and Async methods with caching enabled and disabled.
+This is a comparison with minimal configuration where we have disabled all rendering pipeline and just did straight caching + rendering to compare it against the fastest:
 
 |           name            |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
 |---------------------------|:---------:|----------:|----------:|:--------:|----------:|
-|  render (Sync) (cached)   |    🥇     |      34K  |     30µs  |  ±0.08%  |      33K  |
-|  render (Async) (cached)  |   -1.5%   |      33K  |     31µs  |  ±0.08%  |      33K  |
-|  render (Sync)            |   -93%    |       2K  |    474µs  |  ±0.96%  |      10K  |
-|  render (Async)           |   -93%    |       2K  |    481µs  |  ±0.96%  |      10K  |
+|  Writr (Sync) (Caching)   |    🥇     |      83K  |     14µs  |  ±0.27%  |      74K  |
+|  Writr (Async) (Caching)  |    -3%    |      80K  |     14µs  |  ±0.27%  |      71K  |
+|  markdown-it              |   -30%    |      58K  |     20µs  |  ±0.37%  |      50K  |
+|  marked                   |   -33%    |      56K  |     25µs  |  ±0.50%  |      40K  |
+|  Writr (Sync)             |   -94%    |       5K  |    225µs  |  ±0.88%  |      10K  |
+|  Writr (Async)            |   -94%    |       5K  |    229µs  |  ±0.89%  |      10K  |
+
+As you can see this module is performant with `caching` enabled but was built to be performant enough but with all the features added in. If you are just wanting performance and not features then `markdown-it` or `marked` is the solution unless you use `Writr` with caching. 
+
+|           name            |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
+|---------------------------|:---------:|----------:|----------:|:--------:|----------:|
+|  Writr (Async) (Caching)  |    🥇     |      26K  |     39µs  |  ±0.12%  |      25K  |
+|  Writr (Sync) (Caching)   |  -0.92%   |      26K  |     40µs  |  ±0.15%  |      25K  |
+|  Writr (Sync)             |   -93%    |       2K  |    630µs  |  ±0.97%  |      10K  |
+|  Writr (Async)            |   -93%    |       2K  |    649µs  |  ±0.96%  |      10K  |
+
+The benchmark shows rendering performance via Sync and Async methods with caching enabled and disabled and all features.
 
 # ESM and Node Version Support
 
