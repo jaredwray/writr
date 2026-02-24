@@ -18,8 +18,8 @@ importers:
         specifier: ^1.15.1
         version: 1.15.1
       html-react-parser:
-        specifier: ^5.2.12
-        version: 5.2.12(@types/react@19.2.14)(react@19.2.4)
+        specifier: ^5.2.17
+        version: 5.2.17(@types/react@19.2.14)(react@19.2.4)
       js-yaml:
         specifier: ^4.1.1
         version: 4.1.1
@@ -1520,14 +1520,14 @@ packages:
   hookified@1.15.1:
     resolution: {integrity: sha512-MvG/clsADq1GPM2KGo2nyfaWVyn9naPiXrqIe4jYjXNZQt238kWyOGrsyc/DmRAQ+Re6yeo6yX/yoNCG5KAEVg==}
 
-  html-dom-parser@5.1.4:
-    resolution: {integrity: sha512-UGjp7y8jSrDU2RdN2J9FDOo3X+WBu+LkS/I3TjjFW020ocZWjPvave+RKk1zeuY2sUWy5fh6zHgXHthzDGlFNQ==}
+  html-dom-parser@5.1.8:
+    resolution: {integrity: sha512-MCIUng//mF2qTtGHXJWr6OLfHWmg3Pm8ezpfiltF83tizPWY17JxT4dRLE8lykJ5bChJELoY3onQKPbufJHxYA==}
 
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
 
-  html-react-parser@5.2.12:
-    resolution: {integrity: sha512-tvamxqkg5va1t9Wnq8OdikpIZrcgdatNd2rxQt0oEzb+IpbsWR1I7ddPd6CkwqZjiv8zKDzm8oiqqxy+KknQEQ==}
+  html-react-parser@5.2.17:
+    resolution: {integrity: sha512-m+K/7Moq1jodAB4VL0RXSOmtwLUYoAsikZhwd+hGQe5Vtw2dbWfpFd60poxojMU0Tsh9w59mN1QLEcoHz0Dx9w==}
     peerDependencies:
       '@types/react': 0.14 || 15 || 16 || 17 || 18 || 19
       react: 0.14 || 15 || 16 || 17 || 18 || 19
@@ -3902,17 +3902,17 @@ snapshots:
 
   hookified@1.15.1: {}
 
-  html-dom-parser@5.1.4:
+  html-dom-parser@5.1.8:
     dependencies:
       domhandler: 5.0.3
       htmlparser2: 10.1.0
 
   html-escaper@2.0.2: {}
 
-  html-react-parser@5.2.12(@types/react@19.2.14)(react@19.2.4):
+  html-react-parser@5.2.17(@types/react@19.2.14)(react@19.2.4):
     dependencies:
       domhandler: 5.0.3
-      html-dom-parser: 5.1.4
+      html-dom-parser: 5.1.8
       react: 19.2.4
       react-property: 2.0.2
       style-to-js: 1.1.21
@@ -5444,7 +5444,7 @@ snapshots:
       cacheable: 2.3.2
       hashery: 1.5.0
       hookified: 1.15.1
-      html-react-parser: 5.2.12(@types/react@19.2.14)(react@19.2.4)
+      html-react-parser: 5.2.17(@types/react@19.2.14)(react@19.2.4)
       js-yaml: 4.1.1
       react: 19.2.4
       rehype-highlight: 7.0.2
