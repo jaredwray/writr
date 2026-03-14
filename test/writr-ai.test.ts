@@ -161,6 +161,29 @@ describe("writr-ai", () => {
 			expect(metadata.readingTime).toBeUndefined();
 		});
 
+		it("should use opt-in mode when any field is set to true", async () => {
+			const writr = new Writr(blogPostWithMarkdown);
+			const model = createMockModel({
+				title: "Understanding Async/Await in JavaScript",
+				description: "A guide to async/await in JavaScript.",
+			});
+
+			const ai = new WritrAI(writr, { model });
+			const metadata = await ai.getMetadata({
+				title: true,
+				description: true,
+			});
+
+			expect(metadata.title).toBe("Understanding Async/Await in JavaScript");
+			expect(metadata.description).toBe(
+				"A guide to async/await in JavaScript.",
+			);
+			expect(metadata.tags).toBeUndefined();
+			expect(metadata.keywords).toBeUndefined();
+			expect(metadata.wordCount).toBeUndefined();
+			expect(metadata.readingTime).toBeUndefined();
+		});
+
 		it("should generate only deterministic fields without AI call", async () => {
 			const writr = new Writr(blogPostWithMarkdown);
 			// Even though we provide a mock model, it shouldn't be called for
@@ -257,6 +280,22 @@ describe("writr-ai", () => {
 			expect(seo.openGraph?.description).toBe(
 				"An ergonomic chair for maximum comfort.",
 			);
+		});
+
+		it("should use opt-in mode for SEO when any field is set to true", async () => {
+			const writr = new Writr(blogPostWithMarkdown);
+			const model = createMockModel({
+				slug: "understanding-async-await",
+			});
+
+			const ai = new WritrAI(writr, { model });
+			const seo = await ai.getSEO({
+				slug: true,
+			});
+
+			expect(seo.slug).toBe("understanding-async-await");
+			expect(seo.canonical).toBeUndefined();
+			expect(seo.openGraph).toBeUndefined();
 		});
 
 		it("should generate only selected SEO fields", async () => {
