@@ -2,6 +2,59 @@ import type { LanguageModel } from "ai";
 import type { Writr } from "./writr.js";
 
 /**
+ * Writr options.
+ * @typedef {Object} WritrOptions
+ * @property {RenderOptions} [renderOptions] - Default render options (default: undefined)
+ * @property {boolean} [throwErrors] - Throw error (default: false)
+ */
+export type WritrOptions = {
+	renderOptions?: RenderOptions; // Default render options (default: undefined)
+	throwErrors?: boolean; // Throw error (default: false)
+};
+
+/**
+ * Render options.
+ * @typedef {Object} RenderOptions
+ * @property {boolean} [emoji] - Emoji support (default: true)
+ * @property {boolean} [toc] - Table of contents generation (default: true)
+ * @property {boolean} [slug] - Slug generation (default: true)
+ * @property {boolean} [highlight] - Code highlighting (default: true)
+ * @property {boolean} [gfm] - Github flavor markdown (default: true)
+ * @property {boolean} [math] - Math support (default: true)
+ * @property {boolean} [mdx] - MDX support (default: false)
+ * @property {boolean} [caching] - Caching (default: true)
+ */
+export type RenderOptions = {
+	emoji?: boolean; // Emoji support (default: true)
+	toc?: boolean; // Table of contents generation (default: true)
+	slug?: boolean; // Slug generation (default: true)
+	highlight?: boolean; // Code highlighting (default: true)
+	gfm?: boolean; // Github flavor markdown (default: true)
+	math?: boolean; // Math support (default: true)
+	mdx?: boolean; // MDX support (default: false)
+	caching?: boolean; // Caching (default: true)
+};
+
+/**
+ * Validation result.
+ * @typedef {Object} WritrValidateResult
+ * @property {boolean} valid - Whether the markdown is valid
+ * @property {Error} [error] - Error if validation failed
+ */
+export type WritrValidateResult = {
+	valid: boolean;
+	error?: Error;
+};
+
+export enum WritrHooks {
+	beforeRender = "beforeRender",
+	afterRender = "afterRender",
+	saveToFile = "saveToFile",
+	renderToFile = "renderToFile",
+	loadFromFile = "loadFromFile",
+}
+
+/**
  * Metadata generated for a markdown document.
  */
 export type WritrMetadata = {

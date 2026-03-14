@@ -1,6 +1,6 @@
 import { CacheableMemory } from "cacheable";
 import { Hashery } from "hashery";
-import type { RenderOptions } from "./writr.js";
+import type { RenderOptions } from "./types.js";
 
 export class WritrCache {
 	private readonly _store: CacheableMemory = new CacheableMemory();

@@ -1,7 +1,5 @@
 import { generateObject, generateText, type LanguageModel } from "ai";
 import { z } from "zod";
-import { Writr } from "./writr.js";
-import { WritrAICache } from "./writr-ai-cache.js";
 import type {
 	WritrAIOptions,
 	WritrAIPrompts,
@@ -13,7 +11,9 @@ import type {
 	WritrMetadataKey,
 	WritrSEO,
 	WritrTranslationOptions,
-} from "./writr-ai-types.js";
+} from "./types.js";
+import { Writr } from "./writr.js";
+import { WritrAICache } from "./writr-ai-cache.js";
 
 const AVERAGE_WORDS_PER_MINUTE = 200;
 
