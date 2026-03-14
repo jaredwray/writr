@@ -248,20 +248,9 @@ export class WritrAI {
 			return allFields;
 		}
 
-		const hasOptIn = allFields.some(
+		return allFields.filter(
 			(field) => options[field as keyof WritrGetMetadataOptions] === true,
 		);
-
-		if (hasOptIn) {
-			return allFields.filter(
-				(field) => options[field as keyof WritrGetMetadataOptions] === true,
-			);
-		}
-
-		return allFields.filter((field) => {
-			const value = options[field as keyof WritrGetMetadataOptions];
-			return value === undefined || value === true;
-		});
 	}
 
 	private resolveSEOFields(options?: WritrGetSEOOptions): string[] {
@@ -271,20 +260,9 @@ export class WritrAI {
 			return allFields;
 		}
 
-		const hasOptIn = allFields.some(
+		return allFields.filter(
 			(field) => options[field as keyof WritrGetSEOOptions] === true,
 		);
-
-		if (hasOptIn) {
-			return allFields.filter(
-				(field) => options[field as keyof WritrGetSEOOptions] === true,
-			);
-		}
-
-		return allFields.filter((field) => {
-			const value = options[field as keyof WritrGetSEOOptions];
-			return value === undefined || value === true;
-		});
 	}
 
 	// biome-ignore lint/suspicious/noExplicitAny: dynamic schema construction

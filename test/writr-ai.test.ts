@@ -234,17 +234,7 @@ describe("writr-ai", () => {
 			const ai = new WritrAI(writr, { model, cache: true });
 
 			const options = {
-				tags: false,
-				keywords: false,
-				description: false,
-				preview: false,
-				summary: false,
-				category: false,
-				topic: false,
-				audience: false,
-				difficulty: false,
-				readingTime: false,
-				wordCount: false,
+				title: true,
 			};
 
 			const result1 = await ai.getMetadata(options);
@@ -335,7 +325,7 @@ describe("writr-ai", () => {
 			});
 
 			const ai = new WritrAI(writr, { model, cache: true });
-			const options = { canonical: false, openGraph: false };
+			const options = { slug: true };
 
 			await ai.getSEO(options);
 			await ai.getSEO(options);
