@@ -19,6 +19,21 @@ import remarkToc from "remark-toc";
 import { unified } from "unified";
 import { WritrCache } from "./writr-cache.js";
 
+export { WritrAI } from "./writr-ai.js";
+export { WritrAICache } from "./writr-ai-cache.js";
+export type {
+	WritrAIOptions,
+	WritrAIPrompts,
+	WritrApplyMetadataOptions,
+	WritrApplyMetadataResult,
+	WritrGetMetadataOptions,
+	WritrGetSEOOptions,
+	WritrMetadata,
+	WritrMetadataKey,
+	WritrSEO,
+	WritrTranslationOptions,
+} from "./writr-ai-types.js";
+
 /**
  * Writr options.
  * @typedef {Object} WritrOptions
