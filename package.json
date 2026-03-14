@@ -83,6 +83,8 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@ai-sdk/google": "^3.0.43",
+    "@ai-sdk/openai": "^3.0.41",
     "@biomejs/biome": "^2.4.4",
     "@monstermann/tinybench-pretty-printer": "^0.3.0",
     "@types/js-yaml": "^4.0.9",
