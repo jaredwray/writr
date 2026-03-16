@@ -189,8 +189,8 @@ Accessing the default options for this instance of Writr. Here is the default se
     highlight: true,
     gfm: true,
     math: true,
-    mdx: true,
-    caching: false,
+    mdx: false,
+    caching: true,
   }
 }
 ```
@@ -338,7 +338,7 @@ console.log(writr.content); // Still "# Hello World\n\nThis is a test."
 const invalidWritr = new Writr('Put invalid markdown here');
 const errorResult = await invalidWritr.validate();
 console.log(errorResult.valid); // false
-console.log(errorResult.error?.message); // "Failed to render markdown: Invalid plugin"
+console.log(errorResult.error?.message); // "Invalid plugin"
 ```
 
 ## `.validateSync(content?: string, options?: RenderOptions)`
@@ -626,38 +626,35 @@ writr.on('error', (error) => {
   // Log to error tracking service, display to user, etc.
 });
 
-// Now when any error occurs, your listener will be notified
-try {
-  await writr.render();
-} catch (error) {
-  // Error is also thrown, so you can handle it here too
-}
+// With a listener registered, errors are emitted to the listener
+// and the method returns its fallback value (e.g. "" for render)
+const html = await writr.render();
 ```
 
 ### Methods that Emit Errors
 
-The following methods emit error events when they fail:
+All methods use an emit-only error pattern — they call `this.emit('error', error)` but never explicitly re-throw. If no error listener is registered and `throwOnEmptyListeners` is `true` (the default), the `emit('error')` call itself will throw, following standard Node.js EventEmitter behavior.
 
-**Rendering Methods:**
-- `render()` - Emits error before throwing when markdown rendering fails
-- `renderSync()` - Emits error before throwing when markdown rendering fails
-- `renderReact()` - Emits error before throwing when React rendering fails
-- `renderReactSync()` - Emits error before throwing when React rendering fails
+**Rendering Methods** — emit error, return `""`:
+- `render()` - Emits error when markdown rendering fails, returns empty string
+- `renderSync()` - Emits error when markdown rendering fails, returns empty string
+- `renderReact()` - Emits error when React rendering fails, returns empty string
+- `renderReactSync()` - Emits error when React rendering fails, returns empty string
 
 **Validation Methods:**
-- `validate()` - Emits error when validation fails (returns error in result object)
-- `validateSync()` - Emits error when validation fails (returns error in result object)
+- `validate()` - Does **not** emit errors. Returns `{ valid: false, error }` on failure
+- `validateSync()` - Emits error and returns `{ valid: false, error }` on failure
 
-**File Operations:**
-- `renderToFile()` - Emits error when file writing fails (throws if `throwOnEmitError: true`)
-- `renderToFileSync()` - Emits error when file writing fails (throws if `throwOnEmitError: true`)
-- `loadFromFile()` - Emits error when file reading fails (throws if `throwOnEmitError: true`)
-- `loadFromFileSync()` - Emits error when file reading fails (throws if `throwOnEmitError: true`)
-- `saveToFile()` - Emits error when file writing fails (throws if `throwOnEmitError: true`)
-- `saveToFileSync()` - Emits error when file writing fails (throws if `throwOnEmitError: true`)
+**File Operations** — emit error, return void:
+- `renderToFile()` - Emits error when rendering or file writing fails
+- `renderToFileSync()` - Emits error when rendering or file writing fails
+- `loadFromFile()` - Emits error when file reading fails
+- `loadFromFileSync()` - Emits error when file reading fails
+- `saveToFile()` - Emits error when file writing fails
+- `saveToFileSync()` - Emits error when file writing fails
 
-**Front Matter Operations:**
-- `frontMatter` getter - Emits error when YAML parsing fails
+**Front Matter Operations** — emit error, return fallback:
+- `frontMatter` getter - Emits error when YAML parsing fails, returns `{}`
 - `frontMatter` setter - Emits error when YAML serialization fails
 
 ### Error Event Examples
@@ -716,8 +713,9 @@ writr.on('error', (error) => {
   // Handle gracefully - maybe use default content
 });
 
-// Won't throw, but will emit error event if file doesn't exist
+// With a listener registered, errors are emitted and the method returns normally
 await writr.loadFromFile('./maybe-missing.md');
+// Note: without a listener, this will throw by default (throwOnEmptyListeners is true)
 ```
 
 ### Event Emitter Methods
@@ -1010,17 +1008,28 @@ const writr = new Writr('# Hello', { throwErrors: true });
 const writr = new Writr('# Hello', { throwOnEmitError: true });
 ```
 
-When `throwOnEmitError` is `true`, file operation methods (`renderToFile`, `loadFromFile`, `saveToFile`, and their sync variants) will throw on errors instead of silently emitting them.
+### Error handling redesign
 
-The `frontMatter` getter/setter and `validate()` / `validateSync()` are **not affected** — they continue to emit errors for listeners and return their default values (`{}` and `{ valid: false, error }` respectively), regardless of this setting.
+All methods now use an **emit-only** pattern — errors are emitted via `emit('error', error)` but never explicitly re-thrown. Methods return fallback values on error (`""` for render methods, `{}` for frontMatter getter, `{ valid: false, error }` for validate).
+
+**How errors propagate:**
+
+- **With a listener registered:** Errors are passed to the listener. The method returns its fallback value without throwing.
+- **Without a listener (default behavior):** Since `throwOnEmptyListeners` defaults to `true`, the `emit('error')` call itself throws, following standard Node.js EventEmitter behavior. This means unhandled errors will still surface as exceptions.
+- **With `throwOnEmitError: true`:** Every `emit('error')` call throws, even when listeners are registered. This affects all methods that emit errors.
+
+**Other changes:**
+
+- `render()` and `renderSync()` no longer throw wrapped `"Failed to render markdown: ..."` errors. They emit the original error and return `""`.
+- `validate()` (async) no longer emits errors — it only returns `{ valid: false, error }`. `validateSync()` still emits.
 
 ### hookified v2
 
 Writr now uses hookified v2 which introduces several new options available through `WritrOptions`:
 
-- `throwOnEmitError` — Throw when `emit("error")` is called (default: `false`)
+- `throwOnEmitError` — Throw when `emit("error")` is called, even with listeners (default: `false`)
 - `throwOnHookError` — Throw when a hook handler throws (default: `false`)
-- `throwOnEmptyListeners` — Throw when emitting `error` with no listeners (default: `false`)
+- `throwOnEmptyListeners` — Throw when emitting `error` with no listeners (default: `true`)
 - `eventLogger` — Logger instance for event logging
 
 See the [hookified documentation](https://github.com/jaredwray/hookified) for full details.
