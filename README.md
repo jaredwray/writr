@@ -2,6 +2,7 @@
 
 # Markdown Rendering Simplified
 [![tests](https://github.com/jaredwray/writr/actions/workflows/tests.yml/badge.svg)](https://github.com/jaredwray/writr/actions/workflows/tests.yml)
+[![ai-integration-tests](https://github.com/jaredwray/writr/actions/workflows/ai-integration-tests.yml/badge.svg)](https://github.com/jaredwray/writr/actions/workflows/ai-integration-tests.yml)
 [![GitHub license](https://img.shields.io/github/license/jaredwray/writr)](https://github.com/jaredwray/writr/blob/master/LICENSE)
 [![codecov](https://codecov.io/gh/jaredwray/writr/branch/master/graph/badge.svg?token=1YdMesM07X)](https://codecov.io/gh/jaredwray/writr)
 [![npm](https://img.shields.io/npm/dm/writr)](https://npmjs.com/package/writr)
@@ -22,18 +23,9 @@
 * Emoji Support (remark-emoji).
 * MDX Support (remark-mdx).
 * Built in Hooks for adding code to render pipeline.
-
-# Unified Processor Engine
-
-Writr builds on top of the open source [unified](https://github.com/unifiedjs/unified) processor – the core project that powers
-[remark](https://github.com/remarkjs/remark), [rehype](https://github.com/rehypejs/rehype), and many other content tools. Unified
-provides a pluggable pipeline where each plugin transforms a syntax tree. Writr configures a default set of plugins to turn
-Markdown into HTML, but you can access the processor through the `.engine` property to add your own behavior with
-`writr.engine.use(myPlugin)`. The [unified documentation](https://unifiedjs.com/) has more details and guides for building
-plugins and working with the processor directly.
+* AI-powered metadata generation, SEO, and translation via the [Vercel AI SDK](https://sdk.vercel.ai).
 
 # Table of Contents
-- [Unified Processor Engine](#unified-processor-engine)
 - [Getting Started](#getting-started)
 - [API](#api)
   - [`new Writr(arg?: string | WritrOptions, options?: WritrOptions)`](#new-writrarg-string--writroptions-options-writroptions)
@@ -80,6 +72,7 @@ plugins and working with the processor directly.
   - [SEO](#seo)
   - [Translation](#translation)
   - [Using WritrAI Directly](#using-writrai-directly)
+- [Unified Processor Engine](#unified-processor-engine)
 - [Benchmarks](#benchmarks)
 - [ESM and Node Version Support](#esm-and-node-version-support)
 - [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
@@ -1004,6 +997,15 @@ const result = await ai.applyMetadata({
   overwrite: true,
 });
 ```
+
+# Unified Processor Engine
+
+Writr builds on top of the open source [unified](https://github.com/unifiedjs/unified) processor – the core project that powers
+[remark](https://github.com/remarkjs/remark), [rehype](https://github.com/rehypejs/rehype), and many other content tools. Unified
+provides a pluggable pipeline where each plugin transforms a syntax tree. Writr configures a default set of plugins to turn
+Markdown into HTML, but you can access the processor through the `.engine` property to add your own behavior with
+`writr.engine.use(myPlugin)`. The [unified documentation](https://unifiedjs.com/) has more details and guides for building
+plugins and working with the processor directly.
 
 # Benchmarks
 
