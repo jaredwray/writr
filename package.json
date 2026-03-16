@@ -51,7 +51,7 @@
   "scripts": {
     "clean": "rimraf ./dist ./coverage ./node_modules ./pnpm-lock.yaml ./site/README.md ./site/dist",
     "build": "rimraf ./dist && tsup src/writr.ts --format esm --dts --clean",
-    "prepare": "pnpm build",
+    "prepublishOnly": "pnpm build",
     "lint": "biome check --write --error-on-warnings",
     "benchmark": "tsx benchmark/benchmark-minimal.ts && tsx benchmark/benchmark-standard.ts",
     "test": "pnpm lint && vitest run --coverage",
