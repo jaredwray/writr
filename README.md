@@ -72,6 +72,7 @@
   - [SEO](#seo)
   - [Translation](#translation)
   - [Using WritrAI Directly](#using-writrai-directly)
+- [Migrating to v6](#migrating-to-v6)
 - [Unified Processor Engine](#unified-processor-engine)
 - [Benchmarks](#benchmarks)
 - [ESM and Node Version Support](#esm-and-node-version-support)
@@ -109,7 +110,6 @@ An example passing in the options also via the constructor:
 ```javascript
 import { Writr, WritrOptions } from 'writr';
 const writrOptions = {
-  throwErrors: true,
   renderOptions: {
     emoji: true,
     toc: true,
@@ -134,7 +134,6 @@ By default the constructor takes in a markdown `string` or `WritrOptions` in the
 ```javascript
 import { Writr, WritrOptions } from 'writr';
 const writrOptions = {
-  throwErrors: true,
   renderOptions: {
     emoji: true,
     toc: true,
@@ -183,7 +182,6 @@ Accessing the default options for this instance of Writr. Here is the default se
 
 ```javascript
 {
-  throwErrors: false,
   renderOptions: {
     emoji: true,
     toc: true,
@@ -651,12 +649,12 @@ The following methods emit error events when they fail:
 - `validateSync()` - Emits error when validation fails (returns error in result object)
 
 **File Operations:**
-- `renderToFile()` - Emits error when file writing fails (does not throw if `throwErrors: false`)
-- `renderToFileSync()` - Emits error when file writing fails (does not throw if `throwErrors: false`)
-- `loadFromFile()` - Emits error when file reading fails (does not throw if `throwErrors: false`)
-- `loadFromFileSync()` - Emits error when file reading fails (does not throw if `throwErrors: false`)
-- `saveToFile()` - Emits error when file writing fails (does not throw if `throwErrors: false`)
-- `saveToFileSync()` - Emits error when file writing fails (does not throw if `throwErrors: false`)
+- `renderToFile()` - Emits error when file writing fails (throws if `throwOnEmitError: true`)
+- `renderToFileSync()` - Emits error when file writing fails (throws if `throwOnEmitError: true`)
+- `loadFromFile()` - Emits error when file reading fails (throws if `throwOnEmitError: true`)
+- `loadFromFileSync()` - Emits error when file reading fails (throws if `throwOnEmitError: true`)
+- `saveToFile()` - Emits error when file writing fails (throws if `throwOnEmitError: true`)
+- `saveToFileSync()` - Emits error when file writing fails (throws if `throwOnEmitError: true`)
 
 **Front Matter Operations:**
 - `frontMatter` getter - Emits error when YAML parsing fails
@@ -711,7 +709,7 @@ if (!result.valid) {
 ```javascript
 import { Writr } from 'writr';
 
-const writr = new Writr('# Content', { throwErrors: false });
+const writr = new Writr('# Content');
 
 writr.on('error', (error) => {
   console.error('File operation failed:', error.message);
@@ -779,11 +777,6 @@ const writr = new Writr('# My Document', {
   ai: {
     model: openai('gpt-4.1-mini'),
     cache: true,
-    prompts: {
-      metadata: 'Generate concise metadata focusing on technical accuracy.',
-      seo: 'Generate SEO metadata optimized for developer documentation.',
-      translation: 'Translate the document while preserving all code examples.',
-    },
   },
 });
 ```
@@ -973,9 +966,6 @@ const writr = new Writr('# My Document\n\nSome markdown content here.');
 const ai = new WritrAI(writr, {
   model: openai('gpt-4.1-mini'),
   cache: true,
-  prompts: {
-    metadata: 'Generate concise metadata focusing on technical accuracy.',
-  },
 });
 
 // Generate metadata
@@ -997,6 +987,43 @@ const result = await ai.applyMetadata({
   overwrite: true,
 });
 ```
+
+# Migrating to v6
+
+Writr v6 upgrades [hookified](https://github.com/jaredwray/hookified) from v1 to v2 and removes `throwErrors` in favor of hookified's built-in error handling options.
+
+## Breaking Changes
+
+### `throwErrors` removed
+
+The `throwErrors` option has been removed from `WritrOptions`. Use `throwOnEmitError` instead, which is provided by hookified's `HookifiedOptions` (now spread into `WritrOptions`).
+
+**Before (v5):**
+
+```typescript
+const writr = new Writr('# Hello', { throwErrors: true });
+```
+
+**After (v6):**
+
+```typescript
+const writr = new Writr('# Hello', { throwOnEmitError: true });
+```
+
+When `throwOnEmitError` is `true`, file operation methods (`renderToFile`, `loadFromFile`, `saveToFile`, and their sync variants) will throw on errors instead of silently emitting them.
+
+The `frontMatter` getter/setter and `validate()` / `validateSync()` are **not affected** — they continue to emit errors for listeners and return their default values (`{}` and `{ valid: false, error }` respectively), regardless of this setting.
+
+### hookified v2
+
+Writr now uses hookified v2 which introduces several new options available through `WritrOptions`:
+
+- `throwOnEmitError` — Throw when `emit("error")` is called (default: `false`)
+- `throwOnHookError` — Throw when a hook handler throws (default: `false`)
+- `throwOnEmptyListeners` — Throw when emitting `error` with no listeners (default: `false`)
+- `eventLogger` — Logger instance for event logging
+
+See the [hookified documentation](https://github.com/jaredwray/hookified) for full details.
 
 # Unified Processor Engine
 

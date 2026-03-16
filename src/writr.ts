@@ -92,9 +92,9 @@ export class Writr extends Hookified {
 				? arguments1
 				: (arguments2 as WritrOptions | undefined);
 		super({
-			throwOnEmitError: options?.throwOnEmitError,
+			throwOnEmitError: options?.throwOnEmitError ?? false,
 			throwOnHookError: options?.throwOnHookError,
-			throwOnEmptyListeners: options?.throwOnEmptyListeners,
+			throwOnEmptyListeners: options?.throwOnEmptyListeners ?? false,
 			eventLogger: options?.eventLogger,
 		});
 		if (typeof arguments1 === "string") {
