@@ -1,4 +1,4 @@
-name: tests
+name: ai-integration-tests
 
 on:
   workflow_dispatch:
@@ -17,7 +17,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: ['20', '22', '24']
+        node-version: ['24']
 
     steps:
     - uses: actions/checkout@v4
@@ -32,6 +32,9 @@ jobs:
     - name: Build
       run: pnpm build
 
-    - name: Testing    
-      run: pnpm test:ci
-
+    - name: AI Integration Testing
+      run: pnpm test:integration
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
