@@ -388,7 +388,7 @@ export class WritrAI {
 						image: z
 							.string()
 							.describe("The image URL for social sharing")
-							.optional(),
+							.nullable(),
 					})
 					.describe("Open Graph metadata"),
 			]);

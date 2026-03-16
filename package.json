@@ -56,7 +56,7 @@
     "benchmark": "tsx benchmark/benchmark-minimal.ts && tsx benchmark/benchmark-standard.ts",
     "test": "pnpm lint && vitest run --coverage",
     "test:ci": "biome check --error-on-warnings && vitest run --coverage",
-    "test:integration": "vitest run test/writr-ai-integration.test.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "website:build": "rimraf ./site/README.md ./site/dist && npx docula build -s ./site -o ./site/dist",
     "website:serve": "rimraf ./site/README.md ./site/dist && npx docula serve -s ./site -o ./site/dist"
   },

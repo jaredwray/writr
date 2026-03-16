@@ -35,3 +35,5 @@ jobs:
     - name: Testing    
       run: pnpm test:ci
 
+    - name: AI Integration Testing    
+      run: pnpm test:integration
