@@ -60,7 +60,6 @@ export class Writr extends Hookified {
 		.use(rehypeStringify); // Stringify HTML
 
 	private readonly _options: WritrOptions = {
-		throwErrors: false,
 		renderOptions: {
 			emoji: true,
 			toc: true,
@@ -88,7 +87,16 @@ export class Writr extends Hookified {
 	 * const writr = new Writr('Hello, world!', {caching: false});
 	 */
 	constructor(arguments1?: string | WritrOptions, arguments2?: WritrOptions) {
-		super();
+		const options =
+			typeof arguments1 === "object"
+				? arguments1
+				: (arguments2 as WritrOptions | undefined);
+		super({
+			throwOnEmitError: options?.throwOnEmitError,
+			throwOnHookError: options?.throwOnHookError,
+			throwOnEmptyListeners: options?.throwOnEmptyListeners,
+			eventLogger: options?.eventLogger,
+		});
 		if (typeof arguments1 === "string") {
 			this._content = arguments1;
 		} else if (arguments1) {
@@ -288,8 +296,9 @@ export class Writr extends Hookified {
 			return resultData.result;
 		} catch (error) {
 			this.emit("error", error);
-			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
 		}
+
+		return "";
 	}
 
 	/**
@@ -339,8 +348,9 @@ export class Writr extends Hookified {
 			return resultData.result;
 		} catch (error) {
 			this.emit("error", error);
-			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
 		}
+
+		return "";
 	}
 
 	/**
@@ -377,7 +387,6 @@ export class Writr extends Hookified {
 
 			return { valid: true };
 		} catch (error) {
-			this.emit("error", error);
 			if (content !== undefined) {
 				this._content = originalContent;
 			}
@@ -449,10 +458,6 @@ export class Writr extends Hookified {
 			await writeFile(data.filePath, data.content);
 		} catch (error) {
 			this.emit("error", error);
-			/* v8 ignore next -- @preserve */
-			if (this._options.throwErrors) {
-				throw error;
-			}
 		}
 	}
 
@@ -476,11 +481,6 @@ export class Writr extends Hookified {
 			fs.writeFileSync(data.filePath, data.content);
 		} catch (error) {
 			this.emit("error", error);
-			/* v8 ignore next -- @preserve */
-			if (this._options.throwErrors) {
-				/* v8 ignore next -- @preserve */
-				throw error;
-			}
 		}
 	}
 
@@ -500,8 +500,9 @@ export class Writr extends Hookified {
 			return parse(html, reactParseOptions);
 		} catch (error) {
 			this.emit("error", error);
-			throw new Error(`Failed to render React: ${(error as Error).message}`);
 		}
+
+		return "";
 	}
 
 	/**
@@ -519,8 +520,9 @@ export class Writr extends Hookified {
 			return parse(html, reactParseOptions);
 		} catch (error) {
 			this.emit("error", error);
-			throw new Error(`Failed to render React: ${(error as Error).message}`);
 		}
+
+		return "";
 	}
 
 	/**
@@ -540,11 +542,6 @@ export class Writr extends Hookified {
 			this._content = data.content;
 		} catch (error) {
 			this.emit("error", error);
-			/* v8 ignore next -- @preserve */
-			if (this._options.throwErrors) {
-				/* v8 ignore next -- @preserve */
-				throw error;
-			}
 		}
 	}
 
@@ -564,11 +561,6 @@ export class Writr extends Hookified {
 			this._content = data.content;
 		} catch (error) {
 			this.emit("error", error);
-			/* v8 ignore next -- @preserve */
-			if (this._options.throwErrors) {
-				/* v8 ignore next -- @preserve */
-				throw error;
-			}
 		}
 	}
 
@@ -590,13 +582,7 @@ export class Writr extends Hookified {
 
 			await writeFile(data.filePath, data.content);
 		} catch (error) {
-			/* v8 ignore next -- @preserve */
 			this.emit("error", error);
-			/* v8 ignore next -- @preserve */
-			if (this._options.throwErrors) {
-				/* v8 ignore next -- @preserve */
-				throw error;
-			}
 		}
 	}
 
@@ -618,13 +604,7 @@ export class Writr extends Hookified {
 
 			fs.writeFileSync(data.filePath, data.content);
 		} catch (error) {
-			/* v8 ignore next -- @preserve */
 			this.emit("error", error);
-			/* v8 ignore next -- @preserve */
-			if (this._options.throwErrors) {
-				/* v8 ignore next -- @preserve */
-				throw error;
-			}
 		}
 	}
 
@@ -632,8 +612,8 @@ export class Writr extends Hookified {
 		current: WritrOptions,
 		options: WritrOptions,
 	): WritrOptions {
-		if (options.throwErrors !== undefined) {
-			current.throwErrors = options.throwErrors;
+		if (options.throwOnEmitError !== undefined) {
+			this.throwOnEmitError = options.throwOnEmitError;
 		}
 
 		/* v8 ignore next -- @preserve */

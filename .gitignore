@@ -83,3 +83,5 @@ site/README.md
 .claude
 
 
+test/fixtures/output.html
+/test/fixtures/temp-render
