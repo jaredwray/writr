@@ -163,10 +163,12 @@ export class WritrAI {
 			this.prompts.translation ??
 			`Translate the following markdown document${fromClause} to ${options.to}.${frontMatterClause} Preserve all markdown formatting, links, code blocks, and structure. Return only the translated markdown document with no additional commentary.`;
 
-		const { text } = await generateText({
+		let { text } = await generateText({
 			model: this.model,
 			prompt: `${prompt}\n\n---\n\n${this.writr.content}`,
 		});
+
+		text = this.stripCodeFence(text);
 
 		this.cache?.set(cacheKey, this.writr.content, text);
 
@@ -411,5 +413,11 @@ export class WritrAI {
 	private computeReadingTime(): number {
 		const wordCount = this.computeWordCount();
 		return Math.max(1, Math.ceil(wordCount / AVERAGE_WORDS_PER_MINUTE));
+	}
+
+	private stripCodeFence(text: string): string {
+		const trimmed = text.trim();
+		const match = /^```\w*\n([\s\S]*?)```$/.exec(trimmed);
+		return match ? match[1].trim() : text;
 	}
 }

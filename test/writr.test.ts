@@ -810,6 +810,36 @@ describe("Writr Error Emission", () => {
 		expect((emittedError as Error).message).toContain("RenderReactSync failed");
 	});
 
+	test("should handle renderToFile error with invalid file path", async () => {
+		const writr = new Writr("# Hello World", { throwOnEmptyListeners: false });
+		await writr.renderToFile("/non-existent-root-path/\0invalid.html");
+	});
+
+	test("should handle renderToFileSync error with invalid file path", () => {
+		const writr = new Writr("# Hello World", { throwOnEmptyListeners: false });
+		writr.renderToFileSync("/non-existent-root-path/\0invalid.html");
+	});
+
+	test("should return empty string when renderReact parse fails", async () => {
+		const writr = new Writr("# Hello World", { throwOnEmptyListeners: false });
+		const result = await writr.renderReact(undefined, {
+			replace: () => {
+				throw new Error("Parse error");
+			},
+		});
+		expect(result).toBe("");
+	});
+
+	test("should return empty string when renderReactSync parse fails", () => {
+		const writr = new Writr("# Hello World", { throwOnEmptyListeners: false });
+		const result = writr.renderReactSync(undefined, {
+			replace: () => {
+				throw new Error("Parse error");
+			},
+		});
+		expect(result).toBe("");
+	});
+
 	test("should emit error when renderToFile fails", async () => {
 		const writr = new Writr("# Hello World");
 		let emittedError: unknown;
