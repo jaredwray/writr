@@ -19,7 +19,7 @@ describe("writr", () => {
 
 	it("should be able to set options", () => {
 		const options = {
-			throwErrors: true,
+			throwOnEmitError: true,
 			renderOptions: {
 				toc: false,
 				slug: false,
@@ -33,7 +33,7 @@ describe("writr", () => {
 		};
 		const writr = new Writr(options);
 		expect(writr.options).toBeDefined();
-		expect(writr.options.throwErrors).toEqual(true);
+		expect(writr.throwOnEmitError).toEqual(true);
 		expect(writr.options.renderOptions).toBeInstanceOf(Object);
 		expect(writr.options.renderOptions?.emoji).toEqual(false);
 		expect(writr.options.renderOptions?.gfm).toEqual(false);
@@ -890,7 +890,7 @@ describe("Writr AI Integration", () => {
 	});
 
 	it("should have ai undefined when options are provided without ai", () => {
-		const writr = new Writr("# Hello World", { throwErrors: true });
+		const writr = new Writr("# Hello World", { throwOnEmitError: true });
 		expect(writr.ai).toBeUndefined();
 	});
 

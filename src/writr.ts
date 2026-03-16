@@ -60,7 +60,6 @@ export class Writr extends Hookified {
 		.use(rehypeStringify); // Stringify HTML
 
 	private readonly _options: WritrOptions = {
-		throwErrors: false,
 		renderOptions: {
 			emoji: true,
 			toc: true,
@@ -88,7 +87,16 @@ export class Writr extends Hookified {
 	 * const writr = new Writr('Hello, world!', {caching: false});
 	 */
 	constructor(arguments1?: string | WritrOptions, arguments2?: WritrOptions) {
-		super();
+		const options =
+			typeof arguments1 === "object"
+				? arguments1
+				: (arguments2 as WritrOptions | undefined);
+		super({
+			throwOnEmitError: options?.throwOnEmitError,
+			throwOnHookError: options?.throwOnHookError,
+			throwOnEmptyListeners: options?.throwOnEmptyListeners,
+			eventLogger: options?.eventLogger,
+		});
 		if (typeof arguments1 === "string") {
 			this._content = arguments1;
 		} else if (arguments1) {
@@ -209,7 +217,7 @@ export class Writr extends Hookified {
 				return yaml.load(match[1].trim()) as Record<string, any>;
 			} catch (error) {
 				/* v8 ignore next -- @preserve */
-				this.emit("error", error);
+				this.emitError(error);
 			}
 		}
 
@@ -229,7 +237,7 @@ export class Writr extends Hookified {
 			this._content = this._content.replace(frontMatter, newFrontMatter);
 		} catch (error) {
 			/* v8 ignore next -- @preserve */
-			this.emit("error", error);
+			this.emitError(error);
 		}
 	}
 
@@ -377,7 +385,7 @@ export class Writr extends Hookified {
 
 			return { valid: true };
 		} catch (error) {
-			this.emit("error", error);
+			this.emitError(error);
 			if (content !== undefined) {
 				this._content = originalContent;
 			}
@@ -419,7 +427,7 @@ export class Writr extends Hookified {
 
 			return { valid: true };
 		} catch (error) {
-			this.emit("error", error);
+			this.emitError(error);
 			if (content !== undefined) {
 				this._content = originalContent;
 			}
@@ -449,10 +457,6 @@ export class Writr extends Hookified {
 			await writeFile(data.filePath, data.content);
 		} catch (error) {
 			this.emit("error", error);
-			/* v8 ignore next -- @preserve */
-			if (this._options.throwErrors) {
-				throw error;
-			}
 		}
 	}
 
@@ -476,11 +480,6 @@ export class Writr extends Hookified {
 			fs.writeFileSync(data.filePath, data.content);
 		} catch (error) {
 			this.emit("error", error);
-			/* v8 ignore next -- @preserve */
-			if (this._options.throwErrors) {
-				/* v8 ignore next -- @preserve */
-				throw error;
-			}
 		}
 	}
 
@@ -540,11 +539,6 @@ export class Writr extends Hookified {
 			this._content = data.content;
 		} catch (error) {
 			this.emit("error", error);
-			/* v8 ignore next -- @preserve */
-			if (this._options.throwErrors) {
-				/* v8 ignore next -- @preserve */
-				throw error;
-			}
 		}
 	}
 
@@ -564,11 +558,6 @@ export class Writr extends Hookified {
 			this._content = data.content;
 		} catch (error) {
 			this.emit("error", error);
-			/* v8 ignore next -- @preserve */
-			if (this._options.throwErrors) {
-				/* v8 ignore next -- @preserve */
-				throw error;
-			}
 		}
 	}
 
@@ -592,11 +581,6 @@ export class Writr extends Hookified {
 		} catch (error) {
 			/* v8 ignore next -- @preserve */
 			this.emit("error", error);
-			/* v8 ignore next -- @preserve */
-			if (this._options.throwErrors) {
-				/* v8 ignore next -- @preserve */
-				throw error;
-			}
 		}
 	}
 
@@ -620,11 +604,6 @@ export class Writr extends Hookified {
 		} catch (error) {
 			/* v8 ignore next -- @preserve */
 			this.emit("error", error);
-			/* v8 ignore next -- @preserve */
-			if (this._options.throwErrors) {
-				/* v8 ignore next -- @preserve */
-				throw error;
-			}
 		}
 	}
 
@@ -632,8 +611,8 @@ export class Writr extends Hookified {
 		current: WritrOptions,
 		options: WritrOptions,
 	): WritrOptions {
-		if (options.throwErrors !== undefined) {
-			current.throwErrors = options.throwErrors;
+		if (options.throwOnEmitError !== undefined) {
+			this.throwOnEmitError = options.throwOnEmitError;
 		}
 
 		/* v8 ignore next -- @preserve */
@@ -648,6 +627,13 @@ export class Writr extends Hookified {
 		}
 
 		return current;
+	}
+
+	private emitError(error: unknown): void {
+		const current = this.throwOnEmitError;
+		this.throwOnEmitError = false;
+		this.emit("error", error);
+		this.throwOnEmitError = current;
 	}
 
 	private isCacheEnabled(options?: RenderOptions): boolean {

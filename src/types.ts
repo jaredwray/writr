@@ -1,17 +1,16 @@
 import type { LanguageModel } from "ai";
+import type { HookifiedOptions } from "hookified";
 import type { Writr } from "./writr.js";
 
 /**
  * Writr options.
  * @typedef {Object} WritrOptions
  * @property {RenderOptions} [renderOptions] - Default render options (default: undefined)
- * @property {boolean} [throwErrors] - Throw error (default: false)
  */
 export type WritrOptions = {
 	renderOptions?: RenderOptions; // Default render options (default: undefined)
-	throwErrors?: boolean; // Throw error (default: false)
 	ai?: WritrAIOptions; // AI options for WritrAI (default: undefined)
-};
+} & HookifiedOptions;
 
 /**
  * Render options.
