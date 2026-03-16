@@ -1,6 +1,7 @@
 import { anthropic } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
 import { openai } from "@ai-sdk/openai";
+import dotenv from "dotenv";
 import { describe, expect, it } from "vitest";
 import { Writr } from "../src/writr.js";
 import { WritrAI } from "../src/writr-ai.js";
@@ -9,8 +10,10 @@ import {
 	productPageWithMarkdown,
 } from "./content-fixtures.js";
 
+dotenv.config();
+
 const hasOpenAI = Boolean(process.env.OPENAI_API_KEY);
-const hasGemini = Boolean(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+const hasGemini = Boolean(process.env.GEMINI_API_KEY);
 const hasAnthropic = Boolean(process.env.ANTHROPIC_API_KEY);
 
 describe.skipIf(!hasOpenAI)("writr-ai integration (OpenAI)", () => {

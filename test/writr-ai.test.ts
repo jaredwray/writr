@@ -1,5 +1,6 @@
 import { MockLanguageModelV3 } from "ai/test";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import type { WritrMetadata } from "../src/types.js";
 import { Writr } from "../src/writr.js";
 import { WritrAI } from "../src/writr-ai.js";
 import { WritrAICache } from "../src/writr-ai-cache.js";
@@ -528,6 +529,45 @@ describe("writr-ai", () => {
 
 			expect(result.applied).toContain("description");
 			expect(writr.frontMatter.meta_description).toBe("A test document.");
+			expect(writr.frontMatter.description).toBeUndefined();
+		});
+
+		it("should skip keys where generated value is undefined", async () => {
+			const writr = new Writr("---\n---\n\n# Content\n\nSome text.");
+			const model = createMockModel({
+				title: "Generated Title",
+			});
+
+			const ai = new WritrAI(writr, { model });
+
+			// Spy on getMetadata to return an object with an explicit undefined key
+			vi.spyOn(ai, "getMetadata").mockResolvedValue({
+				title: "Generated Title",
+				description: undefined,
+			} as unknown as WritrMetadata);
+
+			const result = await ai.applyMetadata({
+				generate: {
+					title: true,
+					description: true,
+					tags: false,
+					keywords: false,
+					preview: false,
+					summary: false,
+					category: false,
+					topic: false,
+					audience: false,
+					difficulty: false,
+					readingTime: false,
+					wordCount: false,
+				},
+			});
+
+			expect(result.applied).toContain("title");
+			expect(result.applied).not.toContain("description");
+			expect(result.skipped).not.toContain("description");
+			expect(result.overwritten).not.toContain("description");
+			expect(writr.frontMatter.title).toBe("Generated Title");
 			expect(writr.frontMatter.description).toBeUndefined();
 		});
 	});
