@@ -1,4 +1,4 @@
-import { generateObject, generateText, type LanguageModel } from "ai";
+import { generateText, Output, type LanguageModel } from "ai";
 import { z } from "zod";
 import type {
 	WritrAIOptions,
@@ -126,13 +126,13 @@ export class WritrAI {
 			this.prompts.seo ??
 			"Analyze the following markdown document and generate SEO metadata for it. Be concise and accurate.";
 
-		const { object } = await generateObject({
+		const { output } = await generateText({
 			model: this.model,
-			schema,
+			output: Output.object({ schema }),
 			prompt: `${prompt}\n\n---\n\n${this.writr.content}`,
 		});
 
-		const result = object as WritrSEO;
+		const result = output as WritrSEO;
 
 		this.cache?.set(cacheKey, this.writr.content, result);
 

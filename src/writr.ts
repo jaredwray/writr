@@ -44,6 +44,7 @@ import type {
 	WritrValidateResult,
 } from "./types.js";
 import { WritrHooks } from "./types.js";
+import { WritrAI } from "./writr-ai.js";
 
 export class Writr extends Hookified {
 	public engine = unified()
@@ -76,6 +77,8 @@ export class Writr extends Hookified {
 
 	private readonly _cache = new WritrCache();
 
+	private _ai?: WritrAI;
+
 	/**
 	 * Initialize Writr. Accepts a string or options object.
 	 * @param {string | WritrOptions} [arguments1] If you send in a string, it will be used as the markdown content. If you send in an object, it will be used as the options.
@@ -103,6 +106,10 @@ export class Writr extends Hookified {
 				this.engine = this.createProcessor(this._options.renderOptions);
 			}
 		}
+
+		if (this._options.ai) {
+			this._ai = new WritrAI(this, this._options.ai);
+		}
 	}
 
 	/**
@@ -111,6 +118,14 @@ export class Writr extends Hookified {
 	 */
 	public get options(): WritrOptions {
 		return this._options;
+	}
+
+	/**
+	 * Get the WritrAI instance if AI options were provided.
+	 * @type {WritrAI | undefined}
+	 */
+	public get ai(): WritrAI | undefined {
+		return this._ai;
 	}
 
 	/**
@@ -626,6 +641,10 @@ export class Writr extends Hookified {
 			current.renderOptions ??= {};
 
 			this.mergeRenderOptions(current.renderOptions, options.renderOptions);
+		}
+
+		if (options.ai) {
+			current.ai = options.ai;
 		}
 
 		return current;

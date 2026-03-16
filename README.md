@@ -37,6 +37,7 @@ plugins and working with the processor directly.
 - [Getting Started](#getting-started)
 - [API](#api)
   - [`new Writr(arg?: string | WritrOptions, options?: WritrOptions)`](#new-writrarg-string--writroptions-options-writroptions)
+  - [`.ai`](#writrai)
   - [`.content`](#content)
   - [`.body`](#body)
   - [`.options`](#options)
@@ -68,6 +69,17 @@ plugins and working with the processor directly.
   - [Methods that Emit Errors](#methods-that-emit-errors)
   - [Error Event Examples](#error-event-examples)
   - [Event Emitter Methods](#event-emitter-methods)
+- [AI](#ai)
+  - [AI Options](#ai-options)
+  - [AI Provider Configuration](#ai-provider-configuration)
+  - [Metadata](#metadata)
+    - [Generating Metadata](#generating-metadata)
+    - [Applying Metadata to Frontmatter](#applying-metadata-to-frontmatter)
+    - [Overwrite](#overwrite)
+    - [Field Mapping](#field-mapping)
+  - [SEO](#seo)
+  - [Translation](#translation)
+  - [Using WritrAI Directly](#using-writrai-directly)
 - [Benchmarks](#benchmarks)
 - [ESM and Node Version Support](#esm-and-node-version-support)
 - [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
@@ -727,6 +739,271 @@ Since Writr extends Hookified, you have access to standard event emitter methods
 - `writr.emit(event, data)` - Emit an event (used internally)
 
 For more information about event handling capabilities, see the [Hookified documentation](https://github.com/jaredwray/hookified).
+
+# AI
+
+Writr includes built-in AI capabilities for metadata generation, SEO, and translation powered by the [Vercel AI SDK](https://sdk.vercel.ai). Plug in any supported model provider (OpenAI, Anthropic, Google, etc.) via the `ai` option.
+
+```typescript
+import { Writr } from 'writr';
+import { openai } from '@ai-sdk/openai';
+
+const writr = new Writr('# My Document\n\nSome markdown content here.', {
+  ai: { model: openai('gpt-4.1-mini') },
+});
+
+// Generate metadata
+const metadata = await writr.ai.getMetadata();
+
+// Generate only specific fields
+const metadata = await writr.ai.getMetadata({ title: true, description: true });
+
+// Generate SEO metadata
+const seo = await writr.ai.getSEO();
+
+// Translate to Spanish
+const translated = await writr.ai.getTranslation({ to: 'es' });
+
+// Apply generated metadata to frontmatter
+const result = await writr.ai.applyMetadata({
+  generate: { description: true, category: true },
+  overwrite: true,
+});
+```
+
+## AI Options
+
+Pass `ai` in the `WritrOptions` to enable AI features:
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `model` | `LanguageModel` | Yes | The AI SDK model instance (e.g. `openai("gpt-4.1-mini")`). |
+| `cache` | `boolean` | No | Enables in-memory caching of AI results. |
+| `prompts` | `WritrAIPrompts` | No | Custom prompt overrides for metadata, SEO, and translation. |
+
+```typescript
+const writr = new Writr('# My Document', {
+  ai: {
+    model: openai('gpt-4.1-mini'),
+    cache: true,
+    prompts: {
+      metadata: 'Generate concise metadata focusing on technical accuracy.',
+      seo: 'Generate SEO metadata optimized for developer documentation.',
+      translation: 'Translate the document while preserving all code examples.',
+    },
+  },
+});
+```
+
+## AI Provider Configuration
+
+By default, the provider imports read API keys from environment variables:
+
+| Provider | Import | Environment Variable |
+|----------|--------|---------------------|
+| OpenAI | `openai` from `@ai-sdk/openai` | `OPENAI_API_KEY` |
+| Anthropic | `anthropic` from `@ai-sdk/anthropic` | `ANTHROPIC_API_KEY` |
+| Google | `google` from `@ai-sdk/google` | `GOOGLE_GENERATIVE_AI_API_KEY` |
+
+```typescript
+// Uses OPENAI_API_KEY from environment
+import { openai } from '@ai-sdk/openai';
+
+const writr = new Writr('# Hello', { ai: { model: openai('gpt-4.1-mini') } });
+```
+
+To set API keys programmatically, use the provider factory functions instead:
+
+```typescript
+import { Writr } from 'writr';
+import { createOpenAI } from '@ai-sdk/openai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+
+// OpenAI
+const openai = createOpenAI({ apiKey: 'your-openai-key' });
+const writr = new Writr('# Hello', { ai: { model: openai('gpt-4.1-mini') } });
+
+// Anthropic
+const anthropic = createAnthropic({ apiKey: 'your-anthropic-key' });
+const writr = new Writr('# Hello', { ai: { model: anthropic('claude-sonnet-4-20250514') } });
+
+// Google
+const google = createGoogleGenerativeAI({ apiKey: 'your-google-key' });
+const writr = new Writr('# Hello', { ai: { model: google('gemini-2.0-flash') } });
+```
+
+## Metadata
+
+Generate metadata from your document content using `writr.ai.getMetadata()`, or generate and apply it directly to frontmatter with `writr.ai.applyMetadata()`.
+
+### Generating Metadata
+
+`getMetadata()` analyzes the document and returns a `WritrMetadata` object. By default all fields are generated. Pass options to select specific fields.
+
+```typescript
+// Generate all metadata fields
+const metadata = await writr.ai.getMetadata();
+console.log(metadata.title);       // "Getting Started with Writr"
+console.log(metadata.tags);        // ["markdown", "rendering", "typescript"]
+console.log(metadata.description); // "A guide to using Writr for markdown processing."
+console.log(metadata.readingTime); // 3 (minutes)
+console.log(metadata.wordCount);   // 450
+
+// Generate only specific fields
+const partial = await writr.ai.getMetadata({
+  title: true,
+  description: true,
+  tags: true,
+});
+```
+
+**Generated fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | `string` | The best-fit title for the document. |
+| `description` | `string` | A concise meta-style description of the document. |
+| `tags` | `string[]` | Human-friendly labels for organizing the document. |
+| `keywords` | `string[]` | Search-oriented terms related to the document content. |
+| `preview` | `string` | A short teaser or preview snippet of the content. |
+| `summary` | `string` | A slightly longer overview of the document. |
+| `category` | `string` | A broad grouping such as "docs", "guide", or "blog". |
+| `topic` | `string` | The primary subject the document is about. |
+| `audience` | `string` | The intended audience for the document. |
+| `difficulty` | `"beginner" \| "intermediate" \| "advanced"` | The estimated skill level required. |
+| `readingTime` | `number` | Estimated reading time in minutes (computed, not AI-generated). |
+| `wordCount` | `number` | Total word count of the document (computed, not AI-generated). |
+
+### Applying Metadata to Frontmatter
+
+`applyMetadata()` generates metadata and writes it into the document's frontmatter. The result tells you exactly what happened:
+
+- **`applied`** — fields that were newly written because they were missing from frontmatter.
+- **`skipped`** — fields that already existed and were not overwritten.
+- **`overwritten`** — fields that replaced existing frontmatter values.
+
+```typescript
+const result = await writr.ai.applyMetadata();
+console.log(result.applied);     // ["description", "tags", "category"]
+console.log(result.skipped);     // ["title"] (already existed)
+console.log(result.overwritten); // []
+```
+
+### Overwrite
+
+By default, `applyMetadata()` only fills in missing fields — existing frontmatter values are never touched. The `overwrite` option changes this behavior:
+
+- **Default (no overwrite):** Only missing fields are written. Existing values are preserved.
+- **`overwrite: true`:** All generated fields replace existing frontmatter values.
+- **`overwrite: ['field1', 'field2']`:** Only the listed fields are overwritten. Other existing values are preserved.
+
+```typescript
+// Overwrite all generated fields, even if they already exist
+const result = await writr.ai.applyMetadata({
+  generate: { title: true, description: true },
+  overwrite: true,
+});
+
+// Only overwrite title, leave description alone if it already exists
+const result = await writr.ai.applyMetadata({
+  generate: { title: true, description: true, category: true },
+  overwrite: ['title'],
+});
+```
+
+### Field Mapping
+
+The `fieldMap` option maps generated metadata keys to different frontmatter field names. This is useful when your frontmatter schema uses different naming conventions than the default metadata keys.
+
+```typescript
+const result = await writr.ai.applyMetadata({
+  generate: { description: true, tags: true },
+  fieldMap: {
+    description: 'meta_description',
+    tags: 'labels',
+  },
+});
+// writr.frontMatter.meta_description === "A guide to..."
+// writr.frontMatter.labels === ["markdown", "rendering"]
+```
+
+The mapping applies to all behaviors — field existence checks, overwrites, and skips all use the mapped key when checking frontmatter.
+
+## SEO
+
+Generate SEO metadata using `writr.ai.getSEO()`. By default all fields are generated. Pass options to select specific fields.
+
+```typescript
+const seo = await writr.ai.getSEO();
+console.log(seo.slug);              // "getting-started-with-writr"
+console.log(seo.canonical);         // "https://example.com/getting-started-with-writr"
+console.log(seo.openGraph?.title);  // "Getting Started with Writr"
+
+// Generate only a slug
+const seo = await writr.ai.getSEO({ slug: true });
+```
+
+**Available fields:** `slug`, `canonical`, `openGraph` (includes `title`, `description`, `image`).
+
+## Translation
+
+Translate the document into another language using `writr.ai.getTranslation()`. Returns a new `Writr` instance with the translated content.
+
+```typescript
+const spanish = await writr.ai.getTranslation({ to: 'es' });
+console.log(spanish.body); // Spanish markdown
+
+// With source language and frontmatter translation
+const french = await writr.ai.getTranslation({
+  to: 'fr',
+  from: 'en',
+  translateFrontMatter: true,
+});
+```
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `to` | `string` | Yes | Target language or locale. |
+| `from` | `string` | No | Source language or locale. |
+| `translateFrontMatter` | `boolean` | No | Also translate frontmatter string values. |
+
+## Using WritrAI Directly
+
+`WritrAI` is exported as a named export and can be instantiated independently from the `Writr` constructor. This is useful when you want to configure the AI instance separately or swap models on the fly.
+
+```typescript
+import { Writr, WritrAI } from 'writr';
+import { openai } from '@ai-sdk/openai';
+
+const writr = new Writr('# My Document\n\nSome markdown content here.');
+const ai = new WritrAI(writr, {
+  model: openai('gpt-4.1-mini'),
+  cache: true,
+  prompts: {
+    metadata: 'Generate concise metadata focusing on technical accuracy.',
+  },
+});
+
+// Generate metadata
+const metadata = await ai.getMetadata();
+console.log(metadata.title);
+console.log(metadata.tags);
+
+// Generate SEO data
+const seo = await ai.getSEO();
+console.log(seo.slug);
+
+// Translate
+const translated = await ai.getTranslation({ to: 'es' });
+console.log(translated.body);
+
+// Apply metadata to frontmatter
+const result = await ai.applyMetadata({
+  generate: { title: true, description: true, tags: true },
+  overwrite: true,
+});
+```
 
 # Benchmarks
 

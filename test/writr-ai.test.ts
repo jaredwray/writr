@@ -13,8 +13,16 @@ function createMockModel(jsonResponse: Record<string, unknown>) {
 	return new MockLanguageModelV3({
 		doGenerate: async () => ({
 			content: [{ type: "text" as const, text: JSON.stringify(jsonResponse) }],
-			finishReason: "stop" as const,
-			usage: { inputTokens: 10, outputTokens: 20 },
+			finishReason: { unified: "stop" as const, raw: undefined },
+			usage: {
+				inputTokens: {
+					total: 10,
+					noCache: undefined,
+					cacheRead: undefined,
+					cacheWrite: undefined,
+				},
+				outputTokens: { total: 20, text: undefined, reasoning: undefined },
+			},
 			warnings: [],
 		}),
 	});
@@ -24,8 +32,16 @@ function createMockTextModel(textResponse: string) {
 	return new MockLanguageModelV3({
 		doGenerate: async () => ({
 			content: [{ type: "text" as const, text: textResponse }],
-			finishReason: "stop" as const,
-			usage: { inputTokens: 10, outputTokens: 20 },
+			finishReason: { unified: "stop" as const, raw: undefined },
+			usage: {
+				inputTokens: {
+					total: 10,
+					noCache: undefined,
+					cacheRead: undefined,
+					cacheWrite: undefined,
+				},
+				outputTokens: { total: 20, text: undefined, reasoning: undefined },
+			},
 			warnings: [],
 		}),
 	});
@@ -225,8 +241,20 @@ describe("writr-ai", () => {
 								text: JSON.stringify({ title: "Hello World" }),
 							},
 						],
-						finishReason: "stop" as const,
-						usage: { inputTokens: 10, outputTokens: 20 },
+						finishReason: { unified: "stop" as const, raw: undefined },
+						usage: {
+							inputTokens: {
+								total: 10,
+								noCache: undefined,
+								cacheRead: undefined,
+								cacheWrite: undefined,
+							},
+							outputTokens: {
+								total: 20,
+								text: undefined,
+								reasoning: undefined,
+							},
+						},
 						warnings: [],
 					};
 				},
@@ -318,8 +346,20 @@ describe("writr-ai", () => {
 								text: JSON.stringify({ slug: "test-document" }),
 							},
 						],
-						finishReason: "stop" as const,
-						usage: { inputTokens: 10, outputTokens: 20 },
+						finishReason: { unified: "stop" as const, raw: undefined },
+						usage: {
+							inputTokens: {
+								total: 10,
+								noCache: undefined,
+								cacheRead: undefined,
+								cacheWrite: undefined,
+							},
+							outputTokens: {
+								total: 20,
+								text: undefined,
+								reasoning: undefined,
+							},
+						},
 						warnings: [],
 					};
 				},
@@ -362,8 +402,20 @@ describe("writr-ai", () => {
 								text: "# Hola Mundo",
 							},
 						],
-						finishReason: "stop" as const,
-						usage: { inputTokens: 10, outputTokens: 20 },
+						finishReason: { unified: "stop" as const, raw: undefined },
+						usage: {
+							inputTokens: {
+								total: 10,
+								noCache: undefined,
+								cacheRead: undefined,
+								cacheWrite: undefined,
+							},
+							outputTokens: {
+								total: 20,
+								text: undefined,
+								reasoning: undefined,
+							},
+						},
 						warnings: [],
 					};
 				},

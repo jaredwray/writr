@@ -882,3 +882,99 @@ describe("Writr Error Emission", () => {
 		expect((emittedError as Error).message).toContain("ENOENT");
 	});
 });
+
+describe("Writr AI Integration", () => {
+	it("should have ai undefined when no ai option is provided", () => {
+		const writr = new Writr("# Hello World");
+		expect(writr.ai).toBeUndefined();
+	});
+
+	it("should have ai undefined when options are provided without ai", () => {
+		const writr = new Writr("# Hello World", { throwErrors: true });
+		expect(writr.ai).toBeUndefined();
+	});
+
+	it("should create a WritrAI instance when ai option is provided", async () => {
+		const { MockLanguageModelV3 } = await import("ai/test");
+		const { WritrAI } = await import("../src/writr-ai.js");
+		const model = new MockLanguageModelV3({
+			doGenerate: async () => ({
+				content: [
+					{ type: "text" as const, text: JSON.stringify({ title: "Test" }) },
+				],
+				finishReason: { unified: "stop" as const, raw: undefined },
+				usage: {
+					inputTokens: {
+						total: 10,
+						noCache: undefined,
+						cacheRead: undefined,
+						cacheWrite: undefined,
+					},
+					outputTokens: { total: 20, text: undefined, reasoning: undefined },
+				},
+				warnings: [],
+			}),
+		});
+
+		const writr = new Writr("# Hello World", { ai: { model } });
+		expect(writr.ai).toBeDefined();
+		expect(writr.ai).toBeInstanceOf(WritrAI);
+	});
+
+	it("should be able to call ai methods via writr.ai", async () => {
+		const { MockLanguageModelV3 } = await import("ai/test");
+		const model = new MockLanguageModelV3({
+			doGenerate: async () => ({
+				content: [
+					{
+						type: "text" as const,
+						text: JSON.stringify({ title: "Generated Title" }),
+					},
+				],
+				finishReason: { unified: "stop" as const, raw: undefined },
+				usage: {
+					inputTokens: {
+						total: 10,
+						noCache: undefined,
+						cacheRead: undefined,
+						cacheWrite: undefined,
+					},
+					outputTokens: { total: 20, text: undefined, reasoning: undefined },
+				},
+				warnings: [],
+			}),
+		});
+
+		const writr = new Writr("# Hello World\n\nSome content here for testing.", {
+			ai: { model },
+		});
+		const metadata = await writr.ai?.getMetadata({ title: true });
+		expect(metadata?.title).toBe("Generated Title");
+	});
+
+	it("should pass ai options through to WritrAI including cache", async () => {
+		const { MockLanguageModelV3 } = await import("ai/test");
+		const model = new MockLanguageModelV3({
+			doGenerate: async () => ({
+				content: [
+					{ type: "text" as const, text: JSON.stringify({ title: "Cached" }) },
+				],
+				finishReason: { unified: "stop" as const, raw: undefined },
+				usage: {
+					inputTokens: {
+						total: 10,
+						noCache: undefined,
+						cacheRead: undefined,
+						cacheWrite: undefined,
+					},
+					outputTokens: { total: 20, text: undefined, reasoning: undefined },
+				},
+				warnings: [],
+			}),
+		});
+
+		const writr = new Writr("# Hello", { ai: { model, cache: true } });
+		expect(writr.ai).toBeDefined();
+		expect(writr.ai?.cache).toBeDefined();
+	});
+});

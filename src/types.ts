@@ -10,6 +10,7 @@ import type { Writr } from "./writr.js";
 export type WritrOptions = {
 	renderOptions?: RenderOptions; // Default render options (default: undefined)
 	throwErrors?: boolean; // Throw error (default: false)
+	ai?: WritrAIOptions; // AI options for WritrAI (default: undefined)
 };
 
 /**
