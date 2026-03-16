@@ -51,15 +51,17 @@
   "scripts": {
     "clean": "rimraf ./dist ./coverage ./node_modules ./pnpm-lock.yaml ./site/README.md ./site/dist",
     "build": "rimraf ./dist && tsup src/writr.ts --format esm --dts --clean",
-    "prepare": "pnpm build",
+    "prepublishOnly": "pnpm build",
     "lint": "biome check --write --error-on-warnings",
     "benchmark": "tsx benchmark/benchmark-minimal.ts && tsx benchmark/benchmark-standard.ts",
     "test": "pnpm lint && vitest run --coverage",
     "test:ci": "biome check --error-on-warnings && vitest run --coverage",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "website:build": "rimraf ./site/README.md ./site/dist && npx docula build -s ./site -o ./site/dist",
     "website:serve": "rimraf ./site/README.md ./site/dist && npx docula serve -s ./site -o ./site/dist"
   },
   "dependencies": {
+    "ai": "^6.0.116",
     "cacheable": "^2.3.1",
     "hashery": "^1.5.0",
     "hookified": "^1.15.1",
@@ -78,9 +80,13 @@
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
     "remark-toc": "^9.0.0",
-    "unified": "^11.0.5"
+    "unified": "^11.0.5",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@ai-sdk/anthropic": "^3.0.58",
+    "@ai-sdk/google": "^3.0.43",
+    "@ai-sdk/openai": "^3.0.41",
     "@biomejs/biome": "^2.4.4",
     "@monstermann/tinybench-pretty-printer": "^0.3.0",
     "@types/js-yaml": "^4.0.9",
@@ -89,6 +95,7 @@
     "@types/react": "^19.2.14",
     "@vitest/coverage-v8": "^4.0.18",
     "docula": "^0.40.0",
+    "dotenv": "^17.3.1",
     "markdown-it": "^14.1.1",
     "marked": "^17.0.3",
     "rimraf": "^6.1.3",

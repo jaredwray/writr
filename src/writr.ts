@@ -19,58 +19,32 @@ import remarkToc from "remark-toc";
 import { unified } from "unified";
 import { WritrCache } from "./writr-cache.js";
 
-/**
- * Writr options.
- * @typedef {Object} WritrOptions
- * @property {RenderOptions} [renderOptions] - Default render options (default: undefined)
- * @property {boolean} [throwErrors] - Throw error (default: false)
- */
-export type WritrOptions = {
-	renderOptions?: RenderOptions; // Default render options (default: undefined)
-	throwErrors?: boolean; // Throw error (default: false)
-};
+export type {
+	RenderOptions,
+	WritrAIOptions,
+	WritrAIPrompts,
+	WritrApplyMetadataOptions,
+	WritrApplyMetadataResult,
+	WritrGetMetadataOptions,
+	WritrGetSEOOptions,
+	WritrMetadata,
+	WritrMetadataKey,
+	WritrOptions,
+	WritrSEO,
+	WritrTranslationOptions,
+	WritrValidateResult,
+} from "./types.js";
+export { WritrHooks } from "./types.js";
+export { WritrAI } from "./writr-ai.js";
+export { WritrAICache } from "./writr-ai-cache.js";
 
-/**
- * Render options.
- * @typedef {Object} RenderOptions
- * @property {boolean} [emoji] - Emoji support (default: true)
- * @property {boolean} [toc] - Table of contents generation (default: true)
- * @property {boolean} [slug] - Slug generation (default: true)
- * @property {boolean} [highlight] - Code highlighting (default: true)
- * @property {boolean} [gfm] - Github flavor markdown (default: true)
- * @property {boolean} [math] - Math support (default: true)
- * @property {boolean} [mdx] - MDX support (default: false)
- * @property {boolean} [caching] - Caching (default: true)
- */
-export type RenderOptions = {
-	emoji?: boolean; // Emoji support (default: true)
-	toc?: boolean; // Table of contents generation (default: true)
-	slug?: boolean; // Slug generation (default: true)
-	highlight?: boolean; // Code highlighting (default: true)
-	gfm?: boolean; // Github flavor markdown (default: true)
-	math?: boolean; // Math support (default: true)
-	mdx?: boolean; // MDX support (default: false)
-	caching?: boolean; // Caching (default: true)
-};
-
-/**
- * Validation result.
- * @typedef {Object} WritrValidateResult
- * @property {boolean} valid - Whether the markdown is valid
- * @property {Error} [error] - Error if validation failed
- */
-export type WritrValidateResult = {
-	valid: boolean;
-	error?: Error;
-};
-
-export enum WritrHooks {
-	beforeRender = "beforeRender",
-	afterRender = "afterRender",
-	saveToFile = "saveToFile",
-	renderToFile = "renderToFile",
-	loadFromFile = "loadFromFile",
-}
+import type {
+	RenderOptions,
+	WritrOptions,
+	WritrValidateResult,
+} from "./types.js";
+import { WritrHooks } from "./types.js";
+import { WritrAI } from "./writr-ai.js";
 
 export class Writr extends Hookified {
 	public engine = unified()
@@ -103,6 +77,8 @@ export class Writr extends Hookified {
 
 	private readonly _cache = new WritrCache();
 
+	private _ai?: WritrAI;
+
 	/**
 	 * Initialize Writr. Accepts a string or options object.
 	 * @param {string | WritrOptions} [arguments1] If you send in a string, it will be used as the markdown content. If you send in an object, it will be used as the options.
@@ -130,6 +106,10 @@ export class Writr extends Hookified {
 				this.engine = this.createProcessor(this._options.renderOptions);
 			}
 		}
+
+		if (this._options.ai) {
+			this._ai = new WritrAI(this, this._options.ai);
+		}
 	}
 
 	/**
@@ -138,6 +118,14 @@ export class Writr extends Hookified {
 	 */
 	public get options(): WritrOptions {
 		return this._options;
+	}
+
+	/**
+	 * Get the WritrAI instance if AI options were provided.
+	 * @type {WritrAI | undefined}
+	 */
+	public get ai(): WritrAI | undefined {
+		return this._ai;
 	}
 
 	/**
@@ -653,6 +641,10 @@ export class Writr extends Hookified {
 			current.renderOptions ??= {};
 
 			this.mergeRenderOptions(current.renderOptions, options.renderOptions);
+		}
+
+		if (options.ai) {
+			current.ai = options.ai;
 		}
 
 		return current;
