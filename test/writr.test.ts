@@ -213,7 +213,7 @@ describe("writr", () => {
 			await writr.render();
 		} catch (error) {
 			expect((error as Error).message).toEqual(
-				"Failed to render markdown: Custom Plugin Error: Required configuration missing.",
+				"Custom Plugin Error: Required configuration missing.",
 			);
 		}
 	});
@@ -228,7 +228,7 @@ describe("writr", () => {
 			writr.renderSync();
 		} catch (error) {
 			expect((error as Error).message).toEqual(
-				"Failed to render markdown: Custom Plugin Error: Required configuration missing.",
+				"Custom Plugin Error: Required configuration missing.",
 			);
 		}
 	});
@@ -525,6 +525,7 @@ $x^2 + y^2 = z^2$
 
 	test("should return error when validation fails synchronously", () => {
 		const writr = new Writr("# Valid Content");
+		writr.on("error", () => {});
 		const customPlugin = () => {
 			throw new Error("Custom Plugin Error: Validation failed.");
 		};
@@ -559,6 +560,7 @@ $x^2 + y^2 = z^2$
 	test("should return error when validating external content that fails synchronously", () => {
 		const originalContent = "# Original";
 		const writr = new Writr(originalContent);
+		writr.on("error", () => {});
 		const customPlugin = () => {
 			throw new Error("Plugin Error: Invalid markdown");
 		};
@@ -597,6 +599,7 @@ $x^2 + y^2 = z^2$
 		const originalContent = "# Original Content";
 		const testContent = "## Test Content";
 		const writr = new Writr(originalContent);
+		writr.on("error", () => {});
 
 		// Add a plugin that fails
 		const customPlugin = () => {
@@ -722,13 +725,8 @@ describe("Writr Error Emission", () => {
 		expect((emittedError as Error).message).toContain("RenderSync failed");
 	});
 
-	test("should emit error when validate fails", async () => {
+	test("should return invalid result when validate fails", async () => {
 		const writr = new Writr("# Hello World");
-		let emittedError: unknown;
-
-		writr.on("error", (error) => {
-			emittedError = error;
-		});
 
 		const customPlugin = () => {
 			throw new Error("Custom Plugin Error: Validation failed");
@@ -739,8 +737,8 @@ describe("Writr Error Emission", () => {
 		const result = await writr.validate();
 
 		expect(result.valid).toBe(false);
-		expect(emittedError).toBeDefined();
-		expect((emittedError as Error).message).toContain("Validation failed");
+		expect(result.error).toBeDefined();
+		expect(result.error?.message).toContain("Validation failed");
 	});
 
 	test("should emit error when validateSync fails", () => {
@@ -880,6 +878,32 @@ describe("Writr Error Emission", () => {
 
 		expect(emittedError).toBeDefined();
 		expect((emittedError as Error).message).toContain("ENOENT");
+	});
+
+	test("should emit error when saveToFile fails with invalid path", async () => {
+		const writr = new Writr("# Hello World");
+		let emittedError: unknown;
+
+		writr.on("error", (error) => {
+			emittedError = error;
+		});
+
+		await writr.saveToFile("/non-existent-root-path/\0invalid");
+
+		expect(emittedError).toBeDefined();
+	});
+
+	test("should emit error when saveToFileSync fails with invalid path", () => {
+		const writr = new Writr("# Hello World");
+		let emittedError: unknown;
+
+		writr.on("error", (error) => {
+			emittedError = error;
+		});
+
+		writr.saveToFileSync("/non-existent-root-path/\0invalid");
+
+		expect(emittedError).toBeDefined();
 	});
 });
 

@@ -92,9 +92,9 @@ export class Writr extends Hookified {
 				? arguments1
 				: (arguments2 as WritrOptions | undefined);
 		super({
-			throwOnEmitError: options?.throwOnEmitError ?? false,
+			throwOnEmitError: options?.throwOnEmitError,
 			throwOnHookError: options?.throwOnHookError,
-			throwOnEmptyListeners: options?.throwOnEmptyListeners ?? false,
+			throwOnEmptyListeners: options?.throwOnEmptyListeners,
 			eventLogger: options?.eventLogger,
 		});
 		if (typeof arguments1 === "string") {
@@ -217,7 +217,7 @@ export class Writr extends Hookified {
 				return yaml.load(match[1].trim()) as Record<string, any>;
 			} catch (error) {
 				/* v8 ignore next -- @preserve */
-				this.emitError(error);
+				this.emit("error", error);
 			}
 		}
 
@@ -237,7 +237,7 @@ export class Writr extends Hookified {
 			this._content = this._content.replace(frontMatter, newFrontMatter);
 		} catch (error) {
 			/* v8 ignore next -- @preserve */
-			this.emitError(error);
+			this.emit("error", error);
 		}
 	}
 
@@ -296,8 +296,9 @@ export class Writr extends Hookified {
 			return resultData.result;
 		} catch (error) {
 			this.emit("error", error);
-			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
 		}
+
+		return "";
 	}
 
 	/**
@@ -347,8 +348,9 @@ export class Writr extends Hookified {
 			return resultData.result;
 		} catch (error) {
 			this.emit("error", error);
-			throw new Error(`Failed to render markdown: ${(error as Error).message}`);
 		}
+
+		return "";
 	}
 
 	/**
@@ -385,7 +387,6 @@ export class Writr extends Hookified {
 
 			return { valid: true };
 		} catch (error) {
-			this.emitError(error);
 			if (content !== undefined) {
 				this._content = originalContent;
 			}
@@ -427,7 +428,7 @@ export class Writr extends Hookified {
 
 			return { valid: true };
 		} catch (error) {
-			this.emitError(error);
+			this.emit("error", error);
 			if (content !== undefined) {
 				this._content = originalContent;
 			}
@@ -499,8 +500,9 @@ export class Writr extends Hookified {
 			return parse(html, reactParseOptions);
 		} catch (error) {
 			this.emit("error", error);
-			throw new Error(`Failed to render React: ${(error as Error).message}`);
 		}
+
+		return "";
 	}
 
 	/**
@@ -518,8 +520,9 @@ export class Writr extends Hookified {
 			return parse(html, reactParseOptions);
 		} catch (error) {
 			this.emit("error", error);
-			throw new Error(`Failed to render React: ${(error as Error).message}`);
 		}
+
+		return "";
 	}
 
 	/**
@@ -579,7 +582,6 @@ export class Writr extends Hookified {
 
 			await writeFile(data.filePath, data.content);
 		} catch (error) {
-			/* v8 ignore next -- @preserve */
 			this.emit("error", error);
 		}
 	}
@@ -602,7 +604,6 @@ export class Writr extends Hookified {
 
 			fs.writeFileSync(data.filePath, data.content);
 		} catch (error) {
-			/* v8 ignore next -- @preserve */
 			this.emit("error", error);
 		}
 	}
@@ -627,13 +628,6 @@ export class Writr extends Hookified {
 		}
 
 		return current;
-	}
-
-	private emitError(error: unknown): void {
-		const current = this.throwOnEmitError;
-		this.throwOnEmitError = false;
-		this.emit("error", error);
-		this.throwOnEmitError = current;
 	}
 
 	private isCacheEnabled(options?: RenderOptions): boolean {
