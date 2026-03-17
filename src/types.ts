@@ -129,11 +129,6 @@ export type WritrSEO = {
 	slug?: string;
 
 	/**
-	 * The preferred canonical URL for the document.
-	 */
-	canonical?: string;
-
-	/**
 	 * Open Graph metadata used by social platforms.
 	 */
 	openGraph?: {
@@ -275,11 +270,6 @@ export type WritrGetSEOOptions = {
 	 * Generate a URL-safe slug.
 	 */
 	slug?: boolean;
-
-	/**
-	 * Generate a canonical URL value.
-	 */
-	canonical?: boolean;
 
 	/**
 	 * Generate Open Graph metadata for the document.

@@ -280,7 +280,6 @@ describe("writr-ai", () => {
 			const writr = new Writr(productPageWithMarkdown);
 			const model = createMockModel({
 				slug: "super-comfortable-chair",
-				canonical: "https://example.com/products/super-comfortable-chair",
 				openGraph: {
 					title: "Super Comfortable Chair",
 					description: "An ergonomic chair for maximum comfort.",
@@ -292,9 +291,6 @@ describe("writr-ai", () => {
 			const seo = await ai.getSEO();
 
 			expect(seo.slug).toBe("super-comfortable-chair");
-			expect(seo.canonical).toBe(
-				"https://example.com/products/super-comfortable-chair",
-			);
 			expect(seo.openGraph?.title).toBe("Super Comfortable Chair");
 			expect(seo.openGraph?.description).toBe(
 				"An ergonomic chair for maximum comfort.",
@@ -313,7 +309,6 @@ describe("writr-ai", () => {
 			});
 
 			expect(seo.slug).toBe("understanding-async-await");
-			expect(seo.canonical).toBeUndefined();
 			expect(seo.openGraph).toBeUndefined();
 		});
 
@@ -326,7 +321,6 @@ describe("writr-ai", () => {
 			const ai = new WritrAI(writr, { model });
 			const seo = await ai.getSEO({
 				slug: true,
-				canonical: false,
 				openGraph: false,
 			});
 
