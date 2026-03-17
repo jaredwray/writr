@@ -921,14 +921,13 @@ Generate SEO metadata using `writr.ai.getSEO()`. By default all fields are gener
 ```typescript
 const seo = await writr.ai.getSEO();
 console.log(seo.slug);              // "getting-started-with-writr"
-console.log(seo.canonical);         // "https://example.com/getting-started-with-writr"
 console.log(seo.openGraph?.title);  // "Getting Started with Writr"
 
 // Generate only a slug
 const seo = await writr.ai.getSEO({ slug: true });
 ```
 
-**Available fields:** `slug`, `canonical`, `openGraph` (includes `title`, `description`, `image`).
+**Available fields:** `slug`, `openGraph` (includes `title`, `description`, `image`).
 
 ## Translation
 

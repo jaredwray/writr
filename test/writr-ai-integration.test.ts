@@ -106,7 +106,6 @@ for (const provider of providers) {
 
 				expect(seo.slug).toBeTypeOf("string");
 				expect(seo.slug?.length).toBeGreaterThan(0);
-				expect(seo.canonical).toBeTypeOf("string");
 				expect(seo.openGraph).toBeDefined();
 				expect(seo.openGraph?.title).toBeTypeOf("string");
 				expect(seo.openGraph?.description).toBeTypeOf("string");
@@ -117,7 +116,6 @@ for (const provider of providers) {
 				const selectedSeo = await ai2.getSEO({ slug: true });
 
 				expect(selectedSeo.slug).toBeTypeOf("string");
-				expect(selectedSeo.canonical).toBeUndefined();
 				expect(selectedSeo.openGraph).toBeUndefined();
 
 				// Translate content

@@ -256,7 +256,7 @@ export class WritrAI {
 	}
 
 	private resolveSEOFields(options?: WritrGetSEOOptions): string[] {
-		const allFields = ["slug", "canonical", "openGraph"];
+		const allFields = ["slug", "openGraph"];
 
 		if (!options) {
 			return allFields;
@@ -370,13 +370,6 @@ export class WritrAI {
 			entries.push([
 				"slug",
 				z.string().describe("A URL-safe identifier for the document"),
-			]);
-		}
-
-		if (fieldSet.has("canonical")) {
-			entries.push([
-				"canonical",
-				z.string().describe("The preferred canonical URL for the document"),
 			]);
 		}
 
