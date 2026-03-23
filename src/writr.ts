@@ -6,6 +6,7 @@ import * as yaml from "js-yaml";
 import type React from "react";
 import rehypeHighlight from "rehype-highlight";
 import rehypeKatex from "rehype-katex";
+import rehypeRaw from "rehype-raw";
 import rehypeSlug from "rehype-slug";
 import rehypeStringify from "rehype-stringify";
 import remarkEmoji from "remark-emoji";
@@ -68,6 +69,7 @@ export class Writr extends Hookified {
 			gfm: true,
 			math: true,
 			mdx: false,
+			rawHtml: false,
 			caching: true,
 		},
 	};
@@ -656,7 +658,29 @@ export class Writr extends Hookified {
 			processor.use(remarkEmoji);
 		}
 
-		processor.use(remarkRehype);
+		if (options.mdx) {
+			processor.use(remarkMDX);
+		}
+
+		// biome-ignore lint/suspicious/noExplicitAny: remarkRehype handler types
+		const rehypeOptions: Record<string, any> = {};
+
+		if (options.rawHtml) {
+			rehypeOptions.allowDangerousHtml = true;
+		}
+
+		if (options.mdx) {
+			rehypeOptions.handlers = {
+				mdxJsxFlowElement: mdxJsxHandler,
+				mdxJsxTextElement: mdxJsxHandler,
+			};
+		}
+
+		processor.use(remarkRehype, rehypeOptions);
+
+		if (options.rawHtml) {
+			processor.use(rehypeRaw);
+		}
 
 		if (options.slug) {
 			processor.use(rehypeSlug);
@@ -668,10 +692,6 @@ export class Writr extends Hookified {
 
 		if (options.math) {
 			processor.use(remarkMath).use(rehypeKatex);
-		}
-
-		if (options.mdx) {
-			processor.use(remarkMDX);
 		}
 
 		processor.use(rehypeStringify);
@@ -711,10 +731,35 @@ export class Writr extends Hookified {
 			current.mdx = options.mdx;
 		}
 
+		if (options.rawHtml !== undefined) {
+			current.rawHtml = options.rawHtml;
+		}
+
 		if (options.caching !== undefined) {
 			current.caching = options.caching;
 		}
 
 		return current;
 	}
+}
+
+// biome-ignore lint/suspicious/noExplicitAny: mdx AST node types are not exported
+function mdxJsxHandler(state: any, node: any) {
+	const properties: Record<string, string | boolean> = {};
+	for (const attr of node.attributes) {
+		if (attr.type === "mdxJsxAttribute") {
+			if (attr.value === null) {
+				properties[attr.name] = true;
+			} else if (typeof attr.value === "string") {
+				properties[attr.name] = attr.value;
+			}
+		}
+	}
+
+	return {
+		type: "element",
+		tagName: node.name ?? "div",
+		properties,
+		children: state.all(node),
+	};
 }

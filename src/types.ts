@@ -22,6 +22,7 @@ export type WritrOptions = {
  * @property {boolean} [gfm] - Github flavor markdown (default: true)
  * @property {boolean} [math] - Math support (default: true)
  * @property {boolean} [mdx] - MDX support (default: false)
+ * @property {boolean} [rawHtml] - Raw HTML passthrough (default: false)
  * @property {boolean} [caching] - Caching (default: true)
  */
 export type RenderOptions = {
@@ -32,6 +33,7 @@ export type RenderOptions = {
 	gfm?: boolean; // Github flavor markdown (default: true)
 	math?: boolean; // Math support (default: true)
 	mdx?: boolean; // MDX support (default: false)
+	rawHtml?: boolean; // Raw HTML passthrough (default: false)
 	caching?: boolean; // Caching (default: true)
 };
 
