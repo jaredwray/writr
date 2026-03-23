@@ -201,6 +201,8 @@ Accessing the default options for this instance of Writr. Here is the default se
 
 By default, raw HTML in markdown (such as `<iframe>`, `<video>`, or `<div>` tags) is stripped during rendering. Set `rawHtml: true` to preserve raw HTML elements and their attributes in the rendered output. This is useful for embedding videos, widgets, or custom HTML in your markdown content.
 
+**Note:** Setting `mdx: true` also enables raw HTML passthrough as part of the MDX specification. The `rawHtml` option is for enabling raw HTML in standard markdown without using MDX.
+
 ## `.frontmatter`
 
 Accessing the frontmatter for this instance of Writr. This is a `Record<string, any>` and can be set via the `.content` property.
