@@ -748,7 +748,11 @@ function mdxJsxHandler(state: any, node: any) {
 	const properties: Record<string, string | boolean> = {};
 	for (const attr of node.attributes) {
 		if (attr.type === "mdxJsxAttribute") {
-			properties[attr.name] = attr.value === null ? true : attr.value;
+			if (attr.value === null) {
+				properties[attr.name] = true;
+			} else if (typeof attr.value === "string") {
+				properties[attr.name] = attr.value;
+			}
 		}
 	}
 

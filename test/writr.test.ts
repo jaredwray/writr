@@ -389,11 +389,20 @@ describe("Writr mdx HTML passthrough", () => {
 		expect(result).toContain("hello");
 	});
 
-	it("should skip expression attributes and keep named attributes when mdx is true", async () => {
+	it("should skip spread expression attributes and keep named attributes when mdx is true", async () => {
 		const writr = new Writr('<Comp {...props} foo="bar" />\n');
 		const result = await writr.render({ mdx: true });
 		expect(result).toContain('foo="bar"');
 		expect(result).not.toContain("props");
+	});
+
+	it("should skip expression attribute values when mdx is true", async () => {
+		const writr = new Writr("<div data-x={42}>hello</div>");
+		const result = await writr.render({ mdx: true });
+		expect(result).toContain("<div>");
+		expect(result).toContain("hello");
+		expect(result).not.toContain("object");
+		expect(result).not.toContain("42");
 	});
 });
 
