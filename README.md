@@ -22,6 +22,7 @@
 * Github Flavor Markdown (remark-gfm).
 * Emoji Support (remark-emoji).
 * MDX Support (remark-mdx).
+* Raw HTML Passthrough (rehype-raw).
 * Built in Hooks for adding code to render pipeline.
 * AI-powered metadata generation, SEO, and translation via the [Vercel AI SDK](https://sdk.vercel.ai).
 
@@ -118,6 +119,7 @@ const writrOptions = {
     gfm: true,
     math: true,
     mdx: true,
+    rawHtml: false,
     caching: true,
   }
 };
@@ -142,6 +144,7 @@ const writrOptions = {
     gfm: true,
     math: true,
     mdx: true,
+    rawHtml: false,
     caching: true,
   }
 };
@@ -190,10 +193,13 @@ Accessing the default options for this instance of Writr. Here is the default se
     gfm: true,
     math: true,
     mdx: false,
+    rawHtml: false,
     caching: true,
   }
 }
 ```
+
+By default, raw HTML in markdown (such as `<iframe>`, `<video>`, or `<div>` tags) is stripped during rendering. Set `rawHtml: true` to preserve raw HTML elements and their attributes in the rendered output. This is useful for embedding videos, widgets, or custom HTML in your markdown content.
 
 ## `.frontmatter`
 
