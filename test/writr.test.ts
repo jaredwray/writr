@@ -288,6 +288,115 @@ describe("writr", () => {
 	});
 });
 
+describe("Writr rawHtml", () => {
+	it("should strip raw HTML by default", async () => {
+		const writr = new Writr('# Hello\n\n<div class="custom">content</div>');
+		const result = await writr.render();
+		expect(result).not.toContain("<div");
+	});
+
+	it("should preserve div tags with attributes when rawHtml is true", async () => {
+		const writr = new Writr('# Hello\n\n<div class="custom">content</div>');
+		const result = await writr.render({ rawHtml: true });
+		expect(result).toContain('<div class="custom">content</div>');
+	});
+
+	it("should preserve iframe tags with attributes when rawHtml is true", async () => {
+		const writr = new Writr(
+			'# Hello\n\n<iframe src="https://example.com" width="560" height="315"></iframe>',
+		);
+		const result = await writr.render({ rawHtml: true });
+		expect(result).toContain("<iframe");
+		expect(result).toContain('src="https://example.com"');
+		expect(result).toContain('width="560"');
+	});
+
+	it("should preserve raw HTML with renderSync when rawHtml is true", () => {
+		const writr = new Writr('# Hello\n\n<div class="custom">content</div>');
+		const result = writr.renderSync({ rawHtml: true });
+		expect(result).toContain('<div class="custom">content</div>');
+	});
+
+	it("should strip raw HTML when rawHtml is explicitly false", async () => {
+		const writr = new Writr('# Hello\n\n<div class="custom">content</div>');
+		const result = await writr.render({ rawHtml: false });
+		expect(result).not.toContain("<div");
+	});
+
+	it("should be settable via constructor options", () => {
+		const writr = new Writr({
+			renderOptions: {
+				rawHtml: true,
+			},
+		});
+		expect(writr.options.renderOptions?.rawHtml).toEqual(true);
+	});
+});
+
+describe("Writr mdx HTML passthrough", () => {
+	it("should preserve iframe tags with attributes when mdx is true", async () => {
+		const writr = new Writr(
+			'# Hello\n\n<iframe src="https://example.com" width="560" height="315"></iframe>',
+		);
+		const result = await writr.render({ mdx: true });
+		expect(result).toContain("<iframe");
+		expect(result).toContain('src="https://example.com"');
+		expect(result).toContain('width="560"');
+		expect(result).toContain('height="315"');
+	});
+
+	it("should preserve div tags with attributes when mdx is true", async () => {
+		const writr = new Writr('# Hello\n\n<div class="custom">content</div>');
+		const result = await writr.render({ mdx: true });
+		expect(result).toContain('<div class="custom">');
+		expect(result).toContain("content");
+	});
+
+	it("should preserve boolean attributes when mdx is true", async () => {
+		const writr = new Writr('<video src="vid.mp4" controls></video>');
+		const result = await writr.render({ mdx: true });
+		expect(result).toContain("<video");
+		expect(result).toContain('src="vid.mp4"');
+		expect(result).toContain("controls");
+	});
+
+	it("should preserve inline HTML elements when mdx is true", async () => {
+		const writr = new Writr('Hello <span style="color:red">world</span> there');
+		const result = await writr.render({ mdx: true });
+		expect(result).toContain('<span style="color:red">world</span>');
+	});
+
+	it("should preserve iframe tags with renderSync when mdx is true", () => {
+		const writr = new Writr(
+			'<iframe src="https://example.com" width="560"></iframe>',
+		);
+		const result = writr.renderSync({ mdx: true });
+		expect(result).toContain("<iframe");
+		expect(result).toContain('src="https://example.com"');
+	});
+
+	it("should render a fragment as a div when mdx is true", async () => {
+		const writr = new Writr("<>fragment content</>");
+		const result = await writr.render({ mdx: true });
+		expect(result).toContain("<div>");
+		expect(result).toContain("fragment content");
+	});
+
+	it("should handle elements with no attributes when mdx is true", async () => {
+		const writr = new Writr("<section>hello</section>");
+		const result = await writr.render({ mdx: true });
+		expect(result).toContain("<section>");
+		expect(result).toContain("hello");
+	});
+
+	it("should skip expression attributes and keep named attributes when mdx is true", async () => {
+		const writr = new Writr('<Comp {...props} foo="bar" />\n');
+		const result = await writr.render({ mdx: true });
+		expect(result).toContain('foo="bar"');
+		expect(result).not.toContain("props");
+	});
+});
+
 describe("WritrFrontMatter", () => {
 	test("should initialize with content and work from same object", () => {
 		const writr = new Writr(productPageWithMarkdown);
