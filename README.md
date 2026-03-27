@@ -199,13 +199,13 @@ Accessing the default options for this instance of Writr. Here is the default se
 }
 ```
 
-By default, raw HTML in markdown (such as `<iframe>`, `<video>`, or `<div>` tags) is stripped during rendering. Set `rawHtml: true` to preserve raw HTML elements and their attributes in the rendered output. This is useful for embedding videos, widgets, or custom HTML in your markdown content.
+By default, raw HTML in markdown (such as `&lt;iframe&gt;`, `&lt;video&gt;`, or `&lt;div&gt;` tags) is stripped during rendering. Set `rawHtml: true` to preserve raw HTML elements and their attributes in the rendered output. This is useful for embedding videos, widgets, or custom HTML in your markdown content.
 
 **Note:** Setting `mdx: true` also enables raw HTML passthrough as part of the MDX specification. The `rawHtml` option is for enabling raw HTML in standard markdown without using MDX.
 
 ## `.frontmatter`
 
-Accessing the frontmatter for this instance of Writr. This is a `Record<string, any>` and can be set via the `.content` property.
+Accessing the frontmatter for this instance of Writr. This is a `Record&lt;string, any&gt;` and can be set via the `.content` property.
 
 ```javascript
 import { Writr } from 'writr';
@@ -255,7 +255,7 @@ const html = await writr.render(options); // <h1>Hello World ::-):</h1><p>This i
 
 ## `.engine`
 
-Accessing the underlying engine for this instance of Writr. This is a `Processor<Root, Root, Root, undefined, undefined>` from the core [`unified`](https://github.com/unifiedjs/unified) project and uses the familiar `.use()` plugin pattern. You can chain additional unified plugins on this processor to customize the render pipeline. Learn more about the unified engine at [unifiedjs.com](https://unifiedjs.com/) and check out the [getting started guide](https://unifiedjs.com/learn/guide/using-unified/) for examples.
+Accessing the underlying engine for this instance of Writr. This is a `Processor&lt;Root, Root, Root, undefined, undefined&gt;` from the core [`unified`](https://github.com/unifiedjs/unified) project and uses the familiar `.use()` plugin pattern. You can chain additional unified plugins on this processor to customize the render pipeline. Learn more about the unified engine at [unifiedjs.com](https://unifiedjs.com/) and check out the [getting started guide](https://unifiedjs.com/learn/guide/using-unified/) for examples.
 
 
 ## `.render(options?: RenderOptions)`
