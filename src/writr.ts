@@ -48,17 +48,8 @@ import { WritrHooks } from "./types.js";
 import { WritrAI } from "./writr-ai.js";
 
 export class Writr extends Hookified {
-	public engine = unified()
-		.use(remarkParse)
-		.use(remarkGfm) // Use GitHub Flavored Markdown
-		.use(remarkToc) // Add table of contents
-		.use(remarkEmoji) // Add emoji support
-		.use(remarkRehype) // Convert markdown to HTML
-		.use(rehypeSlug) // Add slugs to headings in HTML
-		.use(remarkMath) // Add math support
-		.use(rehypeKatex) // Add math support
-		.use(rehypeHighlight) // Apply syntax highlighting
-		.use(rehypeStringify); // Stringify HTML
+	// biome-ignore lint/suspicious/noExplicitAny: expected unified processor
+	public engine: any;
 
 	private readonly _options: WritrOptions = {
 		renderOptions: {
@@ -103,19 +94,13 @@ export class Writr extends Hookified {
 			this._content = arguments1;
 		} else if (arguments1) {
 			this._options = this.mergeOptions(this._options, arguments1);
-			/* v8 ignore next -- @preserve */
-			if (this._options.renderOptions) {
-				this.engine = this.createProcessor(this._options.renderOptions);
-			}
 		}
 
 		if (arguments2) {
 			this._options = this.mergeOptions(this._options, arguments2);
-			/* v8 ignore next -- @preserve */
-			if (this._options.renderOptions) {
-				this.engine = this.createProcessor(this._options.renderOptions);
-			}
 		}
+
+		this.engine = this.createProcessor(this._options.renderOptions ?? {});
 
 		if (this._options.ai) {
 			this._ai = new WritrAI(this, this._options.ai);
@@ -651,7 +636,7 @@ export class Writr extends Hookified {
 		}
 
 		if (options.toc) {
-			processor.use(remarkToc, { heading: "toc|table of contents" });
+			processor.use(remarkToc);
 		}
 
 		if (options.emoji) {
@@ -660,6 +645,10 @@ export class Writr extends Hookified {
 
 		if (options.mdx) {
 			processor.use(remarkMDX);
+		}
+
+		if (options.math) {
+			processor.use(remarkMath);
 		}
 
 		// biome-ignore lint/suspicious/noExplicitAny: remarkRehype handler types
@@ -691,7 +680,7 @@ export class Writr extends Hookified {
 		}
 
 		if (options.math) {
-			processor.use(remarkMath).use(rehypeKatex);
+			processor.use(rehypeKatex);
 		}
 
 		processor.use(rehypeStringify);
