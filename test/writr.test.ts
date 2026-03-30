@@ -140,6 +140,38 @@ describe("writr", () => {
 		expect(result).toContain("NOTE");
 		expect(result).toContain("This is a note alert with useful information.");
 	});
+	it("should render lists inside blockquotes correctly", async () => {
+		const md =
+			"> 🚧 At this time Hyphen Deploy supports containerized applications running on:\n>\n> - 🚧 Amazon Elastic Container Service (ECS)\n> - 🚧 Azure Container Apps\n> - 🚧 Google Cloudrun";
+		const writr = new Writr(md);
+		const result = await writr.render();
+		expect(result).toContain("<blockquote>");
+		expect(result).toContain("<ul>");
+		expect(result).toContain(
+			"<li>🚧 Amazon Elastic Container Service (ECS)</li>",
+		);
+		expect(result).toContain("<li>🚧 Azure Container Apps</li>");
+		expect(result).toContain("<li>🚧 Google Cloudrun</li>");
+	});
+	it("should render lists inside blockquotes without blank separator line", async () => {
+		const md = "> Text:\n> - item1\n> - item2\n> - item3";
+		const writr = new Writr(md);
+		const result = await writr.render();
+		expect(result).toContain("<blockquote>");
+		expect(result).toContain("<ul>");
+		expect(result).toContain("<li>item1</li>");
+		expect(result).toContain("<li>item2</li>");
+		expect(result).toContain("<li>item3</li>");
+	});
+	it("should render lists inside blockquotes with renderSync", () => {
+		const md = "> Text:\n>\n> - item1\n> - item2";
+		const writr = new Writr(md);
+		const result = writr.renderSync();
+		expect(result).toContain("<blockquote>");
+		expect(result).toContain("<ul>");
+		expect(result).toContain("<li>item1</li>");
+		expect(result).toContain("<li>item2</li>");
+	});
 	it("should not render GitHub blockquote alerts when gfm is disabled", async () => {
 		const writr = new Writr(
 			"> [!NOTE]\n> This is a note alert with useful information.",
