@@ -17,7 +17,7 @@ import remarkMDX from "remark-mdx";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import remarkToc from "remark-toc";
-import { unified } from "unified";
+import { type Processor, unified } from "unified";
 import { WritrCache } from "./writr-cache.js";
 
 export type {
@@ -48,8 +48,8 @@ import { WritrHooks } from "./types.js";
 import { WritrAI } from "./writr-ai.js";
 
 export class Writr extends Hookified {
-	// biome-ignore lint/suspicious/noExplicitAny: expected unified processor
-	public engine: any;
+	// biome-ignore lint/suspicious/noExplicitAny: plugin chaining changes generic type params
+	public engine: Processor<any, any, any, any, any>;
 
 	private readonly _options: WritrOptions = {
 		renderOptions: {
@@ -626,8 +626,10 @@ export class Writr extends Hookified {
 		return this._options?.renderOptions?.caching ?? false;
 	}
 
-	// biome-ignore lint/suspicious/noExplicitAny: expected unified processor
-	private createProcessor(options: RenderOptions): any {
+	private createProcessor(
+		options: RenderOptions,
+		// biome-ignore lint/suspicious/noExplicitAny: plugin chaining changes generic type params
+	): Processor<any, any, any, any, any> {
 		const processor = unified().use(remarkParse);
 
 		if (options.gfm) {
