@@ -87,10 +87,34 @@ export class WritrAI {
 		);
 
 		if (aiFields.length > 0) {
-			const schema = this.buildMetadataSchema(aiFields);
-			const prompt =
+			const schema = this.buildMetadataSchema(aiFields, options);
+			let prompt =
 				this.prompts.metadata ??
 				"Analyze the following markdown document and generate metadata for it. Be concise and accurate.";
+
+			const aiFieldSet = new Set(aiFields);
+			const constraints: string[] = [];
+			if (aiFieldSet.has("tags") && options?.allowedTags?.length) {
+				constraints.push(
+					`Tags must be selected from: ${options.allowedTags.join(", ")}`,
+				);
+			}
+
+			if (aiFieldSet.has("keywords") && options?.allowedKeywords?.length) {
+				constraints.push(
+					`Keywords must be selected from: ${options.allowedKeywords.join(", ")}`,
+				);
+			}
+
+			if (aiFieldSet.has("category") && options?.allowedCategories?.length) {
+				constraints.push(
+					`Category must be one of: ${options.allowedCategories.join(", ")}`,
+				);
+			}
+
+			if (constraints.length > 0) {
+				prompt += `\n\nConstraints:\n${constraints.map((c) => `- ${c}`).join("\n")}`;
+			}
 
 			const { output } = await generateText({
 				model: this.model,
@@ -250,8 +274,25 @@ export class WritrAI {
 			return allFields;
 		}
 
+		// Implicitly enable fields when constraints are provided
+		const effective = { ...options };
+		if (effective.allowedTags?.length && effective.tags === undefined) {
+			effective.tags = true;
+		}
+
+		if (effective.allowedKeywords?.length && effective.keywords === undefined) {
+			effective.keywords = true;
+		}
+
+		if (
+			effective.allowedCategories?.length &&
+			effective.category === undefined
+		) {
+			effective.category = true;
+		}
+
 		return allFields.filter(
-			(field) => options[field as keyof WritrGetMetadataOptions] === true,
+			(field) => effective[field as keyof WritrGetMetadataOptions] === true,
 		);
 	}
 
@@ -267,8 +308,11 @@ export class WritrAI {
 		);
 	}
 
-	// biome-ignore lint/suspicious/noExplicitAny: dynamic schema construction
-	private buildMetadataSchema(fields: WritrMetadataKey[]): z.ZodObject<any> {
+	private buildMetadataSchema(
+		fields: WritrMetadataKey[],
+		options?: WritrGetMetadataOptions,
+		// biome-ignore lint/suspicious/noExplicitAny: dynamic schema construction
+	): z.ZodObject<any> {
 		const fieldSet = new Set(fields);
 		// biome-ignore lint/suspicious/noExplicitAny: dynamic schema construction
 		const entries: Array<[string, any]> = [];
@@ -281,20 +325,40 @@ export class WritrAI {
 		}
 
 		if (fieldSet.has("tags")) {
+			const uniqueTags = options?.allowedTags?.length
+				? [...new Set(options.allowedTags)]
+				: undefined;
+			const itemSchema = uniqueTags?.length
+				? z.enum(uniqueTags as [string, ...string[]])
+				: z.string();
 			entries.push([
 				"tags",
 				z
-					.array(z.string())
-					.describe("Human-friendly labels for organizing the document"),
+					.array(itemSchema)
+					.describe(
+						uniqueTags?.length
+							? `Human-friendly labels selected from: ${uniqueTags.join(", ")}`
+							: "Human-friendly labels for organizing the document",
+					),
 			]);
 		}
 
 		if (fieldSet.has("keywords")) {
+			const uniqueKeywords = options?.allowedKeywords?.length
+				? [...new Set(options.allowedKeywords)]
+				: undefined;
+			const itemSchema = uniqueKeywords?.length
+				? z.enum(uniqueKeywords as [string, ...string[]])
+				: z.string();
 			entries.push([
 				"keywords",
 				z
-					.array(z.string())
-					.describe("Search-oriented terms related to the document"),
+					.array(itemSchema)
+					.describe(
+						uniqueKeywords?.length
+							? `Search-oriented terms selected from: ${uniqueKeywords.join(", ")}`
+							: "Search-oriented terms related to the document",
+					),
 			]);
 		}
 
@@ -320,11 +384,19 @@ export class WritrAI {
 		}
 
 		if (fieldSet.has("category")) {
+			const uniqueCategories = options?.allowedCategories?.length
+				? [...new Set(options.allowedCategories)]
+				: undefined;
+			const schema = uniqueCategories?.length
+				? z.enum(uniqueCategories as [string, ...string[]])
+				: z.string();
 			entries.push([
 				"category",
-				z
-					.string()
-					.describe('A broad grouping such as "docs", "guide", or "blog"'),
+				schema.describe(
+					uniqueCategories?.length
+						? `A broad grouping selected from: ${uniqueCategories.join(", ")}`
+						: 'A broad grouping such as "docs", "guide", or "blog"',
+				),
 			]);
 		}
 

@@ -273,6 +273,164 @@ describe("writr-ai", () => {
 			expect(result2.title).toBe("Hello World");
 			expect(callCount).toBe(1);
 		});
+
+		it("should constrain tags to allowedTags", async () => {
+			const writr = new Writr(blogPostWithMarkdown);
+			const model = createMockModel({
+				tags: ["javascript", "typescript"],
+			});
+
+			const ai = new WritrAI(writr, { model });
+			const metadata = await ai.getMetadata({
+				tags: true,
+				allowedTags: ["javascript", "typescript", "python", "rust"],
+			});
+
+			expect(metadata.tags).toEqual(["javascript", "typescript"]);
+		});
+
+		it("should constrain keywords to allowedKeywords", async () => {
+			const writr = new Writr(blogPostWithMarkdown);
+			const model = createMockModel({
+				keywords: ["async", "promises"],
+			});
+
+			const ai = new WritrAI(writr, { model });
+			const metadata = await ai.getMetadata({
+				keywords: true,
+				allowedKeywords: ["async", "promises", "callbacks", "generators"],
+			});
+
+			expect(metadata.keywords).toEqual(["async", "promises"]);
+		});
+
+		it("should constrain category to allowedCategories", async () => {
+			const writr = new Writr(blogPostWithMarkdown);
+			const model = createMockModel({
+				category: "tutorial",
+			});
+
+			const ai = new WritrAI(writr, { model });
+			const metadata = await ai.getMetadata({
+				category: true,
+				allowedCategories: ["tutorial", "guide", "reference", "blog"],
+			});
+
+			expect(metadata.category).toBe("tutorial");
+		});
+
+		it("should implicitly enable tags when allowedTags is provided", async () => {
+			const writr = new Writr(blogPostWithMarkdown);
+			const model = createMockModel({
+				tags: ["javascript"],
+			});
+
+			const ai = new WritrAI(writr, { model });
+			const metadata = await ai.getMetadata({
+				allowedTags: ["javascript", "typescript"],
+			});
+
+			expect(metadata.tags).toEqual(["javascript"]);
+		});
+
+		it("should implicitly enable keywords when allowedKeywords is provided", async () => {
+			const writr = new Writr(blogPostWithMarkdown);
+			const model = createMockModel({
+				keywords: ["async"],
+			});
+
+			const ai = new WritrAI(writr, { model });
+			const metadata = await ai.getMetadata({
+				allowedKeywords: ["async", "promises"],
+			});
+
+			expect(metadata.keywords).toEqual(["async"]);
+		});
+
+		it("should implicitly enable category when allowedCategories is provided", async () => {
+			const writr = new Writr(blogPostWithMarkdown);
+			const model = createMockModel({
+				category: "guide",
+			});
+
+			const ai = new WritrAI(writr, { model });
+			const metadata = await ai.getMetadata({
+				allowedCategories: ["guide", "blog"],
+			});
+
+			expect(metadata.category).toBe("guide");
+		});
+
+		it("should not generate tags when tags is explicitly false even with allowedTags", async () => {
+			const writr = new Writr(blogPostWithMarkdown);
+			const model = createMockModel({});
+
+			const ai = new WritrAI(writr, { model });
+			const metadata = await ai.getMetadata({
+				tags: false,
+				allowedTags: ["javascript", "typescript"],
+			});
+
+			expect(metadata.tags).toBeUndefined();
+		});
+
+		it("should fall back to unconstrained when allowedTags is empty", async () => {
+			const writr = new Writr(blogPostWithMarkdown);
+			const model = createMockModel({
+				tags: ["anything", "goes"],
+			});
+
+			const ai = new WritrAI(writr, { model });
+			const metadata = await ai.getMetadata({
+				tags: true,
+				allowedTags: [],
+			});
+
+			expect(metadata.tags).toEqual(["anything", "goes"]);
+		});
+
+		it("should produce different cache keys for different allowedTags", async () => {
+			const writr = new Writr(blogPostWithMarkdown);
+			let callCount = 0;
+			const model = new MockLanguageModelV3({
+				doGenerate: async (request) => {
+					callCount++;
+					const promptText = JSON.stringify(request.prompt);
+					const tags = promptText.includes("c, d") ? ["c"] : ["a"];
+					return {
+						content: [
+							{
+								type: "text" as const,
+								text: JSON.stringify({ tags }),
+							},
+						],
+						finishReason: { unified: "stop" as const, raw: undefined },
+						usage: {
+							inputTokens: {
+								total: 10,
+								noCache: undefined,
+								cacheRead: undefined,
+								cacheWrite: undefined,
+							},
+							outputTokens: {
+								total: 20,
+								text: undefined,
+								reasoning: undefined,
+							},
+						},
+						warnings: [],
+					};
+				},
+			});
+
+			const ai = new WritrAI(writr, { model, cache: true });
+
+			await ai.getMetadata({ tags: true, allowedTags: ["a", "b"] });
+			await ai.getMetadata({ tags: true, allowedTags: ["a", "b"] });
+			await ai.getMetadata({ tags: true, allowedTags: ["c", "d"] });
+
+			expect(callCount).toBe(2);
+		});
 	});
 
 	describe("getSEO", () => {
@@ -576,6 +734,26 @@ describe("writr-ai", () => {
 			expect(result.applied).toContain("description");
 			expect(writr.frontMatter.meta_description).toBe("A test document.");
 			expect(writr.frontMatter.description).toBeUndefined();
+		});
+
+		it("should pass allowedTags through to getMetadata via generate option", async () => {
+			const writr = new Writr(
+				"---\n---\n\n# Content\n\nSome text about technology.",
+			);
+			const model = createMockModel({
+				tags: ["javascript"],
+			});
+
+			const ai = new WritrAI(writr, { model });
+			const result = await ai.applyMetadata({
+				generate: {
+					tags: true,
+					allowedTags: ["javascript", "python", "rust"],
+				},
+			});
+
+			expect(result.generated.tags).toEqual(["javascript"]);
+			expect(result.applied).toContain("tags");
 		});
 
 		it("should skip keys where generated value is undefined", async () => {
