@@ -92,20 +92,21 @@ export class WritrAI {
 				this.prompts.metadata ??
 				"Analyze the following markdown document and generate metadata for it. Be concise and accurate.";
 
+			const aiFieldSet = new Set(aiFields);
 			const constraints: string[] = [];
-			if (options?.allowedTags?.length) {
+			if (aiFieldSet.has("tags") && options?.allowedTags?.length) {
 				constraints.push(
 					`Tags must be selected from: ${options.allowedTags.join(", ")}`,
 				);
 			}
 
-			if (options?.allowedKeywords?.length) {
+			if (aiFieldSet.has("keywords") && options?.allowedKeywords?.length) {
 				constraints.push(
 					`Keywords must be selected from: ${options.allowedKeywords.join(", ")}`,
 				);
 			}
 
-			if (options?.allowedCategories?.length) {
+			if (aiFieldSet.has("category") && options?.allowedCategories?.length) {
 				constraints.push(
 					`Category must be one of: ${options.allowedCategories.join(", ")}`,
 				);
