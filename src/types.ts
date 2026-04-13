@@ -261,6 +261,24 @@ export type WritrGetMetadataOptions = {
 	 * Include a deterministic word count.
 	 */
 	wordCount?: boolean;
+
+	/**
+	 * When provided, constrains AI-generated tags to only values from this list.
+	 * Has no effect when `tags` is explicitly `false`.
+	 */
+	allowedTags?: string[];
+
+	/**
+	 * When provided, constrains AI-generated keywords to only values from this list.
+	 * Has no effect when `keywords` is explicitly `false`.
+	 */
+	allowedKeywords?: string[];
+
+	/**
+	 * When provided, constrains the AI-generated category to only values from this list.
+	 * Has no effect when `category` is explicitly `false`.
+	 */
+	allowedCategories?: string[];
 };
 
 /**

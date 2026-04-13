@@ -87,10 +87,33 @@ export class WritrAI {
 		);
 
 		if (aiFields.length > 0) {
-			const schema = this.buildMetadataSchema(aiFields);
-			const prompt =
+			const schema = this.buildMetadataSchema(aiFields, options);
+			let prompt =
 				this.prompts.metadata ??
 				"Analyze the following markdown document and generate metadata for it. Be concise and accurate.";
+
+			const constraints: string[] = [];
+			if (options?.allowedTags?.length) {
+				constraints.push(
+					`Tags must be selected from: ${options.allowedTags.join(", ")}`,
+				);
+			}
+
+			if (options?.allowedKeywords?.length) {
+				constraints.push(
+					`Keywords must be selected from: ${options.allowedKeywords.join(", ")}`,
+				);
+			}
+
+			if (options?.allowedCategories?.length) {
+				constraints.push(
+					`Category must be one of: ${options.allowedCategories.join(", ")}`,
+				);
+			}
+
+			if (constraints.length > 0) {
+				prompt += `\n\nConstraints:\n${constraints.map((c) => `- ${c}`).join("\n")}`;
+			}
 
 			const { output } = await generateText({
 				model: this.model,
@@ -250,8 +273,25 @@ export class WritrAI {
 			return allFields;
 		}
 
+		// Implicitly enable fields when constraints are provided
+		const effective = { ...options };
+		if (effective.allowedTags?.length && effective.tags === undefined) {
+			effective.tags = true;
+		}
+
+		if (effective.allowedKeywords?.length && effective.keywords === undefined) {
+			effective.keywords = true;
+		}
+
+		if (
+			effective.allowedCategories?.length &&
+			effective.category === undefined
+		) {
+			effective.category = true;
+		}
+
 		return allFields.filter(
-			(field) => options[field as keyof WritrGetMetadataOptions] === true,
+			(field) => effective[field as keyof WritrGetMetadataOptions] === true,
 		);
 	}
 
@@ -267,8 +307,11 @@ export class WritrAI {
 		);
 	}
 
-	// biome-ignore lint/suspicious/noExplicitAny: dynamic schema construction
-	private buildMetadataSchema(fields: WritrMetadataKey[]): z.ZodObject<any> {
+	private buildMetadataSchema(
+		fields: WritrMetadataKey[],
+		options?: WritrGetMetadataOptions,
+		// biome-ignore lint/suspicious/noExplicitAny: dynamic schema construction
+	): z.ZodObject<any> {
 		const fieldSet = new Set(fields);
 		// biome-ignore lint/suspicious/noExplicitAny: dynamic schema construction
 		const entries: Array<[string, any]> = [];
@@ -281,20 +324,34 @@ export class WritrAI {
 		}
 
 		if (fieldSet.has("tags")) {
+			const itemSchema = options?.allowedTags?.length
+				? z.enum(options.allowedTags as [string, ...string[]])
+				: z.string();
 			entries.push([
 				"tags",
 				z
-					.array(z.string())
-					.describe("Human-friendly labels for organizing the document"),
+					.array(itemSchema)
+					.describe(
+						options?.allowedTags?.length
+							? `Human-friendly labels selected from: ${options.allowedTags.join(", ")}`
+							: "Human-friendly labels for organizing the document",
+					),
 			]);
 		}
 
 		if (fieldSet.has("keywords")) {
+			const itemSchema = options?.allowedKeywords?.length
+				? z.enum(options.allowedKeywords as [string, ...string[]])
+				: z.string();
 			entries.push([
 				"keywords",
 				z
-					.array(z.string())
-					.describe("Search-oriented terms related to the document"),
+					.array(itemSchema)
+					.describe(
+						options?.allowedKeywords?.length
+							? `Search-oriented terms selected from: ${options.allowedKeywords.join(", ")}`
+							: "Search-oriented terms related to the document",
+					),
 			]);
 		}
 
@@ -320,11 +377,16 @@ export class WritrAI {
 		}
 
 		if (fieldSet.has("category")) {
+			const schema = options?.allowedCategories?.length
+				? z.enum(options.allowedCategories as [string, ...string[]])
+				: z.string();
 			entries.push([
 				"category",
-				z
-					.string()
-					.describe('A broad grouping such as "docs", "guide", or "blog"'),
+				schema.describe(
+					options?.allowedCategories?.length
+						? `A broad grouping selected from: ${options.allowedCategories.join(", ")}`
+						: 'A broad grouping such as "docs", "guide", or "blog"',
+				),
 			]);
 		}
 
