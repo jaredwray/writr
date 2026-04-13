@@ -325,32 +325,38 @@ export class WritrAI {
 		}
 
 		if (fieldSet.has("tags")) {
-			const itemSchema = options?.allowedTags?.length
-				? z.enum(options.allowedTags as [string, ...string[]])
+			const uniqueTags = options?.allowedTags?.length
+				? [...new Set(options.allowedTags)]
+				: undefined;
+			const itemSchema = uniqueTags?.length
+				? z.enum(uniqueTags as [string, ...string[]])
 				: z.string();
 			entries.push([
 				"tags",
 				z
 					.array(itemSchema)
 					.describe(
-						options?.allowedTags?.length
-							? `Human-friendly labels selected from: ${options.allowedTags.join(", ")}`
+						uniqueTags?.length
+							? `Human-friendly labels selected from: ${uniqueTags.join(", ")}`
 							: "Human-friendly labels for organizing the document",
 					),
 			]);
 		}
 
 		if (fieldSet.has("keywords")) {
-			const itemSchema = options?.allowedKeywords?.length
-				? z.enum(options.allowedKeywords as [string, ...string[]])
+			const uniqueKeywords = options?.allowedKeywords?.length
+				? [...new Set(options.allowedKeywords)]
+				: undefined;
+			const itemSchema = uniqueKeywords?.length
+				? z.enum(uniqueKeywords as [string, ...string[]])
 				: z.string();
 			entries.push([
 				"keywords",
 				z
 					.array(itemSchema)
 					.describe(
-						options?.allowedKeywords?.length
-							? `Search-oriented terms selected from: ${options.allowedKeywords.join(", ")}`
+						uniqueKeywords?.length
+							? `Search-oriented terms selected from: ${uniqueKeywords.join(", ")}`
 							: "Search-oriented terms related to the document",
 					),
 			]);
@@ -378,14 +384,17 @@ export class WritrAI {
 		}
 
 		if (fieldSet.has("category")) {
-			const schema = options?.allowedCategories?.length
-				? z.enum(options.allowedCategories as [string, ...string[]])
+			const uniqueCategories = options?.allowedCategories?.length
+				? [...new Set(options.allowedCategories)]
+				: undefined;
+			const schema = uniqueCategories?.length
+				? z.enum(uniqueCategories as [string, ...string[]])
 				: z.string();
 			entries.push([
 				"category",
 				schema.describe(
-					options?.allowedCategories?.length
-						? `A broad grouping selected from: ${options.allowedCategories.join(", ")}`
+					uniqueCategories?.length
+						? `A broad grouping selected from: ${uniqueCategories.join(", ")}`
 						: 'A broad grouping such as "docs", "guide", or "blog"',
 				),
 			]);
