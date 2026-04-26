@@ -57,8 +57,23 @@ export class WritrAI {
 	/**
 	 * Generates metadata for the current markdown document.
 	 *
+	 * Pass `allowedTags`, `allowedKeywords`, or `allowedCategories` to constrain the
+	 * AI to a controlled vocabulary — values are enforced via a Zod response schema
+	 * (`z.array(z.enum(...))` for tags/keywords, `z.enum(...)` for category) so the
+	 * model cannot return anything outside the list. Providing a non-empty `allowed*`
+	 * array also implicitly enables its corresponding field.
+	 *
 	 * @param options - Controls which metadata fields should be generated.
 	 * @returns A metadata object for the current document.
+	 *
+	 * @example
+	 * ```typescript
+	 * const metadata = await writr.ai.getMetadata({
+	 *   allowedTags: ['javascript', 'typescript', 'python'],
+	 *   allowedCategories: ['tutorial', 'guide', 'blog'],
+	 * });
+	 * // metadata.tags ⊆ allowedTags, metadata.category ∈ allowedCategories
+	 * ```
 	 */
 	public async getMetadata(
 		options?: WritrGetMetadataOptions,

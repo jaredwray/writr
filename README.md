@@ -67,6 +67,7 @@
   - [AI Provider Configuration](#ai-provider-configuration)
   - [Metadata](#metadata)
     - [Generating Metadata](#generating-metadata)
+    - [Constraining Generated Values](#constraining-generated-values)
     - [Applying Metadata to Frontmatter](#applying-metadata-to-frontmatter)
     - [Overwrite](#overwrite)
     - [Field Mapping](#field-mapping)
@@ -866,6 +867,55 @@ const partial = await writr.ai.getMetadata({
 | `difficulty` | `"beginner" \| "intermediate" \| "advanced"` | The estimated skill level required. |
 | `readingTime` | `number` | Estimated reading time in minutes (computed, not AI-generated). |
 | `wordCount` | `number` | Total word count of the document (computed, not AI-generated). |
+
+### Constraining Generated Values
+
+When you have a controlled vocabulary — for example a CMS taxonomy, a fixed set of categories, or an SEO keyword list — pass `allowedTags`, `allowedKeywords`, or `allowedCategories` and the AI will pick only from that list. When omitted, the AI generates freely.
+
+```typescript
+const metadata = await writr.ai.getMetadata({
+  allowedTags: ['javascript', 'typescript', 'python', 'rust'],
+  allowedKeywords: ['async', 'promises', 'callbacks'],
+  allowedCategories: ['tutorial', 'guide', 'reference', 'blog'],
+});
+
+// metadata.tags is guaranteed to be a subset of allowedTags
+// metadata.category is guaranteed to be one of allowedCategories
+```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `allowedTags` | `string[]` | Constrains AI-generated tags to this list. A non-empty array implicitly enables `tags`. |
+| `allowedKeywords` | `string[]` | Constrains AI-generated keywords to this list. A non-empty array implicitly enables `keywords`. |
+| `allowedCategories` | `string[]` | Constrains AI-generated category to one of these values. A non-empty array implicitly enables `category`. |
+
+**How the constraint is enforced**
+
+The constraint is applied on three reinforcing layers, so the model both *knows about* and is *prevented from violating* the list:
+
+1. **Schema enforcement (the hard guarantee).** The Zod response schema uses `z.array(z.enum(allowedTags))` for tags, `z.array(z.enum(allowedKeywords))` for keywords, and `z.enum(allowedCategories)` for category. The AI SDK's structured-output mode forces the model to return values from the enum — it literally cannot produce anything outside the list.
+2. **Prompt instruction.** A `Constraints:` block is appended to the prompt with lines like `Tags must be selected from: foo, bar, baz` and `Category must be one of: tutorial, guide, reference`, so the model also sees the list in natural language.
+3. **Schema field description.** The Zod field description is rewritten to inline the allowed values (e.g. `Human-friendly labels selected from: foo, bar, baz`), which most providers surface to the model alongside the schema.
+
+**Behavior notes**
+
+- Providing a **non-empty** `allowed*` array implicitly enables the corresponding field — you don't also need `tags: true`.
+- Setting the field explicitly to `false` disables it even when an `allowed*` list is provided.
+- An **empty** array (`allowedTags: []`) does **not** implicitly enable the field. If you want unconstrained generation, either omit the option or pair the empty array with the explicit flag (e.g. `{ tags: true, allowedTags: [] }`) — `z.enum` requires at least one value, so the empty-array path uses `z.string()` and drops the prompt constraint.
+- These also work via `applyMetadata({ generate: { allowedTags: [...] } })`.
+
+```typescript
+// Implicit enablement: tags is generated, even without `tags: true`
+const metadata = await writr.ai.getMetadata({
+  allowedTags: ['docs', 'guide', 'blog'],
+});
+
+// Explicit `false` wins: tags is not generated
+const metadata = await writr.ai.getMetadata({
+  tags: false,
+  allowedTags: ['docs', 'guide', 'blog'],
+});
+```
 
 ### Applying Metadata to Frontmatter
 
