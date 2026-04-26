@@ -15,8 +15,8 @@ importers:
         specifier: ^2.3.4
         version: 2.3.4
       hashery:
-        specifier: ^1.5.1
-        version: 1.5.1
+        specifier: ^2.0.0
+        version: 2.0.0
       hookified:
         specifier: ^2.1.0
         version: 2.1.1

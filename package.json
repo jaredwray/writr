@@ -63,7 +63,7 @@
   "dependencies": {
     "ai": "^6.0.138",
     "cacheable": "^2.3.4",
-    "hashery": "^1.5.1",
+    "hashery": "^2.0.0",
     "hookified": "^2.1.0",
     "html-react-parser": "^6.0.1",
     "js-yaml": "^4.1.1",
