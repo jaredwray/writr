@@ -885,23 +885,23 @@ const metadata = await writr.ai.getMetadata({
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `allowedTags` | `string[]` | Constrains AI-generated tags to this list. Implicitly enables `tags`. |
-| `allowedKeywords` | `string[]` | Constrains AI-generated keywords to this list. Implicitly enables `keywords`. |
-| `allowedCategories` | `string[]` | Constrains AI-generated category to one of these values. Implicitly enables `category`. |
+| `allowedTags` | `string[]` | Constrains AI-generated tags to this list. A non-empty array implicitly enables `tags`. |
+| `allowedKeywords` | `string[]` | Constrains AI-generated keywords to this list. A non-empty array implicitly enables `keywords`. |
+| `allowedCategories` | `string[]` | Constrains AI-generated category to one of these values. A non-empty array implicitly enables `category`. |
 
 **How the constraint is enforced**
 
 The constraint is applied on three reinforcing layers, so the model both *knows about* and is *prevented from violating* the list:
 
-1. **Schema enforcement (the hard guarantee).** The Zod response schema uses `z.enum(allowedTags)` for tags and keywords, and `z.enum(allowedCategories)` for category. The AI SDK's structured-output mode forces the model to return values from the enum — it literally cannot produce anything outside the list.
+1. **Schema enforcement (the hard guarantee).** The Zod response schema uses `z.array(z.enum(allowedTags))` for tags, `z.array(z.enum(allowedKeywords))` for keywords, and `z.enum(allowedCategories)` for category. The AI SDK's structured-output mode forces the model to return values from the enum — it literally cannot produce anything outside the list.
 2. **Prompt instruction.** A `Constraints:` block is appended to the prompt with lines like `Tags must be selected from: foo, bar, baz` and `Category must be one of: tutorial, guide, reference`, so the model also sees the list in natural language.
 3. **Schema field description.** The Zod field description is rewritten to inline the allowed values (e.g. `Human-friendly labels selected from: foo, bar, baz`), which most providers surface to the model alongside the schema.
 
 **Behavior notes**
 
-- Providing `allowed*` implicitly enables the corresponding field — you don't also need `tags: true`.
+- Providing a **non-empty** `allowed*` array implicitly enables the corresponding field — you don't also need `tags: true`.
 - Setting the field explicitly to `false` disables it even when an `allowed*` list is provided.
-- An empty array (`allowedTags: []`) falls back to unconstrained generation. `z.enum` requires at least one value, so the empty-array path uses `z.string()` and drops the prompt constraint.
+- An **empty** array (`allowedTags: []`) does **not** implicitly enable the field. If you want unconstrained generation, either omit the option or pair the empty array with the explicit flag (e.g. `{ tags: true, allowedTags: [] }`) — `z.enum` requires at least one value, so the empty-array path uses `z.string()` and drops the prompt constraint.
 - These also work via `applyMetadata({ generate: { allowedTags: [...] } })`.
 
 ```typescript
