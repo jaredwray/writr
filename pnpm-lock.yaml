@@ -12,8 +12,8 @@ importers:
         specifier: ^6.0.203
         version: 6.0.203(zod@4.3.6)
       cacheable:
-        specifier: ^2.3.4
-        version: 2.3.4
+        specifier: ^2.3.5
+        version: 2.3.5
       hashery:
         specifier: ^2.0.0
         version: 2.0.0
@@ -949,9 +949,6 @@ packages:
   cac@7.0.0:
     resolution: {integrity: sha512-tixWYgm5ZoOD+3g6UTea91eow5z6AAHaho3g0V9CNSNb45gM8SmflpAc+GRd1InC4AqN/07Unrgp56Y94N9hJQ==}
     engines: {node: '>=20.19.0'}
-
-  cacheable@2.3.4:
-    resolution: {integrity: sha512-djgxybDbw9fL/ZWMI3+CE8ZilNxcwFkVtDc1gJ+IlOSSWkSMPQabhV/XCHTQ6pwwN6aivXPZ43omTooZiX06Ew==}
 
   cacheable@2.3.5:
     resolution: {integrity: sha512-EQfaKe09tl615iNvq/TBRWTFf1AKJNXYQSsMx0Z3EI0nA+pVsVPS8wJhnRlkbdacKPh1d0qVIhwTc2zsQNFEEg==}
@@ -1964,10 +1961,6 @@ packages:
     resolution: {integrity: sha512-+Owyggi9IxT1ePKGafcI87ubSmxol6smwJ+RAHDQlx9+9cPwFWDiKFFCPuWhr9ignlGpZ9vDQLw67N4dcTVFEA==}
     engines: {node: '>=20'}
 
-  qified@0.9.1:
-    resolution: {integrity: sha512-n7mar4T0xQ+39dE2vGTAlbxUEpndwPANH0kDef1/MYsB8Bba9wshkybIRx74qgcvKQPEWErf9AqAdYjhzY2Ilg==}
-    engines: {node: '>=20'}
-
   quansync@1.0.0:
     resolution: {integrity: sha512-5xZacEEufv3HSTPQuchrvV6soaiACMFnq1H8wkVioctoH3TRha9Sz66lOxRwPK/qZj7HPiSveih9yAyh98gvqA==}
 
@@ -2599,7 +2592,7 @@ snapshots:
 
   '@cacheable/net@2.0.7':
     dependencies:
-      cacheable: 2.3.4
+      cacheable: 2.3.5
       hookified: 1.15.1
       http-cache-semantics: 4.2.0
       undici: 7.25.0
@@ -3119,14 +3112,6 @@ snapshots:
   bytes@3.0.0: {}
 
   cac@7.0.0: {}
-
-  cacheable@2.3.4:
-    dependencies:
-      '@cacheable/memory': 2.0.8
-      '@cacheable/utils': 2.4.1
-      hookified: 1.15.1
-      keyv: 5.6.0
-      qified: 0.9.1
 
   cacheable@2.3.5:
     dependencies:
@@ -4480,11 +4465,7 @@ snapshots:
 
   qified@0.10.1:
     dependencies:
-      hookified: 2.1.1
-
-  qified@0.9.1:
-    dependencies:
-      hookified: 2.1.1
+      hookified: 2.2.0
 
   quansync@1.0.0: {}
 
@@ -5020,9 +5001,9 @@ snapshots:
   writr@6.1.2(@types/react@19.2.17):
     dependencies:
       ai: 6.0.203(zod@4.3.6)
-      cacheable: 2.3.4
+      cacheable: 2.3.5
       hashery: 2.0.0
-      hookified: 2.1.1
+      hookified: 2.2.0
       html-react-parser: 6.0.1(@types/react@19.2.17)(react@19.2.5)
       js-yaml: 4.1.1
       react: 19.2.5
