@@ -96,7 +96,7 @@
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.14",
     "@vitest/coverage-v8": "^4.1.8",
-    "docula": "^1.10.0",
+    "docula": "^2.0.0",
     "dotenv": "^17.3.1",
     "markdown-it": "^14.1.1",
     "marked": "^18.0.2",
