@@ -27,7 +27,7 @@ Writr is a Node.js markdown rendering library built with TypeScript. It simplifi
 3. **Follow existing code style** - Biome enforces formatting and linting
 4. **Mirror source structure in tests** - Test files go in `test/` matching `src/` structure
 5. **Maintain ESM-only compatibility** - This is an ESM-only package
-6. **Test on Node.js >= 20** - Minimum supported version is Node 20
+6. **Test on Node.js >= 22** - Minimum supported version is Node 22
 
 ## Structure
 
