@@ -1,0 +1,45 @@
+<p><a href="https://qified.org"><img src="site/logo.svg" alt="site/logo.svg"></a></p>
+<p><a href="https://github.com/jaredwray/qified/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/qified/actions/workflows/tests.yaml/badge.svg" alt="tests"></a>
+<a href="https://github.com/jaredwray/qified/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/qified" alt="GitHub license"></a>
+<a href="https://codecov.io/gh/jaredwray/qified"><img src="https://codecov.io/gh/jaredwray/qified/graph/badge.svg?token=jcRdy8SkOG" alt="codecov"></a>
+<a href="https://npmjs.com/package/qified"><img src="https://img.shields.io/npm/dm/qified" alt="npm"></a>
+<a href="https://npmjs.com/package/qified"><img src="https://img.shields.io/npm/v/qified" alt="npm"></a></p>
+<h1 id="qified">qified</h1>
+<p>Task and Message Queues with Multiple Providers</p>
+<p>This is a mono repo that contains the following packages:</p>
+<ul>
+<li><a href="packages/qified/README.md">qified</a> - The main package that contains the core functionality and a built in in-memory provider.</li>
+</ul>
+<p>Additional packages:</p>
+<ul>
+<li><a href="packages/redis/README.md">@qified/redis</a> - Redis Provider (messages and tasks)</li>
+<li><a href="packages/rabbitmq/README.md">@qified/rabbitmq</a> - RabbitMQ Provider (messages and tasks)</li>
+<li><a href="packages/nats/README.md">@qified/nats</a> - NATS Provider (messages and tasks)</li>
+<li><a href="packages/zeromq/README.md">@qified/zeromq</a> - ZeroMQ Provider (messages only)</li>
+</ul>
+<h1 id="development-and-testing">Development and Testing</h1>
+<p>Qified is written in TypeScript and tests are written in <code>vitest</code>. To run the tests, use the following command:</p>
+<ol>
+<li><code>nvm use</code> - This will use the correct node version</li>
+<li><code>pnpm install</code> - This will install all the dependencies</li>
+<li><code>pnpm test:services:start</code> - This will start the services needed for testing (Redis, RabbitMQ, etc)</li>
+<li><code>pnpm test</code> - This will run the tests</li>
+</ol>
+<p>To contribute follow the <a href="CONTRIBUTING.md">Contributing Guidelines</a> and <a href="CODE_OF_CONDUCT.md">Code of Conduct</a>.</p>
+<h1 id="publishing">Publishing</h1>
+<p>This is a mono repo and uses <a href="https://pnpm.io/">pnpm</a> for package management. In addition all packages are versioned using <a href="https://semver.org/">semantic versioning</a> and are published using github actions. To do a version bump and publish, follow these steps:</p>
+<ol>
+<li>Make sure you have the latest changes from the main branch.</li>
+<li>Update the <code>package.json</code> in the root directory with the new version number.
+<ul>
+<li>If you are making a breaking change, use the <code>major</code> version bump. <code>X.0.0</code></li>
+<li>If you are adding new features, use the <code>minor</code> version bump. <code>0.X.0</code></li>
+<li>If you are making a bug fix, use the <code>patch</code> version bump. <code>0.0.X</code></li>
+</ul>
+</li>
+<li>Sync the version changes to all packages by running <code>pnpm version:sync</code>.</li>
+<li>Check the changes and commit them to the main branch.</li>
+<li>Do a release on GitHub. This will trigger the GitHub Actions workflow to publish the packages.</li>
+</ol>
+<h1 id="license">License</h1>
+<p><a href="LICENSE">MIT &#x26; © Jared Wray</a></p>

@@ -1,0 +1,397 @@
+<p>import MCPInstall from '@site/src/partials/mcp-install';</p>
+<h2 id="quick-start">Quick start</h2>
+<h3 id="requirements">Requirements</h3>
+<p>This library targets PHP version 8.0 and newer. As long as you have any compatible version of PHP on your system you should be able to utilize the OpenFeature SDK.</p>
+<p>This package also has a <code>.tool-versions</code> file for use with PHP version managers like <code>asdf</code>.</p>
+<h3 id="install">Install</h3>
+<pre><code class="hljs language-shell">composer require open-feature/sdk
+</code></pre>
+<h3 id="usage">Usage</h3>
+<pre><code class="hljs language-php"><span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">OpenFeatureAPI</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">Providers</span>\<span class="hljs-title">Flagd</span>\<span class="hljs-title">FlagdProvider</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">example</span>(<span class="hljs-params"></span>)
+</span>{
+    <span class="hljs-variable">$api</span> = OpenFeatureAPI::<span class="hljs-title function_ invoke__">getInstance</span>();
+
+    <span class="hljs-comment">// configure a provider</span>
+    <span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">setProvider</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">FlagdProvider</span>());
+
+    <span class="hljs-comment">// create a client</span>
+    <span class="hljs-variable">$client</span> = <span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">getClient</span>();
+
+    <span class="hljs-comment">// get a bool flag value</span>
+    <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getBooleanValue</span>(<span class="hljs-string">'v2_enabled'</span>, <span class="hljs-literal">false</span>);
+}
+</code></pre>
+<h4 id="extended-example">Extended Example</h4>
+<pre><code class="hljs language-php"><span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">OpenFeatureClient</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyClass</span>
+</span>{
+  <span class="hljs-keyword">private</span> OpenFeatureClient <span class="hljs-variable">$client</span>;
+
+  <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">__construct</span>(<span class="hljs-params"></span>)
+  </span>{
+    <span class="hljs-variable language_">$this</span>->client = OpenFeatureAPI::<span class="hljs-title function_ invoke__">getInstance</span>()-><span class="hljs-title function_ invoke__">getClient</span>(<span class="hljs-string">'MyClass'</span>);
+  }
+
+  <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">booleanExample</span>(<span class="hljs-params"></span>): <span class="hljs-title">UI</span>
+  </span>{
+      <span class="hljs-comment">// Should we render the redesign? Or the default webpage?</span>
+      <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">$this</span>->client-><span class="hljs-title function_ invoke__">getBooleanValue</span>(<span class="hljs-string">'redesign_enabled'</span>, <span class="hljs-literal">false</span>)) {
+          <span class="hljs-keyword">return</span> <span class="hljs-title function_ invoke__">render_redesign</span>();
+      }
+      <span class="hljs-keyword">return</span> <span class="hljs-title function_ invoke__">render_normal</span>();
+  }
+
+  <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">stringExample</span>(<span class="hljs-params"></span>): <span class="hljs-title">Template</span>
+  </span>{
+      <span class="hljs-comment">// Get the template to load for the custom new homepage</span>
+      <span class="hljs-variable">$template</span> = <span class="hljs-variable language_">$this</span>->client-><span class="hljs-title function_ invoke__">getStringValue</span>(<span class="hljs-string">'homepage_template'</span>, <span class="hljs-string">'default-homepage.html'</span>);
+
+      <span class="hljs-keyword">return</span> <span class="hljs-title function_ invoke__">render_template</span>(<span class="hljs-variable">$template</span>);
+  }
+
+  <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">numberExample</span>(<span class="hljs-params"></span>): <span class="hljs-title">array</span>
+  </span>{
+      <span class="hljs-comment">// How many modules should we be fetching?</span>
+      <span class="hljs-variable">$count</span> = <span class="hljs-variable language_">$this</span>->client-><span class="hljs-title function_ invoke__">getIntegerValue</span>(<span class="hljs-string">'module-fetch-count'</span>, <span class="hljs-number">4</span>);
+
+      <span class="hljs-keyword">return</span> <span class="hljs-title function_ invoke__">fetch_modules</span>(<span class="hljs-variable">$count</span>);
+  }
+
+  <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">structureExample</span>(<span class="hljs-params"></span>): <span class="hljs-title">HomepageModule</span>
+  </span>{
+      <span class="hljs-variable">$obj</span> = <span class="hljs-variable language_">$this</span>->client-><span class="hljs-title function_ invoke__">getObjectValue</span>(<span class="hljs-string">'hero-module'</span>, <span class="hljs-variable">$previouslyDefinedDefaultStructure</span>);
+
+      <span class="hljs-keyword">return</span> <span class="hljs-title class_">HomepageModuleBuilder</span>::<span class="hljs-keyword">new</span>()
+              -><span class="hljs-title function_ invoke__">title</span>(<span class="hljs-variable">$obj</span>-><span class="hljs-title function_ invoke__">getValue</span>(<span class="hljs-string">'title'</span>))
+              -><span class="hljs-title function_ invoke__">body</span>(<span class="hljs-variable">$obj</span>-><span class="hljs-title function_ invoke__">getValue</span>(<span class="hljs-string">'description'</span>))
+              -><span class="hljs-title function_ invoke__">build</span>();
+  }
+}
+</code></pre>
+<h2 id="features">Features</h2>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Features</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✅</td>
+<td><a href="#providers">Providers</a></td>
+<td>Integrate with a commercial, open source, or in-house feature management tool.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#targeting">Targeting</a></td>
+<td>Contextually-aware flag evaluation using <a href="/docs/reference/concepts/evaluation-context">evaluation context</a>.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#hooks">Hooks</a></td>
+<td>Add functionality to various stages of the flag evaluation life-cycle.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#logging">Logging</a></td>
+<td>Integrate with popular logging packages.</td>
+</tr>
+<tr>
+<td>❌</td>
+<td><a href="#named-clients">Named clients</a></td>
+<td>Utilize multiple providers in a single application.</td>
+</tr>
+<tr>
+<td>⚠️</td>
+<td><a href="#eventing">Eventing</a></td>
+<td>React to state changes in the provider or flag management system.</td>
+</tr>
+<tr>
+<td>❌</td>
+<td><a href="#shutdown">Shutdown</a></td>
+<td>Gracefully clean up a provider during application shutdown.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#extending">Extending</a></td>
+<td>Extend OpenFeature with custom providers and hooks.</td>
+</tr>
+</tbody>
+</table>
+<p>Implemented: ✅ | In-progress: ⚠️ | Not implemented yet: ❌</p>
+<h3 id="providers">Providers</h3>
+<p><a href="/docs/reference/concepts/provider">Providers</a> are an abstraction between a flag management system and the OpenFeature SDK.
+Look <a href="/ecosystem?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Provider&#x26;instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=PHP">here</a> for a complete list of available providers.
+If the provider you're looking for hasn't been created yet, see the <a href="#develop-a-provider">develop a provider</a> section to learn how to build it yourself.</p>
+<p>Once you've added a provider as a dependency, it can be registered with OpenFeature like this:</p>
+<pre><code class="hljs language-php"><span class="hljs-variable">$api</span> = OpenFeatureAPI::<span class="hljs-title function_ invoke__">getInstance</span>();
+<span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">setProvider</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">MyProvider</span>());
+</code></pre>
+<h3 id="targeting">Targeting</h3>
+<p>Sometimes, the value of a flag must consider some dynamic criteria about the application or user, such as the user's location, IP, email address, or the server's location.
+In OpenFeature, we refer to this as <a href="/specification/glossary#targeting">targeting</a>.
+If the flag management system you're using supports targeting, you can provide the input data using the <a href="/docs/reference/concepts/evaluation-context">evaluation context</a>.</p>
+<pre><code class="hljs language-php"><span class="hljs-comment">// add a value to the global context</span>
+<span class="hljs-variable">$api</span> = OpenFeatureAPI::<span class="hljs-title function_ invoke__">getInstance</span>();
+<span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">setEvaluationContext</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">EvaluationContext</span>(<span class="hljs-string">'targetingKey'</span>, [<span class="hljs-string">'myGlobalKey'</span> => <span class="hljs-string">'myGlobalValue'</span>]));
+
+<span class="hljs-comment">// add a value to the client context</span>
+<span class="hljs-variable">$client</span> = <span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">getClient</span>();
+<span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">setEvaluationContext</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">EvaluationContext</span>(<span class="hljs-string">'targetingKey'</span>, [<span class="hljs-string">'myClientKey'</span> => <span class="hljs-string">'myClientValue'</span>]));
+
+<span class="hljs-comment">// add a value to the invocation context</span>
+<span class="hljs-variable">$context</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">EvaluationContext</span>(<span class="hljs-string">'targetingKey'</span>, [<span class="hljs-string">'myInvocationKey'</span> => <span class="hljs-string">'myInvocationValue'</span>]);
+
+<span class="hljs-variable">$boolValue</span> = <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getBooleanValue</span>(<span class="hljs-string">'boolFlag'</span>, <span class="hljs-literal">false</span>, <span class="hljs-variable">$context</span>);
+</code></pre>
+<h3 id="hooks">Hooks</h3>
+<p><a href="/docs/reference/concepts/hooks">Hooks</a> allow for custom logic to be added at well-defined points of the flag evaluation life-cycle.
+Look <a href="/ecosystem/?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Hook&#x26;instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=php">here</a> for a complete list of available hooks.
+If the hook you're looking for hasn't been created yet, see the <a href="#develop-a-hook">develop a hook</a> section to learn how to build it yourself.</p>
+<p>Once you've added a hook as a dependency, it can be registered at the global, client, or flag invocation level.</p>
+<pre><code class="hljs language-php"><span class="hljs-comment">// add a hook globally, to run on all evaluations</span>
+<span class="hljs-variable">$api</span> = OpenFeatureAPI::<span class="hljs-title function_ invoke__">getInstance</span>();
+<span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">addHook</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleGlobalHook</span>());
+
+<span class="hljs-comment">// add a hook on this client, to run on all evaluations made by this client</span>
+<span class="hljs-variable">$client</span> = <span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">getClient</span>();
+<span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">addHook</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleClientHook</span>());
+
+<span class="hljs-comment">// add a hook for this evaluation only</span>
+<span class="hljs-variable">$value</span> = <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getBooleanValue</span>(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>, <span class="hljs-variable">$context</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">EvaluationOptions</span>([<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleInvocationHook</span>()]));
+</code></pre>
+<h3 id="logging">Logging</h3>
+<p>The PHP SDK utilizes several of the PHP Standards Recommendation, one of those being <a href="https://www.php-fig.org/psr/psr-3/">PSR-3</a> which provides a standard <code>LoggerInterface</code>.
+The SDK makes use of a <code>LoggerAwareTrait</code> on several components, including the client for flag evaluation, the hook executor, and the global <code>OpenFeatureAPI</code> instance.
+When an OpenFeature client is created by the API, it will automatically utilize the configured logger in the API for it. The logger set in the client is also automatically used for the hook execution.</p>
+<blockquote>
+<p>⚠️ Once the client is instantiated, updates to the API's logger will not synchronize. This is done to support the separation of named clients. If you must update an existing client's logger, do so directly!</p>
+</blockquote>
+<pre><code class="hljs language-php"><span class="hljs-variable">$api</span> = OpenFeatureAPI::<span class="hljs-title function_ invoke__">getInstance</span>();
+
+<span class="hljs-variable">$logger</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FancyLogger</span>();
+
+<span class="hljs-variable">$defaultLoggerClient</span> = <span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">getClient</span>(<span class="hljs-string">'default-logger'</span>);
+
+<span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">setLogger</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">CustomLogger</span>());
+
+<span class="hljs-variable">$customLoggerClient</span> = <span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">getClient</span>(<span class="hljs-string">'custom-logger'</span>);
+
+<span class="hljs-variable">$overrideLoggerClient</span> = <span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">getClient</span>(<span class="hljs-string">'override-logger'</span>);
+<span class="hljs-variable">$overrideLoggerClient</span>-><span class="hljs-title function_ invoke__">setLogger</span>(<span class="hljs-variable">$logger</span>);
+
+<span class="hljs-comment">// now let's do some evaluations with these!</span>
+
+<span class="hljs-variable">$defaultLoggerClient</span>-><span class="hljs-title function_ invoke__">getBooleanValue</span>(<span class="hljs-string">'A'</span>, <span class="hljs-literal">false</span>);
+<span class="hljs-comment">// uses default logger in the SDK</span>
+
+<span class="hljs-variable">$customLoggerClient</span>-><span class="hljs-title function_ invoke__">getBooleanValue</span>(<span class="hljs-string">'B'</span>, <span class="hljs-literal">false</span>);
+<span class="hljs-comment">// uses the CustomLogger set in the API before the client was made</span>
+
+<span class="hljs-variable">$overrideLoggerClient</span>-><span class="hljs-title function_ invoke__">getBooleanValue</span>(<span class="hljs-string">'C'</span>, <span class="hljs-literal">false</span>);
+<span class="hljs-comment">// uses the FancyLogger set directly on the client</span>
+</code></pre>
+<h3 id="named-clients">Named clients</h3>
+<p>Named clients are not yet available in the PHP SDK. Progress on this feature can be tracked <a href="https://github.com/open-feature/php-sdk/issues/93">here</a>.</p>
+<h3 id="eventing">Eventing</h3>
+<p>Events are not yet available in the PHP SDK. Progress on this feature can be tracked <a href="https://github.com/open-feature/php-sdk/issues/93">here</a>.</p>
+<h3 id="shutdown">Shutdown</h3>
+<p>A shutdown method is not yet available in the PHP SDK. Progress on this feature can be tracked <a href="https://github.com/open-feature/php-sdk/issues/93">here</a>.</p>
+<h2 id="extending">Extending</h2>
+<h3 id="develop-a-provider">Develop a provider</h3>
+<p>To develop a provider, you need to create a new project and include the OpenFeature SDK as a dependency.
+This can be a new repository or included in <a href="https://github.com/open-feature/php-sdk-contrib">the existing contrib repository</a> available under the OpenFeature organization.
+You’ll then need to write the provider by implementing the <code>Provider</code> interface exported by the OpenFeature SDK.</p>
+<pre><code class="hljs language-php"><span class="hljs-keyword">declare</span>(strict_types=<span class="hljs-number">1</span>);
+
+<span class="hljs-keyword">namespace</span> <span class="hljs-title class_">OpenFeature</span>\<span class="hljs-title class_">Example</span>\<span class="hljs-title class_">Providers</span>;
+
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">implementation</span>\<span class="hljs-title">common</span>\<span class="hljs-title">Metadata</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">common</span>\<span class="hljs-title">Metadata</span> <span class="hljs-keyword">as</span> <span class="hljs-title">IMetadata</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">flags</span>\<span class="hljs-title">EvaluationContext</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">hooks</span>\<span class="hljs-title">Hook</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">provider</span>\<span class="hljs-title">Provider</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">provider</span>\<span class="hljs-title">ResolutionDetails</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ExampleProviderImplementation</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">Provider</span>
+</span>{
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">setLogger</span>(<span class="hljs-params">LoggerInterface <span class="hljs-variable">$logger</span></span>): <span class="hljs-title">void</span>
+    </span>{
+        <span class="hljs-variable language_">$this</span>->logger = <span class="hljs-variable">$logger</span>;
+
+        <span class="hljs-comment">// or, utilize the OpenFeature\interfaces\common\LoggerAwareTrait</span>
+    }
+
+    <span class="hljs-comment">/**
+     * <span class="hljs-doctag">@return</span> Hook[]
+     */</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getHooks</span>(<span class="hljs-params"></span>): <span class="hljs-title">array</span>
+    </span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-variable language_">$this</span>->hooks; <span class="hljs-comment">// implement according to the OpenFeature specification</span>
+    }
+
+    <span class="hljs-comment">/**
+     * Returns the metadata for the current resource
+     */</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getMetadata</span>(<span class="hljs-params"></span>): <span class="hljs-title">IMetadata</span>
+    </span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Metadata</span>(<span class="hljs-built_in">self</span>::<span class="hljs-variable language_">class</span>);
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveBooleanValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-keyword">bool</span> <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetails</span>
+    </span>{
+        <span class="hljs-comment">// resolve some ResolutionDetails</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveStringValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-keyword">string</span> <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetails</span>
+    </span>{
+        <span class="hljs-comment">// resolve some ResolutionDetails</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveIntegerValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-keyword">int</span> <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetails</span>
+    </span>{
+        <span class="hljs-comment">// resolve some ResolutionDetails</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveFloatValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-keyword">float</span> <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetails</span>
+    </span>{
+        <span class="hljs-comment">// resolve some ResolutionDetails</span>
+    }
+
+    <span class="hljs-comment">/**
+     * <span class="hljs-doctag">@inheritdoc</span>
+     */</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveObjectValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-keyword">array</span> <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetails</span>
+    </span>{
+        <span class="hljs-comment">// resolve some ResolutionDetails</span>
+    }
+}
+</code></pre>
+<p>As you can see, this ends up requiring some boilerplate to fulfill all of the functionality that a Provider expects.
+Another option for implementing a provider is to utilize the AbstractProvider base class.
+This provides some internally wiring and simple scaffolding so you can skip some of it and focus on what's most important: resolving feature flags!</p>
+<pre><code class="hljs language-php"><span class="hljs-keyword">declare</span>(strict_types=<span class="hljs-number">1</span>);
+
+<span class="hljs-keyword">namespace</span> <span class="hljs-title class_">OpenFeature</span>\<span class="hljs-title class_">Example</span>\<span class="hljs-title class_">Providers</span>;
+
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">flags</span>\<span class="hljs-title">EvaluationContext</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">provider</span>\<span class="hljs-title">ResolutionDetails</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ExampleProviderExtension</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AbstractProvider</span>
+</span>{
+    <span class="hljs-keyword">protected</span> <span class="hljs-built_in">static</span> <span class="hljs-keyword">string</span> <span class="hljs-variable">$NAME</span> = <span class="hljs-built_in">self</span>::<span class="hljs-variable language_">class</span>;
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveBooleanValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-keyword">bool</span> <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetailsInterface</span>
+    </span>{
+        <span class="hljs-comment">// resolve some ResolutionDetails</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveStringValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-keyword">string</span> <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetailsInterface</span>
+    </span>{
+        <span class="hljs-comment">// resolve some ResolutionDetails</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveIntegerValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-keyword">int</span> <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetailsInterface</span>
+    </span>{
+        <span class="hljs-comment">// resolve some ResolutionDetails</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveFloatValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-keyword">float</span> <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetailsInterface</span>
+    </span>{
+        <span class="hljs-comment">// resolve some ResolutionDetails</span>
+    }
+
+    <span class="hljs-comment">/**
+     * <span class="hljs-doctag">@inheritdoc</span>
+     */</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveObjectValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-keyword">array</span> <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetailsInterface</span>
+    </span>{
+        <span class="hljs-comment">// resolve some ResolutionDetails</span>
+    }
+}
+</code></pre>
+<blockquote>
+<p>Built a new provider? <a href="https://github.com/open-feature/openfeature.dev/issues/new?assignees=&#x26;labels=provider&#x26;projects=&#x26;template=document-provider.yaml&#x26;title=%5BProvider%5D%3A+">Let us know</a> so we can add it to the docs!</p>
+</blockquote>
+<h3 id="develop-a-hook">Develop a hook</h3>
+<p>To develop a hook, you need to create a new project and include the OpenFeature SDK as a dependency.
+This can be a new repository or included in <a href="https://github.com/open-feature/php-sdk-contrib">the existing contrib repository</a> available under the OpenFeature organization.
+Implement your own hook by conforming to the <code>Hook interface</code>.
+To satisfy the interface, all methods (<code>Before</code>/<code>After</code>/<code>Finally</code>/<code>Error</code>) need to be defined.
+To avoid defining empty functions, make use of the <code>UnimplementedHook</code> struct (which already implements all the empty functions).</p>
+<pre><code class="hljs language-php"><span class="hljs-keyword">declare</span>(strict_types=<span class="hljs-number">1</span>);
+
+<span class="hljs-keyword">namespace</span> <span class="hljs-title class_">OpenFeature</span>\<span class="hljs-title class_">Example</span>\<span class="hljs-title class_">Hooks</span>;
+
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">flags</span>\<span class="hljs-title">EvaluationContext</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">flags</span>\<span class="hljs-title">FlagValueType</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">hooks</span>\<span class="hljs-title">Hook</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">hooks</span>\<span class="hljs-title">HookContext</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">hooks</span>\<span class="hljs-title">HookHints</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">provider</span>\<span class="hljs-title">ResolutionDetails</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ExampleStringHookImplementation</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">Hook</span>
+</span>{
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">before</span>(<span class="hljs-params">HookContext <span class="hljs-variable">$context</span>, HookHints <span class="hljs-variable">$hints</span></span>): ?<span class="hljs-title">EvaluationContext</span>
+    </span>{
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">after</span>(<span class="hljs-params">HookContext <span class="hljs-variable">$context</span>, ResolutionDetails <span class="hljs-variable">$details</span>, HookHints <span class="hljs-variable">$hints</span></span>): <span class="hljs-title">void</span>
+    </span>{
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">error</span>(<span class="hljs-params">HookContext <span class="hljs-variable">$context</span>, <span class="hljs-built_in">Throwable</span> <span class="hljs-variable">$error</span>, HookHints <span class="hljs-variable">$hints</span></span>): <span class="hljs-title">void</span>
+    </span>{
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">finally</span>(<span class="hljs-params">HookContext <span class="hljs-variable">$context</span>, HookHints <span class="hljs-variable">$hints</span></span>): <span class="hljs-title">void</span>
+    </span>{
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">supportsFlagValueType</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagValueType</span></span>): <span class="hljs-title">bool</span>
+    </span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-variable">$flagValueType</span> === <span class="hljs-title class_">FlagValueType</span>::<span class="hljs-variable constant_">STRING</span>;
+    }
+}
+</code></pre>
+<p>You can also make use of existing base classes for various types and behaviors.
+Suppose you want to make this same hook, and have no limitation around extending a base class, you could do the following:</p>
+<pre><code class="hljs language-php"><span class="hljs-keyword">declare</span>(strict_types=<span class="hljs-number">1</span>);
+
+<span class="hljs-keyword">namespace</span> <span class="hljs-title class_">OpenFeature</span>\<span class="hljs-title class_">Example</span>\<span class="hljs-title class_">Hooks</span>;
+
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">implementation</span>\<span class="hljs-title">hooks</span>\<span class="hljs-title">StringHook</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">flags</span>\<span class="hljs-title">EvaluationContext</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">flags</span>\<span class="hljs-title">FlagValueType</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">hooks</span>\<span class="hljs-title">HookContext</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">hooks</span>\<span class="hljs-title">HookHints</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">provider</span>\<span class="hljs-title">ResolutionDetails</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ExampleStringHookExtension</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StringHook</span>
+</span>{
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">before</span>(<span class="hljs-params">HookContext <span class="hljs-variable">$context</span>, HookHints <span class="hljs-variable">$hints</span></span>): ?<span class="hljs-title">EvaluationContext</span>
+    </span>{
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">after</span>(<span class="hljs-params">HookContext <span class="hljs-variable">$context</span>, ResolutionDetails <span class="hljs-variable">$details</span>, HookHints <span class="hljs-variable">$hints</span></span>): <span class="hljs-title">void</span>
+    </span>{
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">error</span>(<span class="hljs-params">HookContext <span class="hljs-variable">$context</span>, <span class="hljs-built_in">Throwable</span> <span class="hljs-variable">$error</span>, HookHints <span class="hljs-variable">$hints</span></span>): <span class="hljs-title">void</span>
+    </span>{
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">finally</span>(<span class="hljs-params">HookContext <span class="hljs-variable">$context</span>, HookHints <span class="hljs-variable">$hints</span></span>): <span class="hljs-title">void</span>
+    </span>{
+    }
+}
+</code></pre>
+<blockquote>
+<p>Built a new hook? <a href="https://github.com/open-feature/openfeature.dev/issues/new?assignees=&#x26;labels=hook&#x26;projects=&#x26;template=document-hook.yaml&#x26;title=%5BHook%5D%3A+">Let us know</a> so we can add it to the docs!</p>
+</blockquote>

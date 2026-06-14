@@ -1,0 +1,43 @@
+<blockquote>
+<p><strong>Availability:</strong> Registered in both the Node and browser builds.</p>
+</blockquote>
+<h2 id="inflection">inflection</h2>
+<h3 id="inflect">{{inflect}}</h3>
+<p>Returns either the <code>singular</code> or <code>plural</code> inflection of a word based on the given <code>count</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>count</code> <strong>{Number}</strong></li>
+<li><code>singular</code> <strong>{String}</strong>: The singular form</li>
+<li><code>plural</code> <strong>{String}</strong>: The plural form</li>
+<li><code>includeCount</code> <strong>{Boolean}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{inflect 0 "string" "strings"}}
+<span class="hljs-comment">&#x3C;!-- "strings" --></span>
+{{inflect 1 "string" "strings"}}
+<span class="hljs-comment">&#x3C;!-- "string" --></span>
+{{inflect 1 "string" "strings" true}}
+<span class="hljs-comment">&#x3C;!-- "1 string" --></span>
+{{inflect 2 "string" "strings"}}
+<span class="hljs-comment">&#x3C;!-- "strings" --></span>
+{{inflect 2 "string" "strings" true}}
+<span class="hljs-comment">&#x3C;!-- "2 strings" --></span>
+</code></pre>
+<h3 id="ordinalize">{{ordinalize}}</h3>
+<p>Returns an ordinalized number as a string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>value</code> <strong>{Number|String}</strong>: The value to ordinalize.</li>
+<li><code>returns</code> <strong>{String}</strong>: The ordinalized number</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{ordinalize 1}}
+<span class="hljs-comment">&#x3C;!-- '1st' --></span>
+{{ordinalize 21}}
+<span class="hljs-comment">&#x3C;!-- '21st' --></span>
+{{ordinalize 29}}
+<span class="hljs-comment">&#x3C;!-- '29th' --></span>
+{{ordinalize 22}}
+<span class="hljs-comment">&#x3C;!-- '22nd' --></span>
+</code></pre>

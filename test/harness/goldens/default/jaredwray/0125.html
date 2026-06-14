@@ -1,0 +1,28 @@
+<h1 id="management--configuration">Management &#x26; Configuration</h1>
+<p>In a <a href="/docs/architecture">globally load-balanced fleet</a>, every gateway needs the same
+view of the world: tokens, TTL policies, webhook subscriptions, and provider settings.
+<code>http-cache</code> keeps this configuration <strong>centralized by default</strong>.</p>
+<h2 id="centralized-config-provider-based">Centralized config, provider-based</h2>
+<p>Management configuration lives in a central store so that any gateway — in any region —
+reads the same settings. As with everything else in <code>http-cache</code>, the config store is a
+<strong>provider</strong>, with <strong>MongoDB as the default</strong>:</p>
+<pre><code class="hljs language-bash">HTTP_CACHE_CONFIG=mongodb://mongo:27017/httpcache-config
+</code></pre>
+<p>Prefer a different store? Swap the provider; the gateway behavior is unchanged.</p>
+<h2 id="what-is-managed-centrally">What is managed centrally</h2>
+<ul>
+<li><strong>API tokens</strong> for <code>Bearer</code> / <code>x-api-token</code> <a href="/docs/gateway-and-api">authentication</a>.</li>
+<li><strong>TTL and cache policies</strong> — defaults and per-prefix overrides.</li>
+<li><strong>Provider settings</strong> — storage (keyv), stats (ClickHouse), queue (qified).</li>
+<li><strong>Webhook subscriptions</strong> and their event filters.</li>
+<li><strong>Routing / region</strong> metadata for the gateway fleet.</li>
+</ul>
+<h2 id="how-gateways-stay-in-sync">How gateways stay in sync</h2>
+<p>Gateways read centralized config on startup and watch for changes. Updates are
+propagated through the same <a href="/docs/realtime-and-webhooks">centralized queue</a> used for
+CacheSync, so a policy change rolls out across regions without restarts and without any
+node-to-node coupling.</p>
+<h2 id="management-api--ux">Management API &#x26; UX</h2>
+<p>Today, configuration is managed declaratively (environment + the central store). A
+dedicated <strong>Management API and admin UX</strong> — for tokens, policies, cache purge, and
+live ClickHouse dashboards — is a planned addition. See the <a href="/docs/roadmap">Roadmap</a>.</p>

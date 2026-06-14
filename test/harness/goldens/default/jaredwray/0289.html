@@ -1,0 +1,39 @@
+<h1 id="deploy-with-fastly-global-load-balancing">Deploy with Fastly Global Load Balancing</h1>
+<p>Fastly runs a global anycast network with powerful edge logic, making it an excellent
+front door for an <code>http-cache</code> fleet. Like Cloudflare, Fastly routes each user to the
+nearest point of presence — the <a href="/docs/architecture">model</a> <code>http-cache</code> is designed
+for.</p>
+<h2 id="why-fastly">Why Fastly</h2>
+<ul>
+<li><strong>Anycast edge delivery</strong> to the closest POP automatically.</li>
+<li><strong>Origin shielding</strong> — designate a shield POP so misses collapse before reaching your
+gateways.</li>
+<li><strong>Real-time, instant purge</strong> that pairs naturally with <code>http-cache</code> invalidation.</li>
+<li><strong>VCL / edge compute</strong> for fine-grained routing and header control.</li>
+</ul>
+<h2 id="setup">Setup</h2>
+<ol>
+<li>
+<p><strong>Run gateways in multiple regions</strong> and expose them on stable hostnames or IPs.</p>
+</li>
+<li>
+<p><strong>Create a Fastly service</strong> with one <strong>backend per region</strong>, each pointing at that
+region's gateway(s).</p>
+</li>
+<li>
+<p><strong>Add a health check</strong> targeting <code>GET /health</code> and attach it to each backend so
+Fastly removes unhealthy gateways automatically.</p>
+</li>
+<li>
+<p><strong>Enable shielding</strong> on a central POP to reduce origin (gateway) load on misses.</p>
+</li>
+<li>
+<p><strong>Route by health and geography</strong> — direct each region's traffic to its nearest
+gateway backend, failing over to the next healthy region.</p>
+</li>
+</ol>
+<h2 id="result">Result</h2>
+<pre><code>user ─▶ Fastly anycast POP ─▶ (shield) ─▶ nearest http-cache gateway ─▶ L1/L2 → keyv
+</code></pre>
+<p>Fastly handles global delivery and edge purging; <code>http-cache</code> handles the
+provider-backed, L1/L2-accelerated caching behind it.</p>

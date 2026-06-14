@@ -1,0 +1,267 @@
+<p>import MCPInstall from '@site/src/partials/mcp-install';</p>
+<h2 id="quick-start">Quick start</h2>
+<h3 id="requirements">Requirements</h3>
+<table>
+<thead>
+<tr>
+<th>Supported Ruby Version</th>
+<th>OS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ruby 3.1.4</td>
+<td>Windows, MacOS, Linux</td>
+</tr>
+<tr>
+<td>Ruby 3.2.3</td>
+<td>Windows, MacOS, Linux</td>
+</tr>
+<tr>
+<td>Ruby 3.3.0</td>
+<td>Windows, MacOS, Linux</td>
+</tr>
+</tbody>
+</table>
+<h3 id="install">Install</h3>
+<p>Install the gem and add to the application's Gemfile by executing:</p>
+<pre><code class="hljs language-sh">bundle add openfeature-sdk
+</code></pre>
+<p>If bundler is not being used to manage dependencies, install the gem by executing:</p>
+<pre><code class="hljs language-sh">gem install openfeature-sdk
+</code></pre>
+<h3 id="usage">Usage</h3>
+<pre><code class="hljs language-ruby"><span class="hljs-keyword">require</span> <span class="hljs-string">'open_feature/sdk'</span>
+<span class="hljs-keyword">require</span> <span class="hljs-string">'json'</span> <span class="hljs-comment"># For JSON.dump</span>
+
+<span class="hljs-comment"># API Initialization and configuration</span>
+
+<span class="hljs-title class_">OpenFeature</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:SDK</span>.configure <span class="hljs-keyword">do</span> |<span class="hljs-params">config</span>|
+  <span class="hljs-comment"># your provider of choice, which will be used as the default provider</span>
+  config.set_provider(<span class="hljs-title class_">OpenFeature::SDK::Provider::InMemoryProvider</span>.new(
+    {
+      <span class="hljs-string">"flag1"</span> => <span class="hljs-literal">true</span>,
+      <span class="hljs-string">"flag2"</span> => <span class="hljs-number">1</span>
+    }
+  ))
+<span class="hljs-keyword">end</span>
+
+<span class="hljs-comment"># Create a client</span>
+client = <span class="hljs-title class_">OpenFeature</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:SDK</span>.build_client
+
+<span class="hljs-comment"># fetching boolean value feature flag</span>
+bool_value = client.fetch_boolean_value(<span class="hljs-symbol">flag_key:</span> <span class="hljs-string">'boolean_flag'</span>, <span class="hljs-symbol">default_value:</span> <span class="hljs-literal">false</span>)
+
+<span class="hljs-comment"># a details method is also available for more information about the flag evaluation</span>
+<span class="hljs-comment"># see `ResolutionDetails` for more info</span>
+bool_details = client.fetch_boolean_details(<span class="hljs-symbol">flag_key:</span> <span class="hljs-string">'boolean_flag'</span>, <span class="hljs-symbol">default_value:</span> <span class="hljs-literal">false</span>)
+
+<span class="hljs-comment"># fetching string value feature flag</span>
+string_value = client.fetch_string_value(<span class="hljs-symbol">flag_key:</span> <span class="hljs-string">'string_flag'</span>, <span class="hljs-symbol">default_value:</span> <span class="hljs-string">'default'</span>)
+
+<span class="hljs-comment"># fetching number value feature flag</span>
+float_value = client.fetch_number_value(<span class="hljs-symbol">flag_key:</span> <span class="hljs-string">'number_value'</span>, <span class="hljs-symbol">default_value:</span> <span class="hljs-number">1.0</span>)
+integer_value = client.fetch_number_value(<span class="hljs-symbol">flag_key:</span> <span class="hljs-string">'number_value'</span>, <span class="hljs-symbol">default_value:</span> <span class="hljs-number">1</span>)
+
+<span class="hljs-comment"># get an object value</span>
+object = client.fetch_object_value(<span class="hljs-symbol">flag_key:</span> <span class="hljs-string">'object_value'</span>, <span class="hljs-symbol">default_value:</span> { <span class="hljs-symbol">name:</span> <span class="hljs-string">'object'</span>})
+</code></pre>
+<h2 id="features">Features</h2>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Features</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✅</td>
+<td><a href="#providers">Providers</a></td>
+<td>Integrate with a commercial, open source, or in-house feature management tool.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#targeting">Targeting</a></td>
+<td>Contextually-aware flag evaluation using <a href="/docs/reference/concepts/evaluation-context">evaluation context</a>.</td>
+</tr>
+<tr>
+<td>⚠️</td>
+<td><a href="#hooks">Hooks</a></td>
+<td>Add functionality to various stages of the flag evaluation life-cycle.</td>
+</tr>
+<tr>
+<td>❌</td>
+<td><a href="#logging">Logging</a></td>
+<td>Integrate with popular logging packages.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#domains">Domains</a></td>
+<td>Logically bind clients with providers.</td>
+</tr>
+<tr>
+<td>❌</td>
+<td><a href="#eventing">Eventing</a></td>
+<td>React to state changes in the provider or flag management system.</td>
+</tr>
+<tr>
+<td>⚠️</td>
+<td><a href="#shutdown">Shutdown</a></td>
+<td>Gracefully clean up a provider during application shutdown.</td>
+</tr>
+<tr>
+<td>❌</td>
+<td><a href="#transaction-context-propagation">Transaction Context Propagation</a></td>
+<td>Set a specific <a href="/docs/reference/concepts/evaluation-context">evaluation context</a> for a transaction (e.g. an HTTP request or a thread)</td>
+</tr>
+<tr>
+<td>⚠️</td>
+<td><a href="#extending">Extending</a></td>
+<td>Extend OpenFeature with custom providers and hooks.</td>
+</tr>
+</tbody>
+</table>
+<p>Implemented: ✅ | In-progress: ⚠️ | Not implemented yet: ❌</p>
+<h3 id="providers">Providers</h3>
+<p><a href="/docs/reference/concepts/provider">Providers</a> are an abstraction between a flag management system and the OpenFeature SDK.
+Look <a href="/ecosystem?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Provider&#x26;instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=Ruby">here</a> for a complete list of available providers.
+If the provider you're looking for hasn't been created yet, see the <a href="#develop-a-provider">develop a provider</a> section to learn how to build it yourself.</p>
+<p>Once you've added a provider as a dependency, it can be registered with OpenFeature like this:</p>
+<pre><code class="hljs language-ruby"><span class="hljs-title class_">OpenFeature</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:SDK</span>.configure <span class="hljs-keyword">do</span> |<span class="hljs-params">config</span>|
+  <span class="hljs-comment"># your provider of choice, which will be used as the default provider</span>
+  config.set_provider(<span class="hljs-title class_">OpenFeature::SDK::Provider::InMemoryProvider</span>.new(
+    {
+      <span class="hljs-string">"v2_enabled"</span> => <span class="hljs-literal">true</span>,
+    }
+  ))
+<span class="hljs-keyword">end</span>
+</code></pre>
+<h4 id="blocking-provider-registration">Blocking Provider Registration</h4>
+<p>If you need to ensure that a provider is fully initialized before continuing, you can use <code>set_provider_and_wait</code>:</p>
+<pre><code class="hljs language-ruby"><span class="hljs-comment"># Using the SDK directly</span>
+<span class="hljs-keyword">begin</span>
+  <span class="hljs-title class_">OpenFeature</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:SDK</span>.set_provider_and_wait(my_provider)
+  puts <span class="hljs-string">"Provider is ready!"</span>
+<span class="hljs-keyword">rescue</span> <span class="hljs-title class_">OpenFeature</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:SDK</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:ProviderInitializationError</span> => e
+  puts <span class="hljs-string">"Provider failed to initialize: <span class="hljs-subst">#{e.message}</span>"</span>
+  puts <span class="hljs-string">"Error code: <span class="hljs-subst">#{e.error_code}</span>"</span>
+  puts <span class="hljs-string">"Original error: <span class="hljs-subst">#{e.original_error}</span>"</span>
+<span class="hljs-keyword">end</span>
+
+<span class="hljs-comment"># With custom timeout (default is 30 seconds)</span>
+<span class="hljs-title class_">OpenFeature</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:SDK</span>.set_provider_and_wait(my_provider, <span class="hljs-symbol">timeout:</span> <span class="hljs-number">60</span>)
+
+<span class="hljs-comment"># Domain-specific provider</span>
+<span class="hljs-title class_">OpenFeature</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:SDK</span>.set_provider_and_wait(my_provider, <span class="hljs-symbol">domain:</span> <span class="hljs-string">"feature-flags"</span>)
+
+<span class="hljs-comment"># Via configuration block</span>
+<span class="hljs-title class_">OpenFeature</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:SDK</span>.configure <span class="hljs-keyword">do</span> |<span class="hljs-params">config</span>|
+  <span class="hljs-keyword">begin</span>
+    config.set_provider_and_wait(my_provider)
+  <span class="hljs-keyword">rescue</span> <span class="hljs-title class_">OpenFeature</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:SDK</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:ProviderInitializationError</span> => e
+    <span class="hljs-comment"># Handle initialization failure</span>
+  <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span>
+</code></pre>
+<p>The <code>set_provider_and_wait</code> method:</p>
+<ul>
+<li>Waits for the provider's <code>init</code> method to complete successfully</li>
+<li>Raises <code>ProviderInitializationError</code> with <code>PROVIDER_FATAL</code> error code if initialization fails or times out</li>
+<li>Provides access to the original error, provider instance, and error code for debugging</li>
+<li>Uses the same thread-safe provider switching as <code>set_provider</code></li>
+</ul>
+<p>In some situations, it may be beneficial to register multiple providers in the same application.
+This is possible using <a href="#domains">domains</a>, which is covered in more detail below.</p>
+<h3 id="targeting">Targeting</h3>
+<p>Sometimes, the value of a flag must consider some dynamic criteria about the application or user, such as the user's location, IP, email address, or the server's location.
+In OpenFeature, we refer to this as <a href="/specification/glossary#targeting">targeting</a>.
+If the flag management system you're using supports targeting, you can provide the input data using the <a href="/docs/reference/concepts/evaluation-context">evaluation context</a>.</p>
+<pre><code class="hljs language-ruby"><span class="hljs-title class_">OpenFeature</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:SDK</span>.configure <span class="hljs-keyword">do</span> |<span class="hljs-params">config</span>|
+  <span class="hljs-comment"># you can set a global evaluation context here</span>
+  config.evaluation_context = <span class="hljs-title class_">OpenFeature::SDK::EvaluationContext</span>.new(<span class="hljs-string">"host"</span> => <span class="hljs-string">"myhost.com"</span>)
+<span class="hljs-keyword">end</span>
+
+<span class="hljs-comment"># Evaluation context can be set on a client as well</span>
+client_with_context = <span class="hljs-title class_">OpenFeature</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:SDK</span>.build_client(
+  <span class="hljs-symbol">evaluation_context:</span> <span class="hljs-title class_">OpenFeature::SDK::EvaluationContext</span>.new(<span class="hljs-string">"controller_name"</span> => <span class="hljs-string">"admin"</span>)
+)
+
+<span class="hljs-comment"># Invocation evaluation context can also be passed in during flag evaluation.</span>
+<span class="hljs-comment"># During flag evaluation, invocation context takes precedence over client context</span>
+<span class="hljs-comment"># which takes precedence over API (aka global) context.</span>
+bool_value = client.fetch_boolean_value(
+  <span class="hljs-symbol">flag_key:</span> <span class="hljs-string">'boolean_flag'</span>,
+  <span class="hljs-symbol">default_value:</span> <span class="hljs-literal">false</span>,
+  <span class="hljs-symbol">evaluation_context:</span> <span class="hljs-title class_">OpenFeature::SDK::EvaluationContext</span>.new(<span class="hljs-string">"is_friday"</span> => <span class="hljs-literal">true</span>)
+)
+</code></pre>
+<h3 id="hooks">Hooks</h3>
+<p>Coming Soon! <a href="https://github.com/open-feature/ruby-sdk/issues/52">Issue available</a> to be worked on.</p>
+<h3 id="logging">Logging</h3>
+<p>Coming Soon! <a href="https://github.com/open-feature/ruby-sdk/issues/148">Issue available</a> to work on.</p>
+<h3 id="domains">Domains</h3>
+<p>Clients can be assigned to a domain. A domain is a logical identifier which can be used to associate clients with a particular provider.
+If a domain has no associated provider, the default provider is used.</p>
+<pre><code class="hljs language-ruby"><span class="hljs-title class_">OpenFeature</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:SDK</span>.configure <span class="hljs-keyword">do</span> |<span class="hljs-params">config</span>|
+  config.set_provider(<span class="hljs-title class_">OpenFeature</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:SDK</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:Provider</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:NoOpProvider</span>.new, <span class="hljs-symbol">domain:</span> <span class="hljs-string">"legacy_flags"</span>)
+<span class="hljs-keyword">end</span>
+
+<span class="hljs-comment"># Create a client for a different domain, this will use the provider assigned to that domain</span>
+legacy_flag_client = <span class="hljs-title class_">OpenFeature</span><span class="hljs-symbol">:</span><span class="hljs-symbol">:SDK</span>.build_client(<span class="hljs-symbol">domain:</span> <span class="hljs-string">"legacy_flags"</span>)
+</code></pre>
+<h3 id="eventing">Eventing</h3>
+<p>Coming Soon! <a href="https://github.com/open-feature/ruby-sdk/issues/51">Issue available</a> to be worked on.</p>
+<h3 id="shutdown">Shutdown</h3>
+<p>Coming Soon! <a href="https://github.com/open-feature/ruby-sdk/issues/149">Issue available</a> to be worked on.</p>
+<h3 id="transaction-context-propagation">Transaction Context Propagation</h3>
+<p>Coming Soon! <a href="https://github.com/open-feature/ruby-sdk/issues/150">Issue available</a> to be worked on.</p>
+<h2 id="extending">Extending</h2>
+<h3 id="develop-a-provider">Develop a provider</h3>
+<p>To develop a provider, you need to create a new project and include the OpenFeature SDK as a dependency.
+This can be a new repository or included in <a href="https://github.com/open-feature/ruby-sdk-contrib">the existing contrib repository</a> available under the OpenFeature organization.
+You’ll then need to write the provider by implementing the <code>Provider</code> duck.</p>
+<pre><code class="hljs language-ruby"><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyProvider</span>
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">init</span>
+    <span class="hljs-comment"># Perform any initialization steps with flag management system here</span>
+    <span class="hljs-comment"># Return value is ignored</span>
+    <span class="hljs-comment"># **Note** The OpenFeature spec defines a lifecycle method called `initialize` to be called when a new provider is set.</span>
+    <span class="hljs-comment"># To avoid conflicting with the Ruby `initialize` method, this method should be named `init` when creating a provider.</span>
+  <span class="hljs-keyword">end</span>
+
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">shutdown</span>
+    <span class="hljs-comment"># Perform any shutdown/reclamation steps with flag management system here</span>
+    <span class="hljs-comment"># Return value is ignored</span>
+  <span class="hljs-keyword">end</span>
+
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">fetch_boolean_value</span>(<span class="hljs-params"><span class="hljs-symbol">flag_key:</span>, <span class="hljs-symbol">default_value:</span>, <span class="hljs-symbol">evaluation_context:</span> <span class="hljs-literal">nil</span></span>)
+    <span class="hljs-comment"># Retrieve a boolean value from provider source</span>
+  <span class="hljs-keyword">end</span>
+
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">fetch_string_value</span>(<span class="hljs-params"><span class="hljs-symbol">flag_key:</span>, <span class="hljs-symbol">default_value:</span>, <span class="hljs-symbol">evaluation_context:</span> <span class="hljs-literal">nil</span></span>)
+    <span class="hljs-comment"># Retrieve a string value from provider source</span>
+  <span class="hljs-keyword">end</span>
+
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">fetch_number_value</span>(<span class="hljs-params"><span class="hljs-symbol">flag_key:</span>, <span class="hljs-symbol">default_value:</span>, <span class="hljs-symbol">evaluation_context:</span> <span class="hljs-literal">nil</span></span>)
+    <span class="hljs-comment"># Retrieve a numeric value from provider source</span>
+  <span class="hljs-keyword">end</span>
+
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">fetch_integer_value</span>(<span class="hljs-params"><span class="hljs-symbol">flag_key:</span>, <span class="hljs-symbol">default_value:</span>, <span class="hljs-symbol">evaluation_context:</span> <span class="hljs-literal">nil</span></span>)
+    <span class="hljs-comment"># Retrieve a integer value from provider source</span>
+  <span class="hljs-keyword">end</span>
+
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">fetch_float_value</span>(<span class="hljs-params"><span class="hljs-symbol">flag_key:</span>, <span class="hljs-symbol">default_value:</span>, <span class="hljs-symbol">evaluation_context:</span> <span class="hljs-literal">nil</span></span>)
+    <span class="hljs-comment"># Retrieve a float value from provider source</span>
+  <span class="hljs-keyword">end</span>
+
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">fetch_object_value</span>(<span class="hljs-params"><span class="hljs-symbol">flag_key:</span>, <span class="hljs-symbol">default_value:</span>, <span class="hljs-symbol">evaluation_context:</span> <span class="hljs-literal">nil</span></span>)
+    <span class="hljs-comment"># Retrieve a hash value from provider source</span>
+  <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span>
+</code></pre>
+<blockquote>
+<p>Built a new provider? <a href="https://github.com/open-feature/openfeature.dev/issues/new?assignees=&#x26;labels=provider&#x26;projects=&#x26;template=document-provider.yaml&#x26;title=%5BProvider%5D%3A+">Let us know</a> so we can add it to the docs!</p>
+</blockquote>
+<h3 id="develop-a-hook">Develop a hook</h3>
+<p>Coming Soon! <a href="https://github.com/open-feature/ruby-sdk/issues/52">Issue available</a> to be worked on.</p>

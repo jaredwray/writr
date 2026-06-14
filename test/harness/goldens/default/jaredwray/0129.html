@@ -1,0 +1,61 @@
+<h1 id="adding-custom-scripts">Adding Custom Scripts</h1>
+<p>Docula lets you inject custom scripts — such as Google Tag Manager, analytics, or any third-party snippet — using <a href="/docs/partial-templates">partial template overrides</a>. No extra configuration is needed; just create the right override file and add your code.</p>
+<h2 id="scripts-at-end-of-body">Scripts at End of Body</h2>
+<p>Override <code>includes/scripts.hbs</code> to add scripts that load at the end of every page. This is the recommended placement for analytics and tracking snippets.</p>
+<p>Create the override file:</p>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">mkdir</span> -p site/templates/modern/includes
+</code></pre>
+<p>Then create <code>site/templates/modern/includes/scripts.hbs</code>:</p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- Google Tag Manager -->
+&#x3C;script>
+(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&#x26;l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-XXXXXX');
+&#x3C;/script>
+
+&#x3C;!-- Keep the built-in scripts by copying them from the original template, -->
+&#x3C;!-- or include only your additions if you don't need the defaults. -->
+</code></pre>
+<div class="markdown-alert markdown-alert-note" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>NOTE</p>
+<p>When you override <code>scripts.hbs</code>, it <strong>replaces</strong> the built-in file entirely. If you still need the default scripts (theme toggle, syntax highlighting, etc.), copy the contents of the original <code>templates/modern/includes/scripts.hbs</code> from the <a href="https://github.com/jaredwray/docula">Docula repository</a> and add your custom code alongside it.</p>
+</div>
+<h2 id="scripts-in-the-head">Scripts in the Head</h2>
+<p>Override <code>includes/header.hbs</code> to add scripts or meta tags inside the <code>&#x3C;head></code> element. This is useful for snippets that must load before the page renders.</p>
+<p>Create <code>site/templates/modern/includes/header.hbs</code> with the original header content plus your additions:</p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- Copy the original header.hbs content here, then add your scripts -->
+
+&#x3C;!-- Example: Google site verification -->
+&#x3C;meta name="google-site-verification" content="your-verification-code" />
+
+&#x3C;!-- Example: Script that must be in &#x3C;head> -->
+&#x3C;script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXX">&#x3C;/script>
+&#x3C;script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXX');
+&#x3C;/script>
+</code></pre>
+<h2 id="hosting-scripts-locally">Hosting Scripts Locally</h2>
+<p>If you prefer to self-host script files, place them in the <code>public/</code> folder and reference them from your template overrides:</p>
+<pre><code>site/
+  public/
+    js/
+      analytics.js
+  templates/
+    modern/
+      includes/
+        scripts.hbs
+</code></pre>
+<p>Then in your <code>scripts.hbs</code> override:</p>
+<pre><code class="hljs language-handlebars">&#x3C;script src="/js/analytics.js">&#x3C;/script>
+</code></pre>
+<p>Files in <code>site/public/</code> are copied to the root of the build output, so <code>/js/analytics.js</code> will be available at that path on your site.</p>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>This uses the <a href="/docs/partial-templates">partial template override</a> system. Overrides only apply to built-in templates (<code>modern</code>, <code>classic</code>). If you use <code>templatePath</code> for a fully custom template, add scripts directly in your template files.</li>
+<li>If you are using the <code>classic</code> template, replace <code>modern</code> with <code>classic</code> in the directory paths above.</li>
+</ul>

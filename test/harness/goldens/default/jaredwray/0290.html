@@ -1,0 +1,51 @@
+<h1 id="agent-guidelines-for-ecto">Agent Guidelines for Ecto</h1>
+<p>Ecto is a modern template consolidation engine that provides a unified interface for working with multiple popular template engines (EJS, Markdown, Pug, Nunjucks, Mustache, Handlebars, and Liquid).</p>
+<h2 id="project-overview">Project Overview</h2>
+<ul>
+<li><strong>Purpose</strong>: Simplify template rendering by providing a single API for multiple template engines with automatic engine selection based on file extensions</li>
+<li><strong>Architecture</strong>: TypeScript library with a plugin architecture - <code>Ecto</code> coordinates engines, <code>BaseEngine</code> provides common functionality, individual engine classes handle specific template formats</li>
+<li><strong>Key Dependencies</strong>: <code>ejs</code>, <code>pug</code>, <code>nunjucks</code>, <code>liquidjs</code>, <code>@jaredwray/fumanchu</code> (Handlebars/Mustache), <code>writr</code> (Markdown), <code>cacheable</code> (caching), <code>hookified</code> (events/hooks)</li>
+</ul>
+<h2 id="development-commands">Development Commands</h2>
+<ul>
+<li>Use <code>pnpm</code> instead of <code>npm</code> for all package management commands</li>
+<li><code>pnpm build</code> - Build TypeScript to ESM with type declarations</li>
+<li><code>pnpm test</code> - Run linting and tests with coverage</li>
+<li><code>pnpm lint</code> - Run Biome linter with auto-fix</li>
+<li><code>pnpm clean</code> - Remove dist, coverage, node_modules, and lock files</li>
+</ul>
+<h2 id="code-quality-requirements">Code Quality Requirements</h2>
+<ul>
+<li>Always run <code>pnpm test</code> to verify tests pass before completing changes</li>
+<li>All new code must have corresponding tests</li>
+<li>Follow existing code patterns in <code>src/ecto.ts</code> for the main class</li>
+<li>Use Biome for linting and formatting (configured in the project)</li>
+<li>TypeScript strict mode is enabled</li>
+</ul>
+<h2 id="project-structure">Project Structure</h2>
+<ul>
+<li><code>src/ecto.ts</code> - Main Ecto class (core engine coordinator)</li>
+<li><code>src/base-engine.ts</code> - Base class for all engines</li>
+<li><code>src/engine-interface.ts</code> - TypeScript interface for engine implementations</li>
+<li><code>src/engine-map.ts</code> - Manages file extension to engine mappings</li>
+<li><code>src/engines/</code> - Individual engine implementations (ejs, handlebars, liquid, markdown, nunjucks, pug)</li>
+<li><code>test/</code> - Vitest test files</li>
+</ul>
+<h2 id="engine-mapping">Engine Mapping</h2>
+<ul>
+<li><code>.ejs</code> → EJS</li>
+<li><code>.md</code>, <code>.markdown</code> → Markdown</li>
+<li><code>.pug</code>, <code>.jade</code> → Pug</li>
+<li><code>.njk</code> → Nunjucks</li>
+<li><code>.mustache</code> → Mustache</li>
+<li><code>.handlebars</code>, <code>.hbs</code>, <code>.hjs</code> → Handlebars</li>
+<li><code>.liquid</code> → Liquid</li>
+</ul>
+<h2 id="key-considerations">Key Considerations</h2>
+<ul>
+<li>Async and sync rendering methods are available (<code>render</code>/<code>renderSync</code>, <code>renderFromFile</code>/<code>renderFromFileSync</code>)</li>
+<li>FrontMatter support is built-in for Markdown files</li>
+<li>Caching is available via the <code>cacheable</code> library for performance optimization</li>
+<li>Hooks system allows intercepting and modifying data during rendering</li>
+<li>Custom engines can be created by implementing the <code>EngineInterface</code></li>
+</ul>

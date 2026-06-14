@@ -1,0 +1,68 @@
+<h1 id="agent-guidelines-for-hookified">Agent Guidelines for Hookified</h1>
+<p>Hookified is an event emitting and middleware hooks library for Node.js and the browser. It provides a simple replacement for EventEmitter with async/sync middleware hooks support.</p>
+<h2 id="project-overview">Project Overview</h2>
+<ul>
+<li><strong>Purpose</strong>: Provide event emitting and middleware hooks functionality for classes</li>
+<li><strong>Architecture</strong>: TypeScript library with ESM/CJS support and browser builds</li>
+<li><strong>Key Features</strong>: EventEmitter replacement, async/sync middleware hooks, before/after hooks, deprecation warnings, logger integration</li>
+</ul>
+<h2 id="development-commands">Development Commands</h2>
+<ul>
+<li>Use <code>pnpm</code> instead of <code>npm</code> for all package management commands</li>
+<li><code>pnpm build</code> - Build the TypeScript code for Node.js and browser</li>
+<li><code>pnpm test</code> - Run linting (Biome) and tests with coverage</li>
+<li><code>pnpm lint</code> - Run Biome linter with auto-fix</li>
+<li><code>pnpm benchmark</code> - Run performance benchmarks (hooks and emit)</li>
+<li><code>pnpm clean</code> - Remove dist, coverage, and site/dist directories</li>
+</ul>
+<h2 id="code-quality-requirements">Code Quality Requirements</h2>
+<ul>
+<li>Always run <code>pnpm test</code> to verify tests pass before completing changes</li>
+<li>Maintain high code coverage - all new code must have corresponding tests</li>
+<li>Follow existing code patterns in the source files</li>
+<li>Use Biome for linting and formatting (configured in the project)</li>
+</ul>
+<h2 id="project-structure">Project Structure</h2>
+<ul>
+<li><code>src/index.ts</code> - Main Hookified class with hooks functionality</li>
+<li><code>src/eventified.ts</code> - Base event emitter class (Eventified)</li>
+<li><code>src/types.ts</code> - TypeScript type definitions</li>
+<li><code>test/</code> - Vitest test files</li>
+<li><code>benchmark/</code> - Performance benchmark scripts (hook.ts, emit.ts)</li>
+<li><code>dist/node/</code> - Node.js build output (ESM and CJS)</li>
+<li><code>dist/browser/</code> - Browser build output</li>
+</ul>
+<h2 id="key-concepts">Key Concepts</h2>
+<h3 id="hookified-class">Hookified Class</h3>
+<p>The main class that extends Eventified and provides:</p>
+<ul>
+<li>Hook registration: <code>onHook()</code>, <code>addHook()</code>, <code>onHookEntry()</code>, <code>onHooks()</code>, <code>prependHook()</code></li>
+<li>Hook execution: <code>hook()</code>, <code>callHook()</code>, <code>hookSync()</code>, <code>beforeHook()</code>, <code>afterHook()</code></li>
+<li>Hook management: <code>getHooks()</code>, <code>removeHook()</code>, <code>removeHooks()</code>, <code>clearHooks()</code></li>
+<li>Once hooks: <code>onceHook()</code>, <code>prependOnceHook()</code></li>
+</ul>
+<h3 id="eventified-class">Eventified Class</h3>
+<p>Base class providing EventEmitter-like functionality:</p>
+<ul>
+<li>Event registration: <code>on()</code>, <code>once()</code>, <code>prependListener()</code>, <code>prependOnceListener()</code></li>
+<li>Event emission: <code>emit()</code></li>
+<li>Event management: <code>off()</code>, <code>removeAllListeners()</code>, <code>listeners()</code>, <code>eventNames()</code></li>
+</ul>
+<h3 id="configuration-options">Configuration Options</h3>
+<ul>
+<li><code>throwOnHookError</code> - Throw errors in hooks instead of just emitting</li>
+<li><code>throwOnEmitError</code> - Throw errors on emit</li>
+<li><code>throwOnEmptyListeners</code> - Throw when emitting 'error' with no listeners</li>
+<li><code>enforceBeforeAfter</code> - Require hook names to start with 'before' or 'after'</li>
+<li><code>deprecatedHooks</code> - Map of deprecated hook names to warning messages</li>
+<li><code>allowDeprecated</code> - Control whether deprecated hooks can execute</li>
+<li><code>eventLogger</code> - Logger instance for error and event logging</li>
+</ul>
+<h2 id="key-considerations">Key Considerations</h2>
+<ul>
+<li>The library has zero dependencies</li>
+<li>Supports both Node.js (22.18+) and browsers via CDN</li>
+<li>Browser builds are available at <code>dist/browser/index.js</code> (ESM) and <code>dist/browser/index.global.js</code> (UMD)</li>
+<li>Hooks can be async or sync - use <code>hook()</code> for async execution, <code>hookSync()</code> for sync-only</li>
+<li>Logger integration supports Pino, Winston, Bunyan, or any compatible logger</li>
+</ul>

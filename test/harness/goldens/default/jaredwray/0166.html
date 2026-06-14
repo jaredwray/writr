@@ -1,0 +1,78 @@
+<h1 id="getting-started-with-create-react-app">Getting Started with Create React App</h1>
+<p>This project was bootstrapped with <a href="https://github.com/facebook/create-react-app">Create React App</a>.</p>
+<h2 id="available-scripts">Available Scripts</h2>
+<p>In the project directory, you can run:</p>
+<h3 id="yarn-start"><code>yarn start</code></h3>
+<p>Runs the app in the development mode.<br>
+Open <a href="http://localhost:3000">http://localhost:3000</a> to view it in the browser.</p>
+<p>The page will reload if you make edits.<br>
+You will also see any lint errors in the console.</p>
+<h3 id="yarn-test"><code>yarn test</code></h3>
+<p>Launches the test runner in the interactive watch mode.<br>
+See the section about <a href="https://facebook.github.io/create-react-app/docs/running-tests">running tests</a> for more information.</p>
+<h3 id="yarn-build"><code>yarn build</code></h3>
+<p>Builds the app for production to the <code>build</code> folder.<br>
+It correctly bundles React in production mode and optimizes the build for the best performance.</p>
+<p>The build is minified and the filenames include the hashes.<br>
+Your app is ready to be deployed!</p>
+<p>See the section about <a href="https://facebook.github.io/create-react-app/docs/deployment">deployment</a> for more information.</p>
+<h3 id="yarn-eject"><code>yarn eject</code></h3>
+<p><strong>Note: this is a one-way operation. Once you <code>eject</code>, you can’t go back!</strong></p>
+<p>If you aren’t satisfied with the build tool and configuration choices, you can <code>eject</code> at any time. This command will remove the single build dependency from your project.</p>
+<p>Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except <code>eject</code> will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.</p>
+<p>You don’t have to ever use <code>eject</code>. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.</p>
+<h2 id="learn-more">Learn More</h2>
+<p>You can learn more in the <a href="https://facebook.github.io/create-react-app/docs/getting-started">Create React App documentation</a>.</p>
+<p>To learn React, check out the <a href="https://reactjs.org/">React documentation</a>.</p>
+<h3 id="code-splitting">Code Splitting</h3>
+<p>This section has moved here: <a href="https://facebook.github.io/create-react-app/docs/code-splitting">https://facebook.github.io/create-react-app/docs/code-splitting</a></p>
+<h3 id="analyzing-the-bundle-size">Analyzing the Bundle Size</h3>
+<p>This section has moved here: <a href="https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size">https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size</a></p>
+<h3 id="making-a-progressive-web-app">Making a Progressive Web App</h3>
+<p>This section has moved here: <a href="https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app">https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app</a></p>
+<h3 id="advanced-configuration">Advanced Configuration</h3>
+<p>This section has moved here: <a href="https://facebook.github.io/create-react-app/docs/advanced-configuration">https://facebook.github.io/create-react-app/docs/advanced-configuration</a></p>
+<h3 id="deployment">Deployment</h3>
+<p>This section has moved here: <a href="https://facebook.github.io/create-react-app/docs/deployment">https://facebook.github.io/create-react-app/docs/deployment</a></p>
+<h3 id="yarn-build-fails-to-minify"><code>yarn build</code> fails to minify</h3>
+<p>This section has moved here: <a href="https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify">https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify</a></p>
+<h2 id="privacy-and-terms-logic">Privacy And Terms logic</h2>
+<p>Account model has field with last accepted terms version (accpetedTers) and date when the user accepted it (acceptedTermsAt). The user will see terms confirmation dialog until he accepts last terms.</p>
+<h3 id="how-add-new-terms">How add new terms</h3>
+<ol>
+<li>Create new html file with terms in client/public/content/terms folder. File name template: <code>${version}.html</code>.</li>
+</ol>
+<p>Example: <code>1.1.html</code></p>
+<ol start="2">
+<li>Define new version.</li>
+</ol>
+<p>Add new version in TermsText component (client/src/components/TermsText/index.tsx) in VERSION const.</p>
+<p>Example: <code>const VERSION = '1.1';</code></p>
+<ol start="3">
+<li>Define new version on server-side.</li>
+</ol>
+<p>Add new version in TermsService (server/app/TermsService.ts) in VERSION const.</p>
+<p>Example: <code>const VERSION = '1.1';</code></p>
+<h1 id="required-data-specified-in-the-env-file">Required data specified in the .env file:</h1>
+<h2 id="for-stripe">For STRIPE</h2>
+<p>We using STRIPE for monetary transactions. Required data examples:</p>
+<h4 id="examples">examples</h4>
+<pre><code>REACT_APP_STRIPE_PUBLISHABLE_KEY="stripePublishableKey"
+</code></pre>
+<h2 id="for-intercom">For Intercom</h2>
+<p>We using Intercom to connect with our customers. Required data examples:</p>
+<h4 id="examples-1">examples</h4>
+<pre><code>REACT_APP_INTERCOM_APP_ID="intercomAppId"
+</code></pre>
+<h2 id="for-firebase">For Firebase</h2>
+<p>We using Firebase for assets storage. Required data examples:</p>
+<h4 id="examples-2">examples</h4>
+<pre><code>REACT_APP_FIREBASE_CONFIG='{"apiKey": "apiKey", "authDomain": "contrib-dev.firebaseapp.com", "projectId": "contrib-dev", "storageBucket": "content-dev.contrib.org", "messagingSenderId": "messagingSenderId", "appId": "appId"}'
+</code></pre>
+<h2 id="for-platform-in-general">For Platform in general</h2>
+<h4 id="examples-3">examples</h4>
+<pre><code>REACT_APP_PLATFORM_URL="http://localhost:3000"
+REACT_APP_API_URL="http://localhost:3001/graphql"
+REACT_APP_API_AUDIENCE="http://localhost:3001/"
+REACT_APP_MAX_SIZE_VIDEO_GB="1"
+</code></pre>

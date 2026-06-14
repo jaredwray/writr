@@ -1,0 +1,1156 @@
+<p><a href="https://memcachejs.org"></a></p>
+<p><a href="https://codecov.io/gh/jaredwray/memcache"><img src="https://codecov.io/gh/jaredwray/memcache/graph/badge.svg?token=4DUANNWiIE" alt="codecov"></a>
+<a href="https://github.com/jaredwray/memcache/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/memcache/actions/workflows/tests.yaml/badge.svg" alt="tests"></a>
+<a href="https://www.npmjs.com/package/memcache"><img src="https://img.shields.io/npm/v/memcache" alt="npm"></a>
+<a href="https://www.npmjs.com/package/memcache"><img src="https://img.shields.io/npm/dm/memcache" alt="npm"></a>
+<a href="https://github.com/jaredwray/memcache/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/memcache" alt="license"></a></p>
+<h1 id="memcache">Memcache</h1>
+<p>Nodejs Memcache Client</p>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#getting-started">Getting Started</a>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#basic-usage">Basic Usage</a></li>
+</ul>
+</li>
+<li><a href="#api">API</a>
+<ul>
+<li><a href="#constructor">Constructor</a>
+<ul>
+<li><a href="#options">Options</a></li>
+</ul>
+</li>
+<li><a href="#properties">Properties</a>
+<ul>
+<li><a href="#nodes-memcachenode-readonly"><code>nodes: MemcacheNode[]</code> (readonly)</a></li>
+<li><a href="#nodeids-string-readonly"><code>nodeIds: string[]</code> (readonly)</a></li>
+<li><a href="#hash-hashprovider"><code>hash: HashProvider</code></a></li>
+<li><a href="#timeout-number"><code>timeout: number</code></a></li>
+<li><a href="#keepalive-boolean"><code>keepAlive: boolean</code></a></li>
+<li><a href="#keepalivedelay-number"><code>keepAliveDelay: number</code></a></li>
+<li><a href="#retries-number"><code>retries: number</code></a></li>
+<li><a href="#retrydelay-number"><code>retryDelay: number</code></a></li>
+<li><a href="#retrybackoff-retrybackofffunction"><code>retryBackoff: RetryBackoffFunction</code></a></li>
+<li><a href="#retryonlyidempotent-boolean"><code>retryOnlyIdempotent: boolean</code></a></li>
+<li><a href="#maxkeysize-number"><code>maxKeySize: number</code></a></li>
+<li><a href="#maxvaluesize-number"><code>maxValueSize: number</code></a></li>
+<li><a href="#maxexpiration-number"><code>maxExpiration: number</code></a></li>
+<li><a href="#hashlargekey-boolean"><code>hashLargeKey: boolean</code></a></li>
+<li><a href="#hashery-hashery"><code>hashery: Hashery</code></a></li>
+<li><a href="#lazyconnect-boolean-readonly"><code>lazyConnect: boolean</code> (readonly)</a></li>
+</ul>
+</li>
+<li><a href="#connection-management">Connection Management</a>
+<ul>
+<li><a href="#connectnodeid-string-promisevoid"><code>connect(nodeId?: string): Promise&#x3C;void></code></a></li>
+<li><a href="#disconnect-promisevoid"><code>disconnect(): Promise&#x3C;void></code></a></li>
+<li><a href="#reconnect-promisevoid"><code>reconnect(): Promise&#x3C;void></code></a></li>
+<li><a href="#quit-promisevoid"><code>quit(): Promise&#x3C;void></code></a></li>
+<li><a href="#isconnected-boolean"><code>isConnected(): boolean</code></a></li>
+</ul>
+</li>
+<li><a href="#node-management">Node Management</a>
+<ul>
+<li><a href="#getnodes-memcachenode"><code>getNodes(): MemcacheNode[]</code></a></li>
+<li><a href="#getnodeid-string-memcachenode--undefined"><code>getNode(id: string): MemcacheNode | undefined</code></a></li>
+<li><a href="#addnodeuri-string--memcachenode-weight-number-promisevoid"><code>addNode(uri: string | MemcacheNode, weight?: number): Promise&#x3C;void></code></a></li>
+<li><a href="#removenodeuri-string-promisevoid"><code>removeNode(uri: string): Promise&#x3C;void></code></a></li>
+<li><a href="#getnodesbykeykey-string-promisememcachenode"><code>getNodesByKey(key: string): Promise&#x3C;MemcacheNode[]></code></a></li>
+<li><a href="#parseuriuri-string--host-string-port-number-"><code>parseUri(uri: string): { host: string; port: number }</code></a></li>
+</ul>
+</li>
+<li><a href="#data-storage-operations">Data Storage Operations</a>
+<ul>
+<li><a href="#getkey-string-promisestring--undefined"><code>get(key: string): Promise&#x3C;string | undefined></code></a></li>
+<li><a href="#getskeys-string-promisemapstring-string"><code>gets(keys: string[]): Promise&#x3C;Map&#x3C;string, string>></code></a></li>
+<li><a href="#setkey-string-value-string-exptime-number-flags-number-promiseboolean"><code>set(key: string, value: string, exptime?: number, flags?: number): Promise&#x3C;boolean></code></a></li>
+<li><a href="#addkey-string-value-string-exptime-number-flags-number-promiseboolean"><code>add(key: string, value: string, exptime?: number, flags?: number): Promise&#x3C;boolean></code></a></li>
+<li><a href="#replacekey-string-value-string-exptime-number-flags-number-promiseboolean"><code>replace(key: string, value: string, exptime?: number, flags?: number): Promise&#x3C;boolean></code></a></li>
+<li><a href="#caskey-string-value-string-castoken-string-exptime-number-flags-number-promiseboolean"><code>cas(key: string, value: string, casToken: string, exptime?: number, flags?: number): Promise&#x3C;boolean></code></a></li>
+</ul>
+</li>
+<li><a href="#string-modification-operations">String Modification Operations</a>
+<ul>
+<li><a href="#appendkey-string-value-string-promiseboolean"><code>append(key: string, value: string): Promise&#x3C;boolean></code></a></li>
+<li><a href="#prependkey-string-value-string-promiseboolean"><code>prepend(key: string, value: string): Promise&#x3C;boolean></code></a></li>
+</ul>
+</li>
+<li><a href="#deletion--expiration">Deletion &#x26; Expiration</a>
+<ul>
+<li><a href="#deletekey-string-promiseboolean"><code>delete(key: string): Promise&#x3C;boolean></code></a></li>
+<li><a href="#touchkey-string-exptime-number-promiseboolean"><code>touch(key: string, exptime: number): Promise&#x3C;boolean></code></a></li>
+</ul>
+</li>
+<li><a href="#numeric-operations">Numeric Operations</a>
+<ul>
+<li><a href="#incrkey-string-value-number-promisenumber--undefined"><code>incr(key: string, value?: number): Promise&#x3C;number | undefined></code></a></li>
+<li><a href="#decrkey-string-value-number-promisenumber--undefined"><code>decr(key: string, value?: number): Promise&#x3C;number | undefined></code></a></li>
+</ul>
+</li>
+<li><a href="#server-management--statistics">Server Management &#x26; Statistics</a>
+<ul>
+<li><a href="#flushdelay-number-promiseboolean"><code>flush(delay?: number): Promise&#x3C;boolean></code></a></li>
+<li><a href="#statstype-string-promisemapstring-memcachestats"><code>stats(type?: string): Promise&#x3C;Map&#x3C;string, MemcacheStats>></code></a></li>
+<li><a href="#version-promisemapstring-string"><code>version(): Promise&#x3C;Map&#x3C;string, string>></code></a></li>
+</ul>
+</li>
+<li><a href="#validation">Validation</a>
+<ul>
+<li><a href="#validatekeykey-string-void"><code>validateKey(key: string): void</code></a></li>
+<li><a href="#resolvekeykey-string-string"><code>resolveKey(key: string): string</code></a></li>
+</ul>
+</li>
+<li><a href="#helper-functions">Helper Functions</a>
+<ul>
+<li><a href="#createnodehost-string-port-number-options-memcachenodeoptions-memcachenode"><code>createNode(host: string, port: number, options?: MemcacheNodeOptions): MemcacheNode</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#hooks-and-events">Hooks and Events</a>
+<ul>
+<li><a href="#events">Events</a></li>
+<li><a href="#available-events">Available Events</a></li>
+<li><a href="#hooks">Hooks</a></li>
+<li><a href="#available-hooks">Available Hooks</a></li>
+<li><a href="#getkey">get(key)</a></li>
+<li><a href="#setkey-value-exptime-flags">set(key, value, exptime?, flags?)</a></li>
+<li><a href="#getskeys">gets(keys[])</a></li>
+<li><a href="#addkey-value-exptime-flags">add(key, value, exptime?, flags?)</a></li>
+<li><a href="#replacekey-value-exptime-flags">replace(key, value, exptime?, flags?)</a></li>
+<li><a href="#appendkey-value">append(key, value)</a></li>
+<li><a href="#prependkey-value">prepend(key, value)</a></li>
+<li><a href="#deletekey">delete(key)</a></li>
+<li><a href="#incrkey-value">incr(key, value?)</a></li>
+<li><a href="#decrkey-value">decr(key, value?)</a></li>
+<li><a href="#touchkey-exptime">touch(key, exptime)</a></li>
+<li><a href="#hook-examples">Hook Examples</a></li>
+</ul>
+</li>
+<li><a href="#distribution-algorithms">Distribution Algorithms</a>
+<ul>
+<li><a href="#ketamahash-default">KetamaHash (Default)</a></li>
+<li><a href="#modulahash">ModulaHash</a>
+<ul>
+<li><a href="#weighted-nodes-with-modulahash">Weighted Nodes with ModulaHash</a></li>
+</ul>
+</li>
+<li><a href="#broadcasthash">BroadcastHash</a></li>
+<li><a href="#choosing-an-algorithm">Choosing an Algorithm</a></li>
+</ul>
+</li>
+<li><a href="#retry-configuration">Retry Configuration</a>
+<ul>
+<li><a href="#basic-retry-setup">Basic Retry Setup</a></li>
+<li><a href="#backoff-strategies">Backoff Strategies</a>
+<ul>
+<li><a href="#fixed-delay-default">Fixed Delay (Default)</a></li>
+<li><a href="#exponential-backoff">Exponential Backoff</a></li>
+<li><a href="#custom-backoff-function">Custom Backoff Function</a></li>
+</ul>
+</li>
+<li><a href="#idempotent-safety">Idempotent Safety</a>
+<ul>
+<li><a href="#why-this-matters">Why This Matters</a></li>
+<li><a href="#safe-usage-patterns">Safe Usage Patterns</a></li>
+<li><a href="#behavior-summary">Behavior Summary</a></li>
+<li><a href="#methods-without-retry-support">Methods Without Retry Support</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#sasl-authentication">SASL Authentication</a>
+<ul>
+<li><a href="#enabling-sasl-authentication">Enabling SASL Authentication</a></li>
+<li><a href="#sasl-options">SASL Options</a></li>
+<li><a href="#binary-protocol-methods">Binary Protocol Methods</a></li>
+<li><a href="#per-node-sasl-configuration">Per-Node SASL Configuration</a></li>
+<li><a href="#authentication-events">Authentication Events</a>
+<ul>
+<li><a href="#node-properties">Node Properties</a></li>
+</ul>
+</li>
+<li><a href="#server-configuration">Server Configuration</a></li>
+</ul>
+</li>
+<li><a href="#auto-discovery">Auto Discovery</a>
+<ul>
+<li><a href="#enabling-auto-discovery">Enabling Auto Discovery</a></li>
+<li><a href="#auto-discovery-options">Auto Discovery Options</a></li>
+<li><a href="#auto-discovery-events">Auto Discovery Events</a></li>
+<li><a href="#legacy-command-support">Legacy Command Support</a></li>
+</ul>
+</li>
+<li><a href="#ipv6-support">IPv6 Support</a>
+<ul>
+<li><a href="#connecting-to-ipv6-nodes">Connecting to IPv6 Nodes</a></li>
+<li><a href="#ipv6-in-auto-discovery">IPv6 in Auto Discovery</a></li>
+<li><a href="#ipv6-node-ids">IPv6 Node IDs</a></li>
+</ul>
+</li>
+<li><a href="#benchmarks">Benchmarks</a></li>
+<li><a href="#contributing">Contributing</a></li>
+<li><a href="#license-and-copyright">License and Copyright</a></li>
+</ul>
+<h1 id="getting-started">Getting Started</h1>
+<h2 id="installation">Installation</h2>
+<pre><code class="hljs language-bash">npm install memcache
+</code></pre>
+<p>or with pnpm:</p>
+<pre><code class="hljs language-bash">pnpm add memcache
+</code></pre>
+<h2 id="basic-usage">Basic Usage</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-comment">// Create a new client</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>();
+
+<span class="hljs-comment">// Set a value</span>
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">set</span>(<span class="hljs-string">'mykey'</span>, <span class="hljs-string">'Hello, Memcache!'</span>);
+
+<span class="hljs-comment">// Get a value</span>
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">get</span>(<span class="hljs-string">'mykey'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(value); <span class="hljs-comment">// ['Hello, Memcache!']</span>
+
+<span class="hljs-comment">// Delete a value</span>
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'mykey'</span>);
+
+<span class="hljs-comment">// Close the connection</span>
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">quit</span>();
+</code></pre>
+<p>You can also just pass in the <code>uri</code> into the constructor</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Single node as string</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+
+<span class="hljs-comment">// Single node with protocol</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>(<span class="hljs-string">'memcache://192.168.1.100:11211'</span>);
+
+<span class="hljs-comment">// Multiple nodes with options</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'localhost:11211'</span>, <span class="hljs-string">'server2:11211'</span>],
+  <span class="hljs-attr">timeout</span>: <span class="hljs-number">10000</span>
+});
+</code></pre>
+<p>You can specify multiple Memcache nodes by passing an array of connection strings:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-comment">// Create a client with multiple nodes</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'localhost:11211'</span>, <span class="hljs-string">'192.168.1.100:11211'</span>, <span class="hljs-string">'memcache://192.168.1.101:11211'</span>]
+});
+
+<span class="hljs-comment">// Set and get values (automatically distributed across nodes)</span>
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">set</span>(<span class="hljs-string">'mykey'</span>, <span class="hljs-string">'Hello, Memcache!'</span>);
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">get</span>(<span class="hljs-string">'mykey'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(value); <span class="hljs-comment">// ['Hello, Memcache!']</span>
+
+<span class="hljs-comment">// Close the connection</span>
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">quit</span>();
+</code></pre>
+<p>You can also pass an array of MemcacheNode instances for advanced configuration:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span>, createNode } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-comment">// Create nodes with custom settings</span>
+<span class="hljs-keyword">const</span> node1 = <span class="hljs-title function_">createNode</span>(<span class="hljs-string">'localhost'</span>, <span class="hljs-number">11211</span>, { <span class="hljs-attr">weight</span>: <span class="hljs-number">2</span> });
+<span class="hljs-keyword">const</span> node2 = <span class="hljs-title function_">createNode</span>(<span class="hljs-string">'192.168.1.100'</span>, <span class="hljs-number">11211</span>, { <span class="hljs-attr">weight</span>: <span class="hljs-number">1</span> });
+<span class="hljs-keyword">const</span> node3 = <span class="hljs-title function_">createNode</span>(<span class="hljs-string">'192.168.1.101'</span>, <span class="hljs-number">11211</span>, { <span class="hljs-attr">weight</span>: <span class="hljs-number">1</span> });
+
+<span class="hljs-comment">// Create a client with MemcacheNode instances</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [node1, node2, node3],
+  <span class="hljs-attr">timeout</span>: <span class="hljs-number">10000</span>
+});
+
+<span class="hljs-comment">// node1 will receive twice as much traffic due to higher weight</span>
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">set</span>(<span class="hljs-string">'mykey'</span>, <span class="hljs-string">'Hello, Memcache!'</span>);
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">get</span>(<span class="hljs-string">'mykey'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(value); <span class="hljs-comment">// ['Hello, Memcache!']</span>
+
+<span class="hljs-comment">// Close the connection</span>
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">quit</span>();
+</code></pre>
+<h1 id="api">API</h1>
+<h2 id="constructor">Constructor</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>(<span class="hljs-attr">options</span>?: <span class="hljs-built_in">string</span> | <span class="hljs-title class_">MemcacheOptions</span>)
+</code></pre>
+<p>Creates a new Memcache client instance. You can pass either:</p>
+<ul>
+<li>A <strong>string</strong> representing a single node URI (uses default settings)</li>
+<li>A <strong>MemcacheOptions</strong> object for custom configuration</li>
+</ul>
+<p><strong>Examples:</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Single node as string</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+
+<span class="hljs-comment">// Single node with protocol</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>(<span class="hljs-string">'memcache://192.168.1.100:11211'</span>);
+
+<span class="hljs-comment">// Multiple nodes with options</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'localhost:11211'</span>, <span class="hljs-string">'server2:11211'</span>],
+  <span class="hljs-attr">timeout</span>: <span class="hljs-number">10000</span>
+});
+</code></pre>
+<h3 id="options">Options</h3>
+<ul>
+<li><code>nodes?: (string | MemcacheNode)[]</code> - Array of node URIs or MemcacheNode instances
+<ul>
+<li>Examples: <code>["localhost:11211", "memcache://192.168.1.100:11212"]</code></li>
+</ul>
+</li>
+<li><code>timeout?: number</code> - Operation timeout in milliseconds (default: 5000)</li>
+<li><code>keepAlive?: boolean</code> - Keep connection alive (default: true)</li>
+<li><code>keepAliveDelay?: number</code> - Keep alive delay in milliseconds (default: 1000)</li>
+<li><code>hash?: HashProvider</code> - Hash provider for consistent hashing (default: KetamaHash)</li>
+<li><code>retries?: number</code> - Number of retry attempts for failed commands (default: 0)</li>
+<li><code>retryDelay?: number</code> - Base delay in milliseconds between retries (default: 100)</li>
+<li><code>retryBackoff?: RetryBackoffFunction</code> - Function to calculate backoff delay (default: fixed delay)</li>
+<li><code>retryOnlyIdempotent?: boolean</code> - Only retry commands marked as idempotent (default: true)</li>
+<li><code>lazyConnect?: boolean</code> - When <code>true</code>, nodes will not connect until the first command is executed. When <code>false</code>, nodes connect eagerly during construction (default: true)</li>
+<li><code>maxKeySize?: number</code> - Maximum allowed key size in characters (default: 250, memcache protocol max)</li>
+<li><code>maxValueSize?: number</code> - Maximum allowed value size in bytes (default: 1048576, memcached default)</li>
+<li><code>maxExpiration?: number</code> - Maximum allowed expiration in seconds (default: 2592000, memcached's 30-day relative-time boundary). Values above this throw. <code>0</code> (no expiration) is always allowed. Raise this if you need to pass absolute Unix timestamps as expirations.</li>
+<li><code>hashLargeKey?: boolean | Hashery</code> - When <code>true</code>, keys longer than <code>maxKeySize</code> are deterministically hashed via <a href="https://github.com/jaredwray/hashery"><code>hashery</code></a> (djb2 sync by default) before being sent to the server, instead of throwing. Pass a configured <code>Hashery</code> instance (e.g. <code>new Hashery({ defaultAlgorithmSync: 'fnv1' })</code>) to choose a different sync algorithm or plug in custom providers. When <code>false</code>, oversized keys throw a validation error (default: false). Note: hashing is one-way and can collide; two distinct long keys could map to the same hashed key.</li>
+<li><code>autoDiscover?: AutoDiscoverOptions</code> - AWS ElastiCache Auto Discovery configuration (see <a href="#auto-discovery">Auto Discovery</a>)</li>
+</ul>
+<h2 id="properties">Properties</h2>
+<h3 id="nodes-memcachenode-readonly"><code>nodes: MemcacheNode[]</code> (readonly)</h3>
+<p>Returns the list of all MemcacheNode instances in the cluster.</p>
+<h3 id="nodeids-string-readonly"><code>nodeIds: string[]</code> (readonly)</h3>
+<p>Returns the list of node IDs (e.g., <code>["localhost:11211", "127.0.0.1:11212"]</code>).</p>
+<h3 id="hash-hashprovider"><code>hash: HashProvider</code></h3>
+<p>Get or set the hash provider used for consistent hashing distribution.</p>
+<h3 id="timeout-number"><code>timeout: number</code></h3>
+<p>Get or set the timeout for operations in milliseconds (default: 5000).</p>
+<h3 id="keepalive-boolean"><code>keepAlive: boolean</code></h3>
+<p>Get or set the keepAlive setting. Updates all existing nodes. Requires <code>reconnect()</code> to apply changes.</p>
+<h3 id="keepalivedelay-number"><code>keepAliveDelay: number</code></h3>
+<p>Get or set the keep alive delay in milliseconds. Updates all existing nodes. Requires <code>reconnect()</code> to apply changes.</p>
+<h3 id="retries-number"><code>retries: number</code></h3>
+<p>Get or set the number of retry attempts for failed commands (default: 0).</p>
+<h3 id="retrydelay-number"><code>retryDelay: number</code></h3>
+<p>Get or set the base delay in milliseconds between retry attempts (default: 100).</p>
+<h3 id="retrybackoff-retrybackofffunction"><code>retryBackoff: RetryBackoffFunction</code></h3>
+<p>Get or set the backoff function for calculating retry delays.</p>
+<h3 id="retryonlyidempotent-boolean"><code>retryOnlyIdempotent: boolean</code></h3>
+<p>Get or set whether retries are restricted to idempotent commands only (default: true).</p>
+<h3 id="maxkeysize-number"><code>maxKeySize: number</code></h3>
+<p>Get or set the maximum allowed key size in characters (default: 250). Memcache protocol max is 250.</p>
+<h3 id="maxvaluesize-number"><code>maxValueSize: number</code></h3>
+<p>Get or set the maximum allowed value size in bytes (default: 1048576). Writes (<code>set</code>, <code>add</code>, <code>replace</code>, <code>append</code>, <code>prepend</code>, <code>cas</code>) throw when the encoded value exceeds this limit. Raise it if your memcached server is started with a larger <code>-I</code> item size.</p>
+<h3 id="maxexpiration-number"><code>maxExpiration: number</code></h3>
+<p>Get or set the maximum allowed expiration in seconds (default: 2592000). Writes that accept an expiration (<code>set</code>, <code>add</code>, <code>replace</code>, <code>cas</code>, <code>touch</code>) throw when <code>exptime</code> exceeds this limit. <code>0</code> (no expiration) is always allowed. Memcached treats any <code>exptime</code> greater than 2592000 as an absolute Unix timestamp, so the default guards against accidentally setting a TTL that memcached interprets as "already expired." Raise this if you need to pass Unix timestamps.</p>
+<h3 id="hashlargekey-boolean"><code>hashLargeKey: boolean</code></h3>
+<p>Get or set whether keys exceeding <code>maxKeySize</code> are hashed instead of throwing (default: false). When enabled, oversized keys are replaced with a short, deterministic hex digest (via the <a href="https://github.com/jaredwray/hashery"><code>hashery</code></a> library, djb2 by default) before being sent to memcache, so any string length is accepted. The same input always produces the same hashed key, but distinct long keys can collide. To change algorithm or providers, configure the <a href="#hashery-hashery"><code>hashery</code></a> property.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({ <span class="hljs-attr">hashLargeKey</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-keyword">const</span> longKey = <span class="hljs-string">'user:profile:'</span> + <span class="hljs-string">'x'</span>.<span class="hljs-title function_">repeat</span>(<span class="hljs-number">500</span>);
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">set</span>(longKey, <span class="hljs-string">'value'</span>);     <span class="hljs-comment">// hashed automatically</span>
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">get</span>(longKey);              <span class="hljs-comment">// same hash, returns 'value'</span>
+</code></pre>
+<h3 id="hashery-hashery"><code>hashery: Hashery</code></h3>
+<p>Get or set the <code>Hashery</code> instance used to hash oversized keys when <code>hashLargeKey</code> is enabled. Always returns an instance, even when hashing is disabled, so you can pre-configure it (algorithm, custom providers, caching) before flipping <code>hashLargeKey</code> on. <code>Hashery</code> is re-exported from this package for convenience.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Memcache</span>, { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-comment">// Simple — defaults to djb2 sync hashing</span>
+<span class="hljs-keyword">const</span> simple = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({ <span class="hljs-attr">hashLargeKey</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-comment">// Advanced — supply a Hashery preconfigured for fnv1</span>
+<span class="hljs-keyword">const</span> advanced = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">hashLargeKey</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>({ <span class="hljs-attr">defaultAlgorithmSync</span>: <span class="hljs-string">'fnv1'</span> }),
+});
+
+<span class="hljs-comment">// Or mutate the instance after construction</span>
+simple.<span class="hljs-property">hashery</span>.<span class="hljs-property">defaultAlgorithmSync</span> = <span class="hljs-string">'murmur'</span>;
+</code></pre>
+<h3 id="lazyconnect-boolean-readonly"><code>lazyConnect: boolean</code> (readonly)</h3>
+<p>Whether nodes defer connecting until the first command is executed (default: true).</p>
+<h2 id="connection-management">Connection Management</h2>
+<h3 id="connectnodeid-string-promisevoid"><code>connect(nodeId?: string): Promise&#x3C;void></code></h3>
+<p>Connect to all Memcache servers or a specific node.</p>
+<h3 id="disconnect-promisevoid"><code>disconnect(): Promise&#x3C;void></code></h3>
+<p>Disconnect all connections.</p>
+<h3 id="reconnect-promisevoid"><code>reconnect(): Promise&#x3C;void></code></h3>
+<p>Reconnect all nodes by disconnecting and connecting them again.</p>
+<h3 id="quit-promisevoid"><code>quit(): Promise&#x3C;void></code></h3>
+<p>Quit all connections gracefully.</p>
+<h3 id="isconnected-boolean"><code>isConnected(): boolean</code></h3>
+<p>Check if any node is connected to a Memcache server.</p>
+<h2 id="node-management">Node Management</h2>
+<h3 id="getnodes-memcachenode"><code>getNodes(): MemcacheNode[]</code></h3>
+<p>Get an array of all MemcacheNode instances.</p>
+<h3 id="getnodeid-string-memcachenode--undefined"><code>getNode(id: string): MemcacheNode | undefined</code></h3>
+<p>Get a specific node by its ID (e.g., <code>"localhost:11211"</code>).</p>
+<h3 id="addnodeuri-string--memcachenode-weight-number-promisevoid"><code>addNode(uri: string | MemcacheNode, weight?: number): Promise&#x3C;void></code></h3>
+<p>Add a new node to the cluster. Throws error if node already exists.</p>
+<h3 id="removenodeuri-string-promisevoid"><code>removeNode(uri: string): Promise&#x3C;void></code></h3>
+<p>Remove a node from the cluster.</p>
+<h3 id="getnodesbykeykey-string-promisememcachenode"><code>getNodesByKey(key: string): Promise&#x3C;MemcacheNode[]></code></h3>
+<p>Get the nodes for a given key using consistent hashing. Automatically connects to nodes if not already connected.</p>
+<h3 id="parseuriuri-string--host-string-port-number-"><code>parseUri(uri: string): { host: string; port: number }</code></h3>
+<p>Parse a URI string into host and port. Supports formats:</p>
+<ul>
+<li>Simple: <code>"localhost:11211"</code> or <code>"localhost"</code></li>
+<li>Protocol: <code>"memcache://localhost:11211"</code>, <code>"tcp://localhost:11211"</code></li>
+<li>IPv6: <code>"[::1]:11211"</code> or <code>"memcache://[2001:db8::1]:11212"</code></li>
+<li>Unix socket: <code>"/var/run/memcached.sock"</code> or <code>"unix:///var/run/memcached.sock"</code></li>
+</ul>
+<h2 id="data-storage-operations">Data Storage Operations</h2>
+<h3 id="getkey-string-promisestring--undefined"><code>get(key: string): Promise&#x3C;string | undefined></code></h3>
+<p>Get a value from the Memcache server. Returns the first successful result from replica nodes.</p>
+<h3 id="getskeys-string-promisemapstring-string"><code>gets(keys: string[]): Promise&#x3C;Map&#x3C;string, string>></code></h3>
+<p>Get multiple values from the Memcache server. Returns a Map with keys to values.</p>
+<h3 id="setkey-string-value-string-exptime-number-flags-number-promiseboolean"><code>set(key: string, value: string, exptime?: number, flags?: number): Promise&#x3C;boolean></code></h3>
+<p>Set a value in the Memcache server. Returns true only if all replica nodes succeed.</p>
+<ul>
+<li><code>exptime</code> - Expiration time in seconds (default: 0 = never expire)</li>
+<li><code>flags</code> - Flags/metadata (default: 0)</li>
+</ul>
+<h3 id="addkey-string-value-string-exptime-number-flags-number-promiseboolean"><code>add(key: string, value: string, exptime?: number, flags?: number): Promise&#x3C;boolean></code></h3>
+<p>Add a value (only if key doesn't exist). Returns true only if all replica nodes succeed.</p>
+<h3 id="replacekey-string-value-string-exptime-number-flags-number-promiseboolean"><code>replace(key: string, value: string, exptime?: number, flags?: number): Promise&#x3C;boolean></code></h3>
+<p>Replace a value (only if key exists). Returns true only if all replica nodes succeed.</p>
+<h3 id="caskey-string-value-string-castoken-string-exptime-number-flags-number-promiseboolean"><code>cas(key: string, value: string, casToken: string, exptime?: number, flags?: number): Promise&#x3C;boolean></code></h3>
+<p>Check-And-Set: Store a value only if it hasn't been modified since last fetch. Returns true only if all replica nodes succeed.</p>
+<h2 id="string-modification-operations">String Modification Operations</h2>
+<h3 id="appendkey-string-value-string-promiseboolean"><code>append(key: string, value: string): Promise&#x3C;boolean></code></h3>
+<p>Append a value to an existing key. Returns true only if all replica nodes succeed.</p>
+<h3 id="prependkey-string-value-string-promiseboolean"><code>prepend(key: string, value: string): Promise&#x3C;boolean></code></h3>
+<p>Prepend a value to an existing key. Returns true only if all replica nodes succeed.</p>
+<h2 id="deletion--expiration">Deletion &#x26; Expiration</h2>
+<h3 id="deletekey-string-promiseboolean"><code>delete(key: string): Promise&#x3C;boolean></code></h3>
+<p>Delete a value from the Memcache server. Returns true only if all replica nodes succeed.</p>
+<h3 id="touchkey-string-exptime-number-promiseboolean"><code>touch(key: string, exptime: number): Promise&#x3C;boolean></code></h3>
+<p>Update expiration time without retrieving value. Returns true only if all replica nodes succeed.</p>
+<h2 id="numeric-operations">Numeric Operations</h2>
+<h3 id="incrkey-string-value-number-promisenumber--undefined"><code>incr(key: string, value?: number): Promise&#x3C;number | undefined></code></h3>
+<p>Increment a value. Returns the new value or undefined on failure.</p>
+<ul>
+<li><code>value</code> - Amount to increment (default: 1)</li>
+</ul>
+<h3 id="decrkey-string-value-number-promisenumber--undefined"><code>decr(key: string, value?: number): Promise&#x3C;number | undefined></code></h3>
+<p>Decrement a value. Returns the new value or undefined on failure.</p>
+<ul>
+<li><code>value</code> - Amount to decrement (default: 1)</li>
+</ul>
+<h2 id="server-management--statistics">Server Management &#x26; Statistics</h2>
+<h3 id="flushdelay-number-promiseboolean"><code>flush(delay?: number): Promise&#x3C;boolean></code></h3>
+<p>Flush all values from all Memcache servers. Returns true if all nodes successfully flushed.</p>
+<ul>
+<li><code>delay</code> - Optional delay in seconds before flushing</li>
+</ul>
+<h3 id="statstype-string-promisemapstring-memcachestats"><code>stats(type?: string): Promise&#x3C;Map&#x3C;string, MemcacheStats>></code></h3>
+<p>Get statistics from all Memcache servers. Returns a Map of node IDs to their stats.</p>
+<h3 id="version-promisemapstring-string"><code>version(): Promise&#x3C;Map&#x3C;string, string>></code></h3>
+<p>Get the Memcache server version from all nodes. Returns a Map of node IDs to version strings.</p>
+<h2 id="validation">Validation</h2>
+<h3 id="validatekeykey-string-void"><code>validateKey(key: string): void</code></h3>
+<p>Validates a Memcache key according to protocol requirements. Throws error if:</p>
+<ul>
+<li>Key is empty</li>
+<li>Key exceeds 250 characters</li>
+<li>Key contains spaces, newlines, or null characters</li>
+</ul>
+<h3 id="resolvekeykey-string-string"><code>resolveKey(key: string): string</code></h3>
+<p>Returns the key that will actually be sent to memcache. When <a href="#hashlargekey-boolean"><code>hashLargeKey</code></a> is <code>true</code> and the key length exceeds <code>maxKeySize</code>, returns a short hex digest produced by the configured <a href="#hashery-hashery"><code>hashery</code></a> instance (djb2 by default — 8 hex chars). Otherwise returns the original key unchanged. Called automatically before <code>validateKey</code> in every command, so calling it manually is only needed when you want to inspect the on-wire key.</p>
+<h2 id="helper-functions">Helper Functions</h2>
+<h3 id="createnodehost-string-port-number-options-memcachenodeoptions-memcachenode"><code>createNode(host: string, port: number, options?: MemcacheNodeOptions): MemcacheNode</code></h3>
+<p>Factory function to create a new MemcacheNode instance.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { createNode } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-keyword">const</span> node = <span class="hljs-title function_">createNode</span>(<span class="hljs-string">'localhost'</span>, <span class="hljs-number">11211</span>, {
+  <span class="hljs-attr">timeout</span>: <span class="hljs-number">5000</span>,
+  <span class="hljs-attr">keepAlive</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">weight</span>: <span class="hljs-number">1</span>
+});
+</code></pre>
+<h1 id="hooks-and-events">Hooks and Events</h1>
+<p>The Memcache client extends <a href="https://github.com/jaredwray/hookified">Hookified</a> to provide powerful hooks and events for monitoring and customizing behavior.</p>
+<h2 id="events">Events</h2>
+<p>The client emits various events during operations that you can listen to:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>();
+
+<span class="hljs-comment">// Connection events</span>
+client.<span class="hljs-title function_">on</span>(<span class="hljs-string">'connect'</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Connected to Memcache server'</span>);
+});
+
+client.<span class="hljs-title function_">on</span>(<span class="hljs-string">'close'</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Connection closed'</span>);
+});
+
+client.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">(<span class="hljs-params">error</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'Error:'</span>, error);
+});
+
+client.<span class="hljs-title function_">on</span>(<span class="hljs-string">'timeout'</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Connection timeout'</span>);
+});
+
+<span class="hljs-comment">// Cache hit/miss events</span>
+client.<span class="hljs-title function_">on</span>(<span class="hljs-string">'hit'</span>, <span class="hljs-function">(<span class="hljs-params">key, value</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Cache hit for key: <span class="hljs-subst">${key}</span>`</span>);
+});
+
+client.<span class="hljs-title function_">on</span>(<span class="hljs-string">'miss'</span>, <span class="hljs-function">(<span class="hljs-params">key</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Cache miss for key: <span class="hljs-subst">${key}</span>`</span>);
+});
+</code></pre>
+<h2 id="available-events">Available Events</h2>
+<ul>
+<li><code>connect</code> - Emitted when connection to Memcache server is established</li>
+<li><code>close</code> - Emitted when connection is closed</li>
+<li><code>error</code> - Emitted when an error occurs</li>
+<li><code>timeout</code> - Emitted when a connection timeout occurs</li>
+<li><code>hit</code> - Emitted when a key is found in cache (includes key and value)</li>
+<li><code>miss</code> - Emitted when a key is not found in cache</li>
+<li><code>quit</code> - Emitted when quit command is sent</li>
+<li><code>warn</code> - Emitted for warning messages</li>
+<li><code>info</code> - Emitted for informational messages</li>
+<li><code>autoDiscover</code> - Emitted on initial auto discovery with the cluster config</li>
+<li><code>autoDiscoverUpdate</code> - Emitted when auto discovery detects a topology change</li>
+<li><code>autoDiscoverError</code> - Emitted when auto discovery encounters an error</li>
+</ul>
+<h2 id="hooks">Hooks</h2>
+<p>Hooks allow you to intercept and modify behavior before and after operations. Every operation supports <code>before</code> and <code>after</code> hooks.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>();
+
+<span class="hljs-comment">// Add a before hook for get operations</span>
+client.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:get'</span>, <span class="hljs-title function_">async</span> ({ key }) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Getting key: <span class="hljs-subst">${key}</span>`</span>);
+});
+
+<span class="hljs-comment">// Add an after hook for set operations</span>
+client.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'after:set'</span>, <span class="hljs-title function_">async</span> ({ key, value, success }) => {
+  <span class="hljs-keyword">if</span> (success) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Successfully set <span class="hljs-subst">${key}</span>`</span>);
+  }
+});
+
+<span class="hljs-comment">// Hooks can be async and modify behavior</span>
+client.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:set'</span>, <span class="hljs-title function_">async</span> ({ key, value }) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`About to set <span class="hljs-subst">${key}</span> = <span class="hljs-subst">${value}</span>`</span>);
+  <span class="hljs-comment">// Perform validation, logging, etc.</span>
+});
+</code></pre>
+<h2 id="available-hooks">Available Hooks</h2>
+<p>All operations support before and after hooks with specific parameters:</p>
+<h2 id="getkey">get(key)</h2>
+<ul>
+<li><code>before:get</code> - <code>{ key }</code></li>
+<li><code>after:get</code> - <code>{ key, value }</code> (value is array or undefined)</li>
+</ul>
+<h2 id="setkey-value-exptime-flags">set(key, value, exptime?, flags?)</h2>
+<ul>
+<li><code>before:set</code> - <code>{ key, value, exptime, flags }</code></li>
+<li><code>after:set</code> - <code>{ key, value, exptime, flags, success }</code></li>
+</ul>
+<h2 id="getskeys">gets(keys[])</h2>
+<ul>
+<li><code>before:gets</code> - <code>{ keys }</code></li>
+<li><code>after:gets</code> - <code>{ keys, values }</code> (values is a Map)</li>
+</ul>
+<h2 id="addkey-value-exptime-flags">add(key, value, exptime?, flags?)</h2>
+<ul>
+<li><code>before:add</code> - <code>{ key, value, exptime, flags }</code></li>
+<li><code>after:add</code> - <code>{ key, value, exptime, flags, success }</code></li>
+</ul>
+<h2 id="replacekey-value-exptime-flags">replace(key, value, exptime?, flags?)</h2>
+<ul>
+<li><code>before:replace</code> - <code>{ key, value, exptime, flags }</code></li>
+<li><code>after:replace</code> - <code>{ key, value, exptime, flags, success }</code></li>
+</ul>
+<h2 id="appendkey-value">append(key, value)</h2>
+<ul>
+<li><code>before:append</code> - <code>{ key, value }</code></li>
+<li><code>after:append</code> - <code>{ key, value, success }</code></li>
+</ul>
+<h2 id="prependkey-value">prepend(key, value)</h2>
+<ul>
+<li><code>before:prepend</code> - <code>{ key, value }</code></li>
+<li><code>after:prepend</code> - <code>{ key, value, success }</code></li>
+</ul>
+<h2 id="deletekey">delete(key)</h2>
+<ul>
+<li><code>before:delete</code> - <code>{ key }</code></li>
+<li><code>after:delete</code> - <code>{ key, success }</code></li>
+</ul>
+<h2 id="incrkey-value">incr(key, value?)</h2>
+<ul>
+<li><code>before:incr</code> - <code>{ key, value }</code></li>
+<li><code>after:incr</code> - <code>{ key, value, newValue }</code></li>
+</ul>
+<h2 id="decrkey-value">decr(key, value?)</h2>
+<ul>
+<li><code>before:decr</code> - <code>{ key, value }</code></li>
+<li><code>after:decr</code> - <code>{ key, value, newValue }</code></li>
+</ul>
+<h2 id="touchkey-exptime">touch(key, exptime)</h2>
+<ul>
+<li><code>before:touch</code> - <code>{ key, exptime }</code></li>
+<li><code>after:touch</code> - <code>{ key, exptime, success }</code></li>
+</ul>
+<h2 id="hook-examples">Hook Examples</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>();
+
+<span class="hljs-comment">// Log all get operations</span>
+client.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:get'</span>, <span class="hljs-title function_">async</span> ({ key }) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`[GET] Fetching key: <span class="hljs-subst">${key}</span>`</span>);
+});
+
+client.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'after:get'</span>, <span class="hljs-title function_">async</span> ({ key, value }) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`[GET] Key: <span class="hljs-subst">${key}</span>, Found: <span class="hljs-subst">${value !== <span class="hljs-literal">undefined</span>}</span>`</span>);
+});
+
+<span class="hljs-comment">// Log all set operations with timing</span>
+client.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:set'</span>, <span class="hljs-title function_">async</span> (context) => {
+  context.<span class="hljs-property">startTime</span> = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();
+});
+
+client.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'after:set'</span>, <span class="hljs-title function_">async</span> (context) => {
+  <span class="hljs-keyword">const</span> duration = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() - context.<span class="hljs-property">startTime</span>;
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`[SET] Key: <span class="hljs-subst">${context.key}</span>, Success: <span class="hljs-subst">${context.success}</span>, Time: <span class="hljs-subst">${duration}</span>ms`</span>);
+});
+</code></pre>
+<h1 id="distribution-algorithms">Distribution Algorithms</h1>
+<p>Memcache supports pluggable distribution algorithms to determine how keys are distributed across nodes. You can configure the algorithm using the <code>hash</code> option.</p>
+<h2 id="ketamahash-default">KetamaHash (Default)</h2>
+<p>KetamaHash uses the Ketama consistent hashing algorithm, which minimizes key redistribution when nodes are added or removed. This is the default and recommended algorithm for production environments with dynamic scaling.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-comment">// KetamaHash is used by default</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'server1:11211'</span>, <span class="hljs-string">'server2:11211'</span>, <span class="hljs-string">'server3:11211'</span>]
+});
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>Minimal key redistribution (~1/n keys move when adding/removing nodes)</li>
+<li>Uses virtual nodes for better distribution</li>
+<li>Supports weighted nodes</li>
+<li>Best for production environments with dynamic scaling</li>
+</ul>
+<h2 id="modulahash">ModulaHash</h2>
+<p>ModulaHash uses a simple modulo-based hashing algorithm (<code>hash(key) % nodeCount</code>). This is a simpler algorithm that may redistribute all keys when nodes change.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span>, <span class="hljs-title class_">ModulaHash</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-comment">// Use ModulaHash for distribution</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'server1:11211'</span>, <span class="hljs-string">'server2:11211'</span>, <span class="hljs-string">'server3:11211'</span>],
+  <span class="hljs-attr">hash</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">ModulaHash</span>()
+});
+
+<span class="hljs-comment">// With a custom hash algorithm (default is sha1)</span>
+<span class="hljs-keyword">const</span> client2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'server1:11211'</span>, <span class="hljs-string">'server2:11211'</span>],
+  <span class="hljs-attr">hash</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">ModulaHash</span>(<span class="hljs-string">'md5'</span>)
+});
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>Simple and fast algorithm</li>
+<li>All keys may be redistributed when nodes are added or removed</li>
+<li>Supports weighted nodes (nodes with higher weight appear more in the distribution)</li>
+<li>Best for fixed-size clusters or testing environments</li>
+</ul>
+<h3 id="weighted-nodes-with-modulahash">Weighted Nodes with ModulaHash</h3>
+<p>ModulaHash supports weighted nodes, where nodes with higher weights receive proportionally more keys:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span>, <span class="hljs-title class_">ModulaHash</span>, createNode } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-comment">// Create nodes with different weights</span>
+<span class="hljs-keyword">const</span> node1 = <span class="hljs-title function_">createNode</span>(<span class="hljs-string">'server1'</span>, <span class="hljs-number">11211</span>, { <span class="hljs-attr">weight</span>: <span class="hljs-number">3</span> }); <span class="hljs-comment">// 3x traffic</span>
+<span class="hljs-keyword">const</span> node2 = <span class="hljs-title function_">createNode</span>(<span class="hljs-string">'server2'</span>, <span class="hljs-number">11211</span>, { <span class="hljs-attr">weight</span>: <span class="hljs-number">1</span> }); <span class="hljs-comment">// 1x traffic</span>
+
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [node1, node2],
+  <span class="hljs-attr">hash</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">ModulaHash</span>()
+});
+
+<span class="hljs-comment">// server1 will receive approximately 75% of keys</span>
+<span class="hljs-comment">// server2 will receive approximately 25% of keys</span>
+</code></pre>
+<h2 id="broadcasthash">BroadcastHash</h2>
+<p>BroadcastHash sends every operation to all nodes in the cluster. Instead of partitioning keys across nodes, every <code>getNodesByKey()</code> call returns all nodes, so reads and writes are broadcast to every server.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span>, <span class="hljs-title class_">BroadcastHash</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-comment">// Use BroadcastHash for full replication</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'server1:11211'</span>, <span class="hljs-string">'server2:11211'</span>, <span class="hljs-string">'server3:11211'</span>],
+  <span class="hljs-attr">hash</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">BroadcastHash</span>()
+});
+
+<span class="hljs-comment">// Every set/get/delete hits all three nodes</span>
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">set</span>(<span class="hljs-string">'mykey'</span>, <span class="hljs-string">'Hello!'</span>);
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>Every operation targets all nodes</li>
+<li>No key partitioning — all nodes hold the same data</li>
+<li>Reads return the first successful result from any node</li>
+<li>Writes succeed only if all nodes succeed</li>
+<li>Best for replication, broadcast invalidation, or small clusters where all nodes should be in sync</li>
+</ul>
+<h2 id="choosing-an-algorithm">Choosing an Algorithm</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>KetamaHash</th>
+<th>ModulaHash</th>
+<th>BroadcastHash</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key redistribution on node change</td>
+<td>Minimal (~1/n keys)</td>
+<td>All keys may move</td>
+<td>N/A (all nodes always)</td>
+</tr>
+<tr>
+<td>Complexity</td>
+<td>Higher (virtual nodes)</td>
+<td>Lower (simple modulo)</td>
+<td>Simplest</td>
+</tr>
+<tr>
+<td>Performance</td>
+<td>Slightly slower</td>
+<td>Faster</td>
+<td>Depends on node count</td>
+</tr>
+<tr>
+<td>Best for</td>
+<td>Dynamic scaling</td>
+<td>Fixed clusters</td>
+<td>Replication</td>
+</tr>
+<tr>
+<td>Weighted nodes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Use KetamaHash (default) when:</strong></p>
+<ul>
+<li>Your cluster size may change dynamically</li>
+<li>You want to minimize cache invalidation during scaling</li>
+<li>You're running in production</li>
+</ul>
+<p><strong>Use ModulaHash when:</strong></p>
+<ul>
+<li>Your cluster size is fixed</li>
+<li>You prefer simplicity over minimal redistribution</li>
+<li>You're in a testing or development environment</li>
+</ul>
+<p><strong>Use BroadcastHash when:</strong></p>
+<ul>
+<li>You want all nodes to hold the same data</li>
+<li>You need broadcast cache invalidation across all nodes</li>
+<li>You're running a small cluster where replication is more important than partitioning</li>
+</ul>
+<h1 id="retry-configuration">Retry Configuration</h1>
+<p>The Memcache client supports automatic retry of failed commands with configurable backoff strategies.</p>
+<h2 id="basic-retry-setup">Basic Retry Setup</h2>
+<p>Enable retries by setting the <code>retries</code> option:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'localhost:11211'</span>],
+  <span class="hljs-attr">retries</span>: <span class="hljs-number">3</span>,        <span class="hljs-comment">// Retry up to 3 times</span>
+  <span class="hljs-attr">retryDelay</span>: <span class="hljs-number">100</span>    <span class="hljs-comment">// 100ms between retries</span>
+});
+</code></pre>
+<p>You can also modify retry settings at runtime:</p>
+<pre><code class="hljs language-javascript">client.<span class="hljs-property">retries</span> = <span class="hljs-number">5</span>;
+client.<span class="hljs-property">retryDelay</span> = <span class="hljs-number">200</span>;
+</code></pre>
+<h2 id="backoff-strategies">Backoff Strategies</h2>
+<p>The client includes two built-in backoff functions:</p>
+<h3 id="fixed-delay-default">Fixed Delay (Default)</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span>, defaultRetryBackoff } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">retries</span>: <span class="hljs-number">3</span>,
+  <span class="hljs-attr">retryDelay</span>: <span class="hljs-number">100</span>,
+  <span class="hljs-attr">retryBackoff</span>: defaultRetryBackoff  <span class="hljs-comment">// 100ms, 100ms, 100ms</span>
+});
+</code></pre>
+<h3 id="exponential-backoff">Exponential Backoff</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span>, exponentialRetryBackoff } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">retries</span>: <span class="hljs-number">3</span>,
+  <span class="hljs-attr">retryDelay</span>: <span class="hljs-number">100</span>,
+  <span class="hljs-attr">retryBackoff</span>: exponentialRetryBackoff  <span class="hljs-comment">// 100ms, 200ms, 400ms</span>
+});
+</code></pre>
+<h3 id="custom-backoff-function">Custom Backoff Function</h3>
+<p>You can provide your own backoff function:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">retries</span>: <span class="hljs-number">3</span>,
+  <span class="hljs-attr">retryDelay</span>: <span class="hljs-number">100</span>,
+  <span class="hljs-attr">retryBackoff</span>: <span class="hljs-function">(<span class="hljs-params">attempt, baseDelay</span>) =></span> {
+    <span class="hljs-comment">// Exponential backoff with jitter</span>
+    <span class="hljs-keyword">const</span> delay = baseDelay * <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">pow</span>(<span class="hljs-number">2</span>, attempt);
+    <span class="hljs-keyword">return</span> delay + <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">random</span>() * delay * <span class="hljs-number">0.1</span>;
+  }
+});
+</code></pre>
+<p>The backoff function receives:</p>
+<ul>
+<li><code>attempt</code> - The current attempt number (0-indexed)</li>
+<li><code>baseDelay</code> - The configured <code>retryDelay</code> value</li>
+</ul>
+<h2 id="idempotent-safety">Idempotent Safety</h2>
+<p><strong>Important:</strong> By default, retries are only performed for commands explicitly marked as idempotent. This prevents accidental double-execution of non-idempotent operations like <code>incr</code>, <code>decr</code>, <code>append</code>, and <code>prepend</code>.</p>
+<h3 id="why-this-matters">Why This Matters</h3>
+<p>If a network timeout occurs after the server applies a mutation but before the client receives the response, retrying would apply the mutation twice:</p>
+<ul>
+<li>Counter incremented twice instead of once</li>
+<li>Data appended twice instead of once</li>
+</ul>
+<h3 id="safe-usage-patterns">Safe Usage Patterns</h3>
+<p><strong>For read operations (always safe to retry):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Mark read operations as idempotent</span>
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">execute</span>(<span class="hljs-string">'get mykey'</span>, nodes, { <span class="hljs-attr">idempotent</span>: <span class="hljs-literal">true</span> });
+</code></pre>
+<p><strong>For idempotent writes (safe to retry):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// SET with the same value is idempotent</span>
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">execute</span>(<span class="hljs-string">'set mykey 0 0 5\r\nhello'</span>, nodes, { <span class="hljs-attr">idempotent</span>: <span class="hljs-literal">true</span> });
+</code></pre>
+<p><strong>Disable safety for all commands (use with caution):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">retries</span>: <span class="hljs-number">3</span>,
+  <span class="hljs-attr">retryOnlyIdempotent</span>: <span class="hljs-literal">false</span>  <span class="hljs-comment">// Allow retries for ALL commands</span>
+});
+</code></pre>
+<h3 id="behavior-summary">Behavior Summary</h3>
+<table>
+<thead>
+<tr>
+<th><code>retryOnlyIdempotent</code></th>
+<th><code>idempotent</code> flag</th>
+<th>Retries enabled?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>true</code> (default)</td>
+<td><code>false</code> (default)</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>true</code> (default)</td>
+<td><code>true</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>false</code></td>
+<td>(any)</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="methods-without-retry-support">Methods Without Retry Support</h3>
+<p>The following methods do not use the retry mechanism and have their own error handling:</p>
+<ul>
+<li><code>get()</code> - Returns <code>undefined</code> on failure</li>
+<li><code>gets()</code> - Returns partial results on node failure</li>
+<li><code>flush()</code> - Operates directly on nodes</li>
+<li><code>stats()</code> - Operates directly on nodes</li>
+<li><code>version()</code> - Operates directly on nodes</li>
+</ul>
+<p>To use retries with read operations, use the <code>execute()</code> method directly:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> nodes = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getNodesByKey</span>(<span class="hljs-string">'mykey'</span>);
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">execute</span>(<span class="hljs-string">'get mykey'</span>, nodes, { <span class="hljs-attr">idempotent</span>: <span class="hljs-literal">true</span> });
+</code></pre>
+<h1 id="sasl-authentication">SASL Authentication</h1>
+<p>The Memcache client supports SASL (Simple Authentication and Security Layer) authentication using the PLAIN mechanism. This allows you to connect to memcached servers that require authentication.</p>
+<h2 id="enabling-sasl-authentication">Enabling SASL Authentication</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'localhost:11211'</span>],
+  <span class="hljs-attr">sasl</span>: {
+    <span class="hljs-attr">username</span>: <span class="hljs-string">'myuser'</span>,
+    <span class="hljs-attr">password</span>: <span class="hljs-string">'mypassword'</span>,
+  },
+});
+
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">connect</span>();
+<span class="hljs-comment">// Client is now authenticated and ready to use</span>
+</code></pre>
+<h2 id="sasl-options">SASL Options</h2>
+<p>The <code>sasl</code> option accepts an object with the following properties:</p>
+<ul>
+<li><code>username: string</code> - The username for authentication (required)</li>
+<li><code>password: string</code> - The password for authentication (required)</li>
+<li><code>mechanism?: 'PLAIN'</code> - The SASL mechanism to use (default: 'PLAIN')</li>
+</ul>
+<p>Currently, only the PLAIN mechanism is supported.</p>
+<h2 id="binary-protocol-methods">Binary Protocol Methods</h2>
+<p><strong>Important:</strong> Memcached servers with SASL enabled (<code>-S</code> flag) require the binary protocol for all operations after authentication. The standard text-based methods (<code>client.get()</code>, <code>client.set()</code>, etc.) will not work on SASL-enabled servers.</p>
+<p>Use the <code>binary*</code> methods on nodes for SASL-enabled servers:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'localhost:11211'</span>],
+  <span class="hljs-attr">sasl</span>: { <span class="hljs-attr">username</span>: <span class="hljs-string">'user'</span>, <span class="hljs-attr">password</span>: <span class="hljs-string">'pass'</span> },
+});
+
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">connect</span>();
+
+<span class="hljs-comment">// Access the node directly for binary operations</span>
+<span class="hljs-keyword">const</span> node = client.<span class="hljs-property">nodes</span>[<span class="hljs-number">0</span>];
+
+<span class="hljs-comment">// Binary protocol operations</span>
+<span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binarySet</span>(<span class="hljs-string">'mykey'</span>, <span class="hljs-string">'myvalue'</span>, <span class="hljs-number">3600</span>);     <span class="hljs-comment">// Set with 1 hour expiry</span>
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binaryGet</span>(<span class="hljs-string">'mykey'</span>);         <span class="hljs-comment">// Get value</span>
+<span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binaryDelete</span>(<span class="hljs-string">'mykey'</span>);                    <span class="hljs-comment">// Delete key</span>
+
+<span class="hljs-comment">// Other binary operations</span>
+<span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binaryAdd</span>(<span class="hljs-string">'newkey'</span>, <span class="hljs-string">'value'</span>);             <span class="hljs-comment">// Add (only if not exists)</span>
+<span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binaryReplace</span>(<span class="hljs-string">'existingkey'</span>, <span class="hljs-string">'newvalue'</span>); <span class="hljs-comment">// Replace (only if exists)</span>
+<span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binaryIncr</span>(<span class="hljs-string">'counter'</span>, <span class="hljs-number">1</span>);                 <span class="hljs-comment">// Increment</span>
+<span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binaryDecr</span>(<span class="hljs-string">'counter'</span>, <span class="hljs-number">1</span>);                 <span class="hljs-comment">// Decrement</span>
+<span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binaryAppend</span>(<span class="hljs-string">'mykey'</span>, <span class="hljs-string">'-suffix'</span>);         <span class="hljs-comment">// Append to value</span>
+<span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binaryPrepend</span>(<span class="hljs-string">'mykey'</span>, <span class="hljs-string">'prefix-'</span>);        <span class="hljs-comment">// Prepend to value</span>
+<span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binaryTouch</span>(<span class="hljs-string">'mykey'</span>, <span class="hljs-number">7200</span>);               <span class="hljs-comment">// Update expiration</span>
+<span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binaryFlush</span>();                            <span class="hljs-comment">// Flush all</span>
+<span class="hljs-keyword">const</span> version = <span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binaryVersion</span>();          <span class="hljs-comment">// Get server version</span>
+<span class="hljs-keyword">const</span> stats = <span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binaryStats</span>();              <span class="hljs-comment">// Get server stats</span>
+</code></pre>
+<h2 id="per-node-sasl-configuration">Per-Node SASL Configuration</h2>
+<p>You can also configure SASL credentials when creating individual nodes:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { createNode } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-comment">// Create a node with SASL credentials</span>
+<span class="hljs-keyword">const</span> node = <span class="hljs-title function_">createNode</span>(<span class="hljs-string">'localhost'</span>, <span class="hljs-number">11211</span>, {
+  <span class="hljs-attr">sasl</span>: { <span class="hljs-attr">username</span>: <span class="hljs-string">'user'</span>, <span class="hljs-attr">password</span>: <span class="hljs-string">'pass'</span> },
+});
+
+<span class="hljs-comment">// Connect and use binary methods</span>
+<span class="hljs-keyword">await</span> node.<span class="hljs-title function_">connect</span>();
+<span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binarySet</span>(<span class="hljs-string">'mykey'</span>, <span class="hljs-string">'hello'</span>);
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> node.<span class="hljs-title function_">binaryGet</span>(<span class="hljs-string">'mykey'</span>);
+</code></pre>
+<h2 id="authentication-events">Authentication Events</h2>
+<p>You can listen for authentication events on both nodes and the client:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span>, <span class="hljs-title class_">MemcacheNode</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-comment">// Node-level events</span>
+<span class="hljs-keyword">const</span> node = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MemcacheNode</span>(<span class="hljs-string">'localhost'</span>, <span class="hljs-number">11211</span>, {
+  <span class="hljs-attr">sasl</span>: { <span class="hljs-attr">username</span>: <span class="hljs-string">'user'</span>, <span class="hljs-attr">password</span>: <span class="hljs-string">'pass'</span> },
+});
+
+node.<span class="hljs-title function_">on</span>(<span class="hljs-string">'authenticated'</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Node authenticated successfully'</span>);
+});
+
+node.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">(<span class="hljs-params">error</span>) =></span> {
+  <span class="hljs-keyword">if</span> (error.<span class="hljs-property">message</span>.<span class="hljs-title function_">includes</span>(<span class="hljs-string">'SASL authentication failed'</span>)) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'Authentication failed:'</span>, error.<span class="hljs-property">message</span>);
+  }
+});
+
+<span class="hljs-keyword">await</span> node.<span class="hljs-title function_">connect</span>();
+
+<span class="hljs-comment">// Client-level events (forwarded from nodes)</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'localhost:11211'</span>],
+  <span class="hljs-attr">sasl</span>: { <span class="hljs-attr">username</span>: <span class="hljs-string">'user'</span>, <span class="hljs-attr">password</span>: <span class="hljs-string">'pass'</span> },
+});
+
+client.<span class="hljs-title function_">on</span>(<span class="hljs-string">'authenticated'</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Client authenticated'</span>);
+});
+
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">connect</span>();
+</code></pre>
+<h3 id="node-properties">Node Properties</h3>
+<ul>
+<li><code>node.hasSaslCredentials</code> - Returns <code>true</code> if SASL credentials are configured</li>
+<li><code>node.isAuthenticated</code> - Returns <code>true</code> if the node has successfully authenticated</li>
+</ul>
+<h2 id="server-configuration">Server Configuration</h2>
+<p>To use SASL authentication, your memcached server must be configured with SASL support:</p>
+<ol>
+<li>
+<p><strong>Build memcached with SASL support</strong> - Ensure memcached was compiled with <code>--enable-sasl</code></p>
+</li>
+<li>
+<p><strong>Create SASL users</strong> - Use <code>saslpasswd2</code> to create users:</p>
+<pre><code class="hljs language-bash">saslpasswd2 -a memcached -c username
+</code></pre>
+</li>
+<li>
+<p><strong>Configure SASL mechanism</strong> - Create <code>/etc/sasl2/memcached.conf</code>:</p>
+<pre><code>mech_list: plain
+</code></pre>
+</li>
+<li>
+<p><strong>Start memcached with SASL</strong> - Use the <code>-S</code> flag:</p>
+<pre><code class="hljs language-bash">memcached -S -m 64 -p 11211
+</code></pre>
+</li>
+</ol>
+<p>For more details, see the <a href="https://github.com/memcached/memcached/wiki/SASLHowto">memcached SASL documentation</a>.</p>
+<h1 id="auto-discovery">Auto Discovery</h1>
+<p>The Memcache client supports AWS ElastiCache Auto Discovery, which automatically detects cluster topology changes and adds or removes nodes as needed. When enabled, the client connects to a configuration endpoint, retrieves the current list of cache nodes, and periodically polls for changes.</p>
+<h2 id="enabling-auto-discovery">Enabling Auto Discovery</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [],
+  <span class="hljs-attr">autoDiscover</span>: {
+    <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">configEndpoint</span>: <span class="hljs-string">'my-cluster.cfg.use1.cache.amazonaws.com:11211'</span>,
+  },
+});
+
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">connect</span>();
+<span class="hljs-comment">// The client automatically discovers and connects to all cluster nodes</span>
+</code></pre>
+<p>If you omit <code>configEndpoint</code>, the first node in the <code>nodes</code> array is used as the configuration endpoint:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'my-cluster.cfg.use1.cache.amazonaws.com:11211'</span>],
+  <span class="hljs-attr">autoDiscover</span>: {
+    <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span>,
+  },
+});
+</code></pre>
+<h2 id="auto-discovery-options">Auto Discovery Options</h2>
+<p>The <code>autoDiscover</code> option accepts an object with the following properties:</p>
+<ul>
+<li><code>enabled: boolean</code> - Enable auto discovery of cluster nodes (required)</li>
+<li><code>pollingInterval?: number</code> - How often to poll for topology changes, in milliseconds (default: 60000)</li>
+<li><code>configEndpoint?: string</code> - The configuration endpoint to use for discovery. This is typically the <code>.cfg</code> endpoint from ElastiCache. If not specified, the first node in the <code>nodes</code> array will be used</li>
+<li><code>useLegacyCommand?: boolean</code> - Use the legacy <code>get AmazonElastiCache:cluster</code> command instead of <code>config get cluster</code> (default: false)</li>
+</ul>
+<h2 id="auto-discovery-events">Auto Discovery Events</h2>
+<p>The client emits events during the auto discovery lifecycle:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [],
+  <span class="hljs-attr">autoDiscover</span>: {
+    <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">configEndpoint</span>: <span class="hljs-string">'my-cluster.cfg.use1.cache.amazonaws.com:11211'</span>,
+  },
+});
+
+<span class="hljs-comment">// Emitted on initial discovery with the full cluster config</span>
+client.<span class="hljs-title function_">on</span>(<span class="hljs-string">'autoDiscover'</span>, <span class="hljs-function">(<span class="hljs-params">config</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Discovered nodes:'</span>, config.<span class="hljs-property">nodes</span>);
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Config version:'</span>, config.<span class="hljs-property">version</span>);
+});
+
+<span class="hljs-comment">// Emitted when polling detects a topology change</span>
+client.<span class="hljs-title function_">on</span>(<span class="hljs-string">'autoDiscoverUpdate'</span>, <span class="hljs-function">(<span class="hljs-params">config</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Cluster topology changed:'</span>, config.<span class="hljs-property">nodes</span>);
+});
+
+<span class="hljs-comment">// Emitted when discovery encounters an error (non-fatal, retries on next poll)</span>
+client.<span class="hljs-title function_">on</span>(<span class="hljs-string">'autoDiscoverError'</span>, <span class="hljs-function">(<span class="hljs-params">error</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'Discovery error:'</span>, error.<span class="hljs-property">message</span>);
+});
+
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">connect</span>();
+</code></pre>
+<h2 id="legacy-command-support">Legacy Command Support</h2>
+<p>For ElastiCache engine versions older than 1.4.14, use the legacy discovery command:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [],
+  <span class="hljs-attr">autoDiscover</span>: {
+    <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">configEndpoint</span>: <span class="hljs-string">'my-cluster.cfg.use1.cache.amazonaws.com:11211'</span>,
+    <span class="hljs-attr">useLegacyCommand</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// Uses 'get AmazonElastiCache:cluster' instead of 'config get cluster'</span>
+  },
+});
+</code></pre>
+<h1 id="ipv6-support">IPv6 Support</h1>
+<p>The Memcache client fully supports IPv6 addresses using standard bracket notation in URIs.</p>
+<h2 id="connecting-to-ipv6-nodes">Connecting to IPv6 Nodes</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Memcache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'memcache'</span>;
+
+<span class="hljs-comment">// IPv6 loopback</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>(<span class="hljs-string">'[::1]:11211'</span>);
+
+<span class="hljs-comment">// Multiple IPv6 nodes</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [
+    <span class="hljs-string">'[::1]:11211'</span>,
+    <span class="hljs-string">'[2001:db8::1]:11211'</span>,
+    <span class="hljs-string">'memcache://[2001:db8::2]:11212'</span>,
+  ],
+});
+
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">connect</span>();
+</code></pre>
+<h2 id="ipv6-in-auto-discovery">IPv6 in Auto Discovery</h2>
+<p>When auto discovery returns IPv6 node addresses, the client automatically brackets them for correct URI handling:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [],
+  <span class="hljs-attr">autoDiscover</span>: {
+    <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">configEndpoint</span>: <span class="hljs-string">'[2001:db8::1]:11211'</span>,
+  },
+});
+
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">connect</span>();
+<span class="hljs-comment">// Discovered IPv6 nodes are added as [host]:port automatically</span>
+</code></pre>
+<h2 id="ipv6-node-ids">IPv6 Node IDs</h2>
+<p>Node IDs for IPv6 addresses use bracket notation to avoid ambiguity:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Memcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'[::1]:11211'</span>, <span class="hljs-string">'[2001:db8::1]:11212'</span>],
+});
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(client.<span class="hljs-property">nodeIds</span>);
+<span class="hljs-comment">// ['[::1]:11211', '[2001:db8::1]:11212']</span>
+</code></pre>
+<h1 id="benchmarks">Benchmarks</h1>
+<p>These are provided to show a simple benchmark against current libraries. This is not robust but it is something we update regularly to make sure we are keeping performant.</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>memcache set/get (v1.4.0)</td>
+<td align="center">🥇</td>
+<td align="right">3K</td>
+<td align="right">350µs</td>
+<td align="center">±0.19%</td>
+<td align="right">10K</td>
+</tr>
+<tr>
+<td>memcached set/get (v2.2.2)</td>
+<td align="center">-2.9%</td>
+<td align="right">3K</td>
+<td align="right">361µs</td>
+<td align="center">±0.16%</td>
+<td align="right">10K</td>
+</tr>
+<tr>
+<td>memjs set/get (v1.3.2)</td>
+<td align="center">-12%</td>
+<td align="right">3K</td>
+<td align="right">398µs</td>
+<td align="center">±0.17%</td>
+<td align="right">10K</td>
+</tr>
+</tbody>
+</table>
+<h1 id="contributing">Contributing</h1>
+<p>Please read our <a href="./CONTRIBUTING.md">Contributing Guidelines</a> and also our <a href="./CODE_OF_CONDUCT.md">Code of Conduct</a>.</p>
+<h1 id="license-and-copyright">License and Copyright</h1>
+<p><a href="https://github.com/jaredwray/memcache/blob/main/LICENSE">MIT &#x26; Copyright (c) Jared Wray</a></p>

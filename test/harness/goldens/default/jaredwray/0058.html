@@ -1,0 +1,41 @@
+<h1 id="llm-files">LLM Files</h1>
+<p>Docula generates two LLM-focused files in the output directory by default:</p>
+<ul>
+<li><code>/llms.txt</code> - a compact index of your docs, API reference, and changelog URLs.</li>
+<li><code>/llms-full.txt</code> - expanded content including markdown bodies for docs/changelog and local OpenAPI spec text.</li>
+</ul>
+<h2 id="what-gets-included">What Gets Included</h2>
+<p><code>/llms.txt</code> includes:</p>
+<ul>
+<li>Site title and description</li>
+<li>A link to <code>/llms-full.txt</code></li>
+<li>Documentation links (absolute URLs)</li>
+<li>API Reference link when API docs are generated</li>
+<li>Changelog landing page and the latest 20 changelog entries</li>
+</ul>
+<p><code>/llms-full.txt</code> includes:</p>
+<ul>
+<li>Site title and description</li>
+<li>Full markdown body for each docs page</li>
+<li>Full markdown body for each changelog entry</li>
+<li>Full local OpenAPI spec text when available (for example <code>site/api/swagger.json</code>)</li>
+</ul>
+<p>If <code>openApiUrl</code> points to a remote URL, <code>/llms-full.txt</code> includes only the URL reference instead of fetching content over the network.</p>
+<h2 id="configuration">Configuration</h2>
+<p>To disable generation:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">enableLlmsTxt</span>: <span class="hljs-literal">false</span>,
+};
+</code></pre>
+<h2 id="custom-overrides">Custom Overrides</h2>
+<p>You can override generated output by providing custom files in your site directory:</p>
+<ul>
+<li><code>site/llms.txt</code></li>
+<li><code>site/llms-full.txt</code></li>
+</ul>
+<p>If present, Docula copies these files to output as-is.</p>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>These files are generated in the output root (<code>dist/llms.txt</code> and <code>dist/llms-full.txt</code>).</li>
+<li>They are not added to <code>sitemap.xml</code>.</li>
+</ul>

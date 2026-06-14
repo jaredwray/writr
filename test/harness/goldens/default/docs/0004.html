@@ -1,0 +1,93 @@
+<p>You've found the Visual Studio Code documentation GitHub repository, which contains the content for the <a href="https://code.visualstudio.com/docs">Visual Studio Code documentation</a>.</p>
+<p>Topics submitted here will be published to the <a href="https://code.visualstudio.com">Visual Studio Code</a> portal.</p>
+<p>If you are looking for the VS Code product GitHub repository, you can find it <a href="https://github.com/microsoft/vscode">here</a>.</p>
+<div class="markdown-alert markdown-alert-important" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>IMPORTANT</p>
+<p>The vscode-docs repository uses <a href="https://git-lfs.github.com/"><strong>Git LFS</strong></a> (Large File Storage) for storing binary files such as images and <code>.gif</code>s. If you are contributing or updating images, please enable Git LFS per the instructions in the <a href="#cloning">Contributing</a> section below.</p>
+</div>
+<h2 id="index">Index</h2>
+<ul>
+<li><a href="#index">Index</a></li>
+<li><a href="#visual-studio-code">Visual Studio Code</a></li>
+<li><a href="#feedback">Feedback</a></li>
+<li><a href="#documentation-issues">Documentation Issues</a></li>
+<li><a href="#contributing">Contributing</a>
+<ul>
+<li><a href="#workflow">Workflow</a></li>
+<li><a href="#cloning">Cloning</a>
+<ul>
+<li><a href="#cloning-without-binary-files">Cloning without binary files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#publishing">Publishing</a></li>
+</ul>
+<h2 id="visual-studio-code">Visual Studio Code</h2>
+<p><a href="https://code.visualstudio.com/">VS Code</a> is a lightweight AI code editor for multi-agent development and a powerful development environment for building modern web, mobile, and cloud applications. It is free and available on your favorite platform - Linux, macOS, and Windows.</p>
+<p>If you landed here looking for other information about VS Code, head over to <a href="https://code.visualstudio.com">our website</a> for additional information.</p>
+<h2 id="feedback">Feedback</h2>
+<p>If you want to give documentation feedback, please use the feedback control located at the bottom of each documentation page.</p>
+<h2 id="documentation-issues">Documentation Issues</h2>
+<p>To enter documentation bugs, please create a <a href="https://github.com/microsoft/vscode-docs/issues">new GitHub issue</a>. Please check if there is an existing issue first.</p>
+<p>If you think the issue is with the VS Code product itself, please enter issues in the <a href="https://github.com/microsoft/vscode/issues">VS Code product repo</a>.</p>
+<h2 id="contributing">Contributing</h2>
+<p>To contribute new topics/information or make changes to existing documentation, please read the <a href="./CONTRIBUTING.md">Contributing Guideline</a>.</p>
+<h3 id="workflow">Workflow</h3>
+<p>The two suggested workflows are:</p>
+<ul>
+<li>
+<p>For small changes, use the <strong>Edit</strong> button on each page to edit the Markdown file directly on GitHub.</p>
+</li>
+<li>
+<p>If you plan to make significant changes or preview the Markdown files in VS Code, <a href="#cloning">clone</a> the repo to <a href="https://code.visualstudio.com/docs/languages/markdown">edit and preview</a> the files directly in VS Code.</p>
+</li>
+</ul>
+<p><img src="images/MDPreviewButton.png" alt="Markdown Preview Button"></p>
+<h3 id="cloning">Cloning</h3>
+<ol>
+<li>Install <a href="https://git-lfs.github.com/">Git LFS</a>.</li>
+<li>Run <code>git lfs install</code> to setup global git hooks. You only need to run this once per machine.</li>
+<li>SSH auth: <code>git clone git@github.com:microsoft/vscode-docs.git</code>HTTPS auth: <code>git clone https://github.com/microsoft/vscode-docs.git</code></li>
+<li>Now you can <code>git add</code> binary files and commit them. They'll be tracked in LFS.</li>
+</ol>
+<h4 id="cloning-without-binary-files">Cloning without binary files</h4>
+<p>You might want to clone the repo without the 1.6GB images. Here are the steps:</p>
+<ol>
+<li>Install <a href="https://git-lfs.github.com/">Git LFS</a>.</li>
+<li>Run <code>git lfs install</code> to setup global git hooks. You only need to run this once per machine.</li>
+<li>Clone the repo without binary files.
+<ul>
+<li>macOS / Linux:
+<ul>
+<li>SSH auth: <code>GIT_LFS_SKIP_SMUDGE=1 git clone git@github.com:microsoft/vscode-docs.git</code></li>
+<li>HTTPS auth: <code>GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/microsoft/vscode-docs.git</code></li>
+</ul>
+</li>
+<li>Windows:
+<ul>
+<li>SSH auth: <code>$env:GIT_LFS_SKIP_SMUDGE="1"; git clone git@github.com:microsoft/vscode-docs.git</code></li>
+<li>HTTPS auth: <code>$env:GIT_LFS_SKIP_SMUDGE="1"; git clone https://github.com/microsoft/vscode-docs.git</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Now you can selectively checkout some binary files to work with. For example:
+<ul>
+<li><code>git lfs pull -I "docs/nodejs"</code> to only download images in <code>docs/nodejs</code></li>
+<li><code>git lfs pull -I "release-notes/images/1_4*/*"</code> to only download images in <code>release-notes/images/1_4*</code></li>
+<li><code>git lfs pull -I "docs,api"</code> to download all images in <code>docs</code> and in <code>api</code></li>
+<li><code>git lfs pull -I &#x3C;PATTERN></code>, as long as <code>&#x3C;PATTERN></code> is a valid <a href="https://github.com/git-lfs/git-lfs/blob/main/docs/man/git-lfs-fetch.adoc#include-and-exclude">Git LFS Include and Exclude pattern</a>.</li>
+</ul>
+</li>
+</ol>
+<p>The history of this repo before we adopted LFS can be found at <a href="https://github.com/microsoft/vscode-docs-archive">microsoft/vscode-docs-archive</a>.</p>
+<h3 id="preview-the-website">Preview the website</h3>
+<p>You can host a lightweight documentation website locally on your machine to preview your changes before pushing them to GitHub.</p>
+<p>Run the following commands in the terminal from the root of the cloned <code>vscode-docs</code> repo:</p>
+<pre><code class="hljs language-bash">npm install
+npm run serve
+</code></pre>
+<p>You can then navigate to <code>http://localhost:3000</code> in your browser to see the documentation website. Any changes you make to the Markdown files will automatically refresh the page so you can see your updates in real time.</p>
+<h2 id="publishing">Publishing</h2>
+<p>Publishing merged pull requests is not automatic and is initiated manually after changes have been reviewed on an internal staging server. There is no specific time guarantee for when PR updates will be available on <a href="https://code.visualstudio.com">https://code.visualstudio.com</a> but the intent is that they will usually be live within 24 hours.</p>

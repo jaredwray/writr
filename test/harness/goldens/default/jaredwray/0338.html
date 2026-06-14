@@ -1,0 +1,302 @@
+<p>The <strong>OpenFeature Model Context Protocol (MCP) Server</strong> enables AI coding assistants to interact with OpenFeature through a standardized protocol.
+It provides SDK installation guidance and feature flag evaluation capabilities directly within your AI-powered development environment.</p>
+<p>The OpenFeature MCP Server is a local tool that connects AI coding assistants (like <strong>Cursor</strong>, <strong>Claude Code</strong>, <strong>VS Code</strong>, and <strong>Windsurf</strong>) to OpenFeature functionality.
+It acts as a bridge between your AI assistant and OpenFeature capabilities, enabling intelligent code generation and migration, SDK installation guidance, and feature flag evaluation.</p>
+<p>This server is published to the <a href="https://registry.modelcontextprotocol.io">MCP Registry</a> under <code>dev.openfeature/mcp</code>.</p>
+<blockquote>
+<p><strong>⚠️ AI Agent Behavior</strong>: AI agents are non-deterministic and may not complete tasks correctly. Always manually review their changes before committing. If you encounter issues, please <a href="https://github.com/open-feature/mcp/issues">open an issue</a> with details about your AI agent (e.g., Claude Code + Sonnet 4.5, Cursor + gpt-5-codex) with the commands you used and the behavior you saw.</p>
+</blockquote>
+<h2 id="quick-start">Quick Start</h2>
+<h3 id="npx-install">NPX Install</h3>
+<p>The easiest way to use the OpenFeature MCP Server is through NPX, which requires no installation:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"mcpServers"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"OpenFeature"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"command"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"npx"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"args"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"-y"</span><span class="hljs-punctuation">,</span> <span class="hljs-string">"@openfeature/mcp"</span><span class="hljs-punctuation">]</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h3 id="npm-global-install">NPM Global Install</h3>
+<p>You can install the MCP server globally:</p>
+<pre><code class="hljs language-bash">npm install -g @openfeature/mcp
+</code></pre>
+<p>Then configure your AI assistant to use the global installation:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"mcpServers"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"OpenFeature"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"command"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"openfeature-mcp"</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h2 id="ai-assistant-configuration">AI Assistant Configuration</h2>
+<h3 id="cursor">Cursor</h3>
+<p>📦 Install in Cursor</p>
+<p>To open Cursor and automatically add the OpenFeature MCP, click the install button above.</p>
+<p>Alternatively, navigate to <code>Cursor Settings</code> -> <code>Tools &#x26; MCP</code> -> <code>New MCP Server</code> and add to <code>~/.cursor/mcp_settings.json</code>:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"mcpServers"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"OpenFeature"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"command"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"npx"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"args"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"-y"</span><span class="hljs-punctuation">,</span> <span class="hljs-string">"@openfeature/mcp"</span><span class="hljs-punctuation">]</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h3 id="vs-code">VS Code</h3>
+<p>📦 Install in VS Code</p>
+<p>To open VS Code and automatically add the OpenFeature MCP, click the install button above.</p>
+<p>Alternatively, add to <code>.continue/config.json</code>:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"mcpServers"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"OpenFeature"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"command"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"npx"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"args"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"-y"</span><span class="hljs-punctuation">,</span> <span class="hljs-string">"@openfeature/mcp"</span><span class="hljs-punctuation">]</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h3 id="claude-code">Claude Code</h3>
+<p>Add the server via the Claude Code CLI:</p>
+<pre><code class="hljs language-bash">claude mcp add --transport stdio openfeature npx -y @openfeature/mcp
+</code></pre>
+<p>Then manage the connection with <code>/mcp</code> in the CLI.</p>
+<h3 id="windsurf">Windsurf</h3>
+<p>In the <code>Manage MCP servers</code> raw config, add:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"mcpServers"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"OpenFeature"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"command"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"npx"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"args"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"-y"</span><span class="hljs-punctuation">,</span> <span class="hljs-string">"@openfeature/mcp"</span><span class="hljs-punctuation">]</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h3 id="codex-cli">Codex CLI</h3>
+<p>Edit <code>~/.codex/config.toml</code>:</p>
+<pre><code class="hljs language-toml"><span class="hljs-section">[mcp_servers.openfeature]</span>
+<span class="hljs-attr">command</span> = <span class="hljs-string">"npx"</span>
+<span class="hljs-attr">args</span> = [<span class="hljs-string">"-y"</span>, <span class="hljs-string">"@openfeature/mcp"</span>]
+</code></pre>
+<p>Restart Codex CLI after saving.</p>
+<h3 id="gemini-cli">Gemini CLI</h3>
+<p>Edit <code>~/.gemini/settings.json</code>:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"mcpServers"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"OpenFeature"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"command"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"npx"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"args"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"-y"</span><span class="hljs-punctuation">,</span> <span class="hljs-string">"@openfeature/mcp"</span><span class="hljs-punctuation">]</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>Restart Gemini CLI after saving.</p>
+<h3 id="claude-desktop">Claude Desktop</h3>
+<p>Edit your Claude Desktop config at:</p>
+<ul>
+<li><strong>macOS</strong>: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
+<li><strong>Windows</strong>: <code>%APPDATA%\Claude\claude_desktop_config.json</code></li>
+</ul>
+<p>Add the following configuration:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"mcpServers"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"openfeature"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"command"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"npx"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"args"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"-y"</span><span class="hljs-punctuation">,</span> <span class="hljs-string">"@openfeature/mcp"</span><span class="hljs-punctuation">]</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>Restart Claude Desktop after saving.</p>
+<h2 id="available-tools">Available Tools</h2>
+<p>The OpenFeature MCP Server provides two main tools accessible to AI assistants:</p>
+<h3 id="sdk-installation-guide-install_openfeature_sdk">SDK Installation Guide: <code>install_openfeature_sdk</code></h3>
+<p>Fetches installation instructions for OpenFeature SDKs in various languages and frameworks. Optionally includes provider-specific setup documentation.</p>
+<h4 id="sdk-tool-parameters">SDK Tool Parameters</h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>technology</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Target language/framework (see supported list below)</td>
+</tr>
+<tr>
+<td><code>providers</code></td>
+<td>string[]</td>
+<td>No</td>
+<td>Provider identifiers to include installation instructions</td>
+</tr>
+</tbody>
+</table>
+<h4 id="supported-technologies">Supported Technologies</h4>
+<p>The technologies list is built from the available <code>prompts/*.md</code>, updated automatically using <code>scripts/build-prompts.js</code></p>
+<table>
+<thead>
+<tr>
+<th>Technology</th>
+<th>SDK</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>android</code></td>
+<td>Android Kotlin SDK</td>
+</tr>
+<tr>
+<td><code>dotnet</code></td>
+<td>.NET SDK</td>
+</tr>
+<tr>
+<td><code>go</code></td>
+<td>Go SDK</td>
+</tr>
+<tr>
+<td><code>ios</code></td>
+<td>iOS Swift SDK</td>
+</tr>
+<tr>
+<td><code>java</code></td>
+<td>Java SDK</td>
+</tr>
+<tr>
+<td><code>javascript</code></td>
+<td>JavaScript Web SDK</td>
+</tr>
+<tr>
+<td><code>nestjs</code></td>
+<td>NestJS SDK</td>
+</tr>
+<tr>
+<td><code>nodejs</code></td>
+<td>Node.js SDK</td>
+</tr>
+<tr>
+<td><code>php</code></td>
+<td>PHP SDK</td>
+</tr>
+<tr>
+<td><code>python</code></td>
+<td>Python SDK</td>
+</tr>
+<tr>
+<td><code>react</code></td>
+<td>React SDK</td>
+</tr>
+<tr>
+<td><code>ruby</code></td>
+<td>Ruby SDK</td>
+</tr>
+</tbody>
+</table>
+<h4 id="supported-providers">Supported Providers</h4>
+<p>The provider list is automatically sourced from the OpenFeature ecosystem (<code>open-feature/openfeature.dev</code> repo).</p>
+<p>See <code>scripts/build-providers.js</code> for details on how the provider list is maintained.</p>
+<h3 id="ofrep-flag-evaluation-ofrep_flag_eval">OFREP Flag Evaluation: <code>ofrep_flag_eval</code></h3>
+<p>Evaluate feature flags using the OpenFeature Remote Evaluation Protocol (OFREP).
+Supports both single flag and bulk evaluation.</p>
+<h4 id="ofrep-tool-parameters">OFREP Tool Parameters</h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>base_url</code></td>
+<td>string</td>
+<td>No</td>
+<td>Base URL of your OFREP-compatible flag service</td>
+</tr>
+<tr>
+<td><code>flag_key</code></td>
+<td>string</td>
+<td>No</td>
+<td>Flag key for single evaluation (omit for bulk)</td>
+</tr>
+<tr>
+<td><code>context</code></td>
+<td>object</td>
+<td>No</td>
+<td>Evaluation context (e.g., <code>{ targetingKey: "user-123" }</code>)</td>
+</tr>
+<tr>
+<td><code>etag</code></td>
+<td>string</td>
+<td>No</td>
+<td>ETag for bulk evaluation caching</td>
+</tr>
+<tr>
+<td><code>auth</code></td>
+<td>object</td>
+<td>No</td>
+<td>Authentication configuration</td>
+</tr>
+<tr>
+<td><code>auth.bearer_token</code></td>
+<td>string</td>
+<td>No</td>
+<td>Bearer token for authorization</td>
+</tr>
+<tr>
+<td><code>auth.api_key</code></td>
+<td>string</td>
+<td>No</td>
+<td>API key for authorization</td>
+</tr>
+</tbody>
+</table>
+<h4 id="ofrep-configuration">OFREP Configuration</h4>
+<p>To use OFREP flag evaluation features, configure authentication and endpoint details. The server checks configuration in this priority order:</p>
+<ol>
+<li>
+<p><strong>Environment Variables</strong></p>
+<ul>
+<li><code>OPENFEATURE_OFREP_BASE_URL</code> or <code>OFREP_BASE_URL</code></li>
+<li><code>OPENFEATURE_OFREP_BEARER_TOKEN</code> or <code>OFREP_BEARER_TOKEN</code></li>
+<li><code>OPENFEATURE_OFREP_API_KEY</code> or <code>OFREP_API_KEY</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Configuration File</strong>: <code>~/.openfeature-mcp.json</code></p>
+</li>
+</ol>
+<p>Example <code>~/.openfeature-mcp.json</code>:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"OFREP"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"baseUrl"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"https://flags.example.com"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"bearerToken"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"&#x3C;your-token>"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"apiKey"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"&#x3C;your-api-key>"</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>You can override the config file path using the <code>OPENFEATURE_MCP_CONFIG_PATH</code> environment variable.</p>
+<blockquote>
+<p><strong>Note</strong>: All logs are written to stderr. The MCP protocol messages use stdout.</p>
+</blockquote>
+<h2 id="mcp-usage-examples">MCP Usage Examples</h2>
+<h3 id="sdk-installation-example">SDK Installation Example</h3>
+<blockquote>
+<p>"install the OpenFeature SDK for Node.js with the flagd provider"</p>
+</blockquote>
+<p>The AI will use the MCP to fetch relevant installation instructions and attempt to install the OpenFeature SDK with the correct provider.</p>
+<h3 id="flag-evaluation-example">Flag Evaluation Example</h3>
+<p>When interacting with your AI assistant:</p>
+<blockquote>
+<p>"Can you check the value of the 'new-checkout-flow' feature flag for 'user-123'?"</p>
+</blockquote>
+<p>The AI will use the MCP to evaluate the flag using OFREP and provide you with the result, along with additional metadata like variant and reason.</p>

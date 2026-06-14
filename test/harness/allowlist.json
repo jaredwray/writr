@@ -1,0 +1,4 @@
+{
+	"$comment": "Reviewed intentional divergences from the JS-generated goldens. Each entry downgrades a mismatch to an informational 'allowed divergence' for a specific engine. Use '*' wildcards for profile/id. Example: { \"engine\": \"writr-rust\", \"profile\": \"default\", \"id\": \"commonmark/0042\", \"reason\": \"KaTeX markup differs; tracked in #123\", \"approvedBy\": \"jaredwray\", \"date\": \"2026-06-14\" }",
+	"entries": []
+}

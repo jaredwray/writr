@@ -1,0 +1,313 @@
+<p>import MCPInstall from '@site/src/partials/mcp-install';</p>
+<h2 id="overview">Overview</h2>
+<p>The OpenFeature React SDK adds React-specific functionality to the <a href="/docs/reference/sdks/client/web">OpenFeature Web SDK</a>.</p>
+<p>In addition to the feature provided by the <a href="/docs/reference/sdks/client/web">web sdk</a>, capabilities include:</p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#quick-start">Quick start</a>
+<ul>
+<li><a href="#requirements">Requirements</a></li>
+<li><a href="#install">Install</a>
+<ul>
+<li><a href="#npm">npm</a></li>
+<li><a href="#yarn">yarn</a></li>
+<li><a href="#required-peer-dependencies">Required peer dependencies</a></li>
+</ul>
+</li>
+<li><a href="#usage">Usage</a>
+<ul>
+<li><a href="#openfeatureprovider-context-provider">OpenFeatureProvider context provider</a></li>
+<li><a href="#evaluation-hooks">Evaluation hooks</a></li>
+<li><a href="#multiple-providers-and-domains">Multiple Providers and Domains</a></li>
+<li><a href="#re-rendering-with-context-changes">Re-rendering with Context Changes</a></li>
+<li><a href="#re-rendering-with-flag-configuration-changes">Re-rendering with Flag Configuration Changes</a></li>
+<li><a href="#suspense-support">Suspense Support</a></li>
+<li><a href="#tracking">Tracking</a></li>
+<li><a href="#observability-considerations">Observability Considerations</a></li>
+</ul>
+</li>
+<li><a href="#testing">Testing</a></li>
+</ul>
+</li>
+<li><a href="#faq-and-troubleshooting">FAQ and troubleshooting</a></li>
+<li><a href="#resources">Resources</a></li>
+</ul>
+<h2 id="quick-start">Quick start</h2>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li>ES2015-compatible web browser (Chrome, Edge, Firefox, etc)</li>
+<li>React version 16.8+</li>
+</ul>
+<h3 id="install">Install</h3>
+<h4 id="npm">npm</h4>
+<pre><code class="hljs language-sh">npm install --save @openfeature/react-sdk
+</code></pre>
+<h4 id="yarn">yarn</h4>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># yarn requires manual installation of the peer dependencies (see below)</span>
+yarn add @openfeature/react-sdk @openfeature/web-sdk @openfeature/core
+</code></pre>
+<h4 id="required-peer-dependencies">Required peer dependencies</h4>
+<p>The following list contains the peer dependencies of <code>@openfeature/react-sdk</code>.
+See the <a href="https://github.com/open-feature/js-sdk/blob/main/packages/react/package.json">package.json</a> for the required versions.</p>
+<ul>
+<li><code>@openfeature/web-sdk</code></li>
+<li><code>react</code></li>
+</ul>
+<h3 id="usage">Usage</h3>
+<h4 id="openfeatureprovider-context-provider">OpenFeatureProvider context provider</h4>
+<p>The <code>OpenFeatureProvider</code> is a <a href="https://react.dev/reference/react/createContext#provider">React context provider</a> which represents a scope for feature flag evaluations within a React application.
+It binds an OpenFeature client to all evaluations within child components, and allows the use of evaluation hooks.
+The example below shows how to use the <code>OpenFeatureProvider</code> with OpenFeature's <code>InMemoryProvider</code>.</p>
+<pre><code class="hljs language-tsx"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">EvaluationContext</span>, <span class="hljs-title class_">OpenFeatureProvider</span>, useFlag, <span class="hljs-title class_">OpenFeature</span>, <span class="hljs-title class_">InMemoryProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/react-sdk'</span>;
+
+<span class="hljs-keyword">const</span> flagConfig = {
+  <span class="hljs-string">'new-message'</span>: {
+    <span class="hljs-attr">disabled</span>: <span class="hljs-literal">false</span>,
+    <span class="hljs-attr">variants</span>: {
+      <span class="hljs-attr">on</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-attr">off</span>: <span class="hljs-literal">false</span>,
+    },
+    <span class="hljs-attr">defaultVariant</span>: <span class="hljs-string">"on"</span>,
+    <span class="hljs-attr">contextEvaluator</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">context</span>: <span class="hljs-title class_">EvaluationContext</span></span>) =></span> {
+      <span class="hljs-keyword">if</span> (context.<span class="hljs-property">silly</span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">'on'</span>;
+      }
+      <span class="hljs-keyword">return</span> <span class="hljs-string">'off'</span>
+    }
+  },
+};
+
+<span class="hljs-comment">// Instantiate and set our provider (be sure this only happens once)!</span>
+<span class="hljs-comment">// Note: there's no need to await its initialization, the React SDK handles re-rendering and suspense for you!</span>
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProvider</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">InMemoryProvider</span>(flagConfig));
+
+<span class="hljs-comment">// Enclose your content in the configured provider</span>
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">App</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">OpenFeatureProvider</span>></span>
+      <span class="hljs-tag">&#x3C;<span class="hljs-name">Page</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">Page</span>></span>
+    <span class="hljs-tag">&#x3C;/<span class="hljs-name">OpenFeatureProvider</span>></span></span>
+  );
+}
+</code></pre>
+<h4 id="evaluation-hooks">Evaluation hooks</h4>
+<p>Within the provider, you can use the various evaluation hooks to evaluate flags.</p>
+<pre><code class="hljs language-tsx"><span class="hljs-keyword">function</span> <span class="hljs-title function_">Page</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-comment">// Use the "query-style" flag evaluation hook, specifying a flag-key and a default value.</span>
+  <span class="hljs-keyword">const</span> { <span class="hljs-attr">value</span>: showNewMessage } = <span class="hljs-title function_">useFlag</span>(<span class="hljs-string">'new-message'</span>, <span class="hljs-literal">true</span>);
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"App"</span>></span>
+      <span class="hljs-tag">&#x3C;<span class="hljs-name">header</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"App-header"</span>></span>
+        {showNewMessage ? <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Welcome to this OpenFeature-enabled React app!<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span> : <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Welcome to this React app.<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>}
+      <span class="hljs-tag">&#x3C;/<span class="hljs-name">header</span>></span>
+    <span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span></span>
+  )
+}
+</code></pre>
+<p>You can use the strongly typed flag value and flag evaluation detail hooks as well if you prefer.</p>
+<pre><code class="hljs language-tsx"><span class="hljs-keyword">import</span> { useBooleanFlagValue } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/react-sdk'</span>;
+
+<span class="hljs-comment">// boolean flag evaluation</span>
+<span class="hljs-keyword">const</span> value = <span class="hljs-title function_">useBooleanFlagValue</span>(<span class="hljs-string">'new-message'</span>, <span class="hljs-literal">false</span>);
+</code></pre>
+<pre><code class="hljs language-tsx"><span class="hljs-keyword">import</span> { useBooleanFlagDetails } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/react-sdk'</span>;
+
+<span class="hljs-comment">// "detailed" boolean flag evaluation</span>
+<span class="hljs-keyword">const</span> {
+  value,
+  variant,
+  reason,
+  flagMetadata
+} = <span class="hljs-title function_">useBooleanFlagDetails</span>(<span class="hljs-string">'new-message'</span>, <span class="hljs-literal">false</span>);
+</code></pre>
+<h4 id="multiple-providers-and-domains">Multiple Providers and Domains</h4>
+<p>Multiple providers can be used by passing a <code>domain</code> to the <code>OpenFeatureProvider</code>:</p>
+<pre><code class="hljs language-tsx"><span class="hljs-comment">// Flags within this domain will use the client/provider associated with `my-domain`,</span>
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">App</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">OpenFeatureProvider</span> <span class="hljs-attr">domain</span>=<span class="hljs-string">{</span>'<span class="hljs-attr">my-domain</span>'}></span>
+      <span class="hljs-tag">&#x3C;<span class="hljs-name">Page</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">Page</span>></span>
+    <span class="hljs-tag">&#x3C;/<span class="hljs-name">OpenFeatureProvider</span>></span></span>
+  );
+}
+</code></pre>
+<p>This is analogous to:</p>
+<pre><code class="hljs language-ts"><span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>(<span class="hljs-string">'my-domain'</span>);
+</code></pre>
+<p>For more information about <code>domains</code>, refer to the <a href="https://github.com/open-feature/js-sdk/blob/main/packages/web/README.md">web SDK</a>.</p>
+<h4 id="re-rendering-with-context-changes">Re-rendering with Context Changes</h4>
+<p>By default, if the OpenFeature <a href="/docs/reference/concepts/evaluation-context">evaluation context</a> is modified, components will be re-rendered.
+This is useful in cases where flag values are dependant on user-attributes or other application state (user logged in, items in card, etc).
+You can disable this feature in the hook options (or in the <a href="#openfeatureprovider-context-provider">OpenFeatureProvider</a>):</p>
+<pre><code class="hljs language-tsx"><span class="hljs-keyword">function</span> <span class="hljs-title function_">Page</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">const</span> { <span class="hljs-attr">value</span>: showNewMessage } = <span class="hljs-title function_">useFlag</span>(<span class="hljs-string">'new-message'</span>, <span class="hljs-literal">false</span>, { <span class="hljs-attr">updateOnContextChanged</span>: <span class="hljs-literal">false</span> });
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"App"</span>></span>
+      <span class="hljs-tag">&#x3C;<span class="hljs-name">header</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"App-header"</span>></span>
+        {showNewMessage ? <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Welcome to this OpenFeature-enabled React app!<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span> : <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Welcome to this React app.<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>}
+      <span class="hljs-tag">&#x3C;/<span class="hljs-name">header</span>></span>
+    <span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span></span>
+  );
+}
+</code></pre>
+<p>For more information about how evaluation context works in the React SDK, see the documentation on OpenFeature's <a href="/specification/glossary/#static-context-paradigm">static context SDK paradigm</a>.</p>
+<h4 id="re-rendering-with-flag-configuration-changes">Re-rendering with Flag Configuration Changes</h4>
+<p>By default, if the underlying provider emits a <code>ConfigurationChanged</code> event, components will be re-rendered.
+This is useful if you want your UI to immediately reflect changes in the backend flag configuration.
+You can disable this feature in the hook options (or in the <a href="#openfeatureprovider-context-provider">OpenFeatureProvider</a>):</p>
+<pre><code class="hljs language-tsx"><span class="hljs-keyword">function</span> <span class="hljs-title function_">Page</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">const</span> { <span class="hljs-attr">value</span>: showNewMessage } = <span class="hljs-title function_">useFlag</span>(<span class="hljs-string">'new-message'</span>, <span class="hljs-literal">false</span>, { <span class="hljs-attr">updateOnConfigurationChanged</span>: <span class="hljs-literal">false</span> });
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">div</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"App"</span>></span>
+      <span class="hljs-tag">&#x3C;<span class="hljs-name">header</span> <span class="hljs-attr">className</span>=<span class="hljs-string">"App-header"</span>></span>
+        {showNewMessage ? <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Welcome to this OpenFeature-enabled React app!<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span> : <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Welcome to this React app.<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>}
+      <span class="hljs-tag">&#x3C;/<span class="hljs-name">header</span>></span>
+    <span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span></span>
+  );
+}
+</code></pre>
+<p>If your provider doesn't support updates, this configuration has no impact.</p>
+<div class="markdown-alert markdown-alert-note" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>NOTE</p>
+<p>If your provider includes a list of <a href="https://open-feature.github.io/js-sdk/types/_openfeature_server_sdk.ConfigChangeEvent.html">flags changed</a> in its <code>PROVIDER_CONFIGURATION_CHANGED</code> event, that list of flags is used to decide which flag evaluation hooks should re-run by diffing the latest value of these flags with the previous render.
+If your provider event does not the include the <code>flags changed</code> list, then the SDK diffs all flags with the previous render to determine which hooks should re-run.</p>
+</div>
+<h4 id="suspense-support">Suspense Support</h4>
+<div class="markdown-alert markdown-alert-note" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>NOTE</p>
+<p>React suspense is an experimental feature and is subject to change in future versions.</p>
+</div>
+<p>Frequently, providers need to perform some initial startup tasks.
+It may be desirable not to display components with feature flags until this is complete or when the context changes.
+Built-in <a href="https://react.dev/reference/react/Suspense">suspense</a> support makes this easy.
+Use <code>useSuspenseFlag</code> or pass <code>{ suspend: true }</code> in the hook options to leverage this functionality.</p>
+<pre><code class="hljs language-tsx"><span class="hljs-keyword">function</span> <span class="hljs-title function_">Content</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-comment">// cause the "fallback" to be displayed if the component uses feature flags and the provider is not ready</span>
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">Suspense</span> <span class="hljs-attr">fallback</span>=<span class="hljs-string">{</span>&#x3C;<span class="hljs-attr">Fallback</span> /></span>}>
+      <span class="hljs-tag">&#x3C;<span class="hljs-name">Message</span> /></span>
+    <span class="hljs-tag">&#x3C;/<span class="hljs-name">Suspense</span>></span></span>
+  );
+}
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">Message</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-comment">// component to render after READY, equivalent to useFlag('new-message', false, { suspend: true });</span>
+  <span class="hljs-keyword">const</span> { <span class="hljs-attr">value</span>: showNewMessage } = <span class="hljs-title function_">useSuspenseFlag</span>(<span class="hljs-string">'new-message'</span>, <span class="hljs-literal">false</span>);
+
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&#x3C;></span>
+      {showNewMessage ? (
+        <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Welcome to this OpenFeature-enabled React app!<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>
+      ) : (
+        <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Welcome to this plain old React app!<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>
+      )}
+    <span class="hljs-tag">&#x3C;/></span></span>
+  );
+}
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">Fallback</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-comment">// component to render before READY.</span>
+  <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Waiting for provider to be ready...<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span></span>;
+}
+</code></pre>
+<p>This can be disabled in the hook options (or in the <a href="#openfeatureprovider-context-provider">OpenFeatureProvider</a>).</p>
+<h4 id="tracking">Tracking</h4>
+<p>The tracking API allows you to use OpenFeature abstractions and objects to associate user actions with feature flag evaluations.
+This is essential for robust experimentation powered by feature flags.
+For example, a flag enhancing the appearance of a UI component might drive user engagement to a new feature; to test this hypothesis, telemetry collected by a <a href="/docs/reference/sdks/client/web/#hooks">hook</a> or <a href="/docs/reference/sdks/client/web/#providers">provider</a> can be associated with telemetry reported in the client's <code>track</code> function.</p>
+<p>The React SDK includes a hook for firing tracking events in the <code>&#x3C;OpenFeatureProvider></code> context in use:</p>
+<pre><code class="hljs language-tsx"><span class="hljs-keyword">function</span> <span class="hljs-title function_">MyComponent</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-comment">// get a tracking function for this &#x3C;OpenFeatureProvider>.</span>
+  <span class="hljs-keyword">const</span> { track } = <span class="hljs-title function_">useTrack</span>();
+
+  <span class="hljs-comment">// call the tracking event</span>
+  <span class="hljs-comment">// can be done in render, useEffect, or in handlers, depending on your use case</span>
+  <span class="hljs-title function_">track</span>(eventName, trackingDetails);
+
+  <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&#x3C;></span>...<span class="hljs-tag">&#x3C;/></span></span>;
+}
+</code></pre>
+<h4 id="observability-considerations">Observability Considerations</h4>
+<p>React's lifecycle can result in flags being evaluated multiple times as a user interacts with a page.
+If you are using an OpenFeature hook for telemetry, this can result in inflated evaluation metrics.
+The <a href="https://github.com/open-feature/js-sdk-contrib/tree/main/libs/hooks/debounce">OpenFeature debounce hook</a> can help to reduce the amount of redundant evaluations reported to your observability platform by limiting the frequency at which evaluation metrics are reported.</p>
+<h3 id="testing">Testing</h3>
+<p>The React SDK includes a built-in context provider for testing.
+This allows you to easily test components that use evaluation hooks, such as <code>useFlag</code>.
+If you try to test a component (in this case, <code>MyComponent</code>) which uses an evaluation hook, you might see an error message like:</p>
+<blockquote>
+<p>No OpenFeature client available - components using OpenFeature must be wrapped with an <code>&#x3C;OpenFeatureProvider></code>.</p>
+</blockquote>
+<p>You can resolve this by simply wrapping your component under test in the OpenFeatureTestProvider:</p>
+<pre><code class="hljs language-tsx"><span class="hljs-comment">// use default values for all evaluations</span>
+&#x3C;<span class="hljs-title class_">OpenFeatureTestProvider</span>>
+  <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">MyComponent</span> /></span></span>
+&#x3C;/<span class="hljs-title class_">OpenFeatureTestProvider</span>>
+</code></pre>
+<p>The basic configuration above will simply use the default value provided in code.
+If you'd like to control the values returned by the evaluation hooks, you can pass a map of flag keys and values:</p>
+<pre><code class="hljs language-tsx"><span class="hljs-comment">// return `true` for all evaluations of `'my-boolean-flag'`</span>
+&#x3C;<span class="hljs-title class_">OpenFeatureTestProvider</span> flagValueMap={{ <span class="hljs-string">'my-boolean-flag'</span>: <span class="hljs-literal">true</span> }}>
+  <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">MyComponent</span> /></span></span>
+&#x3C;/<span class="hljs-title class_">OpenFeatureTestProvider</span>>
+</code></pre>
+<p>Additionally, you can pass an artificial delay for the provider startup to test your suspense boundaries or loaders/spinners impacted by feature flags:</p>
+<pre><code class="hljs language-tsx"><span class="hljs-comment">// delay the provider start by 1000ms and then return `true` for all evaluations of `'my-boolean-flag'`</span>
+&#x3C;<span class="hljs-title class_">OpenFeatureTestProvider</span> delayMs={<span class="hljs-number">1000</span>} flagValueMap={{ <span class="hljs-string">'my-boolean-flag'</span>: <span class="hljs-literal">true</span> }}>
+  <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">MyComponent</span> /></span></span>
+&#x3C;/<span class="hljs-title class_">OpenFeatureTestProvider</span>>
+</code></pre>
+<p>For maximum control, you can also pass your own mock provider implementation.
+The type of this option is <code>Partial&#x3C;Provider></code>, so you can pass an incomplete implementation:</p>
+<pre><code class="hljs language-tsx"><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyTestProvider</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Partial</span>&#x3C;<span class="hljs-title class_">Provider</span>> {
+  <span class="hljs-comment">// implement the relevant resolver</span>
+  <span class="hljs-title function_">resolveBooleanEvaluation</span>(): <span class="hljs-title class_">ResolutionDetails</span>&#x3C;<span class="hljs-built_in">boolean</span>> {
+    <span class="hljs-keyword">return</span> {
+      <span class="hljs-attr">value</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-attr">variant</span>: <span class="hljs-string">'my-variant'</span>,
+      <span class="hljs-attr">reason</span>: <span class="hljs-string">'MY_REASON'</span>,
+    };
+  }
+}
+</code></pre>
+<pre><code class="hljs language-tsx"><span class="hljs-comment">// use your custom testing provider</span>
+&#x3C;<span class="hljs-title class_">OpenFeatureTestProvider</span> provider={<span class="hljs-keyword">new</span> <span class="hljs-title class_">MyTestProvider</span>()}>
+  <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">MyComponent</span> /></span></span>
+&#x3C;/<span class="hljs-title class_">OpenFeatureTestProvider</span>>,
+</code></pre>
+<h2 id="faq-and-troubleshooting">FAQ and troubleshooting</h2>
+<blockquote>
+<p>I get an error that says something like: <code>A React component suspended while rendering, but no fallback UI was specified.</code></p>
+</blockquote>
+<p>The OpenFeature React SDK features built-in <a href="#suspense-support">suspense support</a>.
+This means that it will render your loading fallback automatically while your provider starts up and during context reconciliation for any of your components using feature flags!
+If you use suspense and neglect to create a suspense boundary around any components using feature flags, you will see this error.
+Add a suspense boundary to resolve this issue.
+Alternatively, you can disable this suspense (the default) by removing <code>suspendWhileReconciling=true</code>, <code>suspendUntilReady=true</code> or <code>suspend=true</code> in the <a href="#evaluation-hooks">evaluation hooks</a> or the <a href="#openfeatureprovider-context-provider">OpenFeatureProvider</a> (which applies to all evaluation hooks in child components).</p>
+<blockquote>
+<p>I get odd rendering issues or errors when components mount if I use the suspense features.</p>
+</blockquote>
+<p>In React 16/17's "Legacy Suspense", when a component suspends, its sibling components initially mount and then are hidden.
+This can cause surprising effects and inconsistencies if sibling components are rendered while the provider is still getting ready.
+To fix this, you can upgrade to React 18, which uses "Concurrent Suspense", in which siblings are not mounted until their suspended sibling resolves.
+Alternatively, if you cannot upgrade to React 18, you can use the <code>useWhenProviderReady</code> utility hook in any sibling components to prevent them from mounting until the provider is ready.</p>
+<blockquote>
+<p>I am using multiple <code>OpenFeatureProvider</code> contexts, but they share the same provider or evaluation context. Why?</p>
+</blockquote>
+<p>The <code>OpenFeatureProvider</code> binds a <code>client</code> to all child components, but the provider and context associated with that client is controlled by the <code>domain</code> parameter.
+This is consistent with all OpenFeature SDKs.
+To scope an OpenFeatureProvider to a particular provider/context, set the <code>domain</code> parameter on your <code>OpenFeatureProvider</code>:</p>
+<pre><code class="hljs language-tsx">&#x3C;<span class="hljs-title class_">OpenFeatureProvider</span> domain={<span class="hljs-string">'my-domain'</span>}>
+  <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">Page</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">Page</span>></span></span>
+&#x3C;/<span class="hljs-title class_">OpenFeatureProvider</span>>
+</code></pre>
+<blockquote>
+<p>I can import things form the <code>@openfeature/react-sdk</code>, <code>@openfeature/web-sdk</code>, and <code>@openfeature/core</code>; which should I use?</p>
+</blockquote>
+<p>The <code>@openfeature/react-sdk</code> re-exports everything from its peers (<code>@openfeature/web-sdk</code> and <code>@openfeature/core</code>) and adds the React-specific features.
+You can import everything from the <code>@openfeature/react-sdk</code> directly.
+Avoid importing anything from <code>@openfeature/web-sdk</code> or <code>@openfeature/core</code>.</p>
+<h2 id="resources">Resources</h2>
+<ul>
+<li><a href="https://github.com/open-feature/react-test-app">Example repo</a></li>
+</ul>

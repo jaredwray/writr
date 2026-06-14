@@ -1,0 +1,76 @@
+<p><a href="https://github.com/jaredwray/cacheable"></a></p>
+<blockquote>
+<p>Caching for Nodejs based on Keyv</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://codecov.io/gh/jaredwray/cacheable"><img src="https://codecov.io/gh/jaredwray/cacheable/branch/main/graph/badge.svg?token=lWZ9OBQ7GM" alt="codecov"></a>
+<a href="https://github.com/jaredwray/cacheable/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/cacheable" alt="license"></a></p>
+<p><code>Cacheable</code> provides a robust, scalable, and maintained set of caching packages that can be used in various projects. The packages in this repository are:</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Downloads</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/jaredwray/cacheable/tree/main/packages/cacheable">cacheable</a></td>
+<td><a href="https://www.npmjs.com/package/cacheable"><img src="https://img.shields.io/npm/dm/cacheable.svg" alt="npm"></a></td>
+<td>Next generation caching framework built from the ground up with layer 1 / layer 2 caching.</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jaredwray/cacheable/tree/main/packages/cache-manager">cache-manager</a></td>
+<td><a href="https://www.npmjs.com/package/cache-manager"><img src="https://img.shields.io/npm/dm/cache-manager.svg" alt="npm"></a></td>
+<td>Cache Manager that is used in services such as NestJS and others with robust features such as <code>wrap</code> and more.</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jaredwray/cacheable/tree/main/packages/cacheable-request">cacheable-request</a></td>
+<td><a href="https://www.npmjs.com/package/cacheable-request"><img src="https://img.shields.io/npm/dm/cacheable-request.svg" alt="npm"></a></td>
+<td>Wrap native HTTP requests with RFC compliant cache support</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jaredwray/cacheable/tree/main/packages/flat-cache">flat-cache</a></td>
+<td><a href="https://www.npmjs.com/package/flat-cache"><img src="https://img.shields.io/npm/dm/flat-cache.svg" alt="npm"></a></td>
+<td>Fast In-Memory Caching with file store persistence</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jaredwray/cacheable/tree/main/packages/file-entry-cache">file-entry-cache</a></td>
+<td><a href="https://www.npmjs.com/package/file-entry-cache"><img src="https://img.shields.io/npm/dm/file-entry-cache.svg" alt="npm"></a></td>
+<td>A lightweight cache for file metadata, ideal for processes that work on a specific set of files and only need to reprocess files that have changed since the last run</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jaredwray/cacheable/tree/main/packages/node-cache">@cacheable/node-cache</a></td>
+<td><a href="https://www.npmjs.com/package/@cacheable/node-cache"><img src="https://img.shields.io/npm/dm/@cacheable/node-cache.svg" alt="npm"></a></td>
+<td>Maintained built in replacement of <code>node-cache</code></td>
+</tr>
+<tr>
+<td><a href="https://github.com/jaredwray/cacheable/tree/main/packages/memory">@cacheable/memory</a></td>
+<td><a href="https://www.npmjs.com/package/@cacheable/memory"><img src="https://img.shields.io/npm/dm/@cacheable/memory.svg" alt="npm"></a></td>
+<td>In-Memory Caching with LRU support</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jaredwray/cacheable/tree/main/packages/utils">@cacheable/utils</a></td>
+<td><a href="https://www.npmjs.com/package/@cacheable/utils"><img src="https://img.shields.io/npm/dm/@cacheable/utils.svg" alt="npm"></a></td>
+<td>Utility functions for cacheable with <code>hashing</code>, <code>shorthand time</code>, <code>memoize</code> and more</td>
+</tr>
+</tbody>
+</table>
+<p>The website documentation for <a href="https://cacheable.org">https://cacheable.org</a> is included in this repository <a href="https://github.com/jaredwray/cacheable/tree/main/packages/website">here</a>.</p>
+<h1 id="how-to-use-the-cacheable-mono-repo">How to Use the Cacheable Mono Repo</h1>
+<ul>
+<li><a href="CODE_OF_CONDUCT.md">CODE_OF_CONDUCT</a> - Our code of conduct</li>
+<li><a href="CONTRIBUTING.md">CONTRIBUTING</a> - How to contribute to this project</li>
+<li><a href="SECURITY.md">SECURITY</a> - Security guidelines and supported versions</li>
+</ul>
+<h2 id="open-a-pull-request">Open a Pull Request</h2>
+<p>Please follow the <a href="CONTRIBUTING.md">CONTRIBUTING</a> guidelines provided and remember you will need to do setup on this project such as having redis running (via docker), building the project <code>pnpm build</code>, and testing <code>pnpm test</code> which will also perform linting.</p>
+<h2 id="post-an-issue">Post an Issue</h2>
+<p>To post an issue, navigate to the "Issues" tab in the main repository, and then select "New Issue." Enter a clear title describing the issue, as well as a description containing additional relevant information. Also select the label that best describes your issue type. For a bug report, for example, create an issue with the label "bug." In the description field, Be sure to include replication steps, as well as any relevant error messages.</p>
+<p>If you're reporting a security violation, be sure to check out the project's <a href="https://github.com/jaredwray/cacheable/blob/main/SECURITY.md">security policy</a>.</p>
+<p>Please also refer to our <a href="https://github.com/jaredwray/cacheable/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a> for more information on how to report issues.</p>
+<h2 id="ask-a-question">Ask a Question</h2>
+<p>To ask a question, create an issue with the label "question." In the issue description, include the related code and any context that can help us answer your question.</p>
+<h2 id="license">License</h2>
+<p><a href="LICENSE">MIT © Jared Wray</a></p>

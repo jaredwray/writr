@@ -1,0 +1,447 @@
+<h1 id="keyvmemcache-">@keyv/memcache <a href="https://github.com/jaredwray/keyv"></a></h1>
+<blockquote>
+<p>Memcache storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a> using the <a href="https://github.com/jaredwray/memcache">memcache</a> client</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://github.com/jaredwray/keyv/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/keyv" alt="GitHub license"></a>
+<a href="https://npmjs.com/package/@keyv/memcache"><img src="https://img.shields.io/npm/dm/@keyv/memcache" alt="npm"></a></p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Built on the <a href="https://github.com/jaredwray/memcache">memcache</a> package with a fully Promise-based API and TypeScript types</li>
+<li>TTL support (millisecond input, converted to seconds for memcache)</li>
+<li>Namespace support for key isolation across multiple Keyv instances</li>
+<li>Multiple nodes with consistent hashing (KetamaHash)</li>
+<li>SASL authentication support</li>
+<li>AWS ElastiCache Auto Discovery support</li>
+<li>Retry and backoff support for failed commands</li>
+<li><code>createKeyv</code> helper for quick setup</li>
+</ul>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li>
+<ul>
+<li><a href="#install">Install</a></li>
+<li><a href="#keyv-compression-is-not-supported">Keyv Compression is not Supported</a></li>
+<li><a href="#quick-start-with-createkeyv">Quick Start with createKeyv</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#usage-with-namespaces">Usage with Namespaces</a></li>
+<li><a href="#options">Options</a></li>
+<li><a href="#multiple-nodes">Multiple Nodes</a></li>
+<li><a href="#sasl-authentication">SASL Authentication</a></li>
+<li><a href="#aws-elasticache-auto-discovery">AWS ElastiCache Auto Discovery</a></li>
+<li><a href="#api">API</a>
+<ul>
+<li><a href="#constructoruri-options">constructor(uri?, options?)</a></li>
+<li><a href="#getkey">.get(key)</a></li>
+<li><a href="#getmanykeys">.getMany(keys)</a></li>
+<li><a href="#setkey-value-ttl">.set(key, value, ttl?)</a></li>
+<li><a href="#setmanyentries">.setMany(entries)</a></li>
+<li><a href="#deletekey">.delete(key)</a></li>
+<li><a href="#deletemanykeys">.deleteMany(keys)</a></li>
+<li><a href="#clear">.clear()</a></li>
+<li><a href="#haskey">.has(key)</a></li>
+<li><a href="#hasmanykeys">.hasMany(keys)</a></li>
+<li><a href="#disconnect">.disconnect()</a></li>
+<li><a href="#formatkeykey">.formatKey(key)</a></li>
+</ul>
+</li>
+<li><a href="#works-with-memcached-and-google-cloud">Works with Memcached and Google Cloud</a>
+<ul>
+<li><a href="#using-memcached">Using Memcached</a></li>
+<li><a href="#using-google-cloud">Using Google Cloud</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#breaking-changes-from-v2-to-v6">Breaking Changes from v2 to v6</a>
+<ul>
+<li><a href="#underlying-client-changed-from-memjs-to-memcache">Underlying Client Changed from <code>memjs</code> to <code>memcache</code></a></li>
+<li><a href="#client-property-type-changed"><code>client</code> Property Type Changed</a></li>
+<li><a href="#keyvmemcacheoptions-type-changed"><code>KeyvMemcacheOptions</code> Type Changed</a></li>
+<li><a href="#disconnect-method-added"><code>disconnect()</code> Method Added</a></li>
+<li><a href="#buffer-dependency-removed"><code>buffer</code> Dependency Removed</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="install">Install</h2>
+<pre><code class="hljs language-shell">npm install --save @keyv/memcache
+</code></pre>
+<h2 id="keyv-compression-is-not-supported">Keyv Compression is not Supported</h2>
+<p>This package does not support compression. If you need compression, please use the <code>@keyv/redis</code> or another service package instead.</p>
+<h2 id="quick-start-with-createkeyv">Quick Start with createKeyv</h2>
+<p>The <code>createKeyv</code> helper creates a <code>Keyv</code> instance with a Memcache store in a single call:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/memcache'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'localhost:11211'</span>);
+
+<span class="hljs-comment">// set a value</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">6000</span>);
+
+<span class="hljs-comment">// get a value</span>
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>);
+
+<span class="hljs-comment">// delete a value</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'foo'</span>);
+</code></pre>
+<p>You can also pass an options object:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/memcache'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>({ <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'localhost:11211'</span>] });
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvMemcache</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/memcache'</span>;
+
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache });
+
+<span class="hljs-comment">//set</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">"foo"</span>,<span class="hljs-string">"bar"</span>, <span class="hljs-number">6000</span>) <span class="hljs-comment">//Expiring time is optional</span>
+
+<span class="hljs-comment">//get</span>
+<span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">"foo"</span>);
+
+<span class="hljs-comment">//delete</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">delete</span>(<span class="hljs-string">"foo"</span>);
+
+<span class="hljs-comment">//clear</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">clear</span>();
+
+<span class="hljs-comment">//disconnect</span>
+<span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h2 id="usage-with-namespaces">Usage with Namespaces</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvMemcache</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/memcache'</span>;
+
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+<span class="hljs-keyword">const</span> keyv1 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache, <span class="hljs-attr">namespace</span>: <span class="hljs-string">"namespace1"</span> });
+<span class="hljs-keyword">const</span> keyv2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache, <span class="hljs-attr">namespace</span>: <span class="hljs-string">"namespace2"</span> });
+
+<span class="hljs-comment">//set</span>
+<span class="hljs-keyword">await</span> keyv1.<span class="hljs-title function_">set</span>(<span class="hljs-string">"foo"</span>,<span class="hljs-string">"bar1"</span>, <span class="hljs-number">6000</span>) <span class="hljs-comment">//Expiring time is optional</span>
+<span class="hljs-keyword">await</span> keyv2.<span class="hljs-title function_">set</span>(<span class="hljs-string">"foo"</span>,<span class="hljs-string">"bar2"</span>, <span class="hljs-number">6000</span>) <span class="hljs-comment">//Expiring time is optional</span>
+
+<span class="hljs-comment">//get</span>
+<span class="hljs-keyword">const</span> obj1 = <span class="hljs-keyword">await</span> keyv1.<span class="hljs-title function_">get</span>(<span class="hljs-string">"foo"</span>); <span class="hljs-comment">//will return bar1</span>
+<span class="hljs-keyword">const</span> obj2 = <span class="hljs-keyword">await</span> keyv2.<span class="hljs-title function_">get</span>(<span class="hljs-string">"foo"</span>); <span class="hljs-comment">//will return bar2</span>
+
+</code></pre>
+<h2 id="options">Options</h2>
+<p>The <code>KeyvMemcacheOptions</code> type extends <code>MemcacheOptions</code> from the <code>memcache</code> package with a <code>namespace</code> property:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>namespace</code></td>
+<td><code>string</code></td>
+<td><code>undefined</code></td>
+<td>Key prefix for namespace isolation</td>
+</tr>
+<tr>
+<td><code>nodes</code></td>
+<td><code>(string | MemcacheNode)[]</code></td>
+<td><code>['localhost:11211']</code></td>
+<td>Array of memcache server URIs or MemcacheNode instances</td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td><code>number</code></td>
+<td><code>5000</code></td>
+<td>Operation timeout in milliseconds</td>
+</tr>
+<tr>
+<td><code>keepAlive</code></td>
+<td><code>boolean</code></td>
+<td><code>true</code></td>
+<td>Keep the connection alive</td>
+</tr>
+<tr>
+<td><code>keepAliveDelay</code></td>
+<td><code>number</code></td>
+<td><code>1000</code></td>
+<td>Keep-alive delay in milliseconds</td>
+</tr>
+<tr>
+<td><code>retries</code></td>
+<td><code>number</code></td>
+<td><code>0</code></td>
+<td>Number of retry attempts for failed commands (0 to disable)</td>
+</tr>
+<tr>
+<td><code>retryDelay</code></td>
+<td><code>number</code></td>
+<td><code>100</code></td>
+<td>Base delay in milliseconds between retries</td>
+</tr>
+<tr>
+<td><code>retryBackoff</code></td>
+<td><code>function</code></td>
+<td>fixed delay</td>
+<td>Function to calculate backoff delay between retries</td>
+</tr>
+<tr>
+<td><code>retryOnlyIdempotent</code></td>
+<td><code>boolean</code></td>
+<td><code>true</code></td>
+<td>Only retry idempotent commands to prevent double-execution</td>
+</tr>
+<tr>
+<td><code>sasl</code></td>
+<td><code>{ username, password, mechanism? }</code></td>
+<td><code>undefined</code></td>
+<td>SASL PLAIN authentication credentials</td>
+</tr>
+<tr>
+<td><code>autoDiscover</code></td>
+<td><code>AutoDiscoverOptions</code></td>
+<td><code>undefined</code></td>
+<td>AWS ElastiCache Auto Discovery configuration</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvMemcache</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/memcache'</span>;
+
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'server1:11211'</span>, <span class="hljs-string">'server2:11211'</span>],
+  <span class="hljs-attr">timeout</span>: <span class="hljs-number">3000</span>,
+  <span class="hljs-attr">retries</span>: <span class="hljs-number">2</span>,
+  <span class="hljs-attr">retryDelay</span>: <span class="hljs-number">200</span>,
+});
+</code></pre>
+<h2 id="multiple-nodes">Multiple Nodes</h2>
+<p>The adapter supports connecting to multiple memcache servers. Keys are distributed across nodes using consistent hashing (KetamaHash):</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvMemcache</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/memcache'</span>;
+
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'server1:11211'</span>, <span class="hljs-string">'server2:11211'</span>, <span class="hljs-string">'server3:11211'</span>],
+});
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache });
+</code></pre>
+<p>Node URIs support multiple formats:</p>
+<ul>
+<li>Simple: <code>localhost:11211</code></li>
+<li>With protocol: <code>memcache://localhost:11211</code></li>
+<li>IPv6: <code>[::1]:11211</code></li>
+</ul>
+<h2 id="sasl-authentication">SASL Authentication</h2>
+<p>To connect to a memcache server that requires SASL authentication:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvMemcache</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/memcache'</span>;
+
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'localhost:11211'</span>],
+  <span class="hljs-attr">sasl</span>: {
+    <span class="hljs-attr">username</span>: <span class="hljs-string">'myuser'</span>,
+    <span class="hljs-attr">password</span>: <span class="hljs-string">'mypassword'</span>,
+  },
+});
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache });
+</code></pre>
+<h2 id="aws-elasticache-auto-discovery">AWS ElastiCache Auto Discovery</h2>
+<p>When using AWS ElastiCache, you can enable auto discovery to automatically detect cluster topology changes:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvMemcache</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/memcache'</span>;
+
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'my-cluster.cfg.use1.cache.amazonaws.com:11211'</span>],
+  <span class="hljs-attr">autoDiscover</span>: {
+    <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">pollingInterval</span>: <span class="hljs-number">60000</span>, <span class="hljs-comment">// poll every 60 seconds (default)</span>
+  },
+});
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache });
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td><code>boolean</code></td>
+<td>—</td>
+<td>Enable auto discovery</td>
+</tr>
+<tr>
+<td><code>pollingInterval</code></td>
+<td><code>number</code></td>
+<td><code>60000</code></td>
+<td>How often to poll for topology changes (ms)</td>
+</tr>
+<tr>
+<td><code>configEndpoint</code></td>
+<td><code>string</code></td>
+<td>first node</td>
+<td>The <code>.cfg</code> endpoint for discovery</td>
+</tr>
+<tr>
+<td><code>useLegacyCommand</code></td>
+<td><code>boolean</code></td>
+<td><code>false</code></td>
+<td>Use legacy command for engine versions &#x3C; 1.4.14</td>
+</tr>
+</tbody>
+</table>
+<h2 id="api">API</h2>
+<h3 id="constructoruri-options">constructor(uri?, options?)</h3>
+<p>Creates a new <code>KeyvMemcache</code> instance.</p>
+<ul>
+<li><code>uri</code> — A memcache server URI string (e.g., <code>'localhost:11211'</code>) or a <code>KeyvMemcacheOptions</code> object. Defaults to <code>'localhost:11211'</code> if not provided.</li>
+<li><code>options</code> — Optional <code>KeyvMemcacheOptions</code> object. When both <code>uri</code> and <code>options</code> are objects, they are merged together.</li>
+</ul>
+<p>The <code>namespace</code> property is extracted from the resolved options and used for key prefixing. All remaining options are passed directly to the underlying <code>Memcache</code> client.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvMemcache</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/memcache'</span>;
+
+<span class="hljs-comment">// Using a URI string</span>
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+
+<span class="hljs-comment">// Using an options object</span>
+<span class="hljs-keyword">const</span> memcache2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>({ <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'localhost:11211'</span>], <span class="hljs-attr">timeout</span>: <span class="hljs-number">3000</span> });
+
+<span class="hljs-comment">// Using multiple nodes</span>
+<span class="hljs-keyword">const</span> memcache3 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>({
+  <span class="hljs-attr">nodes</span>: [<span class="hljs-string">'server1:11211'</span>, <span class="hljs-string">'server2:11211'</span>, <span class="hljs-string">'server3:11211'</span>],
+  <span class="hljs-attr">namespace</span>: <span class="hljs-string">'myapp'</span>,
+});
+
+<span class="hljs-comment">// Using a URI string with additional options</span>
+<span class="hljs-keyword">const</span> memcache4 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>, { <span class="hljs-attr">namespace</span>: <span class="hljs-string">'myapp'</span> });
+</code></pre>
+<h3 id="getkey">.get(key)</h3>
+<p>Retrieves a value from the memcache server. Returns the stored data or <code>undefined</code> if the key does not exist.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+<span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// { value: 'bar', expires: ... }</span>
+</code></pre>
+<h3 id="getmanykeys">.getMany(keys)</h3>
+<p>Retrieves multiple values from the memcache server. Returns an array of stored data corresponding to each key.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+<span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">getMany</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>]);
+</code></pre>
+<h3 id="setkey-value-ttl">.set(key, value, ttl?)</h3>
+<p>Stores a value in the memcache server. The optional <code>ttl</code> parameter is in milliseconds and is converted to seconds internally.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+<span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>); <span class="hljs-comment">// no expiration</span>
+<span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">5000</span>); <span class="hljs-comment">// expires in 5 seconds</span>
+</code></pre>
+<h3 id="setmanyentries">.setMany(entries)</h3>
+<p>Stores multiple values in the memcache server. Each entry is a <code>KeyvEntry&#x3C;Value></code> object (<code>{ key: string, value: Value, ttl?: number }</code>), where <code>Value</code> is inferred from the entries provided. Returns a <code>boolean[]</code> indicating whether each entry was set successfully.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">setMany</span>([
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key1'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value1'</span> },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key2'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value2'</span>, <span class="hljs-attr">ttl</span>: <span class="hljs-number">5000</span> },
+]); <span class="hljs-comment">// [true, true]</span>
+</code></pre>
+<h3 id="deletekey">.delete(key)</h3>
+<p>Deletes a key from the memcache server. Returns <code>true</code> if the key was deleted.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+<span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">const</span> deleted = <span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<h3 id="deletemanykeys">.deleteMany(keys)</h3>
+<p>Deletes multiple keys from the memcache server. Returns a <code>boolean[]</code> indicating whether each key was deleted.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+<span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">deleteMany</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>]); <span class="hljs-comment">// [true, true]</span>
+</code></pre>
+<h3 id="clear">.clear()</h3>
+<p>Flushes all data from the memcache server. Note: this clears the entire server, not just keys within the current namespace.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+<span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">clear</span>();
+</code></pre>
+<h3 id="haskey">.has(key)</h3>
+<p>Checks whether a key exists in the memcache server. Returns <code>false</code> on any error.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+<span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">const</span> exists = <span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">has</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// true</span>
+<span class="hljs-keyword">const</span> missing = <span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">has</span>(<span class="hljs-string">'baz'</span>); <span class="hljs-comment">// false</span>
+</code></pre>
+<h3 id="hasmanykeys">.hasMany(keys)</h3>
+<p>Checks whether multiple keys exist in the memcache server. Returns an array of booleans corresponding to each key.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+<span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">hasMany</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>, <span class="hljs-string">'key3'</span>]); <span class="hljs-comment">// [true, true, false]</span>
+</code></pre>
+<h3 id="disconnect">.disconnect()</h3>
+<p>Gracefully disconnects from the memcache server.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+<span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h3 id="formatkeykey">.formatKey(key)</h3>
+<p>Formats a key by prepending the namespace if one is set. If no namespace is set, the key is returned as-is.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>);
+memcache.<span class="hljs-title function_">formatKey</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'foo'</span>
+
+memcache.<span class="hljs-property">namespace</span> = <span class="hljs-string">'myapp'</span>;
+memcache.<span class="hljs-title function_">formatKey</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'myapp:foo'</span>
+</code></pre>
+<h2 id="works-with-memcached-and-google-cloud">Works with Memcached and Google Cloud</h2>
+<h3 id="using-memcached">Using Memcached</h3>
+<ol>
+<li>Install Memcached and start an instance</li>
+</ol>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvMemcache</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/memcache'</span>;
+
+<span class="hljs-comment">//set the server to the correct address and port</span>
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">"localhost:11211"</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache});
+</code></pre>
+<h3 id="using-google-cloud">Using Google Cloud</h3>
+<ol>
+<li>Go to <a href="https://cloud.google.com/">https://cloud.google.com/</a> and sign up.</li>
+<li>Go to the memcached configuration page in the google cloud console by navigating to Memorystore > Memcached.</li>
+<li>On the memcached page (Eg. <a href="https://console.cloud.google.com/memorystore/memcached/instances?project=example">https://console.cloud.google.com/memorystore/memcached/instances?project=example</a>), Click Create Instance</li>
+<li>Fill in all mandatory fields as needed. You will need to set up a private service connection.</li>
+<li>To set up a private service connection, click the Set Up Connection button.</li>
+<li>Once required fields are complete, click the Create button to create the instance.</li>
+<li>Google provides further documentation for connecting to and managing your Memcached instance <a href="https://cloud.google.com/memorystore/docs/memcached">here</a>.</li>
+</ol>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvMemcache</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/memcache'</span>;
+
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">"insert the internal google memcached discovery endpoint"</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache});
+
+</code></pre>
+<h1 id="breaking-changes-from-v2-to-v6">Breaking Changes from v2 to v6</h1>
+<h2 id="underlying-client-changed-from-memjs-to-memcache">Underlying Client Changed from <code>memjs</code> to <code>memcache</code></h2>
+<p>The underlying memcache client has been replaced from <a href="https://github.com/alevy/memjs">memjs</a> to <a href="https://github.com/jaredwray/memcache">memcache</a>. This brings a fully Promise-based API, built-in TypeScript types, and removes the need for the <code>buffer</code> dependency.</p>
+<h2 id="client-property-type-changed"><code>client</code> Property Type Changed</h2>
+<p>The <code>client</code> property on <code>KeyvMemcache</code> is now an instance of <code>Memcache</code> from the <code>memcache</code> package instead of <code>memjs.Client</code>. If you were accessing <code>client</code> directly, you will need to update your code to use the new API.</p>
+<h2 id="keyvmemcacheoptions-type-changed"><code>KeyvMemcacheOptions</code> Type Changed</h2>
+<p>The options type no longer extends <code>memjs.ClientOptions</code>. It now extends <code>MemcacheOptions</code> from the <code>memcache</code> package. Options such as <code>logger</code>, <code>username</code>, <code>password</code> passed directly are no longer supported. Use the <code>memcache</code> package options format instead:</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// Before (v2)</span>
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'user:pass@localhost:11211'</span>, { <span class="hljs-attr">logger</span>: { <span class="hljs-attr">log</span>: <span class="hljs-variable language_">console</span>.<span class="hljs-property">log</span> } });
+
+<span class="hljs-comment">// After (v6)</span>
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'localhost:11211'</span>, { <span class="hljs-attr">sasl</span>: { <span class="hljs-attr">username</span>: <span class="hljs-string">'user'</span>, <span class="hljs-attr">password</span>: <span class="hljs-string">'pass'</span> } });
+</code></pre>
+<h2 id="disconnect-method-added"><code>disconnect()</code> Method Added</h2>
+<p>A new <code>disconnect()</code> method is available to gracefully close the connection to the memcache server:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> memcache.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h2 id="buffer-dependency-removed"><code>buffer</code> Dependency Removed</h2>
+<p>The <code>buffer</code> polyfill dependency has been removed. Values are now handled as strings instead of Buffers.</p>
+<h2 id="license">License</h2>
+<p><a href="LICENSE">MIT © Jared Wray</a></p>

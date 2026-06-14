@@ -1,0 +1,1 @@
+A paragraph with <span class="hl">inline HTML</span> and a line<br>break.

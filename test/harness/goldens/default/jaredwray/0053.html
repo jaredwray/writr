@@ -1,0 +1,25 @@
+<h2 id="utils">Utils</h2>
+<p>The following utils are exposed on <code>.utils</code>.</p>
+<p>Visit the: <a href="https://github.com/jaredwray/fumanchu/tree/main/helpers/lib/utils/index.js">code</a></p>
+<h3 id="changecase"><a href="lib/utils/index.js#L54">{{changecase}}</a></h3>
+<p>Change casing on the given <code>string</code>, optionally passing a delimiter to use between words in the returned string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong>: The string to change.</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">utils.changecase('fooBarBaz');
+//=> 'foo bar baz'
+
+utils.changecase('fooBarBaz' '-');
+//=> 'foo-bar-baz'
+</code></pre>
+<h3 id="random"><a href="lib/utils/index.js#L80">{{random}}</a></h3>
+<p>Generate a random number</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>min</code> <strong>{Number}</strong></li>
+<li><code>max</code> <strong>{Number}</strong></li>
+<li><code>returns</code> <strong>{Number}</strong></li>
+</ul>

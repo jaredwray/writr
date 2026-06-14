@@ -1,0 +1,44 @@
+<h1 id="deploy-on-aws">Deploy on AWS</h1>
+<p>AWS gives you two complementary ways to load balance <code>http-cache</code> globally. Both deliver
+the <a href="/docs/architecture">nearest-region model</a> — pick based on whether you want anycast
+IPs or DNS-based steering.</p>
+<h2 id="why-aws">Why AWS</h2>
+<ul>
+<li><strong>AWS Global Accelerator</strong> — two static <strong>anycast IPs</strong> that route over the AWS
+backbone to the nearest healthy regional endpoint.</li>
+<li><strong>Route 53 latency / geolocation routing</strong> — DNS-based steering to regional Application
+Load Balancers, with health checks and failover.</li>
+<li><strong>ECS Fargate / EKS</strong> for elastic, regional gateway fleets.</li>
+<li><strong>CloudFront</strong> optionally in front for an additional static edge tier.</li>
+</ul>
+<h2 id="setup-global-accelerator">Setup (Global Accelerator)</h2>
+<ol>
+<li>
+<p><strong>Run gateways in multiple regions</strong> behind a <strong>regional ALB</strong> each:</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># ECS Fargate task running the container, fronted by an ALB per region</span>
+<span class="hljs-comment"># ALB target group health check: GET /health</span>
+</code></pre>
+</li>
+<li>
+<p><strong>Create a Global Accelerator</strong> and add a <strong>listener</strong> (HTTPS/443).</p>
+</li>
+<li>
+<p><strong>Add an endpoint group per region</strong>, each pointing at that region's ALB. Health
+checks remove unhealthy endpoints automatically.</p>
+</li>
+<li>
+<p><strong>Use the two static anycast IPs</strong> (or the Accelerator DNS name) for your domain.</p>
+</li>
+</ol>
+<h2 id="setup-route-53-alternative">Setup (Route 53 alternative)</h2>
+<ol>
+<li>Front each region's gateways with an <strong>ALB</strong> (health check <code>GET /health</code>).</li>
+<li>Create <strong>latency-based</strong> Route 53 records, one per regional ALB, with <strong>health
+checks</strong> attached for failover.</li>
+<li>Point <code>cache.example.com</code> at those records.</li>
+</ol>
+<h2 id="result">Result</h2>
+<pre><code>user ─▶ Global Accelerator anycast IP ─▶ nearest regional ALB ─▶ http-cache gateway ─▶ L1/L2 → keyv
+</code></pre>
+<p>Either approach scales by adding a region — stateless gateways mean no rebalancing and
+no cluster to babysit.</p>

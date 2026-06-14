@@ -1,0 +1,40 @@
+<h1 id="agent-guidelines-for-qrbit">Agent Guidelines for QrBit</h1>
+<p>QrBit is a fast QR code generator with logo embedding support, built with Rust (via napi-rs) as a native Node.js addon for maximum performance.</p>
+<h2 id="project-overview">Project Overview</h2>
+<ul>
+<li><strong>Purpose</strong>: Generate QR codes in SVG, PNG, and JPEG formats with optional logo embedding</li>
+<li><strong>Architecture</strong>: TypeScript wrapper around a Rust native module for image processing</li>
+<li><strong>Key Dependencies</strong>: <code>qrcode</code> (QR generation), <code>cacheable</code> (caching), <code>napi-rs</code> (Rust bindings)</li>
+</ul>
+<h2 id="development-commands">Development Commands</h2>
+<ul>
+<li>Use <code>pnpm</code> instead of <code>npm</code> for all package management commands</li>
+<li><code>pnpm build</code> - Build the Rust native module and TypeScript code (debug mode)</li>
+<li><code>pnpm build:release</code> - Build for production/release</li>
+<li><code>pnpm test</code> - Run linting and tests with coverage</li>
+<li><code>pnpm lint</code> - Run Biome linter with auto-fix</li>
+<li><code>pnpm benchmark</code> - Run performance benchmarks</li>
+<li><code>pnpm generate-examples</code> - Generate example QR codes in the <code>examples/</code> directory</li>
+</ul>
+<h2 id="code-quality-requirements">Code Quality Requirements</h2>
+<ul>
+<li>Always run <code>pnpm test</code> to verify tests pass before completing changes</li>
+<li>Maintain 100% code coverage - all new code must have corresponding tests</li>
+<li>Follow existing code patterns in <code>src/qrbit.ts</code> for the main class</li>
+<li>Use Biome for linting and formatting (configured in the project)</li>
+</ul>
+<h2 id="project-structure">Project Structure</h2>
+<ul>
+<li><code>src/qrbit.ts</code> - Main TypeScript class with QR code generation logic</li>
+<li><code>src/lib.rs</code> - Rust native module for image processing (logo embedding, SVG to PNG/JPEG conversion)</li>
+<li><code>test/</code> - Vitest test files</li>
+<li><code>benchmark/</code> - Performance benchmark scripts</li>
+<li><code>examples/</code> - Generated example QR codes</li>
+</ul>
+<h2 id="key-considerations">Key Considerations</h2>
+<ul>
+<li>The Rust module handles heavy image processing to avoid needing <code>node-canvas</code></li>
+<li>Caching is built-in via <code>cacheable</code> for performance optimization</li>
+<li>Support multiple platforms: Windows, macOS (Intel/ARM), Linux</li>
+<li>Logo can be provided as a file path (faster) or Buffer</li>
+</ul>

@@ -1,0 +1,272 @@
+<h1 id="in-process-and-client-side-evaluation-with-flagd-and-openfeature-operator">In-Process and Client-side Evaluation with flagd and OpenFeature Operator</h1>
+<p>This tutorial outlines some of the advanced features and configurations supported by the OpenFeature operator and flagd.
+The example configurations featured here make use of flagd used in a "standalone" mode; deployed and accessible centrally in your cluster (as opposed to injected into the workload as a sidecar).
+The model adds some complexity in the configuration, but carries a few benefits:</p>
+<ul>
+<li>Centralized flagd deployments work well in conjunction with <a href="https://flagd.dev/architecture/#in-process-evaluation">in-process evaluation</a>, which speeds up feature-flag evaluation by performing flag evaluation directly in your application.</li>
+<li>Centralized flagd deployments are ideal for supporting <a href="https://openfeature.dev/specification/glossary#client-side-sdk">client-side</a> evaluation (allowing web or mobile client applications to evaluate feature flags).</li>
+</ul>
+<p>With that intro out of the way, let's get our hands dirty!</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>We recommend you understand the <a href="./quick-start.md">OFO quick start tutorial</a> first.</li>
+<li>We'll also need the following tools:
+<ul>
+<li><a href="https://kind.sigs.k8s.io/docs/user/quick-start/#installation">kind</a>:  a tool for running local Kubernetes clusters using Docker container “nodes”</li>
+<li><a href="https://kubernetes.io/docs/tasks/tools/">kubectl</a></li>
+<li><a href="https://k9scli.io/">k9s</a> (optional, if you'd like to inspect your cluster visually)</li>
+<li><a href="https://helm.sh/">helm</a> (optional, if you prefer to install the operator using the Helm chart)</li>
+</ul>
+</li>
+</ul>
+<div class="markdown-alert markdown-alert-important" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>IMPORTANT</p>
+<p>If you are using Kubernetes on Rancher Desktop, <em>you must temporarily disable <code>Traefik</code></em> for this demo.
+See below for details and instructions.</p>
+</div>
+<h3 id="rancher-desktop-configuration">Rancher Desktop configuration</h3>
+<p>Rancher Desktop uses K3s under the hood, which in turn uses Traefik as the default ingress controller for your Kubernetes cluster.
+We need to use NGINX for this demo, which requires us to disable Traefik.
+<strong>Uncheck <code>Enable Traefik</code></strong> from the Kubernetes Settings page.
+You may need to exit and restart Rancher Desktop for the change to take effect.</p>
+<p><img src="@site/static/img/tutorials/rancher-traefik.png" alt="k9s"></p>
+<p>See <a href="https://docs.rancherdesktop.io/how-to-guides/setup-NGINX-Ingress-Controller/">Rancher docs</a> for more information.</p>
+<h2 id="show-me-the-commands">Show me the commands</h2>
+<h3 id="building-our-cluster">Building our cluster</h3>
+<p>OK, let's get our cluster up and running!
+We strongly recommend using <code>kind</code> for this demo, but if you already have a K8s cluster, you can skip to <a href="#install-cert-manager">Install cert-manager</a>.</p>
+<div class="markdown-alert markdown-alert-note" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>NOTE</p>
+<p>If not using kind, you will have to handle forwarding ports and exposing ingresses as appropriate for your distribution or infrastructure.</p>
+</div>
+<h3 id="using-kind">Using Kind</h3>
+<p>Download the cluster definition file, <code>kind-cluster-advanced-topics.yaml</code>:</p>
+<pre><code class="hljs language-shell">curl -sfL curl -sfL https://raw.githubusercontent.com/open-feature/openfeature.dev/main/static/samples/kind-cluster-advanced-topics.yaml > kind-cluster-advanced-topics.yaml
+</code></pre>
+<p>Then, create our cluster using the <code>kind-cluster-advanced-topics.yaml</code> file:</p>
+<pre><code class="hljs language-shell">kind create cluster --config kind-cluster-advanced-topics.yaml
+</code></pre>
+<p>This might take a minute or two.
+While the cluster is starting up, we can take a moment to look at the cluster definition.
+Open <code>kind-cluster-advanced-topics.yaml</code> and take note that we expose port 80, and also supply a <code>kubeadmConfigPatch</code> which enables ingress usage with <code>kind</code>.</p>
+<h3 id="install-cert-manager">Install cert-manager</h3>
+<p>Next, because our operator makes use of webhooks, we need some certificate infrastructure in our cluster.
+If your cluster already has cert manager, or you're using another solution for certificate management, you can go to <a href="#install-openfeature-operator">Install OpenFeature operator</a>.</p>
+<p>Install cert-manager, and wait for it to be ready:</p>
+<pre><code class="hljs language-shell">kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml &#x26;&#x26; \
+kubectl wait --timeout=60s --for condition=Available=True deploy --all -n 'cert-manager'
+</code></pre>
+<h2 id="install-nginx-controller">Install NGINX controller</h2>
+<p>For our NGINX ingress to work with <code>kind</code>, we need to install some additional components:</p>
+<p>Download our NGINX controller configuration customization:</p>
+<pre><code class="hljs language-shell">curl -sfL curl -sfL https://raw.githubusercontent.com/open-feature/openfeature.dev/main/static/samples/nginx-config.yaml > nginx-config.yaml
+</code></pre>
+<p>Install the NGINX controller:</p>
+<pre><code class="hljs language-shell">kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+kubectl apply -f nginx-config.yaml
+kubectl wait --timeout=60s --for condition=Available=True deploy --all -n 'ingress-nginx'
+</code></pre>
+<p>This manifest contains kind-specific patches to forward the hostPorts to the ingress controller, set taint tolerations and schedule it to the custom labelled node.</p>
+<h3 id="install-openfeature-operator">Install OpenFeature operator</h3>
+<p>And finally, let's install the operator itself:</p>
+<pre><code class="hljs language-shell">kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.6.1/release.yaml &#x26;&#x26; \
+kubectl wait --timeout=60s --for condition=Available=True deploy --all -n 'open-feature-operator-system'
+</code></pre>
+<pre><code class="hljs language-shell">helm repo add openfeature https://open-feature.github.io/open-feature-operator/ &#x26;&#x26; \
+helm repo update &#x26;&#x26; \
+helm upgrade --install open-feature-operator openfeature/open-feature-operator
+</code></pre>
+<div class="markdown-alert markdown-alert-note" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>NOTE</p>
+<p>When using Helm, various configuration parameters can be set, such as resource limits and default configuration values.
+See the full <a href="https://artifacthub.io/packages/helm/open-feature-operator/open-feature-operator#configuration">chart documentation</a> for details.</p>
+</div>
+<h2 id="in-process-evaluation">In-process Evaluation</h2>
+<p>First, lets see how a centralized flagd can be used to serve flags to an <em>in-process</em> workload.</p>
+<h3 id="downloading-and-understanding-the-in-process-evaluationyaml-manifest">Downloading and understanding the <code>in-process-evaluation.yaml</code> manifest</h3>
+<p>Download the file defining our demo deployment, service and custom resource (CRs), <code>in-process-evaluation.yaml</code>:</p>
+<pre><code class="hljs language-shell">curl -sfL curl -sfL https://raw.githubusercontent.com/open-feature/playground/main/config/k8s/in-process-evaluation.yaml > in-process-evaluation.yaml
+</code></pre>
+<p>Let's take a look at the manifest and try to understand what's happening...
+The <code>in-process-evaluation.yaml</code> manifest contains a few resources:</p>
+<ul>
+<li>A feature flag definition (<code>kind: FeatureFlag</code>), and a flag source (<code>kind: FeatureFlagSource</code>) (these should be familiar to you from the <a href="quick-start.md">quick start</a>).</li>
+<li>A flagd definition (<code>kind: Flagd</code>) which defines a "standalone" flagd.
+<ul>
+<li>This flagd is available centrally and fronted by a <code>Service</code>, so that any workload can connect to it.</li>
+<li>This can save resources compared to injected sidecars into every relevant workload.</li>
+</ul>
+</li>
+<li>An in-process flagd provider configuration (<code>kind: InProcessConfiguration</code>) which configures our workload to evaluate feature flags in-process, after retrieving definitions from the centralized flagd instance.
+<ul>
+<li>Evaluating flags in process involves no network I/O or serialization, improving latency and overall performance.</li>
+</ul>
+</li>
+<li>Our <code>Deployment</code>, with an annotation associating it with the in-process provider configuration (<code>openfeature.dev/inprocessconfiguration: 'in-process-config'</code>); this configures the flagd provider in the workload to use the in-process configuration.</li>
+</ul>
+<h3 id="apply-the-in-process-evaluationyaml-manifest">Apply the <code>in-process-evaluation.yaml</code> manifest</h3>
+<pre><code class="hljs language-shell">kubectl -n default apply -f in-process-evaluation.yaml &#x26;&#x26; \
+kubectl wait --timeout=60s deployment --for condition=Available=True -l 'app=open-feature-demo' -n 'default'
+</code></pre>
+<p>If you're using <code>k9s</code> or some other means of visualization, the pods your cluster should look something like this:</p>
+<p><img src="@site/static/img/tutorials/k9s-in-process.png" alt="k9s"></p>
+<p>Take note of the <code>flagd-in-process</code> pod.</p>
+<h3 id="test-the-in-process-configuration">Test the in-process configuration</h3>
+<p>Let's make sure everything is working as expected by changing the value of a backend flag.
+Open your browser and navigate to <a href="http://localhost">localhost</a>.</p>
+<p><img src="@site/static/img/tutorials/ui-in-process.png" alt="ui-in-process-preview"></p>
+<div class="markdown-alert markdown-alert-important" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>IMPORTANT</p>
+<p>If you see a 404 and you're using Rancher Desktop, you may have forgotten to <a href="#rancher-desktop-configuration">disable Traefik</a>.</p>
+</div>
+<p>Click the fibonacci calculator; it should take ~4000ms to return a value using the <code>"recursive"</code> algorithm.
+Now, change the <code>defaultValue</code> of the <code>"fib-algo"</code> flag in our <code>in-process-evaluation.yaml</code> manifest from <code>"recursive"</code> to <code>"binet"</code>:</p>
+<pre><code class="hljs language-yaml">  <span class="hljs-attr">fib-algo:</span>
+    <span class="hljs-attr">variants:</span>
+      <span class="hljs-attr">recursive:</span> <span class="hljs-string">recursive</span>
+      <span class="hljs-attr">memo:</span> <span class="hljs-string">memo</span>
+      <span class="hljs-attr">loop:</span> <span class="hljs-string">loop</span>
+      <span class="hljs-attr">binet:</span> <span class="hljs-string">binet</span>
+    <span class="hljs-comment">#diff-remove</span>
+    <span class="hljs-attr">defaultVariant:</span> <span class="hljs-string">recursive</span>
+    <span class="hljs-comment">#diff-add</span>
+    <span class="hljs-attr">defaultVariant:</span> <span class="hljs-string">binet</span>
+</code></pre>
+<p>Apply the manifest again:</p>
+<pre><code class="hljs language-shell">kubectl -n default apply -f in-process-evaluation.yaml &#x26;&#x26; \
+kubectl wait --timeout=60s deployment --for condition=Available=True -l 'app=open-feature-demo' -n 'default'
+</code></pre>
+<p>Now, if you run the fibonacci calculator again, it should take ~5ms to return a value.
+We see our flag system is working!</p>
+<h3 id="how-does-the-in-process-configuration-work">How does the in-process configuration work?</h3>
+<pre><code class="hljs language-mermaid">  block-beta
+    columns 2
+    block:cluster
+      columns 3
+      block:resources
+        columns 1
+        resourcesLabel["resources"] FlagSource>"FlagSource"] space Flags>"FeatureFlag"]
+      end
+      space
+      block:workload
+        columns 1
+        flagd["flagd in-process provider"]
+        workloadLabel["workload"]
+      end
+    end
+
+  flagd -- "sync.proto" --> FlagSource
+  FlagSource --> Flags
+
+  style resourcesLabel fill:none,stroke:none
+  style workloadLabel fill:none,stroke:none
+</code></pre>
+<p>The <code>flagd-in-process</code> <code>Flagd</code> custom resource instance we defined starts up a flagd instance.
+This instance is configured to use the <code>app-flags</code> flag definition through it's association with the <code>app-flag-source</code> <code>FeatureFlagSource</code>.
+The operator automatically configures the <code>flagd-provider</code> in our workload to connect to the <code>flagd-in-process</code> flagd instance via inject environment variables.
+The provider then uses the <a href="https://buf.build/open-feature/flagd/file/main:flagd/sync/v1/sync.proto">sync.proto</a> to retrieve the flag definitions (as well as any subsequent updates) from flagd.</p>
+<h2 id="client-side-evaluation">Client-side evaluation</h2>
+<p>Now, lets see how a centralized flagd can be used to support client-side evaluation of feature flags in single-page application.</p>
+<div class="markdown-alert markdown-alert-important" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>IMPORTANT</p>
+<p>It's expected you've already completed the <a href="#building-our-cluster">Building our cluster</a> section above.
+If you haven't, you can do that now before continuing.</p>
+</div>
+<h3 id="downloading-and-understanding-the-client-side-evaluationyaml-manifest">Downloading and understanding the <code>client-side-evaluation.yaml</code> manifest</h3>
+<p>Download the file defining our demo deployment, service and custom resource (CRs), <code>in-process-evaluation.yaml</code>:</p>
+<pre><code class="hljs language-shell">curl -sfL curl -sfL https://raw.githubusercontent.com/open-feature/playground/main/config/k8s/client-side-evaluation.yaml > client-side-evaluation.yaml
+</code></pre>
+<p>Let's take a look at the manifest...
+Similar to the in-process evaluation above, the <code>client-side-evaluation.yaml</code> manifest contains a few resources:</p>
+<ul>
+<li>A feature flag definition (<code>kind: FeatureFlag</code>), and a flag source (<code>kind: FeatureFlagSource</code>) (these should be familiar to you from the <a href="quick-start.md">quick start</a>).</li>
+<li>A flagd definition (<code>kind: Flagd</code>) which defines a "standalone" flagd.
+<ul>
+<li>The flagd contains an <code>ingress</code> spec, which will be used to automatically generate an ingress and associated service to export our flags to the client application.
+<ul>
+<li>Note that the ingress spec contains reverse-proxy rules which will forward feature-flag requests to our flagd</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Our <code>Deployment</code>, which serves a React app using the <code>@openfeature/react-sdk</code>.</li>
+</ul>
+<h3 id="apply-the-client-side-evaluationyaml-manifest">Apply the <code>client-side-evaluation.yaml</code> manifest</h3>
+<pre><code class="hljs language-shell">kubectl -n default apply -f client-side-evaluation.yaml &#x26;&#x26; \
+kubectl wait --timeout=60s deployment --for condition=Available=True -l 'app=open-feature-demo' -n 'default'
+</code></pre>
+<p>If you're using <code>k9s</code> or some other means of visualization, the pods your cluster should look something like this:</p>
+<p><img src="@site/static/img/tutorials/k9s-client-side.png" alt="k9s"></p>
+<p>Take note of the <code>flagd-ui</code> pod.</p>
+<h3 id="test-the-client-side-configuration">Test the client-side configuration</h3>
+<p>Let's make sure everything is working as expected.
+Open your browser and navigate to <a href="http://localhost">localhost</a> (or refresh, if you're already there).</p>
+<p><img src="@site/static/img/tutorials/ui-client-side.png" alt="ui-client-side-preview"></p>
+<div class="markdown-alert markdown-alert-important" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>IMPORTANT</p>
+<p>If you see a 404 and you're using Rancher Desktop, you may have forgotten to <a href="#rancher-desktop-configuration">disable Traefik</a>.</p>
+</div>
+<p>You should see the UI has a blue theme.
+Now, change the <code>defaultValue</code> of the <code>"hex-color"</code> flag in our <code>client-side-evaluation.yaml</code> manifest from <code>"blue"</code> to <code>"red"</code>:</p>
+<pre><code class="hljs language-yaml">  <span class="hljs-attr">hex-color:</span>
+    <span class="hljs-attr">variants:</span>
+      <span class="hljs-attr">red:</span> <span class="hljs-string">c05543</span>
+      <span class="hljs-attr">green:</span> <span class="hljs-string">2f5230</span>
+      <span class="hljs-attr">blue:</span> <span class="hljs-string">0d507b</span>
+      <span class="hljs-attr">yellow:</span> <span class="hljs-string">d4ac0d</span>
+    <span class="hljs-comment">#diff-remove</span>
+    <span class="hljs-attr">defaultVariant:</span> <span class="hljs-string">blue</span>
+    <span class="hljs-comment">#diff-add</span>
+    <span class="hljs-attr">defaultVariant:</span> <span class="hljs-string">red</span>
+    <span class="hljs-attr">state:</span> <span class="hljs-string">ENABLED</span>
+    <span class="hljs-attr">targeting:</span>
+      <span class="hljs-attr">if:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">in:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">'@faas.com'</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">var:</span>
+                <span class="hljs-bullet">-</span> <span class="hljs-string">email</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">yellow</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-literal">null</span>
+</code></pre>
+<p>Apply the manifest again:</p>
+<pre><code class="hljs language-shell">kubectl -n default apply -f client-side-evaluation.yaml &#x26;&#x26; \
+kubectl wait --timeout=60s deployment --for condition=Available=True -l 'app=open-feature-demo' -n 'default'
+</code></pre>
+<p>You should see the UI immediately change color!</p>
+<h3 id="how-does-the-client-side-configuration-work">How does the client-side configuration work?</h3>
+<p>The <code>flagd-ui</code> <code>Flagd</code> custom resource instance we defined starts up a flagd instance.
+This instance is configured to use the <code>ui-flags</code> flag definition through it's association with the <code>ui-flag-source</code> <code>FeatureFlagSource</code>.
+The operator automatically configures an ingress and service which expose this <code>flagd</code> instance so it can be accessed outside your cluster.</p>
+<p>The client app uses the <a href="https://www.npmjs.com/package/@openfeature/react-sdk">@openfeature/react-sdk</a> to make use of either the <a href="https://openfeature.dev/specification/appendix-c/">OFREP</a> or <code>flagd-web</code> providers to perform flag evaluations (you can switch this with the dropdown in the bottom right).
+Both the providers support the emission of events when a flag configuration is changed (the <code>flagd-web</code> provider maintains a connection with flagd via the connect protocol, while the OFREP provider does HTTP polling).
+When the providers emit this change event, the <code>@openfeature/react-sdk</code> causes the UI to re-render.
+It's worth noting that these providers do not expose flag evaluation rules or flag configuration in general to the client; the client simply makes a "bulk evaluation" request and retrieves a set of evaluated flags.</p>
+<pre><code class="hljs language-mermaid">  block-beta
+    columns 3
+    block:cluster
+      block:resources
+        columns 1
+        resourcesLabel["resources"] FlagSource>"FlagSource"] space Flags>"FeatureFlag"]
+      end
+      flagd
+      ingress["ingress (NGINX)"]
+    end
+    space
+    block:client
+      columns 2
+      provider clientLabel["client"]
+    end
+
+  flagd --> FlagSource
+  FlagSource --> Flags
+
+  provider -- "OFREP / evaluation.proto" --> ingress
+
+  style clientLabel fill:none,stroke:none
+  style resourcesLabel fill:none,stroke:none
+</code></pre>
+<h2 id="cleaning-up">Cleaning up</h2>
+<p>If you used a kind cluster, you can clean everything up by running:</p>
+<pre><code class="hljs language-shell">kind delete cluster
+</code></pre>
+<p>If you <a href="#rancher-desktop-configuration">disabled Traefik</a>, you may want to re-enable it.</p>

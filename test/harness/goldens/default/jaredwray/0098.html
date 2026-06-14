@@ -1,0 +1,40 @@
+<p>Hello from the OpenFeature community!
+This post is a double-feature of sorts: we'll be wrapping up our time at KubeCon NA 2024 as well as talking about our latest SDK feature: <a href="/blog/kubecon-wrapped-and-tracking#robust-experimentation-support-with-tracking-events">✨ <em>tracking events</em> ✨</a>.</p>
+<p>&#x3C;img src={require('@site/static/img/blog/2024-12-09-kubecon-wrapped-and-tracking/summit-wrapped.png').default} /></p>
+<h2 id="kubecon-na-2024-wrapped">KubeCon NA 2024 <em>Wrapped</em></h2>
+<p>As usual, we had a great time at the OpenFeature booth in the project pavilion.
+We always appreciate the chance to connect with maintainers face-to-face, sometimes for the first time!
+Each year we hear from more users who've made use of OpenFeature within their organization or project.</p>
+<p>This was also our first time having our own dedicated, colocated event: <a href="https://events.linuxfoundation.org/kubecon-cloudnativecon-north-america/co-located-events/openfeature-summit/">The OpenFeature Summit</a>!
+There were some great talks here; a couple of highlights:</p>
+<ul>
+<li><a href="https://youtu.be/6ivdFYgznxQ?si=kVg-6mkPX4INwBca">▶️ Migrating to OpenFeature at Scale: 0 to Billions</a>, by Chetan Kapoor &#x26; Justin Abrahms from <a href="https://innovation.ebayinc.com/tech/engineering/">eBay</a>
+<ul>
+<li>a great presentation about using OpenFeature at massive scale, and a notable example of how to effectively (and empathetically) promote the internal adoption of a tool at enterprise scale</li>
+</ul>
+</li>
+<li><a href="https://youtu.be/CwckuHnQkzE?si=8XRPauAKqqDoLA4R">▶️ Experimentation Programs at Scale: Lessons Learned from Top Companies</a>, by Graham McNicoll from <a href="https://www.growthbook.io/">GrowthBook</a>
+<ul>
+<li>if this doesn't convince you that you need to be using experimentation to validate your features and roadmap, nothing will!</li>
+<li>particularly relevant to <a href="#robust-experimentation-support-with-tracking-events">some of our newest features</a> 👀</li>
+</ul>
+</li>
+</ul>
+<p>The full list of videos and slides from the OpenFeature Summit are available <a href="https://events.linuxfoundation.org/kubecon-cloudnativecon-north-america/co-located-events/openfeature-summit/#thank-you-for-attending">here</a>.</p>
+<p>Additionally, don't sleep on Pete Hodgson's <a href="https://kccncna2024.sched.com/event/1i7rl/migratory-patterns-making-architectural-transitions-with-confidence-and-grace-pete-hodgson-partnerslate">SDLC track presentation</a> on undertaking big, hairy migrations, and how feature flags can help.</p>
+<h2 id="robust-experimentation-support-with-tracking-events">Robust Experimentation Support with Tracking Events</h2>
+<p>Teams spend a lot of time talking about developing, deploying, monitoring and maintaining features, but how do you know if you've built the right features in the first place?
+Without data to evaluate the success and adoption of features, aren't you just guessing?
+The best teams bake experimentation into their product development cycle, so that they can use data to drive their decisions.</p>
+<p>Some feature flag vendors provide functionality to help address this issue, and we knew OpenFeature needed to as well.
+With the <a href="https://github.com/open-feature/spec/pull/268">latest enhancements to our specification</a>, OpenFeature now supports this sort of experimentation!
+The new <a href="/specification/sections/tracking">Tracking API</a> defines interfaces and functions to allow application authors to "close the gap" between feature flags and business objectives; helping to assert that a particular flag variant actually corresponds to increased usage, for instance.</p>
+<p>In fact, if your vendor or home-grown feature flag solution doesn't support equivalent functionality, <a href="/specification/sections/hooks">hooks</a> and tracking compose a flexible solution to associate flag evaluations with usage data, regardless of whatever customer data platform or telemetry backend you use.
+For more information, see <a href="/docs/reference/concepts/tracking">tracking concepts</a>.</p>
+<p>These enhancements were brought to you by the hard work of many feature flag vendors, enterprises, and subject matter experts...
+Thanks to all who helped!</p>
+<p>&#x3C;img src={require('@site/static/img/blog/2024-12-09-kubecon-wrapped-and-tracking/thanks.png').default} /></p>
+<h3 id="implementations-and-future-plans">Implementations and Future Plans</h3>
+<p>Tracking event functionality is already implemented in our React, Javascript, Java, and Go SDKs, with more on the way.
+For an up-to-date list of implementations, check out the <a href="/docs/reference/sdks/sdk-compatibility">SDK Compatibility Overview</a>.
+Download the latest release in your language of choice and try it out!</p>

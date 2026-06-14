@@ -1,0 +1,467 @@
+<h1 id="node-cache-manager">node-cache-manager</h1>
+<h1 id="flexible-nodejs-cache-module">Flexible NodeJS cache module</h1>
+<p>A cache module for nodejs that allows easy wrapping of functions in cache,
+tiered caches, and a consistent interface.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Easy way to wrap any function in cache.</li>
+<li>Tiered caches -- data gets stored in each cache and fetched from the highest
+priority cache(s) first.</li>
+<li>Use any cache you want, as long as it has the same API.</li>
+<li>100% test coverage via <a href="https://github.com/visionmedia/mocha">mocha</a>,
+<a href="https://github.com/yahoo/istanbul">istanbul</a>, and <a href="http://sinonjs.org">sinon</a>.</li>
+</ul>
+<h2 id="expressjs-example">Express.js Example</h2>
+<p>See the <a href="https://github.com/BryanDonovan/node-cache-manager-express-example">Express.js cache-manager example app</a> to see how to use
+<code>node-cache-manager</code> in your applications.</p>
+<h2 id="installation">Installation</h2>
+<pre><code>npm install cache-manager
+</code></pre>
+<h2 id="store-engines">Store Engines</h2>
+<ul>
+<li>
+<p><a href="https://github.com/dial-once/node-cache-manager-redis">node-cache-manager-redis</a> (uses <a href="https://github.com/joshuah/sol-redis-pool">sol-redis-pool</a>)</p>
+</li>
+<li>
+<p><a href="https://github.com/dabroek/node-cache-manager-redis-store">node-cache-manager-redis-store</a> (uses <a href="https://github.com/NodeRedis/node_redis">node_redis</a>)</p>
+</li>
+<li>
+<p><a href="https://github.com/Tirke/node-cache-manager-ioredis">node-cache-manager-ioredis</a> (uses <a href="https://github.com/luin/ioredis">ioredis</a>)</p>
+</li>
+<li>
+<p><a href="https://github.com/v4l3r10/node-cache-manager-mongodb">node-cache-manager-mongodb</a></p>
+</li>
+<li>
+<p><a href="https://github.com/disjunction/node-cache-manager-mongoose">node-cache-manager-mongoose</a></p>
+</li>
+<li>
+<p><a href="https://github.com/sheershoff/node-cache-manager-fs-binary">node-cache-manager-fs-binary</a></p>
+</li>
+<li>
+<p><a href="https://github.com/rolandstarke/node-cache-manager-fs-hash">node-cache-manager-fs-hash</a></p>
+</li>
+<li>
+<p><a href="https://github.com/marudor/node-cache-manager-hazelcast">node-cache-manager-hazelcast</a></p>
+</li>
+<li>
+<p><a href="https://github.com/theogravity/node-cache-manager-memcached-store">node-cache-manager-memcached-store</a></p>
+</li>
+<li>
+<p><a href="https://github.com/theogravity/node-cache-manager-memory-store">node-cache-manager-memory-store</a></p>
+</li>
+<li>
+<p><a href="https://github.com/davidepellegatta/node-cache-manager-couchbase">node-cache-manager-couchbase</a></p>
+</li>
+<li>
+<p><a href="https://github.com/maxpert/node-cache-manager-sqlite">node-cache-manager-sqlite</a></p>
+</li>
+</ul>
+<h2 id="overview">Overview</h2>
+<p><strong>First</strong>, it includes a <code>wrap</code> function that lets you wrap any function in cache.
+(Note, this was inspired by <a href="https://github.com/mape/node-caching">node-caching</a>.)
+This is probably the feature you're looking for. As an example, where you might have to do this:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">function</span> <span class="hljs-title function_">getCachedUser</span>(<span class="hljs-params">id, cb</span>) {
+  memoryCache.<span class="hljs-title function_">get</span>(id, <span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) {
+    <span class="hljs-keyword">if</span> (err) {
+      <span class="hljs-keyword">return</span> <span class="hljs-title function_">cb</span>(err);
+    }
+
+    <span class="hljs-keyword">if</span> (result) {
+      <span class="hljs-keyword">return</span> <span class="hljs-title function_">cb</span>(<span class="hljs-literal">null</span>, result);
+    }
+
+    <span class="hljs-title function_">getUser</span>(id, <span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) {
+      <span class="hljs-keyword">if</span> (err) {
+        <span class="hljs-keyword">return</span> <span class="hljs-title function_">cb</span>(err);
+      }
+      memoryCache.<span class="hljs-title function_">set</span>(id, result);
+      <span class="hljs-title function_">cb</span>(<span class="hljs-literal">null</span>, result);
+    });
+  });
+}
+</code></pre>
+<p>... you can instead use the <code>wrap</code> function:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">function</span> <span class="hljs-title function_">getCachedUser</span>(<span class="hljs-params">id, cb</span>) {
+  memoryCache.<span class="hljs-title function_">wrap</span>(
+    id,
+    <span class="hljs-keyword">function</span> (<span class="hljs-params">cacheCallback</span>) {
+      <span class="hljs-title function_">getUser</span>(id, cacheCallback);
+    },
+    { <span class="hljs-attr">ttl</span>: ttl },
+    cb,
+  );
+}
+</code></pre>
+<p><strong>Second</strong>, node-cache-manager features a built-in memory cache (using <a href="https://github.com/isaacs/node-lru-cache">node-lru-cache</a>),
+with the standard functions you'd expect in most caches:</p>
+<pre><code>set(key, val, {ttl: ttl}, cb) // * see note below
+get(key, cb)
+del(key, cb)
+mset(key1, val1, key2, val2, {ttl: ttl}, cb) // set several keys at once
+mget(key1, key2, key3, cb) // get several keys at once
+
+// * Note that depending on the underlying store, you may be able to pass the
+// ttl as the third param, like this:
+set(key, val, ttl, cb)
+// ... or pass no ttl at all:
+set(key, val, cb)
+</code></pre>
+<p><strong>Third</strong>, node-cache-manager lets you set up a tiered cache strategy. This may be of
+limited use in most cases, but imagine a scenario where you expect tons of
+traffic, and don't want to hit your primary cache (like Redis) for every request.
+You decide to store the most commonly-requested data in an in-memory cache,
+perhaps with a very short timeout and/or a small data size limit. But you
+still want to store the data in Redis for backup, and for the requests that
+aren't as common as the ones you want to store in memory. This is something
+node-cache-manager handles easily and transparently.</p>
+<p><strong>Fourth</strong>, it allows you to get and set multiple keys at once for caching store that support it. This means that when getting multiple keys it will go through the different caches starting from the highest priority one (see multi store below) and merge the values it finds at each level.</p>
+<h2 id="usage-examples">Usage Examples</h2>
+<p>See examples below and in the examples directory. See <code>examples/redis_example</code> for an example of how to implement a
+Redis cache store with connection pooling.</p>
+<h3 id="single-store">Single Store</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">var</span> cacheManager = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cache-manager'</span>);
+<span class="hljs-keyword">var</span> memoryCache = cacheManager.<span class="hljs-title function_">caching</span>({
+  <span class="hljs-attr">store</span>: <span class="hljs-string">'memory'</span>,
+  <span class="hljs-attr">max</span>: <span class="hljs-number">100</span>,
+  <span class="hljs-attr">ttl</span>: <span class="hljs-number">10</span> <span class="hljs-comment">/*seconds*/</span>,
+});
+<span class="hljs-keyword">var</span> ttl = <span class="hljs-number">5</span>;
+<span class="hljs-comment">// Note: callback is optional in set() and del().</span>
+<span class="hljs-comment">// Note: memory cache clones values before setting them unless</span>
+<span class="hljs-comment">// shouldCloneBeforeSet is set to false</span>
+
+memoryCache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, { <span class="hljs-attr">ttl</span>: ttl }, <span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) {
+  <span class="hljs-keyword">if</span> (err) {
+    <span class="hljs-keyword">throw</span> err;
+  }
+
+  memoryCache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result);
+    <span class="hljs-comment">// >> 'bar'</span>
+    memoryCache.<span class="hljs-title function_">del</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) {});
+  });
+});
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">getUser</span>(<span class="hljs-params">id, cb</span>) {
+  <span class="hljs-built_in">setTimeout</span>(<span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Returning user from slow database.'</span>);
+    <span class="hljs-title function_">cb</span>(<span class="hljs-literal">null</span>, { <span class="hljs-attr">id</span>: id, <span class="hljs-attr">name</span>: <span class="hljs-string">'Bob'</span> });
+  }, <span class="hljs-number">100</span>);
+}
+
+<span class="hljs-keyword">var</span> userId = <span class="hljs-number">123</span>;
+<span class="hljs-keyword">var</span> key = <span class="hljs-string">'user_'</span> + userId;
+
+<span class="hljs-comment">// Note: ttl is optional in wrap()</span>
+memoryCache.<span class="hljs-title function_">wrap</span>(
+  key,
+  <span class="hljs-keyword">function</span> (<span class="hljs-params">cb</span>) {
+    <span class="hljs-title function_">getUser</span>(userId, cb);
+  },
+  { <span class="hljs-attr">ttl</span>: ttl },
+  <span class="hljs-keyword">function</span> (<span class="hljs-params">err, user</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user);
+
+    <span class="hljs-comment">// Second time fetches user from memoryCache</span>
+    memoryCache.<span class="hljs-title function_">wrap</span>(
+      key,
+      <span class="hljs-keyword">function</span> (<span class="hljs-params">cb</span>) {
+        <span class="hljs-title function_">getUser</span>(userId, cb);
+      },
+      <span class="hljs-keyword">function</span> (<span class="hljs-params">err, user</span>) {
+        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user);
+      },
+    );
+  },
+);
+
+<span class="hljs-comment">// Outputs:</span>
+<span class="hljs-comment">// Returning user from slow database.</span>
+<span class="hljs-comment">// { id: 123, name: 'Bob' }</span>
+<span class="hljs-comment">// { id: 123, name: 'Bob' }</span>
+</code></pre>
+<p>The <code>ttl</code> can also be computed dynamically by passing in a function. E.g.,</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">var</span> opts = {
+    <span class="hljs-attr">ttl</span>: <span class="hljs-keyword">function</span>(<span class="hljs-params">user</span>) {
+        <span class="hljs-keyword">if</span> (user.<span class="hljs-property">id</span> === <span class="hljs-number">1</span>) {
+            <span class="hljs-keyword">return</span> <span class="hljs-number">0.1</span>;
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">return</span> <span class="hljs-number">0.5</span>;
+        }
+    }
+};
+
+memoryCache.<span class="hljs-title function_">wrap</span>(key, <span class="hljs-keyword">function</span>(<span class="hljs-params">cb</span>) {
+    <span class="hljs-title function_">getUser</span>(userId, cb);
+}, opts, <span class="hljs-keyword">function</span>(<span class="hljs-params">err, user</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user);
+}
+</code></pre>
+<p>You can get several keys at once. Note that this will return whatever records it
+finds in the cache and it is up to the user to check the results against the
+supplied keys and make any calls to the underlying data store to fill in
+missing records. In practice, this should not be much of a concern if you are
+only using the <code>wrap</code> function to set these records in cache.</p>
+<p>Side note: Ideally the <code>wrap</code> function would get what it can from the cache and fill in
+the missing records from the data store, but I can't think of a way to do this
+that is generic to all situations. Another option is to only return the data
+from the cache if all records are found, but this would break multi-caching.</p>
+<p>See unit tests in <code>caching.unit.js</code> for more information.</p>
+<p>Example:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">var</span> key1 = <span class="hljs-string">'user_1'</span>;
+<span class="hljs-keyword">var</span> key2 = <span class="hljs-string">'user_1'</span>;
+
+memoryCache.<span class="hljs-title function_">wrap</span>(
+  key1,
+  key2,
+  <span class="hljs-keyword">function</span> (<span class="hljs-params">cb</span>) {
+    <span class="hljs-title function_">getManyUser</span>([key1, key2], cb);
+  },
+  <span class="hljs-keyword">function</span> (<span class="hljs-params">err, users</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(users[<span class="hljs-number">0</span>]);
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(users[<span class="hljs-number">1</span>]);
+  },
+);
+</code></pre>
+<h4 id="example-settinggetting-several-keys-with-mset-and-mget">Example setting/getting several keys with mset() and mget()</h4>
+<pre><code class="hljs language-js">memoryCache.<span class="hljs-title function_">mset</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-string">'foo2'</span>, <span class="hljs-string">'bar2'</span>, { <span class="hljs-attr">ttl</span>: ttl }, <span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) {
+  <span class="hljs-keyword">if</span> (err) {
+    <span class="hljs-keyword">throw</span> err;
+  }
+
+  memoryCache.<span class="hljs-title function_">mget</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'foo2'</span>, <span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result);
+    <span class="hljs-comment">// >> ['bar', 'bar2']</span>
+
+    <span class="hljs-comment">// Delete keys with del() passing arguments...</span>
+    memoryCache.<span class="hljs-title function_">del</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'foo2'</span>, <span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) {});
+
+    <span class="hljs-comment">// ...passing an Array of keys</span>
+    memoryCache.<span class="hljs-title function_">del</span>([<span class="hljs-string">'foo'</span>, <span class="hljs-string">'foo2'</span>], <span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) {});
+  });
+});
+</code></pre>
+<h4 id="example-using-promises">Example Using Promises</h4>
+<pre><code class="hljs language-javascript">memoryCache
+  .<span class="hljs-title function_">wrap</span>(key, <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
+    <span class="hljs-keyword">return</span> <span class="hljs-title function_">getUserPromise</span>(userId);
+  })
+  .<span class="hljs-title function_">then</span>(<span class="hljs-keyword">function</span> (<span class="hljs-params">user</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'User:'</span>, user);
+  });
+</code></pre>
+<p>If you are using a Node version that does not include native promises, you can
+specify your promise dependency in the options passed to the cache module.
+E.g.,</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">var</span> <span class="hljs-title class_">Promise</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'es6-promise'</span>).<span class="hljs-property">Promise</span>;
+cache = <span class="hljs-title function_">caching</span>({ <span class="hljs-attr">store</span>: store, <span class="hljs-attr">promiseDependency</span>: <span class="hljs-title class_">Promise</span> });
+</code></pre>
+<h4 id="example-using-asyncawait">Example Using async/await</h4>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">try</span> {
+  <span class="hljs-keyword">let</span> user = <span class="hljs-keyword">await</span> memoryCache.<span class="hljs-title function_">wrap</span>(key, <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
+    <span class="hljs-keyword">return</span> <span class="hljs-title function_">getUserPromise</span>(userId);
+  });
+} <span class="hljs-keyword">catch</span> (err) {
+  <span class="hljs-comment">// error handling</span>
+}
+</code></pre>
+<p>Hint: should wrap <code>await</code> call with <code>try</code> - <code>catch</code> to handle <code>promise</code> error.</p>
+<h4 id="example-express-app-usage">Example Express App Usage</h4>
+<p>(Also see the <a href="https://github.com/BryanDonovan/node-cache-manager-express-example">Express.js cache-manager example app</a>).</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">function</span> <span class="hljs-title function_">respond</span>(<span class="hljs-params">res, err, data</span>) {
+  <span class="hljs-keyword">if</span> (err) {
+    res.<span class="hljs-title function_">json</span>(<span class="hljs-number">500</span>, err);
+  } <span class="hljs-keyword">else</span> {
+    res.<span class="hljs-title function_">json</span>(<span class="hljs-number">200</span>, data);
+  }
+}
+
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">'/foo/bar'</span>, <span class="hljs-keyword">function</span> (<span class="hljs-params">req, res</span>) {
+  <span class="hljs-keyword">var</span> cacheKey = <span class="hljs-string">'foo-bar:'</span> + <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(req.<span class="hljs-property">query</span>);
+  <span class="hljs-keyword">var</span> ttl = <span class="hljs-number">10</span>;
+  memoryCache.<span class="hljs-title function_">wrap</span>(
+    cacheKey,
+    <span class="hljs-keyword">function</span> (<span class="hljs-params">cacheCallback</span>) {
+      <span class="hljs-variable constant_">DB</span>.<span class="hljs-title function_">find</span>(req.<span class="hljs-property">query</span>, cacheCallback);
+    },
+    { <span class="hljs-attr">ttl</span>: ttl },
+    <span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) {
+      <span class="hljs-title function_">respond</span>(res, err, result);
+    },
+  );
+});
+</code></pre>
+<h4 id="custom-stores">Custom Stores</h4>
+<p>You can use your own custom store by creating one with the same API as the
+built-in memory stores (such as a redis or memcached store). To use your own store just pass
+in an instance of it.</p>
+<p>E.g.,</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">var</span> myStore = <span class="hljs-built_in">require</span>(<span class="hljs-string">'your-homemade-store'</span>);
+<span class="hljs-keyword">var</span> cache = cacheManager.<span class="hljs-title function_">caching</span>({ <span class="hljs-attr">store</span>: myStore });
+</code></pre>
+<h3 id="multi-store">Multi-Store</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">var</span> multiCache = cacheManager.<span class="hljs-title function_">multiCaching</span>([memoryCache, someOtherCache]);
+userId2 = <span class="hljs-number">456</span>;
+key2 = <span class="hljs-string">'user_'</span> + userId;
+ttl = <span class="hljs-number">5</span>;
+
+<span class="hljs-comment">// Sets in all caches.</span>
+<span class="hljs-comment">// The "ttl" option can also be a function (see example below)</span>
+multiCache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo2'</span>, <span class="hljs-string">'bar2'</span>, { <span class="hljs-attr">ttl</span>: ttl }, <span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) {
+  <span class="hljs-keyword">if</span> (err) {
+    <span class="hljs-keyword">throw</span> err;
+  }
+
+  <span class="hljs-comment">// Fetches from highest priority cache that has the key.</span>
+  multiCache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo2'</span>, <span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result);
+    <span class="hljs-comment">// >> 'bar2'</span>
+
+    <span class="hljs-comment">// Delete from all caches</span>
+    multiCache.<span class="hljs-title function_">del</span>(<span class="hljs-string">'foo2'</span>);
+  });
+});
+
+<span class="hljs-comment">// Set the ttl value by context depending on the store.</span>
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">getTTL</span>(<span class="hljs-params">data, store</span>) {
+  <span class="hljs-keyword">if</span> (store === <span class="hljs-string">'redis'</span>) {
+    <span class="hljs-keyword">return</span> <span class="hljs-number">6000</span>;
+  }
+  <span class="hljs-keyword">return</span> <span class="hljs-number">3000</span>;
+}
+
+<span class="hljs-comment">// Sets multiple keys in all caches.</span>
+<span class="hljs-comment">// You can pass as many key,value pair as you want</span>
+multiCache.<span class="hljs-title function_">mset</span>(
+  <span class="hljs-string">'key'</span>,
+  <span class="hljs-string">'value'</span>,
+  <span class="hljs-string">'key2'</span>,
+  <span class="hljs-string">'value2'</span>,
+  { <span class="hljs-attr">ttl</span>: getTTL },
+  <span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) {
+    <span class="hljs-keyword">if</span> (err) {
+      <span class="hljs-keyword">throw</span> err;
+    }
+
+    <span class="hljs-comment">// mget() fetches from highest priority cache.</span>
+    <span class="hljs-comment">// If the first cache does not return all the keys,</span>
+    <span class="hljs-comment">// the next cache is fetched with the keys that were not found.</span>
+    <span class="hljs-comment">// This is done recursively until either:</span>
+    <span class="hljs-comment">// - all have been found</span>
+    <span class="hljs-comment">// - all caches has been fetched</span>
+    multiCache.<span class="hljs-title function_">mget</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'key2'</span>, <span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) {
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result[<span class="hljs-number">0</span>]);
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result[<span class="hljs-number">1</span>]);
+      <span class="hljs-comment">// >> 'bar2'</span>
+      <span class="hljs-comment">// >> 'bar3'</span>
+
+      <span class="hljs-comment">// Delete from all caches</span>
+      multiCache.<span class="hljs-title function_">del</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'key2'</span>);
+      <span class="hljs-comment">// ...or with an Array</span>
+      multiCache.<span class="hljs-title function_">del</span>([<span class="hljs-string">'key'</span>, <span class="hljs-string">'key2'</span>]);
+    });
+  },
+);
+
+<span class="hljs-comment">// Note: options with ttl are optional in wrap()</span>
+multiCache.<span class="hljs-title function_">wrap</span>(
+  key2,
+  <span class="hljs-keyword">function</span> (<span class="hljs-params">cb</span>) {
+    <span class="hljs-title function_">getUser</span>(userId2, cb);
+  },
+  { <span class="hljs-attr">ttl</span>: ttl },
+  <span class="hljs-keyword">function</span> (<span class="hljs-params">err, user</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user);
+
+    <span class="hljs-comment">// Second time fetches user from memoryCache, since it's highest priority.</span>
+    <span class="hljs-comment">// If the data expires in the memory cache, the next fetch would pull it from</span>
+    <span class="hljs-comment">// the 'someOtherCache', and set the data in memory again.</span>
+    multiCache.<span class="hljs-title function_">wrap</span>(
+      key2,
+      <span class="hljs-keyword">function</span> (<span class="hljs-params">cb</span>) {
+        <span class="hljs-title function_">getUser</span>(userId2, cb);
+      },
+      <span class="hljs-keyword">function</span> (<span class="hljs-params">err, user</span>) {
+        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user);
+      },
+    );
+  },
+);
+
+<span class="hljs-comment">// Multiple keys</span>
+multiCache.<span class="hljs-title function_">wrap</span>(
+  <span class="hljs-string">'key1'</span>,
+  <span class="hljs-string">'key2'</span>,
+  <span class="hljs-keyword">function</span> (<span class="hljs-params">cb</span>) {
+    <span class="hljs-title function_">getManyUser</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>], cb);
+  },
+  { <span class="hljs-attr">ttl</span>: ttl },
+  <span class="hljs-keyword">function</span> (<span class="hljs-params">err, users</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(users[<span class="hljs-number">0</span>]);
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(users[<span class="hljs-number">1</span>]);
+  },
+);
+</code></pre>
+<h3 id="specifying-what-to-cache-in-wrap-function">Specifying What to Cache in <code>wrap</code> Function</h3>
+<p>Both the <code>caching</code> and <code>multicaching</code> modules allow you to pass in a callback function named
+<code>isCacheableValue</code> which is called by the <code>wrap</code> function with every value returned from cache or from the wrapped function.
+This lets you specify which values should and should not be cached by <code>wrap</code>. If the function returns true, it will be
+stored in cache. By default the caches cache everything except <code>undefined</code>.</p>
+<p>NOTE: The <code>set</code> functions in <code>caching</code> and <code>multicaching</code> do <em>not</em> use <code>isCacheableValue</code>.</p>
+<p>For example, if you don't want to cache <code>false</code> and <code>null</code>, you can pass in a function like this:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">var</span> isCacheableValue = <span class="hljs-keyword">function</span> (<span class="hljs-params">value</span>) {
+  <span class="hljs-keyword">return</span> value !== <span class="hljs-literal">null</span> &#x26;&#x26; value !== <span class="hljs-literal">false</span> &#x26;&#x26; value !== <span class="hljs-literal">undefined</span>;
+};
+</code></pre>
+<p>Then pass it to <code>caching</code> like this:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">var</span> memoryCache = cacheManager.<span class="hljs-title function_">caching</span>({
+  <span class="hljs-attr">store</span>: <span class="hljs-string">'memory'</span>,
+  <span class="hljs-attr">isCacheableValue</span>: isCacheableValue,
+});
+</code></pre>
+<p>And pass it to <code>multicaching</code> like this:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">var</span> multiCache = cacheManager.<span class="hljs-title function_">multiCaching</span>([memoryCache, someOtherCache], {
+  <span class="hljs-attr">isCacheableValue</span>: isCacheableValue,
+});
+</code></pre>
+<h3 id="refresh-cache-keys-in-background">Refresh cache keys in background</h3>
+<p>Both the <code>caching</code> and <code>multicaching</code> modules support a mechanism to refresh expiring cache keys in background when using <code>wrap</code> function.
+This is done by adding a <code>refreshThreshold</code> attribute while creating the caching store.</p>
+<p>If <code>refreshThreshold</code> is set and if the <code>ttl</code> method is available for the used store, after retrieving a value from cache TTL will be checked.
+If the remaining TTL is less than <code>refreshThreshold</code>, the system will spawn a background worker to update the value, following same rules as standard fetching. In the meantime, the system will return the old value until expiration.</p>
+<p>In case of multicaching, the store that will be used for refresh is the one where the key will be found first (highest priority). The value will then be set in all the stores.</p>
+<p>NOTES:</p>
+<ul>
+<li>In case of multicaching, the store that will be checked for refresh is the one where the key will be found first (highest priority).</li>
+<li>If the threshold is low and the worker function is slow, the key may expire and you may encounter a racing condition with updating values.</li>
+<li>The background refresh mechanism currently does not support providing multiple keys to <code>wrap</code> function.</li>
+<li>The caching store needs to provide the <code>ttl</code> method.</li>
+</ul>
+<p>For example, pass the refreshThreshold to <code>caching</code> like this:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">var</span> redisStore = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cache-manager-ioredis'</span>);
+
+<span class="hljs-keyword">var</span> redisCache = cacheManager.<span class="hljs-title function_">caching</span>({
+  <span class="hljs-attr">store</span>: redisStore,
+  <span class="hljs-attr">refreshThreshold</span>: <span class="hljs-number">3</span>,
+  <span class="hljs-attr">isCacheableValue</span>: isCacheableValue,
+});
+</code></pre>
+<p>When a value will be retrieved from Redis with a remaining TTL &#x3C; 3sec, the value will be updated in background.</p>
+<h3 id="development-environment">Development environment</h3>
+<p>You may disable real caching but still get all the callback functionality working by setting <code>none</code> store.</p>
+<h2 id="docs">Docs</h2>
+<p>To generate JSDOC 3 documentation:</p>
+<pre><code>make docs
+</code></pre>
+<h2 id="tests">Tests</h2>
+<p>To run tests, first run:</p>
+<pre><code>npm install -d
+</code></pre>
+<p>Run the tests and JShint:</p>
+<pre><code>make
+</code></pre>
+<h2 id="contribute">Contribute</h2>
+<p>If you would like to contribute to the project, please fork it and send us a pull request. Please add tests
+for any new features or bug fixes. Also run <code>make</code> before submitting the pull request.</p>
+<h2 id="license">License</h2>
+<p>node-cache-manager is licensed under the MIT license.</p>

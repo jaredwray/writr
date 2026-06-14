@@ -1,0 +1,196 @@
+<p><a href="https://github.com/jaredwray/cacheable"></a></p>
+<h1 id="flat-cache">flat-cache</h1>
+<blockquote>
+<p>A simple key/value storage using files to persist the data</p>
+</blockquote>
+<p><a href="https://codecov.io/gh/jaredwray/cacheable"><img src="https://codecov.io/gh/jaredwray/cacheable/branch/main/graph/badge.svg?token=lWZ9OBQ7GM" alt="codecov"></a>
+<a href="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://www.npmjs.com/package/flat-cache"><img src="https://img.shields.io/npm/dm/flat-cache.svg" alt="npm"></a>
+<a href="https://www.npmjs.com/package/flat-cache"><img src="https://img.shields.io/npm/v/flat-cache" alt="npm"></a>
+<a href="https://github.com/jaredwray/cacheable/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/cacheable" alt="license"></a></p>
+<h1 id="features">Features</h1>
+<ul>
+<li>A simple key/value storage using files to persist the data</li>
+<li>Uses a in-memory cache (via <code>CacheableMemory</code>) as the primary storage and then persists the data to disk</li>
+<li>Automatically saves the data to disk via <code>persistInterval</code> setting. Off By Default</li>
+<li>Uses <code>expirationInterval</code> to check for expired items in the cache. If it is not set it will do a lazy check on <code>get</code> or <code>getKey</code></li>
+<li>Easily Loads the data from disk and into memory with <code>load</code> or <code>loadFile</code></li>
+<li>Uses <code>ttl</code> and <code>lruSize</code> to manage the cache and persist the data</li>
+<li>Only saves the data to disk if the data has changed even when using <code>persistInterval</code> or calling <code>save()</code></li>
+<li>Uses <code>flatted</code> to parse and stringify the data by default but can be overridden using <code>serialize</code> and <code>deserialize</code> in options</li>
+<li>ESM and CommonJS support with TypeScript typings and maintained regularly!</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#breaking-changes-from-v5-to-v6">Breaking Changes from v5 to v6</a></li>
+<li><a href="#global-functions">Global Functions</a></li>
+<li><a href="#flatcache-options-flatcacheoptions">FlatCache Options (FlatCacheOptions)</a></li>
+<li><a href="#api">API</a></li>
+<li><a href="#events-flatcacheevents">Events (FlatCacheEvents)</a></li>
+<li><a href="#parse-and-stringify-for-file-caching">Parse and Stringify for File Caching</a></li>
+<li><a href="#loading-data-via-streams">Loading Data via Streams</a></li>
+<li><a href="#how-to-contribute">How to Contribute</a></li>
+<li><a href="#license-and-copyright">License and Copyright</a></li>
+</ul>
+<h1 id="installation">Installation</h1>
+<pre><code class="hljs language-bash">npm install flat-cache
+</code></pre>
+<h1 id="getting-started">Getting Started</h1>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">FlatCache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'flat-cache'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FlatCache</span>();
+cache.<span class="hljs-title function_">setKey</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>);
+cache.<span class="hljs-title function_">save</span>(); <span class="hljs-comment">// Saves the data to disk</span>
+</code></pre>
+<p>lets add it with <code>ttl</code>, <code>lruSize</code>, and <code>persistInterval</code></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">FlatCache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'flat-cache'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FlatCache</span>({
+  <span class="hljs-attr">ttl</span>: <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span> , <span class="hljs-comment">// 1 hour</span>
+  <span class="hljs-attr">lruSize</span>: <span class="hljs-number">10000</span>, <span class="hljs-comment">// 10,000 items</span>
+  <span class="hljs-attr">expirationInterval</span>: <span class="hljs-number">5</span> * <span class="hljs-number">1000</span> * <span class="hljs-number">60</span>, <span class="hljs-comment">// 5 minutes</span>
+  <span class="hljs-attr">persistInterval</span>: <span class="hljs-number">5</span> * <span class="hljs-number">1000</span> * <span class="hljs-number">60</span>, <span class="hljs-comment">// 5 minutes</span>
+});
+cache.<span class="hljs-title function_">setKey</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>);
+</code></pre>
+<p>This will save the data to disk every 5 minutes and will remove any data that has not been accessed in 1 hour or if the cache has more than 10,000 items. The <code>expirationInterval</code> will check every 5 minutes for expired items and evict them. This is replacement to the <code>save()</code> method with a <code>prune</code> option as it is no longer needed due to the fact that the in-memory cache handles pruning by <code>ttl</code> expiration or <code>lruSize</code> which will keep the most recent there.</p>
+<p>here is an example doing load from already existing persisted cache using the <code>createFromFile</code> function:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { createFromFile } <span class="hljs-keyword">from</span> <span class="hljs-string">'flat-cache'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createFromFile</span>(<span class="hljs-string">'./cacheAltDirectory/cache1'</span>);
+</code></pre>
+<p>You can also use the legacy load function to do this:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">FlatCache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'flat-cache'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FlatCache</span>();
+cache.<span class="hljs-title function_">load</span>(<span class="hljs-string">'cache1'</span>, <span class="hljs-string">'./cacheAltDirectory'</span>);
+</code></pre>
+<p>or</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">FlatCache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'flat-cache'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FlatCache</span>({ <span class="hljs-attr">cacheDir</span>: <span class="hljs-string">'./cacheAltDirectory'</span> });
+cache.<span class="hljs-title function_">load</span>(<span class="hljs-string">'cache1'</span>);
+</code></pre>
+<p>This will load the cache from the <code>./cacheAltDirectory</code> directory with the <code>cache1</code> id. If it doesnt exist it will not throw an error but will just return an empty cache.</p>
+<h1 id="breaking-changes-from-v5-to-v6">Breaking Changes from v5 to v6</h1>
+<p>There have been many features added and changes made to the <code>FlatCache</code> class. Here are the main changes:</p>
+<ul>
+<li><code>FlatCache</code> is now a class and not a function which you can create instances of or using legacy method <code>load</code>, <code>loadFile</code>, or <code>create</code></li>
+<li><code>FlatCache</code> now uses <code>CacheableMemory</code> as the primary storage and then persists the data to disk</li>
+<li><code>FlatCache</code> now uses <code>ttl</code> and <code>lruSize</code> to manage the cache and persist the data</li>
+<li><code>FlatCache</code> now uses <code>expirationInterval</code> to check for expired items in the cache. If it is not set it will do a lazy check on <code>get</code> or <code>getKey</code></li>
+<li><code>getKey</code> still exists but is now is an alias to <code>get</code> and will be removed in the future</li>
+<li><code>setKey</code> still exists but is now is an alias to <code>set</code> and will be removed in the future</li>
+<li><code>removeKey</code> still exists but is now is an alias to <code>delete</code> and will be removed in the future</li>
+</ul>
+<p>Here is an example of the legacy method <code>load</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> flatCache = <span class="hljs-built_in">require</span>(<span class="hljs-string">'flat-cache'</span>);
+<span class="hljs-comment">// loads the cache, if one does not exists for the given</span>
+<span class="hljs-comment">// Id a new one will be prepared to be created</span>
+<span class="hljs-keyword">const</span> cache = flatCache.<span class="hljs-title function_">load</span>(<span class="hljs-string">'cacheId'</span>);
+</code></pre>
+<p>Now you can use the <code>load</code> method and ES6 imports:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">FlatCache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'flat-cache'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FlatCache</span>();
+cache.<span class="hljs-title function_">load</span>(<span class="hljs-string">'cacheId'</span>);
+</code></pre>
+<p>If you do not specify a <code>cacheId</code> it will default to what was set in <code>FlatCacheOptions</code> or the default property <code>cacheId</code> of <code>cache1</code> and default <code>cacheDir</code> of <code>./cache</code>.</p>
+<p>If you want to create a new cache and load from disk if it exists you can use the <code>create</code> method:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { create } <span class="hljs-keyword">from</span> <span class="hljs-string">'flat-cache'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">create</span>({ <span class="hljs-attr">cacheId</span>: <span class="hljs-string">'myCacheId'</span>, <span class="hljs-attr">cacheDir</span>: <span class="hljs-string">'./mycache'</span>, <span class="hljs-attr">ttl</span>: <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span> });
+</code></pre>
+<h1 id="global-functions">Global Functions</h1>
+<p>In version 6 we attempted to keep as much as the functionality as possible which includes these functions:</p>
+<ul>
+<li><code>create(options?: FlatCacheOptions)</code> - Creates a new cache and will load the data from disk if it exists</li>
+<li><code>createFromFile(filePath, options?: FlatCacheOptions)</code> - Creates a new cache from a file</li>
+<li><code>clearCacheById(cacheId: string, cacheDir?: string)</code> - Clears the cache by the cacheId on the file system not in memory.</li>
+<li><code>clearAll(cacheDirectory?: string)</code> - Clears all the caches</li>
+</ul>
+<h1 id="flatcache-options-flatcacheoptions">FlatCache Options (FlatCacheOptions)</h1>
+<ul>
+<li><code>ttl?</code> - The time to live for the cache in milliseconds. Default is <code>0</code> which means no expiration</li>
+<li><code>lruSize?</code> - The number of items to keep in the cache. Default is <code>0</code> which means no limit</li>
+<li><code>useClone?</code> - If <code>true</code> it will clone the data before returning it. Default is <code>false</code></li>
+<li><code>expirationInterval?</code> - The interval to check for expired items in the cache. Default is <code>0</code> which means no expiration</li>
+<li><code>persistInterval?</code> - The interval to save the data to disk. Default is <code>0</code> which means no persistence</li>
+<li><code>cacheDir?</code> - The directory to save the cache files. Default is <code>./cache</code></li>
+<li><code>cacheId?</code> - The id of the cache. Default is <code>cache1</code></li>
+<li><code>serialize?</code> - The function to parse the data. Default is <code>flatted.parse</code></li>
+<li><code>deserialize?</code> - The function to stringify the data. Default is <code>flatted.stringify</code></li>
+</ul>
+<h1 id="api">API</h1>
+<ul>
+<li><code>cache</code> - The in-memory cache as a <code>CacheableMemory</code> instance</li>
+<li><code>cacheDir</code> - The directory to save the cache files</li>
+<li><code>cacheId</code> - The id of the cache</li>
+<li><code>cacheFilePath</code> - The full path to the cache file</li>
+<li><code>cacheDirPath</code> - The full path to the cache directory</li>
+<li><code>persistInterval</code> - The interval to save the data to disk</li>
+<li><code>changesSinceLastSave</code> - If there have been changes since the last save</li>
+<li><code>load(cacheId: string, cacheDir?: string)</code> - Loads the data from disk</li>
+<li><code>loadFile(pathToFile: string)</code> - Loads the data from disk</li>
+<li><code>loadFileStream(pathToFile: string, onProgress: function, onEnd: function, onError?: function)</code> - Loads the data from disk as a stream</li>
+<li><code>all()</code> - Gets all the data in the cache</li>
+<li><code>items()</code> - Gets all the items in the cache</li>
+<li><code>keys()</code> - Gets all the keys in the cache</li>
+<li><code>setKey(key: string, value: any, ttl?: string | number)</code> - (legacy) Sets the key/value pair in the cache</li>
+<li><code>set(key: string, value: any, ttl?: string | number)</code> - Sets the key/value pair in the cache</li>
+<li><code>getKey&#x3C;T>(key: string)</code> - Gets the value for the key or the default value</li>
+<li><code>get&#x3C;T>(key: string)</code> - Gets the value for the key or the default value</li>
+<li><code>removeKey(key: string)</code> - Removes the key from the cache</li>
+<li><code>delete(key: string)</code> - Removes the key from the cache</li>
+<li><code>clear()</code> - Clears the cache</li>
+<li><code>save(force? boolean)</code> - Saves the data to disk. If <code>force</code> is <code>true</code> it will save even if <code>changesSinceLastSave</code> is <code>false</code></li>
+<li><code>destroy()</code> - Destroys the cache and remove files</li>
+</ul>
+<h1 id="events-flatcacheevents">Events (FlatCacheEvents)</h1>
+<p>Events have been added since v6 to allow for more control and visibility into the cache. Here are the events that are available:</p>
+<ul>
+<li><code>on(event: 'save', listener: () => void)</code> - Emitted when the cache is saved</li>
+<li><code>on(event: 'load', listener: () => void)</code> - Emitted when the cache is loaded</li>
+<li><code>on(event: 'delete', listener: (key: string) => void)</code> - Emitted when the cache is changed</li>
+<li><code>on(event: 'clear', listener: () => void)</code> - Emitted when the cache is cleared</li>
+<li><code>on(event: 'destroy', listener: () => void)</code> - Emitted when the cache is destroyed</li>
+<li><code>on(event: 'error', listener: (error: Error) => void)</code> - Emitted when there is an error</li>
+</ul>
+<p>Here is an example of how to use the <code>error</code> events:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">FlatCache</span>, <span class="hljs-title class_">FlatCacheEvents</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'flat-cache'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FlatCache</span>();
+cache.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">FlatCacheEvents</span>.<span class="hljs-property">error</span>, <span class="hljs-function">(<span class="hljs-params">error</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(error);
+});
+</code></pre>
+<p><code>FlatCacheEvents</code> is an enum that contains the event names for the <code>on</code> method. You do not have to use it but makes it easier to know what events are available.</p>
+<h1 id="parse-and-stringify-for-file-caching">Parse and Stringify for File Caching</h1>
+<p>By default <code>flat-cache</code> uses <code>flatted</code> to parse and stringify the data. This is to allow for more complex data structures to be saved to disk. If you want to override this you can pass in your own <code>parse</code> and <code>stringify</code> functions. Here is an example:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">FlatCache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'flat-cache'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FlatCache</span>({
+  <span class="hljs-attr">deserialize</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-property">parse</span>,
+  <span class="hljs-attr">serialize</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-property">stringify</span>,
+});
+</code></pre>
+<p>This will use <code>JSON.parse</code> and <code>JSON.stringify</code> to parse and stringify the data. This is useful if you want to use a different library or have a custom way of parsing and stringifying the data.</p>
+<p><strong>NOTE: This could cause issues if you are trying to load data that was saved with a different parser or stringifier.</strong></p>
+<h1 id="loading-data-via-streams">Loading Data via Streams</h1>
+<p>Because of some large files we have added a helper function to load data from a file using streams. This is useful if you have a large file and want to load it in chunks. Here is an example:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">FlatCache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'flat-cache'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FlatCache</span>();
+<span class="hljs-keyword">let</span> progressCount = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">onProgress</span> = (<span class="hljs-params">progress: number, total: number</span>) => {
+  progressCount++;
+};
+
+<span class="hljs-keyword">let</span> errorCount = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">onError</span> = (<span class="hljs-params">error: <span class="hljs-built_in">Error</span></span>) => {
+  errorCount++;
+};
+
+<span class="hljs-keyword">let</span> endCount = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">onEnd</span> = (<span class="hljs-params"></span>) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Loaded <span class="hljs-subst">${progressCount}</span> chunks with <span class="hljs-subst">${errorCount}</span> errors.`</span>);
+};
+cache.<span class="hljs-title function_">loadFileStream</span>(<span class="hljs-string">'/path/to/cache/file'</span>, onProgress, onEnd, onError);
+</code></pre>
+<p>This will load the data from the file in chunks and emit the <code>onProgress</code>, <code>onEnd</code>, and <code>onError</code> events. You can use these events to track the progress of the loading and handle any errors that may occur.</p>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>You can contribute by forking the repo and submitting a pull request. Please make sure to add tests and update the documentation. To learn more about how to contribute go to our main README <a href="https://github.com/jaredwray/cacheable">https://github.com/jaredwray/cacheable</a>. This will talk about how to <code>Open a Pull Request</code>, <code>Ask a Question</code>, or <code>Post an Issue</code>.</p>
+<h1 id="license-and-copyright">License and Copyright</h1>
+<p><a href="./LICENSE">MIT © Jared Wray</a></p>

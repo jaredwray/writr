@@ -1,0 +1,283 @@
+<h1 id="evaluation-api">Evaluation API</h1>
+<p>import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';</p>
+<p>The Evaluation API is the primary component of OpenFeature that <em>application authors</em> interact with.
+The Evaluation API allows developers to evaluate feature flags to alter control flow and application characteristics.</p>
+<pre><code class="hljs language-mdx-code-block">import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+
+&#x3C;div className="video-container">
+  &#x3C;LiteYouTubeEmbed
+    id="uVVwJt5ivAA"
+    title="YouTube video player"
+    poster="maxresdefault"
+    webp
+  />
+&#x3C;/div>
+</code></pre>
+<h2 id="setting-a-provider">Setting a Provider</h2>
+<p>Before you can start evaluating flags, you must set a <a href="./provider"><em>provider</em></a>.
+The provider is the translation layer between the evaluation API and the flag system you use.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/server-sdk'</span>;
+
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProvider</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">YourProviderOfChoice</span>());
+</code></pre>
+<pre><code class="hljs language-java"><span class="hljs-keyword">import</span> dev.openfeature.javasdk.OpenFeatureAPI;
+
+<span class="hljs-type">OpenFeatureAPI</span> <span class="hljs-variable">api</span> <span class="hljs-operator">=</span> OpenFeatureAPI.getInstance();
+api.setProvider(<span class="hljs-keyword">new</span> <span class="hljs-title class_">YourProviderOfChoice</span>());
+</code></pre>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">using</span> OpenFeature;
+
+Api.Instance.SetProvider(<span class="hljs-keyword">new</span> YourProviderOfChoice());
+</code></pre>
+<pre><code class="hljs language-go">openfeature.SetProvider(MyFeatureProvider{})
+</code></pre>
+<pre><code class="hljs language-php"><span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">OpenFeatureAPI</span>;
+
+OpenFeatureAPI::<span class="hljs-title function_ invoke__">getInstance</span>()-><span class="hljs-title function_ invoke__">setProvider</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">YourProviderOfChoice</span>());
+</code></pre>
+<pre><code class="hljs language-python"><span class="hljs-keyword">import</span> openfeature.api
+
+openfeature.api.set_provider(YourProviderOfChoice())
+</code></pre>
+<h2 id="creating-a-client">Creating a client</h2>
+<p>The OpenFeature client is a lightweight abstraction used to evaluate feature flags.
+If your application is small, you may use a single client for your whole application.
+In larger applications, it may be helpful to create multiple clients,
+each with different configuration to fit the needs of different sub-modules.
+Clients may also be created dynamically, per each HTTP request, for instance.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">const</span> client = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>(<span class="hljs-string">'my-app'</span>);
+</code></pre>
+<pre><code class="hljs language-java"><span class="hljs-type">Client</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> api.getClient(<span class="hljs-string">"my-app"</span>);
+</code></pre>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">var</span> client = Api.Instance.GetClient(<span class="hljs-string">"my-app"</span>);
+</code></pre>
+<pre><code class="hljs language-go">client := openfeature.NewClient(<span class="hljs-string">"my-app"</span>)
+</code></pre>
+<pre><code class="hljs language-php"><span class="hljs-variable">$client</span> = OpenFeatureAPI::<span class="hljs-title function_ invoke__">getInstance</span>()-><span class="hljs-title function_ invoke__">getClient</span>(<span class="hljs-string">"my-app"</span>);
+</code></pre>
+<pre><code class="hljs language-python"><span class="hljs-keyword">import</span> openfeature.api
+
+openfeature.api.get_client(<span class="hljs-string">"my-app"</span>)
+</code></pre>
+<h2 id="flag-evaluation">Flag Evaluation</h2>
+<h3 id="basic-evaluation">Basic Evaluation</h3>
+<p>The client can be used to do basic flag evaluation, which simply returns flag values of a particular type.
+The default value must also be specified.
+In the case of any error during flag evaluation, the default value will be returned, so give consideration to your default values!</p>
+<pre><code class="hljs language-ts"><span class="hljs-comment">// get a bool value</span>
+<span class="hljs-keyword">const</span> boolValue = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">'boolFlag'</span>, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// get a string value</span>
+<span class="hljs-keyword">const</span> stringValue = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getStringValue</span>(<span class="hljs-string">'stringFlag'</span>, <span class="hljs-string">'default'</span>);
+
+<span class="hljs-comment">// get an numeric value</span>
+<span class="hljs-keyword">const</span> numberValue = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getNumberValue</span>(<span class="hljs-string">'intFlag'</span>, <span class="hljs-number">1</span>);
+
+<span class="hljs-comment">// get an object value</span>
+<span class="hljs-keyword">const</span> <span class="hljs-built_in">object</span> = <span class="hljs-keyword">await</span> client.<span class="hljs-property">getObjectValue</span>&#x3C;<span class="hljs-title class_">MyObject</span>>(<span class="hljs-string">'objectFlag'</span>, {});
+</code></pre>
+<pre><code class="hljs language-java"><span class="hljs-comment">// get a boolean value</span>
+<span class="hljs-type">Boolean</span> <span class="hljs-variable">boolValue</span> <span class="hljs-operator">=</span> client.getBooleanValue(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// get a string value</span>
+<span class="hljs-type">String</span> <span class="hljs-variable">stringValue</span> <span class="hljs-operator">=</span> client.getStringValue(<span class="hljs-string">"stringFlag"</span>, <span class="hljs-string">"default"</span>);
+
+<span class="hljs-comment">// get an integer value</span>
+<span class="hljs-type">Integer</span> <span class="hljs-variable">intValue</span> <span class="hljs-operator">=</span> client.getIntegerValue(<span class="hljs-string">"intFlag"</span>, <span class="hljs-number">1</span>);
+
+<span class="hljs-comment">// get a double value</span>
+<span class="hljs-type">Double</span> <span class="hljs-variable">doubleValue</span> <span class="hljs-operator">=</span> client.getDoubleValue(<span class="hljs-string">"doubleFlag"</span>, <span class="hljs-number">0.9</span>);
+
+<span class="hljs-comment">// get an object value</span>
+<span class="hljs-type">Value</span> <span class="hljs-variable">objectValue</span> <span class="hljs-operator">=</span> client.getObjectValue(<span class="hljs-string">"objectFlag"</span>, MyObjectInstance);
+</code></pre>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// get a boolean value</span>
+<span class="hljs-keyword">var</span> boolValue = <span class="hljs-keyword">await</span> client.GetBooleanValue(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// get a string value</span>
+<span class="hljs-keyword">var</span> stringValue = <span class="hljs-keyword">await</span> client.GetStringValue(<span class="hljs-string">"stringFlag"</span>, <span class="hljs-string">"default"</span>);
+
+<span class="hljs-comment">// get an integer value</span>
+<span class="hljs-keyword">var</span> intValue = <span class="hljs-keyword">await</span> client.GetIntegerValue(<span class="hljs-string">"intFlag"</span>, <span class="hljs-number">1</span>);
+
+<span class="hljs-comment">// get an double value</span>
+<span class="hljs-keyword">var</span> doubleValue = <span class="hljs-keyword">await</span> client.GetDoubleValue(<span class="hljs-string">"doubleFlag"</span>, <span class="hljs-number">1</span>);
+
+<span class="hljs-comment">// get an object value</span>
+<span class="hljs-keyword">var</span> objectValue = <span class="hljs-keyword">await</span> client.GetObjectValue(<span class="hljs-string">"objectFlag"</span>, MyObjectInstance);
+</code></pre>
+<pre><code class="hljs language-go"><span class="hljs-comment">// get a boolean value</span>
+boolValue, err := client.BooleanValue(context.Background(), <span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>, openfeature.EvaluationContext{})
+
+<span class="hljs-comment">// get a string value</span>
+stringValue, err := client.StringValue(context.Background(), <span class="hljs-string">"stringFlag"</span>, <span class="hljs-string">"default"</span>, openfeature.EvaluationContext{})
+
+<span class="hljs-comment">// get an integer value</span>
+intValue, err := client.IntValue(context.Background(), <span class="hljs-string">"intFlag"</span>, <span class="hljs-number">1</span>, openfeature.EvaluationContext{})
+
+<span class="hljs-comment">// get a float value</span>
+floatValue, err := client.FloatValue(context.Background(), <span class="hljs-string">"floatFlag"</span>, <span class="hljs-number">3.14</span>, openfeature.EvaluationContext{})
+
+<span class="hljs-comment">// get an object value</span>
+objectValue, err := client.ObjectValue(context.Background(), <span class="hljs-string">"objectFlag"</span>, myObject, openfeature.EvaluationContext{})
+</code></pre>
+<pre><code class="hljs language-php"><span class="hljs-comment">// get a boolean value</span>
+<span class="hljs-variable">$boolValue</span> = <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getBooleanValue</span>(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>);
+
+<span class="hljs-comment">// get a string value</span>
+<span class="hljs-variable">$stringValue</span> = <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getStringValue</span>(<span class="hljs-string">"stringFlag"</span>, <span class="hljs-string">"default"</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>);
+
+<span class="hljs-comment">// get an integer value</span>
+<span class="hljs-variable">$intValue</span> = <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getIntegerValue</span>(<span class="hljs-string">"intFlag"</span>, <span class="hljs-number">1</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>);
+
+<span class="hljs-comment">// get a float value</span>
+<span class="hljs-variable">$floatValue</span> = <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getFloatValue</span>(<span class="hljs-string">"floatFlag"</span>, <span class="hljs-number">0.9</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>);
+
+<span class="hljs-comment">// get an object value</span>
+<span class="hljs-variable">$objectValue</span> = <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getObjectValue</span>(<span class="hljs-string">"objectFlag"</span>, <span class="hljs-variable">$myObjectInstance</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>);
+</code></pre>
+<pre><code class="hljs language-python"><span class="hljs-comment"># get a boolean value</span>
+value = client.get_boolean_value(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">False</span>)
+
+<span class="hljs-comment"># get a string value</span>
+value = client.get_string_value(<span class="hljs-string">"stringFlag"</span>, <span class="hljs-string">"default"</span>)
+
+<span class="hljs-comment"># get an integer value</span>
+value = client.get_integer_value(<span class="hljs-string">"intFlag"</span>, <span class="hljs-number">1</span>)
+
+<span class="hljs-comment"># get a float value</span>
+value = client.get_float_value(<span class="hljs-string">"floatFlag"</span>, <span class="hljs-number">0.9</span>)
+
+<span class="hljs-comment"># get an object value</span>
+value = client.get_object_value(<span class="hljs-string">"objectFlag"</span>, my_object_instance)
+</code></pre>
+<h3 id="detailed-evaluation">Detailed Evaluation</h3>
+<p>In addition to <a href="#basic-evaluation">basic evaluation</a>, <em>detailed evaluation</em> methods are available.
+These return the value, as well as additional metadata about the flag evaluation in the <em>Evaluation Details</em> structure.</p>
+<h4 id="evaluation-details-structure-fields">Evaluation Details Structure Fields</h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>flag key</td>
+<td>the unique identifier for a feature flag</td>
+</tr>
+<tr>
+<td>value</td>
+<td>the value returned from a flag evaluation</td>
+</tr>
+<tr>
+<td>reason (optional)</td>
+<td>a string explaining why the flag value was returned</td>
+</tr>
+<tr>
+<td>variant (optional)</td>
+<td>the variant associated with the return flag value</td>
+</tr>
+<tr>
+<td>flag metadata (optional)</td>
+<td>a key-value structure which supports definition of arbitrary properties</td>
+</tr>
+<tr>
+<td>error code (optional)</td>
+<td>an <a href="/specification/types#error-code">error code</a> that categorizes flag evaluation errors</td>
+</tr>
+<tr>
+<td>error message (optional)</td>
+<td>a string detailing the error</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="hljs language-ts"><span class="hljs-comment">// get details of boolean evaluation</span>
+<span class="hljs-keyword">const</span> boolDetails = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getBooleanDetails</span>(<span class="hljs-string">'boolFlag'</span>, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// get details of string evaluation</span>
+<span class="hljs-keyword">const</span> stringDetails = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getStringDetails</span>(<span class="hljs-string">'stringFlag'</span>, <span class="hljs-string">'default'</span>);
+
+<span class="hljs-comment">// get details of numeric evaluation</span>
+<span class="hljs-keyword">const</span> numberDetails = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getNumberDetails</span>(<span class="hljs-string">'intFlag'</span>, <span class="hljs-number">1</span>);
+
+<span class="hljs-comment">// get details of object evaluation</span>
+<span class="hljs-keyword">const</span> objectDetails = <span class="hljs-keyword">await</span> client.<span class="hljs-property">getObjectDetails</span>&#x3C;<span class="hljs-title class_">MyObject</span>>(<span class="hljs-string">'objectFlag'</span>, {});
+</code></pre>
+<pre><code class="hljs language-java"><span class="hljs-comment">// get details of boolean evaluation</span>
+FlagEvaluationDetails&#x3C;Boolean> boolDetails = client.getBooleanDetails(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// get details of string evaluation</span>
+FlagEvaluationDetails&#x3C;String> stringDetails = client.getStringDetails(<span class="hljs-string">"stringFlag"</span>, <span class="hljs-string">"default"</span>);
+
+<span class="hljs-comment">// get details of integer evaluation</span>
+FlagEvaluationDetails&#x3C;Integer> intDetails = client.getIntegerDetails(<span class="hljs-string">"intFlag"</span>, <span class="hljs-number">1</span>);
+
+<span class="hljs-comment">// get details of double evaluation</span>
+FlagEvaluationDetails&#x3C;Double> doubleDetails = client.getDoubleDetails(<span class="hljs-string">"doubleFlag"</span>, <span class="hljs-number">.9</span>);
+
+<span class="hljs-comment">// get details of object evaluation</span>
+FlagEvaluationDetails&#x3C;Value> objectDetails = client.getObjectDetails&#x3C;MyObject>(<span class="hljs-string">"objectFlag"</span>, myObjectDefaultInstance);
+</code></pre>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// get details of boolean evaluation</span>
+<span class="hljs-keyword">var</span> boolDetails = <span class="hljs-keyword">await</span> client.GetBooleanDetails(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// get details of string evaluation</span>
+<span class="hljs-keyword">var</span> stringDetails = <span class="hljs-keyword">await</span> client.GetStringDetails(<span class="hljs-string">"stringFlag"</span>, <span class="hljs-string">"default"</span>);
+
+<span class="hljs-comment">// get details of int evaluation</span>
+<span class="hljs-keyword">var</span> intDetails = <span class="hljs-keyword">await</span> client.GetIntegerDetails(<span class="hljs-string">"intFlag"</span>, <span class="hljs-number">1</span>);
+
+<span class="hljs-comment">// get details of double evaluation</span>
+<span class="hljs-keyword">var</span> doubleDetails = <span class="hljs-keyword">await</span> client.GetDoubleDetails(<span class="hljs-string">"doubleFlag"</span>, <span class="hljs-number">1</span>);
+
+<span class="hljs-comment">// get details of object evaluation</span>
+<span class="hljs-keyword">var</span> objectDetails = <span class="hljs-keyword">await</span> client.GetObjectDetails(<span class="hljs-string">"objectFlag"</span>, myObjectDefaultInstance);
+</code></pre>
+<pre><code class="hljs language-go"><span class="hljs-comment">// get details of boolean evaluation</span>
+boolDetails, err := client.BooleanValueDetails(context.Background(), <span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>, openfeature.EvaluationContext{})
+
+<span class="hljs-comment">// get details of string evaluation</span>
+stringDetails, err := client.StringValueDetails(context.Background(), <span class="hljs-string">"stringFlag"</span>, <span class="hljs-string">"default"</span>, openfeature.EvaluationContext{})
+
+<span class="hljs-comment">// get details of integer evaluation</span>
+intDetails, err := client.IntValueDetails(context.Background(), <span class="hljs-string">"intFlag"</span>, <span class="hljs-number">1</span>, openfeature.EvaluationContext{})
+
+<span class="hljs-comment">// get details of float evaluation</span>
+floatDetails, err := client.FloatValueDetails(context.Background(), <span class="hljs-string">"floatFlag"</span>, <span class="hljs-number">3.14</span>, openfeature.EvaluationContext{})
+
+<span class="hljs-comment">// get details of object evaluation</span>
+objectDetails, err := client.ObjectValueDetails(context.Background(), <span class="hljs-string">"objectFlag"</span>, myObject, openfeature.EvaluationContext{})
+</code></pre>
+<pre><code class="hljs language-php"><span class="hljs-comment">// get details of a boolean evaluation</span>
+<span class="hljs-variable">$boolDetails</span> = <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getBooleanDetails</span>(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>);
+
+<span class="hljs-comment">// get details of a string evaluation</span>
+<span class="hljs-variable">$stringDetails</span> = <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getStringDetails</span>(<span class="hljs-string">"stringFlag"</span>, <span class="hljs-string">"default"</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>);
+
+<span class="hljs-comment">// get details of an integer evaluation</span>
+<span class="hljs-variable">$intDetails</span> = <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getIntegerDetails</span>(<span class="hljs-string">"intFlag"</span>, <span class="hljs-number">1</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>);
+
+<span class="hljs-comment">// get details of a float evaluation</span>
+<span class="hljs-variable">$floatDetails</span> = <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getFloatDetails</span>(<span class="hljs-string">"floatFlag"</span>, <span class="hljs-number">0.9</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>);
+
+<span class="hljs-comment">// get details of an object evaluation</span>
+<span class="hljs-variable">$objectDetails</span> = <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getObjectDetails</span>(<span class="hljs-string">"objectFlag"</span>, <span class="hljs-variable">$myObjectInstance</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>);
+</code></pre>
+<pre><code class="hljs language-python"><span class="hljs-comment"># get details of boolean evaluation</span>
+details = client.get_boolean_details(<span class="hljs-string">"boolFlag"</span>, false);
+
+<span class="hljs-comment"># get details of string evaluation</span>
+details = client.get_string_details(<span class="hljs-string">"stringFlag"</span>, <span class="hljs-string">"default"</span>);
+
+<span class="hljs-comment"># get details of an integer evaluation</span>
+details = client.get_integer_details(<span class="hljs-string">"intFlag"</span>, <span class="hljs-number">1</span>);
+
+<span class="hljs-comment"># get details of a float evaluation</span>
+details = client.get_float_details(<span class="hljs-string">"floatFlag"</span>, <span class="hljs-number">1</span>);
+
+<span class="hljs-comment"># get details of object evaluation</span>
+details = client.get_object_details(<span class="hljs-string">"objectFlag"</span>, {});
+</code></pre>

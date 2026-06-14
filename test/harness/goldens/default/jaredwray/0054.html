@@ -1,0 +1,35 @@
+<h1 id="contributing">Contributing</h1>
+<p>When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.</p>
+<p>Please note we have a <a href="CODE_OF_CONDUCT.md">Code of Conduct</a>, please follow it in all your interactions with the project.</p>
+<p>We release new versions of this project (maintenance/features) on a monthly cadence so please be aware that some items will not get released right away.</p>
+<h1 id="pull-request-process">Pull Request Process</h1>
+<p>You can contribute changes to this repo by opening a pull request:</p>
+<ol>
+<li>After forking this repository to your Git account, make the proposed changes on your forked branch.</li>
+<li>Go to the README.md file as it has detailed instructions on how to run the project locally and how to test the integrations.</li>
+<li>Commit your changes and push them to your forked repository.</li>
+<li>Navigate to the main <code>Airhorn</code> repository and select the <em>Pull Requests</em> tab.</li>
+<li>Click the <em>New pull request</em> button, then select the option "Compare across forks"</li>
+<li>Leave the base branch set to main. Set the compare branch to your forked branch, and open the pull request.</li>
+<li>Once your pull request is created, ensure that all checks have passed and that your branch has no conflicts with the base branch. If there are any issues, resolve these changes in your local repository, and then commit and push them to git.</li>
+<li>Similarly, respond to any reviewer comments or requests for changes by making edits to your local repository and pushing them to Git.</li>
+<li>Once the pull request has been reviewed, those with write access to the branch will be able to merge your changes into the <code>Airhorn</code> repository.</li>
+</ol>
+<p>If you need more information on the steps to create a pull request, you can find a detailed walkthrough in the <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork">Github documentation</a></p>
+<h1 id="setting-up-the-development-environment">Setting up the Development Environment</h1>
+<p>To set up your development environment, you'll need the following dependencies:</p>
+<ul>
+<li>Node.js (latest)</li>
+</ul>
+<pre><code class="hljs language-bash">pnpm i &#x26;&#x26; pnpm <span class="hljs-built_in">test</span>
+</code></pre>
+<p>If you are using <code>nvm</code> you can run the following:</p>
+<pre><code class="hljs language-bash">nvm use &#x26;&#x26; pnpm i &#x26;&#x26; pnpm <span class="hljs-built_in">test</span>
+</code></pre>
+<p>This will ensure that you are using the correct version of Node.js and install the dependencies.</p>
+<h1 id="publishing-airhorn">Publishing Airhorn</h1>
+<p>To publish <code>Airhorn</code> to npm you first want to set the overall version in the <code>package.json</code> file. You can do this by updating the <code>version</code> field. Once you have done that then call:</p>
+<pre><code class="hljs language-bash">pnpm version:<span class="hljs-built_in">sync</span>
+</code></pre>
+<h1 id="code-of-conduct">Code of Conduct</h1>
+<p>Please refer to our <a href="CODE_OF_CONDUCT.md">Code of Conduct</a> readme for how to contribute to this open source project and work within the community.</p>

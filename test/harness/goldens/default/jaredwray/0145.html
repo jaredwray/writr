@@ -1,0 +1,183 @@
+<h1 id="qifiedrabbitmq">@qified/rabbitmq</h1>
+<p>RabbitMQ message and task provider for <a href="https://github.com/jaredwray/qified">Qified</a>.</p>
+<p>This package implements a message provider and a task provider backed by RabbitMQ. The message provider uses queues for publish/subscribe operations, and the task provider adds reliable task queue processing with retries, timeouts, and dead-letter queues.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#usage-with-qified">Usage with Qified</a>
+<ul>
+<li><a href="#message-provider">Message Provider</a></li>
+<li><a href="#task-provider">Task Provider</a></li>
+</ul>
+</li>
+<li><a href="#api">API</a>
+<ul>
+<li><a href="#rabbitmqmessageprovideroptions">RabbitMqMessageProviderOptions</a></li>
+<li><a href="#defaultrabbitmquri">defaultRabbitMqUri</a></li>
+<li><a href="#rabbitmqmessageprovider">RabbitMqMessageProvider</a>
+<ul>
+<li><a href="#constructoroptions-rabbitmqmessageprovideroptions">constructor(options?: RabbitMqMessageProviderOptions)</a></li>
+<li><a href="#publishtopic-string-message-message">publish(topic: string, message: Message)</a></li>
+<li><a href="#subscribetopic-string-handler-topichandler">subscribe(topic: string, handler: TopicHandler)</a></li>
+<li><a href="#unsubscribetopic-string-id-string">unsubscribe(topic: string, id?: string)</a></li>
+<li><a href="#disconnect">disconnect()</a></li>
+</ul>
+</li>
+<li><a href="#createqifiedoptions-rabbitmqmessageprovideroptions">createQified(options?: RabbitMqMessageProviderOptions)</a></li>
+<li><a href="#rabbitmqtaskprovideroptions">RabbitMqTaskProviderOptions</a></li>
+<li><a href="#rabbitmqtaskprovider">RabbitMqTaskProvider</a>
+<ul>
+<li><a href="#constructoroptions-rabbitmqtaskprovideroptions">constructor(options?: RabbitMqTaskProviderOptions)</a></li>
+<li><a href="#connect">connect()</a></li>
+<li><a href="#enqueuequeue-string-taskdata-enqueuetask">enqueue(queue: string, taskData: EnqueueTask)</a></li>
+<li><a href="#dequeuequeue-string-handler-taskhandler">dequeue(queue: string, handler: TaskHandler)</a></li>
+<li><a href="#unsubscribequeue-string-id-string">unsubscribe(queue: string, id?: string)</a></li>
+<li><a href="#disconnectforce-boolean">disconnect(force?: boolean)</a></li>
+<li><a href="#getdeadlettertasksqueue-string">getDeadLetterTasks(queue: string)</a></li>
+<li><a href="#getqueuestatsqueue-string">getQueueStats(queue: string)</a></li>
+<li><a href="#clearqueuequeue-string">clearQueue(queue: string)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#contributing">Contributing</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h2 id="installation">Installation</h2>
+<pre><code class="hljs language-bash">pnpm add @qified/rabbitmq
+</code></pre>
+<h2 id="usage-with-qified">Usage with Qified</h2>
+<h3 id="message-provider">Message Provider</h3>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { createQified } <span class="hljs-keyword">from</span> <span class="hljs-string">"@qified/rabbitmq"</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">Message</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"qified"</span>;
+
+<span class="hljs-keyword">const</span> qified = <span class="hljs-title function_">createQified</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">"amqp://localhost:5672"</span> });
+
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">subscribe</span>(<span class="hljs-string">"example-topic"</span>, {
+        <span class="hljs-keyword">async</span> <span class="hljs-title function_">handler</span>(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-title class_">Message</span></span>) {
+                <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(message);
+        },
+});
+
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">publish</span>(<span class="hljs-string">"example-topic"</span>, { <span class="hljs-attr">id</span>: <span class="hljs-string">"1"</span>, <span class="hljs-attr">data</span>: <span class="hljs-string">"Hello from RabbitMQ!"</span> });
+
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h3 id="task-provider">Task Provider</h3>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">RabbitMqTaskProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@qified/rabbitmq"</span>;
+
+<span class="hljs-keyword">const</span> taskProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">RabbitMqTaskProvider</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">"amqp://localhost:5672"</span> });
+
+<span class="hljs-comment">// Enqueue a task</span>
+<span class="hljs-keyword">await</span> taskProvider.<span class="hljs-title function_">enqueue</span>(<span class="hljs-string">"my-queue"</span>, {
+        <span class="hljs-attr">data</span>: { <span class="hljs-attr">action</span>: <span class="hljs-string">"send-email"</span>, <span class="hljs-attr">to</span>: <span class="hljs-string">"user@example.com"</span> },
+});
+
+<span class="hljs-comment">// Dequeue and process tasks</span>
+<span class="hljs-keyword">await</span> taskProvider.<span class="hljs-title function_">dequeue</span>(<span class="hljs-string">"my-queue"</span>, {
+        <span class="hljs-attr">id</span>: <span class="hljs-string">"email-handler"</span>,
+        <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (task, ctx) => {
+                <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"Processing task:"</span>, task.<span class="hljs-property">data</span>);
+
+                <span class="hljs-comment">// Access attempt metadata</span>
+                <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Attempt <span class="hljs-subst">${ctx.metadata.attempt}</span> of <span class="hljs-subst">${ctx.metadata.maxRetries}</span>`</span>);
+
+                <span class="hljs-comment">// Extend the deadline if needed</span>
+                <span class="hljs-keyword">await</span> ctx.<span class="hljs-title function_">extend</span>(<span class="hljs-number">10_000</span>);
+
+                <span class="hljs-comment">// Acknowledge the task on success</span>
+                <span class="hljs-keyword">await</span> ctx.<span class="hljs-title function_">ack</span>();
+        },
+});
+
+<span class="hljs-comment">// Get queue statistics</span>
+<span class="hljs-keyword">const</span> stats = <span class="hljs-keyword">await</span> taskProvider.<span class="hljs-title function_">getQueueStats</span>(<span class="hljs-string">"my-queue"</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats); <span class="hljs-comment">// { waiting, processing, deadLetter }</span>
+
+<span class="hljs-comment">// Get dead-letter tasks for inspection</span>
+<span class="hljs-keyword">const</span> deadLetters = <span class="hljs-keyword">await</span> taskProvider.<span class="hljs-title function_">getDeadLetterTasks</span>(<span class="hljs-string">"my-queue"</span>);
+
+<span class="hljs-comment">// Clean up</span>
+<span class="hljs-keyword">await</span> taskProvider.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h2 id="api">API</h2>
+<h3 id="rabbitmqmessageprovideroptions">RabbitMqMessageProviderOptions</h3>
+<p>Configuration options for the RabbitMQ message provider.</p>
+<ul>
+<li><code>uri?</code>: RabbitMQ connection URI. Defaults to <a href="#defaultrabbitmquri"><code>defaultRabbitMqUri</code></a>.</li>
+</ul>
+<h3 id="defaultrabbitmquri">defaultRabbitMqUri</h3>
+<p>Default RabbitMQ connection string (<code>"amqp://localhost:5672"</code>).</p>
+<h3 id="rabbitmqmessageprovider">RabbitMqMessageProvider</h3>
+<p>Implements the <code>MessageProvider</code> interface using RabbitMQ queues.</p>
+<h4 id="constructoroptions-rabbitmqmessageprovideroptions">constructor(options?: RabbitMqMessageProviderOptions)</h4>
+<p>Creates a new provider.</p>
+<p>Options:</p>
+<ul>
+<li><code>uri</code>: RabbitMQ connection URI (defaults to <code>"amqp://localhost:5672"</code>).</li>
+</ul>
+<h4 id="publishtopic-string-message-message">publish(topic: string, message: Message)</h4>
+<p>Publishes a message to a topic.</p>
+<h4 id="subscribetopic-string-handler-topichandler">subscribe(topic: string, handler: TopicHandler)</h4>
+<p>Subscribes a handler to a topic.</p>
+<h4 id="unsubscribetopic-string-id-string">unsubscribe(topic: string, id?: string)</h4>
+<p>Unsubscribes a handler by id or all handlers for a topic.</p>
+<h4 id="disconnect">disconnect()</h4>
+<p>Cancels all subscriptions and closes the underlying RabbitMQ connection.</p>
+<h3 id="createqifiedoptions-rabbitmqmessageprovideroptions">createQified(options?: RabbitMqMessageProviderOptions)</h3>
+<p>Convenience factory that returns a <code>Qified</code> instance configured with <code>RabbitMqMessageProvider</code>.</p>
+<h3 id="rabbitmqtaskprovideroptions">RabbitMqTaskProviderOptions</h3>
+<p>Configuration options for the RabbitMQ task provider. Extends <code>TaskProviderOptions</code>.</p>
+<ul>
+<li><code>uri?</code>: RabbitMQ connection URI. Defaults to <code>"amqp://localhost:5672"</code>.</li>
+<li><code>id?</code>: Unique identifier for this provider instance. Defaults to <code>"@qified/rabbitmq-task"</code>.</li>
+<li><code>timeout?</code>: Default timeout in milliseconds for task processing. Defaults to <code>30000</code>.</li>
+<li><code>retries?</code>: Default maximum retry attempts before a task is moved to the dead-letter queue. Defaults to <code>3</code>.</li>
+<li><code>reconnectTimeInSeconds?</code>: Time in seconds to wait before reconnecting after connection loss. Set to <code>0</code> to disable. Defaults to <code>5</code>.</li>
+</ul>
+<h3 id="rabbitmqtaskprovider">RabbitMqTaskProvider</h3>
+<p>Implements the <code>TaskProvider</code> interface using RabbitMQ durable queues for reliable task processing. Extends <code>Hookified</code> for event emission. Features include:</p>
+<ul>
+<li>Automatic retries with configurable max attempts</li>
+<li>Task timeouts with automatic rejection on expiry</li>
+<li>Dead-letter queue for failed tasks</li>
+<li>Automatic reconnection on connection loss</li>
+</ul>
+<h4 id="constructoroptions-rabbitmqtaskprovideroptions">constructor(options?: RabbitMqTaskProviderOptions)</h4>
+<p>Creates a new task provider instance.</p>
+<h4 id="connect">connect()</h4>
+<p>Explicitly connects to RabbitMQ. Called automatically on first <code>enqueue</code> or <code>dequeue</code> if not called manually.</p>
+<h4 id="enqueuequeue-string-taskdata-enqueuetask">enqueue(queue: string, taskData: EnqueueTask)</h4>
+<p>Enqueues a task to the specified queue. Returns a <code>Promise&#x3C;string></code> with the generated task ID.</p>
+<p>Task data options:</p>
+<ul>
+<li><code>data</code>: The task payload (any serializable value).</li>
+<li><code>id?</code>: Custom task ID. Auto-generated if omitted.</li>
+<li><code>timeout?</code>: Per-task timeout override in milliseconds.</li>
+<li><code>maxRetries?</code>: Per-task max retry override.</li>
+</ul>
+<h4 id="dequeuequeue-string-handler-taskhandler">dequeue(queue: string, handler: TaskHandler)</h4>
+<p>Registers a handler to process tasks from the specified queue. The handler receives a <code>Task</code> and a <code>TaskContext</code>.</p>
+<p><code>TaskContext</code> methods:</p>
+<ul>
+<li><code>ack()</code>: Acknowledge the task (removes it from the queue).</li>
+<li><code>reject(requeue?: boolean)</code>: Reject the task. If <code>requeue</code> is <code>true</code> (default), re-enqueues for retry. After max retries, moves to dead-letter queue.</li>
+<li><code>extend(ms: number)</code>: Extend the processing deadline by the given milliseconds.</li>
+<li><code>metadata</code>: Object with <code>{ attempt, maxRetries }</code> for the current task.</li>
+</ul>
+<h4 id="unsubscribequeue-string-id-string">unsubscribe(queue: string, id?: string)</h4>
+<p>Removes a handler by id, or all handlers for the queue if no id is provided.</p>
+<h4 id="disconnectforce-boolean">disconnect(force?: boolean)</h4>
+<p>Disconnects from RabbitMQ and cleans up all consumers, timers, and in-memory state. If <code>force</code> is <code>true</code>, skips graceful channel close.</p>
+<h4 id="getdeadlettertasksqueue-string">getDeadLetterTasks(queue: string)</h4>
+<p>Returns an array of tasks that have been moved to the dead-letter queue for the given queue.</p>
+<h4 id="getqueuestatsqueue-string">getQueueStats(queue: string)</h4>
+<p>Returns statistics for the given queue:</p>
+<pre><code class="hljs language-ts">{ <span class="hljs-attr">waiting</span>: <span class="hljs-built_in">number</span>; <span class="hljs-attr">processing</span>: <span class="hljs-built_in">number</span>; <span class="hljs-attr">deadLetter</span>: <span class="hljs-built_in">number</span> }
+</code></pre>
+<h4 id="clearqueuequeue-string">clearQueue(queue: string)</h4>
+<p>Purges all tasks from the queue and its dead-letter queue, and clears all in-memory tracking state.</p>
+<h2 id="contributing">Contributing</h2>
+<p>Contributions are welcome! Please read the <a href="../../CONTRIBUTING.md">CONTRIBUTING.md</a> and <a href="../../CODE_OF_CONDUCT.md">CODE_OF_CONDUCT.md</a> for details on our process.</p>
+<h2 id="license">License</h2>
+<p>MIT © Jared Wray. See <a href="../../LICENSE">LICENSE</a> for details.</p>

@@ -1,0 +1,35 @@
+<h1 id="caching-layers-l1l2">Caching Layers (L1/L2)</h1>
+<p>Every <code>http-cache</code> gateway keeps an <strong>in-memory L1/L2 cache</strong> right at the edge,
+powered by <a href="https://github.com/jaredwray/cacheable">cacheable</a>. This is what makes a
+cache hit return in microseconds instead of taking a network round trip to a backend.</p>
+<h2 id="the-two-tiers">The two tiers</h2>
+<ul>
+<li><strong>L1 — in-process memory.</strong> The fastest tier, holding the very hottest keys in the
+gateway's own memory. Reads never leave the process.</li>
+<li><strong>L2 — secondary memory tier.</strong> A larger near-cache that absorbs more of your working
+set before falling through to the shared <a href="/docs/storage-backends">storage backend</a>.</li>
+</ul>
+<p>On a request, the gateway checks <strong>L1 → L2 → storage backend → origin</strong>, populating the
+faster tiers as data flows back up.</p>
+<pre><code>request ─▶ L1 (in-process) ─▶ L2 (near-cache) ─▶ keyv backend ─▶ origin
+   ◀─────────────────────── populate on the way back ───────────────────
+</code></pre>
+<h2 id="ttls-and-invalidation">TTLs and invalidation</h2>
+<p>cacheable gives each entry a configurable TTL, with sane defaults at the gateway level
+and per-key overrides:</p>
+<pre><code class="hljs language-bash">curl -X PUT http://localhost:8080/cache/profile:42 \
+  -H <span class="hljs-string">"Authorization: Bearer <span class="hljs-variable">$TOKEN</span>"</span> \
+  -d <span class="hljs-string">'{"value":{"name":"Ada"},"ttl":"10m"}'</span>
+</code></pre>
+<p>Invalidation removes a key from every tier and notifies subscribers (see
+<a href="/docs/realtime-and-webhooks">Realtime &#x26; webhooks</a>).</p>
+<h2 id="cachesync-across-gateways">CacheSync across gateways</h2>
+<p>cacheable's <strong>CacheSync</strong> keeps in-memory tiers coherent across gateways. When one
+gateway writes or invalidates a key, the change is broadcast (via the
+<a href="/docs/realtime-and-webhooks">queue provider</a>) so other gateways drop or refresh their
+local copies — without any cluster gossip or sticky sessions.</p>
+<h2 id="why-memory-at-the-edge-matters">Why memory at the edge matters</h2>
+<p>Putting L1/L2 <em>at the gateway</em> — combined with <a href="/docs/architecture">global load
+balancing</a> — means each user is served from memory in the region
+closest to them. This is the single biggest reason the HTTP-architecture model
+out-performs a centralized cluster for real-world, globally distributed traffic.</p>

@@ -1,0 +1,84 @@
+<p>We're excited to announce that Sentry has released OpenFeature Hooks for <a href="https://docs.sentry.io/platforms/javascript/configuration/integrations/openfeature/">JavaScript</a> and <a href="https://docs.sentry.io/platforms/python/integrations/openfeature/">Python</a>, enabling developers to track feature flag evaluations directly in their error monitoring and performance tracking.</p>
+<h2 id="what-is-the-sentry-openfeature-integration">What is the Sentry OpenFeature Integration?</h2>
+<p>The Sentry OpenFeature Hook allows Sentry to track feature flag evaluations within your application.
+When an error occurs, Sentry will include the state of all evaluated feature flags in the error report, providing crucial context for debugging and troubleshooting.</p>
+<p>This integration is currently in beta and only supports boolean flag evaluations.
+See their <a href="https://changelog.sentry.dev/changelog/view-distributions-of-feature-flag-evaluations-inside-issue-details/">changelog</a> for details on how feature flags are integrated into their platform.</p>
+<p>&#x3C;img src={require('@site/static/img/blog/2025-03-25-sentry-openfeature-integration/sentry_dashboard.png').default} /></p>
+<h2 id="javascript-integration">JavaScript Integration</h2>
+<p>To use the Sentry OpenFeature Hook in your JavaScript application:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> <span class="hljs-title class_">Sentry</span> <span class="hljs-keyword">from</span> <span class="hljs-string">"@sentry/browser"</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@openfeature/web-sdk"</span>;
+
+<span class="hljs-title class_">Sentry</span>.<span class="hljs-title function_">init</span>({
+  <span class="hljs-attr">dsn</span>: <span class="hljs-string">"https://examplePublicKey@o0.ingest.sentry.io/0"</span>,
+  <span class="hljs-attr">integrations</span>: [<span class="hljs-title class_">Sentry</span>.<span class="hljs-title function_">openFeatureIntegration</span>()],
+});
+
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProvider</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">MyProviderOfChoice</span>());
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">addHooks</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Sentry</span>.<span class="hljs-title class_">OpenFeatureIntegrationHook</span>());
+
+<span class="hljs-keyword">const</span> client = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+<span class="hljs-keyword">const</span> result = client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">"test-flag"</span>, <span class="hljs-literal">false</span>); <span class="hljs-comment">// evaluate with a default value</span>
+<span class="hljs-title class_">Sentry</span>.<span class="hljs-title function_">captureException</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">"Something went wrong!"</span>));
+</code></pre>
+<blockquote>
+<p>Requirements: Sentry SDK version 8.43.0 or higher</p>
+</blockquote>
+<h2 id="python-integration">Python Integration</h2>
+<p>For Python applications, you can use the Sentry OpenFeature Hook as follows:</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">import</span> sentry_sdk
+<span class="hljs-keyword">from</span> sentry_sdk.integrations.openfeature <span class="hljs-keyword">import</span> OpenFeatureIntegration
+<span class="hljs-keyword">from</span> openfeature <span class="hljs-keyword">import</span> api
+
+// Initialize Sentry <span class="hljs-keyword">with</span> the OpenFeature integration
+sentry_sdk.init(
+    dsn=<span class="hljs-string">"https://examplePublicKey@o0.ingest.sentry.io/0"</span>,
+    integrations=[
+        OpenFeatureIntegration(),
+    ],
+)
+
+// Get your OpenFeature client
+client = api.get_client()
+
+// Evaluate a feature flag
+client.get_boolean_value(<span class="hljs-string">"hello"</span>, default_value=<span class="hljs-literal">False</span>)
+
+// If an error occurs, Sentry will include the feature flag state
+sentry_sdk.capture_exception(Exception(<span class="hljs-string">"Something went wrong!"</span>))
+</code></pre>
+<blockquote>
+<p>Requirements: sentry-sdk >= 2.19.2, openfeature-sdk >= 0.7.1, Python >= 3.8</p>
+</blockquote>
+<h2 id="benefits-of-feature-flag-observability">Benefits of Feature Flag Observability</h2>
+<p>The Sentry OpenFeature integration provides several key benefits:</p>
+<ol>
+<li>
+<p><strong>Contextual Error Reporting</strong>: When errors occur, you'll see exactly which feature flags were active, helping you identify if a flag change contributed to the issue.</p>
+</li>
+<li>
+<p><strong>Performance Monitoring</strong>: Track how feature flags impact your application's performance.</p>
+</li>
+<li>
+<p><strong>Debugging Efficiency</strong>: Reduce the time spent reproducing issues by having feature flag state automatically included in error reports.</p>
+</li>
+<li>
+<p><strong>Release Confidence</strong>: Make data-driven decisions about feature rollouts by correlating errors with specific flag states.</p>
+</li>
+</ol>
+<h2 id="the-value-of-open-standards">The Value of Open Standards</h2>
+<p>This integration exemplifies the power of open standards in the feature flagging ecosystem.
+By implementing the OpenFeature specification, Sentry can provide a seamless integration that works with any OpenFeature provider, without requiring vendor-specific implementations.</p>
+<p>This aligns with OpenFeature's vision of reducing integration effort by <a href="https://openfeature.dev/blog/openfeature-a-standard-for-feature-flagging/#from-effortnm-to-effortnm">moving from effort(N*M) to effort(N+M)</a>.
+OpenFeature delivers a standardized feature flagging SDK, already implemented by most providers, and Sentry can focus on building a great performance monitoring and error-tracking platform for their users.</p>
+<h2 id="next-steps">Next Steps</h2>
+<p>If you're using Sentry and OpenFeature, we encourage you to try out this integration.
+The feature flag state will be automatically included in your error reports, providing valuable context for debugging.</p>
+<p>For more information, check out the official Sentry documentation:</p>
+<ul>
+<li><a href="https://docs.sentry.io/platforms/javascript/configuration/integrations/openfeature/">JavaScript Integration</a></li>
+<li><a href="https://docs.sentry.io/platforms/python/integrations/openfeature/">Python Integration</a></li>
+</ul>
+<p>Using another platform? Sentry is planning expanding support for more platforms, starting with mobile.
+We're excited to see how this integration helps teams better understand the impact of their feature flags on application stability and performance.</p>

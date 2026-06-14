@@ -1,0 +1,697 @@
+<p><a href="https://qified.org"><img src="https://qified.org/logo.svg" alt="logo.svg"></a></p>
+<p><a href="https://github.com/jaredwray/qified/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/qified/actions/workflows/tests.yaml/badge.svg" alt="tests"></a>
+<a href="https://github.com/jaredwray/qified/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/qified" alt="GitHub license"></a>
+<a href="https://codecov.io/gh/jaredwray/qified"><img src="https://codecov.io/gh/jaredwray/qified/graph/badge.svg?token=jcRdy8SkOG" alt="codecov"></a>
+<a href="https://npmjs.com/package/qified"><img src="https://img.shields.io/npm/dm/qified" alt="npm"></a>
+<a href="https://npmjs.com/package/qified"><img src="https://img.shields.io/npm/v/qified" alt="npm"></a></p>
+<h1 id="qified">qified</h1>
+<p>Task and Message Queues with Multiple Providers</p>
+<h1 id="features">Features</h1>
+<ul>
+<li>Simple Message Queue for Processing Messages</li>
+<li>Simple Message Format <code>Message</code></li>
+<li>Easily Send a Message <code>publish()</code></li>
+<li>Easily Subscribe to a message Queue <code>subscribe()</code></li>
+<li>Simple Task Format <code>Task</code></li>
+<li>Easily Send a Task <code>enqueue()</code></li>
+<li>Easily Subscribe to a Task Queue <code>dequeue()</code></li>
+<li>Ack / Reject / Extend in the handler via <code>TaskContext</code></li>
+<li>Async/Await Built In By Default</li>
+<li>Written in Typescript, Nodejs Last Two Versions, ESM and CJS</li>
+<li>Events and Hooks for all major actions via <a href="https://hookified.org">Hookified</a></li>
+<li>Provider Fail Over Support</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#quick-start">Quick Start</a></li>
+<li><a href="#constructor">Constructor</a></li>
+<li><a href="#properties">Properties</a>
+<ul>
+<li>
+<ul>
+<li><a href="#messageproviders-messageprovider"><code>messageProviders: MessageProvider[]</code></a></li>
+<li><a href="#taskproviders-taskprovider"><code>taskProviders: TaskProvider[]</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#methods">Methods</a>
+<ul>
+<li><a href="#subscribe">subscribe</a></li>
+<li><a href="#publish">publish</a></li>
+<li><a href="#unsubscribemessage">unsubscribeMessage</a></li>
+<li><a href="#enqueue">enqueue</a></li>
+<li><a href="#dequeue">dequeue</a></li>
+<li><a href="#unsubscribetask">unsubscribeTask</a></li>
+<li><a href="#disconnect">disconnect</a></li>
+</ul>
+</li>
+<li><a href="#events">Events</a></li>
+<li><a href="#available-events">Available Events</a></li>
+<li><a href="#listening-to-events">Listening to Events</a>
+<ul>
+<li>
+<ul>
+<li><a href="#error-handling-with-events">Error Handling with Events</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#hooks">Hooks</a>
+<ul>
+<li><a href="#available-hooks">Available Hooks</a></li>
+<li><a href="#using-hooks">Using Hooks</a></li>
+<li><a href="#modifying-data-with-before-hooks">Modifying Data with Before Hooks</a></li>
+<li><a href="#modifying-topics-with-before-hooks">Modifying Topics with Before Hooks</a></li>
+<li><a href="#multiple-hooks">Multiple Hooks</a></li>
+<li><a href="#hooks-vs-events">Hooks vs Events</a></li>
+</ul>
+</li>
+<li><a href="#providers">Providers</a></li>
+<li><a href="#development-and-testing">Development and Testing</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h1 id="installation">Installation</h1>
+<pre><code class="hljs language-bash">pnpm add qified
+</code></pre>
+<h1 id="quick-start">Quick Start</h1>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Qified</span>, <span class="hljs-title class_">MemoryMessageProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'qified'</span>;
+
+<span class="hljs-comment">// Create a new Qified instance with a memory provider</span>
+<span class="hljs-keyword">const</span> qified = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Qified</span>({
+  <span class="hljs-attr">messageProviders</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">MemoryMessageProvider</span>()
+});
+
+<span class="hljs-comment">// Subscribe to a topic</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">subscribe</span>(<span class="hljs-string">'notifications'</span>, {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'notificationHandler'</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (message) => {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Received:'</span>, message.<span class="hljs-property">data</span>);
+  }
+});
+
+<span class="hljs-comment">// Publish a message</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">publish</span>(<span class="hljs-string">'notifications'</span>, {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'msg-1'</span>,
+  <span class="hljs-attr">data</span>: { <span class="hljs-attr">text</span>: <span class="hljs-string">'Hello, World!'</span> }
+});
+
+<span class="hljs-comment">// Clean up</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h1 id="constructor">Constructor</h1>
+<pre><code class="hljs language-js"><span class="hljs-keyword">new</span> <span class="hljs-title class_">Qified</span>(options?: <span class="hljs-title class_">QifiedOptions</span>)
+</code></pre>
+<p><strong>Options:</strong></p>
+<ul>
+<li><code>messageProviders?: MessageProvider | MessageProvider[]</code> - a provider or Array of message providers to use</li>
+<li><code>taskProviders?: TaskProvider[]</code> - Array of task providers to use</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Qified</span>, <span class="hljs-title class_">MemoryMessageProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'qified'</span>;
+
+<span class="hljs-keyword">const</span> qified = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Qified</span>({
+  <span class="hljs-attr">messageProviders</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">MemoryMessageProvider</span>()
+});
+</code></pre>
+<h1 id="properties">Properties</h1>
+<h3 id="messageproviders-messageprovider"><code>messageProviders: MessageProvider[]</code></h3>
+<p>Get or set the array of message providers. This property allows you to dynamically manage which message providers are active in your Qified instance.</p>
+<p><strong>Type:</strong> <code>MessageProvider[]</code></p>
+<p><strong>Access:</strong> Read/Write</p>
+<p><strong>Description:</strong></p>
+<ul>
+<li><strong>Getter</strong>: Returns the current array of message providers being used</li>
+<li><strong>Setter</strong>: Replaces all current message providers with a new array</li>
+</ul>
+<p><strong>Use Cases:</strong></p>
+<ul>
+<li>Inspect which providers are currently configured</li>
+<li>Add or remove providers dynamically at runtime</li>
+<li>Replace all providers with a new set</li>
+<li>Migrate from one provider to another</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Qified</span>, <span class="hljs-title class_">MemoryMessageProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'qified'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">NatsMessageProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@qified/nats'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">RedisMessageProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@qified/redis'</span>;
+
+<span class="hljs-keyword">const</span> qified = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Qified</span>({
+  <span class="hljs-attr">messageProviders</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">MemoryMessageProvider</span>()
+});
+
+<span class="hljs-comment">// Get current providers</span>
+<span class="hljs-keyword">const</span> providers = qified.<span class="hljs-property">messageProviders</span>;
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Currently using <span class="hljs-subst">${providers.length}</span> provider(s)`</span>);
+
+<span class="hljs-comment">// Add another provider</span>
+qified.<span class="hljs-property">messageProviders</span> = [
+  <span class="hljs-keyword">new</span> <span class="hljs-title class_">MemoryMessageProvider</span>(),
+  <span class="hljs-keyword">new</span> <span class="hljs-title class_">NatsMessageProvider</span>()
+];
+
+<span class="hljs-comment">// Replace all providers</span>
+qified.<span class="hljs-property">messageProviders</span> = [
+  <span class="hljs-keyword">new</span> <span class="hljs-title class_">RedisMessageProvider</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'redis://localhost:6379'</span> })
+];
+
+<span class="hljs-comment">// Access provider properties</span>
+qified.<span class="hljs-property">messageProviders</span>.<span class="hljs-title function_">forEach</span>(<span class="hljs-function"><span class="hljs-params">provider</span> =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Provider ID:'</span>, provider.<span class="hljs-property">id</span>);
+});
+</code></pre>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>Setting this property does <strong>not</strong> automatically disconnect existing providers</li>
+<li>You should call <code>disconnect()</code> on old providers before replacing them to clean up resources</li>
+<li>All message operations (<code>subscribe</code>, <code>publish</code>, <code>unsubscribeMessage</code>) will execute across all message providers in this array</li>
+</ul>
+<h3 id="taskproviders-taskprovider"><code>taskProviders: TaskProvider[]</code></h3>
+<p>Get or set the array of task providers. Works the same way as <code>messageProviders</code> — getter returns the active providers, setter replaces them.</p>
+<p><strong>Type:</strong> <code>TaskProvider[]</code></p>
+<p><strong>Access:</strong> Read/Write</p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Qified</span>, <span class="hljs-title class_">MemoryTaskProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'qified'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">RedisTaskProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@qified/redis'</span>;
+
+<span class="hljs-keyword">const</span> qified = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Qified</span>({
+  <span class="hljs-attr">taskProviders</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">MemoryTaskProvider</span>()
+});
+
+<span class="hljs-comment">// Replace with a Redis-backed task provider</span>
+qified.<span class="hljs-property">taskProviders</span> = [
+  <span class="hljs-keyword">new</span> <span class="hljs-title class_">RedisTaskProvider</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'redis://localhost:6379'</span> })
+];
+</code></pre>
+<p>All task operations (<code>enqueue</code>, <code>dequeue</code>, <code>unsubscribeTask</code>) execute across every task provider in this array.</p>
+<h1 id="methods">Methods</h1>
+<h2 id="subscribe">subscribe</h2>
+<p>Subscribe to a topic to receive messages. If multiple message providers are configured, this will subscribe on all of them.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>topic: string</code> - The topic to subscribe to</li>
+<li><code>handler: TopicHandler</code> - Object containing an optional <code>id</code> and a <code>handler</code> function</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">subscribe</span>(<span class="hljs-string">'user-events'</span>, {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'userEventHandler'</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (message) => {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'User event:'</span>, message.<span class="hljs-property">data</span>);
+  }
+});
+</code></pre>
+<h2 id="publish">publish</h2>
+<p>Publish a message to a topic. If multiple message providers are configured, this will publish to all of them.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>topic: string</code> - The topic to publish to</li>
+<li><code>message: Message</code> - The message object to publish</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">publish</span>(<span class="hljs-string">'user-events'</span>, {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'evt-123'</span>,
+  <span class="hljs-attr">data</span>: {
+    <span class="hljs-attr">userId</span>: <span class="hljs-string">'user-456'</span>,
+    <span class="hljs-attr">action</span>: <span class="hljs-string">'login'</span>,
+    <span class="hljs-attr">timestamp</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>()
+  },
+  <span class="hljs-attr">headers</span>: {
+    <span class="hljs-string">'content-type'</span>: <span class="hljs-string">'application/json'</span>
+  }
+});
+</code></pre>
+<h2 id="unsubscribemessage">unsubscribeMessage</h2>
+<p>Unsubscribe a message handler from a topic. If an <code>id</code> is provided, only that handler is unsubscribed. Otherwise, all handlers for the topic are unsubscribed.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>topic: string</code> - The topic to unsubscribe from</li>
+<li><code>id?: string</code> - Optional handler ID. If not provided, all handlers are unsubscribed</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// Unsubscribe a specific handler</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">unsubscribeMessage</span>(<span class="hljs-string">'user-events'</span>, <span class="hljs-string">'userEventHandler'</span>);
+
+<span class="hljs-comment">// Unsubscribe all handlers for a topic</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">unsubscribeMessage</span>(<span class="hljs-string">'user-events'</span>);
+</code></pre>
+<h2 id="enqueue">enqueue</h2>
+<p>Enqueue a task to a queue. If multiple task providers are configured, this will enqueue on all of them and return the id assigned by each provider (in provider order).</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>queue: string</code> - The queue to enqueue to</li>
+<li><code>task: EnqueueTask</code> - The task payload. <code>id</code> and <code>timestamp</code> are assigned by the provider</li>
+</ul>
+<p><strong>Returns:</strong> <code>Promise&#x3C;string[]></code> - The task ids from each provider</p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> ids = <span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">enqueue</span>(<span class="hljs-string">'image-processing'</span>, {
+  <span class="hljs-attr">data</span>: { <span class="hljs-attr">imageUrl</span>: <span class="hljs-string">'https://example.com/img.png'</span> },
+  <span class="hljs-attr">headers</span>: { <span class="hljs-string">'x-source'</span>: <span class="hljs-string">'uploader'</span> },
+  <span class="hljs-attr">maxRetries</span>: <span class="hljs-number">3</span>,
+  <span class="hljs-attr">timeout</span>: <span class="hljs-number">30_000</span>
+});
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Enqueued as'</span>, ids);
+</code></pre>
+<h2 id="dequeue">dequeue</h2>
+<p>Register a handler to process tasks from a queue. If multiple task providers are configured, this registers the handler on all of them. The handler receives the task and a <code>TaskContext</code> with <code>ack()</code>, <code>reject()</code>, and <code>extend()</code> methods.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>queue: string</code> - The queue to dequeue from</li>
+<li><code>handler: TaskHandler</code> - Object containing an optional <code>id</code> and a <code>handler(task, context)</code> function</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">dequeue</span>(<span class="hljs-string">'image-processing'</span>, {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'resizer'</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (task, context) => {
+    <span class="hljs-keyword">try</span> {
+      <span class="hljs-keyword">await</span> <span class="hljs-title function_">processImage</span>(task.<span class="hljs-property">data</span>.<span class="hljs-property">imageUrl</span>);
+      <span class="hljs-keyword">await</span> context.<span class="hljs-title function_">ack</span>();
+    } <span class="hljs-keyword">catch</span> (error) {
+      <span class="hljs-comment">// true = requeue for retry; false = send to dead-letter queue</span>
+      <span class="hljs-keyword">await</span> context.<span class="hljs-title function_">reject</span>(<span class="hljs-literal">true</span>);
+    }
+  }
+});
+</code></pre>
+<h2 id="unsubscribetask">unsubscribeTask</h2>
+<p>Unsubscribe a task handler from a queue. If an <code>id</code> is provided, only that handler is unsubscribed. Otherwise, all handlers for the queue are unsubscribed.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>queue: string</code> - The queue to unsubscribe from</li>
+<li><code>id?: string</code> - Optional handler ID. If not provided, all handlers are unsubscribed</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// Unsubscribe a specific handler</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">unsubscribeTask</span>(<span class="hljs-string">'image-processing'</span>, <span class="hljs-string">'resizer'</span>);
+
+<span class="hljs-comment">// Unsubscribe all handlers for a queue</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">unsubscribeTask</span>(<span class="hljs-string">'image-processing'</span>);
+</code></pre>
+<h2 id="disconnect">disconnect</h2>
+<p>Disconnect from all providers and clean up resources.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h1 id="events">Events</h1>
+<p>Qified extends <a href="https://hookified.org">Hookified</a> and emits events for all major operations. You can listen to these events to add custom logging, monitoring, or error handling.</p>
+<h1 id="available-events">Available Events</h1>
+<p>The following events are available via the <code>QifiedEvents</code> enum:</p>
+<ul>
+<li><code>QifiedEvents.publish</code> - Emitted after a message is successfully published</li>
+<li><code>QifiedEvents.subscribe</code> - Emitted after successfully subscribing to a topic</li>
+<li><code>QifiedEvents.unsubscribeMessage</code> - Emitted after successfully unsubscribing a message handler from a topic</li>
+<li><code>QifiedEvents.enqueue</code> - Emitted after a task is successfully enqueued</li>
+<li><code>QifiedEvents.dequeue</code> - Emitted after successfully registering a task handler on a queue</li>
+<li><code>QifiedEvents.unsubscribeTask</code> - Emitted after successfully unsubscribing a task handler from a queue</li>
+<li><code>QifiedEvents.disconnect</code> - Emitted after successfully disconnecting from all providers</li>
+<li><code>QifiedEvents.error</code> - Emitted when an error occurs during any operation</li>
+<li><code>QifiedEvents.info</code> - Emitted for informational messages</li>
+<li><code>QifiedEvents.warn</code> - Emitted for warning messages</li>
+</ul>
+<h1 id="listening-to-events">Listening to Events</h1>
+<p>Use the <code>on()</code> method to listen to events:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Qified</span>, <span class="hljs-title class_">MemoryMessageProvider</span>, <span class="hljs-title class_">QifiedEvents</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'qified'</span>;
+
+<span class="hljs-keyword">const</span> qified = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Qified</span>({
+  <span class="hljs-attr">messageProviders</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">MemoryMessageProvider</span>()
+});
+
+<span class="hljs-comment">// Listen for publish events</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">QifiedEvents</span>.<span class="hljs-property">publish</span>, <span class="hljs-title function_">async</span> (data) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Message published to topic:'</span>, data.<span class="hljs-property">topic</span>);
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Message:'</span>, data.<span class="hljs-property">message</span>);
+});
+
+<span class="hljs-comment">// Listen for subscribe events</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">QifiedEvents</span>.<span class="hljs-property">subscribe</span>, <span class="hljs-title function_">async</span> (data) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Subscribed to topic:'</span>, data.<span class="hljs-property">topic</span>);
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Handler ID:'</span>, data.<span class="hljs-property">handler</span>.<span class="hljs-property">id</span>);
+});
+
+<span class="hljs-comment">// Listen for unsubscribeMessage events</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">QifiedEvents</span>.<span class="hljs-property">unsubscribeMessage</span>, <span class="hljs-title function_">async</span> (data) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Unsubscribed from topic:'</span>, data.<span class="hljs-property">topic</span>);
+  <span class="hljs-keyword">if</span> (data.<span class="hljs-property">id</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Handler ID:'</span>, data.<span class="hljs-property">id</span>);
+  }
+});
+
+<span class="hljs-comment">// Listen for enqueue events</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">QifiedEvents</span>.<span class="hljs-property">enqueue</span>, <span class="hljs-title function_">async</span> (data) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Task enqueued to queue:'</span>, data.<span class="hljs-property">queue</span>);
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Assigned ids:'</span>, data.<span class="hljs-property">ids</span>);
+});
+
+<span class="hljs-comment">// Listen for dequeue events</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">QifiedEvents</span>.<span class="hljs-property">dequeue</span>, <span class="hljs-title function_">async</span> (data) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Handler registered on queue:'</span>, data.<span class="hljs-property">queue</span>);
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Handler ID:'</span>, data.<span class="hljs-property">handler</span>.<span class="hljs-property">id</span>);
+});
+
+<span class="hljs-comment">// Listen for unsubscribeTask events</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">QifiedEvents</span>.<span class="hljs-property">unsubscribeTask</span>, <span class="hljs-title function_">async</span> (data) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Unsubscribed from queue:'</span>, data.<span class="hljs-property">queue</span>);
+  <span class="hljs-keyword">if</span> (data.<span class="hljs-property">id</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Handler ID:'</span>, data.<span class="hljs-property">id</span>);
+  }
+});
+
+<span class="hljs-comment">// Listen for disconnect events</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">QifiedEvents</span>.<span class="hljs-property">disconnect</span>, <span class="hljs-title function_">async</span> () => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Disconnected from all providers'</span>);
+});
+
+<span class="hljs-comment">// Listen for errors</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">QifiedEvents</span>.<span class="hljs-property">error</span>, <span class="hljs-title function_">async</span> (error) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'Error occurred:'</span>, error);
+});
+
+<span class="hljs-comment">// Now perform operations</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">subscribe</span>(<span class="hljs-string">'events'</span>, {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'handler1'</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (message) => {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Received:'</span>, message.<span class="hljs-property">data</span>);
+  }
+});
+
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">publish</span>(<span class="hljs-string">'events'</span>, {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'msg-1'</span>,
+  <span class="hljs-attr">data</span>: { <span class="hljs-attr">text</span>: <span class="hljs-string">'Hello!'</span> }
+});
+
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">unsubscribeMessage</span>(<span class="hljs-string">'events'</span>, <span class="hljs-string">'handler1'</span>);
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h3 id="error-handling-with-events">Error Handling with Events</h3>
+<p>Events provide a centralized way to handle errors across all operations:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Qified</span>, <span class="hljs-title class_">QifiedEvents</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'qified'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">NatsMessageProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@qified/nats'</span>;
+
+<span class="hljs-keyword">const</span> qified = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Qified</span>({
+  <span class="hljs-attr">messageProviders</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">NatsMessageProvider</span>()
+});
+
+<span class="hljs-comment">// Centralized error handler</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">QifiedEvents</span>.<span class="hljs-property">error</span>, <span class="hljs-title function_">async</span> (error) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'Qified error:'</span>, error.<span class="hljs-property">message</span>);
+  <span class="hljs-comment">// Send to error tracking service</span>
+  <span class="hljs-comment">// Log to file</span>
+  <span class="hljs-comment">// Send alert</span>
+});
+
+<span class="hljs-comment">// Errors from publish, subscribe, etc. will be caught and emitted</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">publish</span>(<span class="hljs-string">'topic'</span>, { <span class="hljs-attr">id</span>: <span class="hljs-string">'1'</span>, <span class="hljs-attr">data</span>: { <span class="hljs-attr">test</span>: <span class="hljs-literal">true</span> } });
+</code></pre>
+<h1 id="hooks">Hooks</h1>
+<p>Qified provides before and after hooks for all major operations, allowing you to intercept and modify data before an operation executes, or perform actions after it completes. Hooks are powered by <a href="https://hookified.org">Hookified</a>.</p>
+<h2 id="available-hooks">Available Hooks</h2>
+<p>The following hooks are available via the <code>QifiedHooks</code> enum:</p>
+<table>
+<thead>
+<tr>
+<th>Hook</th>
+<th>Description</th>
+<th>Context Properties</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>beforeSubscribe</code></td>
+<td>Called before subscribing to a topic</td>
+<td><code>{ topic, handler }</code></td>
+</tr>
+<tr>
+<td><code>afterSubscribe</code></td>
+<td>Called after subscribing to a topic</td>
+<td><code>{ topic, handler }</code></td>
+</tr>
+<tr>
+<td><code>beforePublish</code></td>
+<td>Called before publishing a message</td>
+<td><code>{ topic, message }</code></td>
+</tr>
+<tr>
+<td><code>afterPublish</code></td>
+<td>Called after publishing a message</td>
+<td><code>{ topic, message }</code></td>
+</tr>
+<tr>
+<td><code>beforeUnsubscribeMessage</code></td>
+<td>Called before unsubscribing a message handler</td>
+<td><code>{ topic, id }</code></td>
+</tr>
+<tr>
+<td><code>afterUnsubscribeMessage</code></td>
+<td>Called after unsubscribing a message handler</td>
+<td><code>{ topic, id }</code></td>
+</tr>
+<tr>
+<td><code>beforeEnqueue</code></td>
+<td>Called before enqueueing a task</td>
+<td><code>{ queue, task }</code></td>
+</tr>
+<tr>
+<td><code>afterEnqueue</code></td>
+<td>Called after enqueueing a task</td>
+<td><code>{ queue, task, ids }</code></td>
+</tr>
+<tr>
+<td><code>beforeDequeue</code></td>
+<td>Called before registering a task handler</td>
+<td><code>{ queue, handler }</code></td>
+</tr>
+<tr>
+<td><code>afterDequeue</code></td>
+<td>Called after registering a task handler</td>
+<td><code>{ queue, handler }</code></td>
+</tr>
+<tr>
+<td><code>beforeUnsubscribeTask</code></td>
+<td>Called before unsubscribing a task handler</td>
+<td><code>{ queue, id }</code></td>
+</tr>
+<tr>
+<td><code>afterUnsubscribeTask</code></td>
+<td>Called after unsubscribing a task handler</td>
+<td><code>{ queue, id }</code></td>
+</tr>
+<tr>
+<td><code>beforeDisconnect</code></td>
+<td>Called before disconnecting from providers</td>
+<td><code>{ messageProviderCount, taskProviderCount }</code></td>
+</tr>
+<tr>
+<td><code>afterDisconnect</code></td>
+<td>Called after disconnecting from providers</td>
+<td><code>{ messageProviderCount, taskProviderCount }</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="using-hooks">Using Hooks</h2>
+<p>Use the <code>onHook()</code> method to register a hook handler. Hooks use the <code>IHook</code> object format from <a href="https://hookified.org">Hookified</a>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Qified</span>, <span class="hljs-title class_">MemoryMessageProvider</span>, <span class="hljs-title class_">QifiedHooks</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'qified'</span>;
+
+<span class="hljs-keyword">const</span> qified = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Qified</span>({
+  <span class="hljs-attr">messageProviders</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">MemoryMessageProvider</span>()
+});
+
+<span class="hljs-comment">// Register a before hook using IHook object</span>
+qified.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">event</span>: <span class="hljs-title class_">QifiedHooks</span>.<span class="hljs-property">beforePublish</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (context) => {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'About to publish to:'</span>, context.<span class="hljs-property">topic</span>);
+  }
+});
+
+<span class="hljs-comment">// Register an after hook with an id for later removal</span>
+qified.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'publish-logger'</span>,
+  <span class="hljs-attr">event</span>: <span class="hljs-title class_">QifiedHooks</span>.<span class="hljs-property">afterPublish</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (context) => {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Published message:'</span>, context.<span class="hljs-property">message</span>.<span class="hljs-property">id</span>);
+  }
+});
+
+<span class="hljs-comment">// Register with options to control position</span>
+qified.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">event</span>: <span class="hljs-title class_">QifiedHooks</span>.<span class="hljs-property">beforePublish</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (context) => {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'This runs first'</span>);
+  }
+}, { <span class="hljs-attr">position</span>: <span class="hljs-string">'Top'</span> });
+</code></pre>
+<h2 id="modifying-data-with-before-hooks">Modifying Data with Before Hooks</h2>
+<p>Before hooks receive a mutable context object. Any changes you make to the context will be applied to the operation:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Qified</span>, <span class="hljs-title class_">MemoryMessageProvider</span>, <span class="hljs-title class_">QifiedHooks</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'qified'</span>;
+
+<span class="hljs-keyword">const</span> qified = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Qified</span>({
+  <span class="hljs-attr">messageProviders</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">MemoryMessageProvider</span>()
+});
+
+<span class="hljs-comment">// Add timestamp and headers to all messages</span>
+qified.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">event</span>: <span class="hljs-title class_">QifiedHooks</span>.<span class="hljs-property">beforePublish</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (context) => {
+    <span class="hljs-comment">// Add timestamp if not present</span>
+    context.<span class="hljs-property">message</span>.<span class="hljs-property">timestamp</span> = context.<span class="hljs-property">message</span>.<span class="hljs-property">timestamp</span> ?? <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();
+
+    <span class="hljs-comment">// Add custom headers</span>
+    context.<span class="hljs-property">message</span>.<span class="hljs-property">headers</span> = {
+      ...context.<span class="hljs-property">message</span>.<span class="hljs-property">headers</span>,
+      <span class="hljs-string">'x-processed-by'</span>: <span class="hljs-string">'qified'</span>,
+      <span class="hljs-string">'x-environment'</span>: process.<span class="hljs-property">env</span>.<span class="hljs-property">NODE_ENV</span>
+    };
+  }
+});
+
+<span class="hljs-comment">// Modify message data</span>
+qified.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">event</span>: <span class="hljs-title class_">QifiedHooks</span>.<span class="hljs-property">beforePublish</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (context) => {
+    <span class="hljs-comment">// Add metadata to the message data</span>
+    context.<span class="hljs-property">message</span>.<span class="hljs-property">data</span> = {
+      ...context.<span class="hljs-property">message</span>.<span class="hljs-property">data</span>,
+      <span class="hljs-attr">_meta</span>: {
+        <span class="hljs-attr">version</span>: <span class="hljs-string">'1.0'</span>,
+        <span class="hljs-attr">source</span>: <span class="hljs-string">'api'</span>
+      }
+    };
+  }
+});
+
+<span class="hljs-comment">// Subscribe to receive messages</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">subscribe</span>(<span class="hljs-string">'events'</span>, {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'handler1'</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (message) => {
+    <span class="hljs-comment">// Message will have timestamp, headers, and modified data</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Timestamp:'</span>, message.<span class="hljs-property">timestamp</span>);
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Headers:'</span>, message.<span class="hljs-property">headers</span>);
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Data:'</span>, message.<span class="hljs-property">data</span>);
+  }
+});
+
+<span class="hljs-comment">// Publish a message - hooks will modify it before sending</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">publish</span>(<span class="hljs-string">'events'</span>, {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'msg-1'</span>,
+  <span class="hljs-attr">data</span>: { <span class="hljs-attr">text</span>: <span class="hljs-string">'Hello!'</span> }
+});
+</code></pre>
+<h2 id="modifying-topics-with-before-hooks">Modifying Topics with Before Hooks</h2>
+<p>You can also modify the topic in before hooks:</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// Route all messages to a prefixed topic</span>
+qified.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">event</span>: <span class="hljs-title class_">QifiedHooks</span>.<span class="hljs-property">beforePublish</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (context) => {
+    context.<span class="hljs-property">topic</span> = <span class="hljs-string">`production/<span class="hljs-subst">${context.topic}</span>`</span>;
+  }
+});
+
+<span class="hljs-comment">// Subscribe to the prefixed topic</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">subscribe</span>(<span class="hljs-string">'production/events'</span>, {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'handler1'</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (message) => {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Received:'</span>, message.<span class="hljs-property">data</span>);
+  }
+});
+
+<span class="hljs-comment">// This publishes to 'production/events' due to the hook</span>
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">publish</span>(<span class="hljs-string">'events'</span>, {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'msg-1'</span>,
+  <span class="hljs-attr">data</span>: { <span class="hljs-attr">text</span>: <span class="hljs-string">'Hello!'</span> }
+});
+</code></pre>
+<h2 id="multiple-hooks">Multiple Hooks</h2>
+<p>Multiple hooks for the same event execute in the order they were registered:</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// First hook - runs first (default position is 'Bottom')</span>
+qified.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">event</span>: <span class="hljs-title class_">QifiedHooks</span>.<span class="hljs-property">beforePublish</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (context) => {
+    context.<span class="hljs-property">message</span>.<span class="hljs-property">timestamp</span> = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();
+  }
+});
+
+<span class="hljs-comment">// Second hook - runs second, can see changes from first hook</span>
+qified.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">event</span>: <span class="hljs-title class_">QifiedHooks</span>.<span class="hljs-property">beforePublish</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (context) => {
+    context.<span class="hljs-property">message</span>.<span class="hljs-property">headers</span> = { <span class="hljs-string">'x-timestamp'</span>: <span class="hljs-title class_">String</span>(context.<span class="hljs-property">message</span>.<span class="hljs-property">timestamp</span>) };
+  }
+});
+
+<span class="hljs-comment">// Third hook - runs third</span>
+qified.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">event</span>: <span class="hljs-title class_">QifiedHooks</span>.<span class="hljs-property">beforePublish</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (context) => {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Final message:'</span>, context.<span class="hljs-property">message</span>);
+  }
+});
+
+<span class="hljs-comment">// Use position option to insert at the top</span>
+qified.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">event</span>: <span class="hljs-title class_">QifiedHooks</span>.<span class="hljs-property">beforePublish</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (context) => {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'This runs before all other hooks'</span>);
+  }
+}, { <span class="hljs-attr">position</span>: <span class="hljs-string">'Top'</span> });
+</code></pre>
+<h2 id="hooks-vs-events">Hooks vs Events</h2>
+<p>Both hooks and events are available, but they serve different purposes:</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Hooks</th>
+<th>Events</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Timing</td>
+<td>Before and after operations</td>
+<td>After operations only</td>
+</tr>
+<tr>
+<td>Data modification</td>
+<td>Yes (before hooks)</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Use case</td>
+<td>Intercepting/transforming data</td>
+<td>Logging, monitoring, side effects</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="hljs language-js"><span class="hljs-comment">// Hook - can modify the message before it's published</span>
+qified.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">event</span>: <span class="hljs-title class_">QifiedHooks</span>.<span class="hljs-property">beforePublish</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (context) => {
+    context.<span class="hljs-property">message</span>.<span class="hljs-property">timestamp</span> = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();
+  }
+});
+
+<span class="hljs-comment">// Event - notified after publish completes (cannot modify)</span>
+qified.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">QifiedEvents</span>.<span class="hljs-property">publish</span>, <span class="hljs-title function_">async</span> (data) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Published:'</span>, data.<span class="hljs-property">message</span>.<span class="hljs-property">id</span>);
+});
+</code></pre>
+<h1 id="providers">Providers</h1>
+<p>There are multiple providers available to use:</p>
+<ul>
+<li>Memory - this is built into the current <code>qified</code> library as <code>MemoryMessageProvider</code> and <code>MemoryTaskProvider</code>.</li>
+<li><a href="../redis/README.md">@qified/redis</a> - Redis Provider (messages and tasks)</li>
+<li><a href="../rabbitmq/README.md">@qified/rabbitmq</a> - RabbitMQ Provider (messages and tasks)</li>
+<li><a href="../nats/README.md">@qified/nats</a> - NATS Provider (messages and tasks)</li>
+<li><a href="../zeromq/README.md">@qified/zeromq</a> - ZeroMQ Provider (messages only)</li>
+</ul>
+<h1 id="development-and-testing">Development and Testing</h1>
+<p>Qified is written in TypeScript and tests are written in <code>vitest</code>. To run the tests, use the following command:</p>
+<ol>
+<li><code>pnpm install</code> - This will install all the dependencies</li>
+<li><code>pnpm test:services:start</code> - This will start the services needed for testing (Redis, RabbitMQ, etc)</li>
+<li><code>pnpm test</code> - This will run the tests</li>
+</ol>
+<p>To contribute follow the <a href="CONTRIBUTING.md">Contributing Guidelines</a> and <a href="CODE_OF_CONDUCT.md">Code of Conduct</a>.</p>
+<h1 id="license">License</h1>
+<p><a href="LICENSE">MIT &#x26; © Jared Wray</a></p>

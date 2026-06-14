@@ -1,0 +1,163 @@
+<p><img src="site/logo.svg" alt="Fumanchu" title="Fumanchu"></p>
+<h1 id="fumanchu">fumanchu</h1>
+<p>Handlebars + Helpers Together</p>
+<p><a href="https://github.com/jaredwray/fumanchu/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/fumanchu/actions/workflows/tests.yaml/badge.svg" alt="tests"></a>
+<a href="https://codecov.io/gh/jaredwray/fumanchu"><img src="https://codecov.io/gh/jaredwray/fumanchu/graph/badge.svg?token=gtYw78huva" alt="codecov"></a>
+<a href="https://npmjs.com/package/@jaredwray/fumanchu"><img src="https://img.shields.io/npm/v/@jaredwray/fumanchu.svg" alt="npm version"></a>
+<a href="https://github.com/jaredwray/fumanchu/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/%40jaredwray%2Ffumanchu" alt="NPM License">
+</a>
+<a href="https://npmjs.com/package/@jaredwray/fumanchu"><img src="https://img.shields.io/npm/dm/@jaredwray/fumanchu" alt="npm"></a>
+<a href="https://www.jsdelivr.com/package/npm/@jaredwray/fumanchu"><img src="https://data.jsdelivr.com/v1/package/npm/@jaredwray/fumanchu/badge" alt=""></a></p>
+<p><a href="https://github.com/handlebars-lang/handlebars.js">Handlebars</a> + <a href="https://github.com/helpers/handlebars-helpers">Handlebars-helpers</a> (helpers are now maintained in this project) combined into a single package. In addition this project has <strong>drastically</strong> reduced the number of dependencies.</p>
+<p>Easily use it as a drop in replacement when using handlebars directly. More than 160 Handlebars helpers in ~20 categories. Helpers can be used with Assemble, Generate, Verb, Ghost, gulp-handlebars, grunt-handlebars, consolidate, or any node.js/Handlebars project. Currently <strong>189 helpers</strong> in <strong>20 categories</strong>! 🎉</p>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#usage-nodejs">Usage Nodejs</a></li>
+<li><a href="#usage-in-the-browser">Usage in the Browser</a></li>
+<li><a href="#using-handlebars-helpers">Using Handlebars Helpers</a></li>
+<li><a href="#using-the-helper-registry">Using the Helper Registry</a></li>
+<li><a href="#caching">Caching</a>
+<ul>
+<li><a href="#enable-caching-with-default-settings">Enable caching with default settings</a></li>
+<li><a href="#pass-caching-options">Pass caching options</a></li>
+<li><a href="#pass-a-pre-configured-cacheablememory-instance">Pass a pre-configured <code>CacheableMemory</code> instance</a></li>
+<li><a href="#how-to-contribute">How to Contribute</a></li>
+<li><a href="#license-and-copyright">License and Copyright</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="usage-nodejs">Usage Nodejs</h1>
+<pre><code class="hljs language-bash">npm install @jaredwray/fumanchu --save
+</code></pre>
+<p>To use Handlebars with all the helpers:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> {fumanchu} <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/fumanchu'</span>;
+<span class="hljs-keyword">const</span> handlebars = <span class="hljs-title function_">fumanchu</span>(); <span class="hljs-comment">// this will return handlebars with all the helpers</span>
+<span class="hljs-keyword">const</span> template = handlebars.<span class="hljs-title function_">compile</span>(<span class="hljs-string">'{{#if (eq foo "bar")}}&#x3C;p>Foo is bar&#x3C;/p>{{/if}}'</span>);
+<span class="hljs-keyword">const</span> html = <span class="hljs-title function_">template</span>({<span class="hljs-attr">foo</span>: <span class="hljs-string">'bar'</span>});
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(html); <span class="hljs-comment">// &#x3C;p>Foo is bar&#x3C;/p></span>
+</code></pre>
+<p>It's just that easy! No need to add Handlebars to your project, it's already included.</p>
+<h1 id="usage-in-the-browser">Usage in the Browser</h1>
+<p>Fumanchu ships a browser-safe build that excludes Node-only helpers (<code>fs</code>, <code>path</code>, <code>logging</code>, <code>embed</code>, <code>css</code>, <code>js</code>, <code>escape</code>, <code>urlResolve</code>, <code>urlParse</code>, <code>stripProtocol</code>). Import it directly via the <code>/browser</code> subpath:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { fumanchu } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/fumanchu/browser'</span>;
+<span class="hljs-keyword">const</span> handlebars = <span class="hljs-title function_">fumanchu</span>();
+<span class="hljs-keyword">const</span> template = handlebars.<span class="hljs-title function_">compile</span>(<span class="hljs-string">'{{uppercase name}}'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">template</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'hello'</span> })); <span class="hljs-comment">// HELLO</span>
+</code></pre>
+<p>The package also sets the <code>browser</code> export condition on the main entry, so webpack, Vite, esbuild, Rollup, and other browser-aware bundlers automatically pick up the browser build when you <code>import '@jaredwray/fumanchu'</code> from a browser target — no code change required. The public API (<code>fumanchu</code>, <code>helpers</code>, <code>HelperRegistry</code>) is identical to Node; only the set of registered helpers differs.</p>
+<p>You can also load the browser build directly from a CDN such as <a href="https://www.jsdelivr.com/package/npm/@jaredwray/fumanchu">jsDelivr</a> — no bundler required:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>></span><span class="javascript">
+  <span class="hljs-keyword">import</span> { fumanchu } <span class="hljs-keyword">from</span> <span class="hljs-string">'https://cdn.jsdelivr.net/npm/@jaredwray/fumanchu/dist/index.browser.mjs'</span>;
+  <span class="hljs-keyword">const</span> handlebars = <span class="hljs-title function_">fumanchu</span>();
+  <span class="hljs-variable language_">document</span>.<span class="hljs-property">body</span>.<span class="hljs-property">textContent</span> = handlebars.<span class="hljs-title function_">compile</span>(<span class="hljs-string">'{{uppercase name}}'</span>)({ <span class="hljs-attr">name</span>: <span class="hljs-string">'hello'</span> });
+</span><span class="hljs-tag">&#x3C;/<span class="hljs-name">script</span>></span>
+</code></pre>
+<h1 id="using-handlebars-helpers">Using Handlebars Helpers</h1>
+<p>If you only want to use handlebar helpers you can easily do that by doing the following:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> {helpers} <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/fumanchu'</span>;
+<span class="hljs-keyword">import</span> handlebars <span class="hljs-keyword">from</span> <span class="hljs-string">'handlebars'</span>;
+<span class="hljs-keyword">const</span> helpersFunction = <span class="hljs-keyword">await</span> <span class="hljs-title function_">helpers</span>();
+<span class="hljs-title function_">helpersFunction</span>({ <span class="hljs-attr">handlebars</span>: handlebars });
+<span class="hljs-keyword">const</span> template = handlebars.<span class="hljs-title function_">compile</span>(<span class="hljs-string">'{{#if (eq foo "bar")}}&#x3C;p>Foo is bar&#x3C;/p>{{/if}}'</span>);
+<span class="hljs-keyword">const</span> html = <span class="hljs-title function_">template</span>({<span class="hljs-attr">foo</span>: <span class="hljs-string">'bar'</span>});
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(html); <span class="hljs-comment">// &#x3C;p>Foo is bar&#x3C;/p></span>
+</code></pre>
+<p>If using it with es6 you can access <code>handlebars</code> and <code>helpers</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> {handlebars, helpers} <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/fumanchu'</span>;
+<span class="hljs-title function_">helpers</span>({ <span class="hljs-attr">handlebars</span>: handlebars });
+<span class="hljs-keyword">const</span> template = handlebars.<span class="hljs-title function_">compile</span>(<span class="hljs-string">'{{#if (eq foo "bar")}}&#x3C;p>Foo is bar&#x3C;/p>{{/if}}'</span>);
+<span class="hljs-keyword">const</span> html = <span class="hljs-title function_">template</span>({<span class="hljs-attr">foo</span>: <span class="hljs-string">'bar'</span>});
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(html);
+</code></pre>
+<h1 id="using-the-helper-registry">Using the Helper Registry</h1>
+<p>The helper registry allows you to manage and use Handlebars helpers more easily. You can register new helpers, filter existing ones, and access them in your templates.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">HelperRegistry</span>, handlebars } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/fumanchu'</span>;
+
+<span class="hljs-keyword">const</span> registry = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HelperRegistry</span>();
+registry.<span class="hljs-title function_">register</span>(<span class="hljs-string">'eq'</span>, <span class="hljs-function">(<span class="hljs-params">a, b</span>) =></span> a === b);
+registry.<span class="hljs-title function_">register</span>(<span class="hljs-string">'if'</span>, <span class="hljs-function">(<span class="hljs-params">condition, template</span>) =></span> condition ? <span class="hljs-title function_">template</span>() : <span class="hljs-string">''</span>);
+<span class="hljs-keyword">const</span> hbs = handlebars;
+registry.<span class="hljs-title function_">load</span>(hbs); <span class="hljs-comment">// Load all helpers into Handlebars</span>
+</code></pre>
+<p>If you want to do filtering you can use the <code>HelperFilter</code> on <code>load</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">HelperRegistry</span>, handlebars } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/fumanchu'</span>;
+
+<span class="hljs-keyword">const</span> registry = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HelperRegistry</span>();
+registry.<span class="hljs-title function_">register</span>(<span class="hljs-string">'eq'</span>, <span class="hljs-function">(<span class="hljs-params">a, b</span>) =></span> a === b);
+registry.<span class="hljs-title function_">register</span>(<span class="hljs-string">'if'</span>, <span class="hljs-function">(<span class="hljs-params">condition, template</span>) =></span> condition ? <span class="hljs-title function_">template</span>() : <span class="hljs-string">''</span>);
+<span class="hljs-keyword">const</span> hbs = handlebars;
+registry.<span class="hljs-title function_">load</span>(hbs, { <span class="hljs-attr">names</span>: [<span class="hljs-string">'if'</span>]}); <span class="hljs-comment">// Load the helpers into Handlebars</span>
+</code></pre>
+<p>In addition, we have made the helper functions have a compatibility such as <code>HelperRegistryCompatibility.NODEJS</code> or <code>HelperRegistryCompatibility.BROWSER</code>. This will allow you to filter out based on your environment!</p>
+<h1 id="caching">Caching</h1>
+<p>When caching is enabled, Fumanchu wraps the Handlebars <code>compile()</code> method to cache compiled template functions using <a href="https://github.com/jaredwray/cacheable/tree/main/packages/memory">@cacheable/memory</a>. If you compile the same template string multiple times, the cached version is returned instead of recompiling. The returned Handlebars instance is fully compatible -- caching is transparent to your existing code.</p>
+<p>The <code>caching</code> option accepts three types:</p>
+<ul>
+<li><code>boolean</code> -- <code>true</code> enables caching with defaults, <code>false</code> disables it</li>
+<li><code>CacheableMemory</code> -- a pre-configured instance from <code>@cacheable/memory</code></li>
+<li><code>CacheableMemoryOptions</code> -- an options object passed to <code>CacheableMemory</code> (supports <code>ttl</code>, <code>lruSize</code>, <code>checkInterval</code>, etc.)</li>
+</ul>
+<p>Here is an quick benchmark showing the performance advantage:</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>compile+render cached (v4.6.0)</td>
+<td align="center">🥇</td>
+<td align="right">45K</td>
+<td align="right">39µs</td>
+<td align="center">±0.32%</td>
+<td align="right">25K</td>
+</tr>
+<tr>
+<td>compile+render no-cache (v4.6.0)</td>
+<td align="center">-83%</td>
+<td align="right">8K</td>
+<td align="right">166µs</td>
+<td align="center">±0.62%</td>
+<td align="right">10K</td>
+</tr>
+</tbody>
+</table>
+<h2 id="enable-caching-with-default-settings">Enable caching with default settings</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { fumanchu } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/fumanchu'</span>;
+<span class="hljs-keyword">const</span> handlebars = <span class="hljs-title function_">fumanchu</span>({ <span class="hljs-attr">caching</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-keyword">const</span> template = handlebars.<span class="hljs-title function_">compile</span>(<span class="hljs-string">'Hello {{name}}!'</span>);
+<span class="hljs-title function_">template</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'World'</span> }); <span class="hljs-comment">// compiles and caches</span>
+
+<span class="hljs-keyword">const</span> template2 = handlebars.<span class="hljs-title function_">compile</span>(<span class="hljs-string">'Hello {{name}}!'</span>);
+<span class="hljs-comment">// returns the cached compiled function -- no recompilation</span>
+</code></pre>
+<h2 id="pass-caching-options">Pass caching options</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { fumanchu } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/fumanchu'</span>;
+<span class="hljs-keyword">const</span> handlebars = <span class="hljs-title function_">fumanchu</span>({
+  <span class="hljs-attr">caching</span>: {
+    <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>,         <span class="hljs-comment">// Time-to-live in ms or human-readable string like '1h'</span>
+    <span class="hljs-attr">lruSize</span>: <span class="hljs-number">500</span>,      <span class="hljs-comment">// LRU cache size limit (0 = unlimited)</span>
+    <span class="hljs-attr">checkInterval</span>: <span class="hljs-number">0</span>,  <span class="hljs-comment">// Interval to check for expired items in ms (0 = disabled)</span>
+  },
+});
+</code></pre>
+<h2 id="pass-a-pre-configured-cacheablememory-instance">Pass a pre-configured <code>CacheableMemory</code> instance</h2>
+<p>This is useful if you want to share a cache across multiple Fumanchu instances or manage the cache lifecycle yourself:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { fumanchu, <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/fumanchu'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>({ <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>, <span class="hljs-attr">lruSize</span>: <span class="hljs-number">1000</span>, <span class="hljs-attr">useClone</span>: <span class="hljs-literal">false</span> });
+
+<span class="hljs-keyword">const</span> hbs1 = <span class="hljs-title function_">fumanchu</span>({ <span class="hljs-attr">caching</span>: cache });
+<span class="hljs-keyword">const</span> hbs2 = <span class="hljs-title function_">fumanchu</span>({ <span class="hljs-attr">caching</span>: cache }); <span class="hljs-comment">// shares the same cache as hbs1</span>
+</code></pre>
+<h2 id="how-to-contribute">How to Contribute</h2>
+<p>Clone the repository locally refer to the <a href="CONTRIBUTING.md">CONTRIBUTING</a> guide. If you have any questions please feel free to ask by creating an issue and label it <code>question</code>.</p>
+<h2 id="license-and-copyright">License and Copyright</h2>
+<p><a href="LICENSE">MIT</a> and codebase after 2023 will be copyright of Jared Wray.</p>
+<p>This is a fork of <a href="">handlebars-helpers</a> which is licensed under MIT. Initial copyright of handlebars-helpers: <code>2013-2015, 2017, Jon Schlinkert, Brian Woodward</code>. Thank you so much for your effort and building this! We have also continued to list all contributors in <code>package.json</code> to ensure that they are recognized.</p>

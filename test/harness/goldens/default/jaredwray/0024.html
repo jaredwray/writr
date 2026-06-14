@@ -1,0 +1,12 @@
+<p>import SdkCompatibilityTable from '@site/src/components/custom/SdkCompatibilityTable';
+import Json from '@site/src/datasets/sdks/sdk-compatibility.json';
+import { serverSideFeatures, clientSideFeatures } from '@site/src/datasets/constants';</p>
+<p>This page provides an overview of the status and supported features of the OpenFeature SDKs.</p>
+<h3 id="server-side-sdks">Server-side SDKs</h3>
+<p>Server-side SDKs are intended for multi-user applications (e.g. web server applications) and conform to the <a href="/specification/glossary#dynamic-context-paradigm">dynamic-context paradigm</a>.</p>
+<p>&#x3C;SdkCompatibilityTable compatibility={Json.filter(sdk => sdk.category === 'Server')} features={serverSideFeatures}/></p>
+<p>Implemented: ✅ | In-progress: ⚠️ | Not implemented yet: ❌ | Unknown status: ❓</p>
+<h3 id="client-side-sdks">Client-side SDKs</h3>
+<p>Client-side SDKs are intended for single user client applications (e.g. mobile phones, single-page web apps) and conform to the <a href="/specification/glossary#static-context-paradigm">static-context paradigm</a>.</p>
+<p>&#x3C;SdkCompatibilityTable compatibility={Json.filter(sdk => sdk.category === 'Client')} features={clientSideFeatures}/></p>
+<p>Implemented: ✅ | In-progress: ⚠️ | Not implemented yet: ❌ | Unknown status: ❓</p>

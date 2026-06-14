@@ -1,0 +1,122 @@
+<h1 id="quick-start-cloud-native-feature-flagging-with-the-openfeature-operator">Quick Start: Cloud Native Feature-Flagging with the OpenFeature Operator</h1>
+<p>In the following tutorial, we'll see how to leverage <em>flagd</em> and the OpenFeature Operator to enable cloud-native, self-hosted feature flags in your Kubernetes cluster. <a href="https://flagd.dev/">flagd</a> is a "feature flag daemon with a Unix philosophy".
+Put another way, it's a small, self-contained binary that evaluates feature flags, uses standard interfaces, and runs just about anywhere.
+It can be deployed in a central location serving multiple clients or embedded into a unit of deployment (such as a pod in Kubernetes).
+The <a href="https://github.com/open-feature/open-feature-operator">OpenFeature Operator</a> is a K8s-flavored solution for easily adding flagd to any relevant workloads.
+The operator parses Kubernetes spec files and adds flagd and associated objects to the workloads based on annotations and custom resource definitions it understands.
+The injected flagd sidecar then gets its feature flags by querying the Kubernetes API for our flags.</p>
+<div class="markdown-alert markdown-alert-note" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>NOTE</p>
+<p>This deployment pattern (injecting flagd as a sidecar which communicates with the kubernetes API directly) is the simplest to configure, but it may not be the right solution for all use-cases.
+See the <a href="./advanced-topics.md">advanced tutorial</a> for alternative models.</p>
+</div>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>If you don't have access to an existing K8s cluster, you have a few options:
+<ul>
+<li><a href="https://kind.sigs.k8s.io/docs/user/quick-start/#installation">kind</a> is similar to minikube (another solution for running a cluster locally you may be familiar with) but supports more than one node, so it makes for a slightly more realistic experience.
+If using kind, this tutorial provides a 3-node cluster definition with a forwarded containerPort for you (more on that later).</li>
+<li><a href="https://microk8s.io/">MicroK8s</a> and <a href="https://k3s.io/">K3s</a> are easily installable Kubernetes clusters you can use locally.
+The benefit of these is that they are basically identical to a production environment.
+Configuration of <code>MicroK8s</code> and <code>K3s</code> is out of the scope of this tutorial.</li>
+</ul>
+</li>
+<li><a href="https://kubernetes.io/docs/tasks/tools/">kubectl</a></li>
+<li><a href="https://k9scli.io/">k9s</a> (optional, if you'd like to inspect your cluster visually)</li>
+<li><a href="https://helm.sh/">helm</a> (optional, if you prefer to install the operator using the Helm chart)</li>
+</ul>
+<div class="markdown-alert markdown-alert-note" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>NOTE</p>
+<p>If not using kind, you will have to handle forwarding ports and exposing ingresses however appropriate for your distribution or infrastructure.</p>
+</div>
+<h2 id="show-me-the-commands">Show me the commands</h2>
+<h3 id="building-our-cluster">Building our cluster</h3>
+<p>OK, let's get our cluster up and running!
+We recommend using <code>kind</code> for this demo, but if you already have a K8s cluster, you can skip to <a href="#install-cert-manager">Install cert-manager</a>.</p>
+<h4 id="using-kind">Using Kind</h4>
+<p>Download the cluster definition file, <code>kind-cluster-quick-start.yaml</code>:</p>
+<pre><code class="hljs language-shell">curl -sfL curl -sfL https://raw.githubusercontent.com/open-feature/openfeature.dev/main/static/samples/kind-cluster-quick-start.yaml > kind-cluster-quick-start.yaml
+</code></pre>
+<p>Then, create our cluster using the <code>kind-cluster-quick-start.yaml</code> file:</p>
+<pre><code class="hljs language-shell">kind create cluster --config kind-cluster-quick-start.yaml
+</code></pre>
+<p>This might take a minute or two.</p>
+<h3 id="install-cert-manager">Install cert-manager</h3>
+<p>Next, because our operator makes use of webhooks, we need some certificate infrastructure in our cluster.
+If your cluster already has cert manager, or you're using another solution for certificate management, you can go to <a href="#install-openfeature-operator">Install OpenFeature operator</a>.</p>
+<p>Install cert-manager, and wait for it to be ready:</p>
+<pre><code class="hljs language-shell">kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml &#x26;&#x26; \
+kubectl wait --timeout=60s --for condition=Available=True deploy --all -n 'cert-manager'
+</code></pre>
+<h3 id="install-openfeature-operator">Install OpenFeature operator</h3>
+<p>And finally, let's install the operator itself:</p>
+<pre><code class="hljs language-shell">kubectl apply -f https://github.com/open-feature/open-feature-operator/releases/download/v0.6.0/release.yaml &#x26;&#x26; \
+kubectl wait --timeout=60s --for condition=Available=True deploy --all -n 'open-feature-operator-system'
+</code></pre>
+<pre><code class="hljs language-shell">helm repo add openfeature https://open-feature.github.io/open-feature-operator/ &#x26;&#x26; \
+helm repo update &#x26;&#x26; \
+helm upgrade --install open-feature-operator openfeature/open-feature-operator
+</code></pre>
+<div class="markdown-alert markdown-alert-note" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>NOTE</p>
+<p>When using Helm, various configuration parameters can be set, such as resource limits and default configuration values.
+See the full <a href="https://artifacthub.io/packages/helm/open-feature-operator/open-feature-operator#configuration">chart documentation</a> for details.</p>
+</div>
+<h3 id="downloading-assets">Downloading assets</h3>
+<p>Download the file defining our demo deployment, service and custom resource (CRs), <code>end-to-end.yaml</code>:</p>
+<pre><code class="hljs language-shell">curl -sfL https://raw.githubusercontent.com/open-feature/playground/main/config/k8s/end-to-end.yaml > end-to-end.yaml
+</code></pre>
+<h3 id="deploy-our-workload">Deploy our workload</h3>
+<p>Now that the operator is ready to go, we can deploy our workload:
+(example below deploys into K8s default namespace, update accordingly to other namespace)</p>
+<pre><code class="hljs language-shell">kubectl -n default apply -f end-to-end.yaml &#x26;&#x26; \
+kubectl wait --timeout=60s deployment --for condition=Available=True -l 'app=open-feature-demo' -n 'default'
+</code></pre>
+<p>If you're using <code>k9s</code> or some other means of visualization, your cluster should look something like this:</p>
+<p><img src="@site/static/img/tutorials/k9s.png" alt="k9s"></p>
+<h3 id="forward-the-service-if-not-using-kind">Forward the service (if not using kind)</h3>
+<p>⚠️ If you're using the <a href="#using-kind">supplied <code>kind</code> config</a>, <em><strong>you can skip to <a href="#experiment-with-openfeature">Experiment with OpenFeature</a>, the ports are already forwarded.</strong></em></p>
+<p>Forward the app service port:</p>
+<pre><code class="hljs language-shell">kubectl port-forward svc/open-feature-demo-app-service -n default 30000:30000
+</code></pre>
+<p>Forward the UI flag evaluation service port:</p>
+<pre><code class="hljs language-shell">kubectl port-forward svc/open-feature-demo-ui-service -n default 30002:30002
+</code></pre>
+<h2 id="experiment-with-openfeature">Experiment with OpenFeature</h2>
+<p>Now you should see our fictional app at <a href="http://localhost:30000">http://localhost:30000</a></p>
+<p>For this demo, we get flag definitions from the custom resource (CRs) you applied to K8s above (<code>end-to-end.yaml</code>).
+The resource type is <code>FeatureFlag</code> and there are two instances defined: one is called <code>ui-flags</code> (for the front-end) and one called <code>app-flags</code>
+(for the back end).
+Below, you'll see how you can modify these instances to change your feature flags.</p>
+<p>This file also contains service and deployment definitions, <em>but these need not be modified as part of this demo</em>.
+You may be interested in the <code>openfeature.dev/*</code> annotations though, which the OpenFeature operator uses to detect which workloads require flagd.</p>
+<ul>
+<li><code>openfeature.dev/enabled</code> - setting this to <code>true</code> instructs the operator to inject flagd as a sidecar</li>
+<li><code>openfeature.dev/featureflagsource</code> - refers to the <code>FeatureFlagSource</code> CRD, which defines flagd configurations, including its feature flag sources</li>
+</ul>
+<p>In the given example, there's a <code>FeatureFlagSource</code> custom resource (CR) named <code>flag-sources</code>, configured to use the <code>FeatureFlag</code> CRs mentioned above.
+In simple terms, you can think of a <code>FeatureFlagSource</code> instance as a resource that associates a workload with one or many <code>FeatureFlag</code> instances (though it has other purposes as well).
+You can learn more about these configurations from <a href="https://flagd.dev/reference/openfeature-operator/crds/featureflagsource/">flag source configuration documentation</a></p>
+<p>Next, let's get started learning how OpenFeature is helping Fib3r manage this landing page!</p>
+<p>The company has been in the process of changing the name of our app, but legal hasn't quite finished the process yet.
+Here, we've defined a simple feature flag that can be used to update the name instantly without redeploying our application.
+Change the <code>"defaultVariant"</code> of the feature flag <code>new-welcome-message"</code> to <code>"on"</code> in the <code>ui-flags</code> CR, then redeploy the change with:</p>
+<pre><code class="hljs language-shell">kubectl apply -n default -f end-to-end.yaml
+</code></pre>
+<p>Notice that the welcome message has changed from "Welcome to FaaS: Fibonacci as a Service!" to "Fib3r: Math at the speed of the internet!".
+Great!
+Now, let's help the design team experiment with a new color palette...
+Let's change the color of our landing page.
+Change the <code>"defaultVariant"</code> of the <code>"hex-color"</code> within the <code>ui-flags</code> CR and use <code>kubectl</code> to apply the change again.
+You should notice the color of the page changes immediately.</p>
+<p>Flag evaluations can take into account contextual information about the user, application, or action.
+The <code>"fib-algo"</code> flag returns a different result if our email ends with <code>"@faas.com"</code>.</p>
+<p>Let's run the fibonacci calculator...
+Run it once as a "customer" (without being logged in).
+Then log in as an "employee" (use any email ending in <code>...@faas.com</code>) and observe the impact.
+This effect is driven by the rule defined in the <code>app-flags</code> CR, which controls our server-side flags and is predicated on the email address of the user.
+Feel free to experiment with your own flag values and rules!</p>
+<h2 id="cleaning-up">Cleaning up</h2>
+<p>If you used a kind cluster, you can clean everything up by running:</p>
+<pre><code class="hljs language-shell">kind delete cluster
+</code></pre>

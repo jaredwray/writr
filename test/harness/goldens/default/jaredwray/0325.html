@@ -1,0 +1,51 @@
+<blockquote>
+<p><strong>Availability:</strong> Registered in both the Node and browser builds.</p>
+</blockquote>
+<h2 id="i18n">i18n</h2>
+<h3 id="i18n-1">{{i18n}}</h3>
+<p>Looks up a translation key for the current language. The helper expects a <code>language</code> (or <code>lang</code>) property in the context, along with an object containing translations for that language.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>key</code> <strong>{String}</strong>: The translation key to look up (supports dot notation for nested keys)</li>
+<li><code>returns</code> <strong>{String}</strong>: The translated string</li>
+</ul>
+<p><strong>Example</strong></p>
+<p>Given the following context:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">language</span>: <span class="hljs-string">'en'</span>,
+  <span class="hljs-attr">en</span>: {
+    <span class="hljs-attr">greeting</span>: <span class="hljs-string">'Hello'</span>,
+    <span class="hljs-attr">messages</span>: {
+      <span class="hljs-attr">welcome</span>: <span class="hljs-string">'Welcome to our site'</span>
+    }
+  },
+  <span class="hljs-attr">es</span>: {
+    <span class="hljs-attr">greeting</span>: <span class="hljs-string">'Hola'</span>,
+    <span class="hljs-attr">messages</span>: {
+      <span class="hljs-attr">welcome</span>: <span class="hljs-string">'Bienvenido a nuestro sitio'</span>
+    }
+  }
+}
+</code></pre>
+<pre><code class="hljs language-handlebars">{{i18n "greeting"}}
+&#x3C;!-- Output: Hello -->
+
+{{i18n "messages.welcome"}}
+&#x3C;!-- Output: Welcome to our site -->
+</code></pre>
+<p>To switch languages, change the <code>language</code> property in the context:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">language</span>: <span class="hljs-string">'es'</span>,
+  <span class="hljs-comment">// ... translations</span>
+}
+</code></pre>
+<pre><code class="hljs language-handlebars">{{i18n "greeting"}}
+&#x3C;!-- Output: Hola -->
+</code></pre>
+<p><strong>Notes</strong></p>
+<ul>
+<li>The helper throws an error if the <code>key</code> parameter is not a string</li>
+<li>The helper throws an error if <code>language</code> or <code>lang</code> is not set or is not a string</li>
+<li>The helper throws an error if the language object is not found in the context</li>
+<li>The helper throws an error if the translation key is not found</li>
+</ul>

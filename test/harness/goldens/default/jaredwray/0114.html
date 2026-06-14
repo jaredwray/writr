@@ -1,0 +1,306 @@
+<h1 id="third-party-storage-adapters">Third-Party Storage Adapters</h1>
+<blockquote>
+<p>Community-built storage adapters for Keyv</p>
+</blockquote>
+<p>The Keyv community has built storage adapters for many different backends. These adapters allow you to use Keyv with databases and storage systems beyond the officially supported ones.</p>
+<p>Any storage adapter that follows the <code>KeyvStoreAdapter</code> interface will work seamlessly with Keyv.</p>
+<h1 id="available-adapters">Available Adapters</h1>
+<table>
+<thead>
+<tr>
+<th>Adapter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/huijiewei/keyv-sqlite">@resolid/keyv-sqlite</a></td>
+<td>SQLite storage adapter for Keyv</td>
+</tr>
+<tr>
+<td><a href="https://github.com/TimMikeladze/keyv-arango">keyv-arango</a></td>
+<td>ArangoDB storage adapter for Keyv</td>
+</tr>
+<tr>
+<td><a href="https://github.com/howlowck/keyv-azuretable">keyv-azuretable</a></td>
+<td>Azure Table Storage/API adapter for Keyv</td>
+</tr>
+<tr>
+<td><a href="https://github.com/zaaack/keyv-browser">keyv-browser</a></td>
+<td>Browser storage adapter including localStorage and indexedDB</td>
+</tr>
+<tr>
+<td><a href="https://npm.im/keyv-cloudflare">keyv-cloudflare</a></td>
+<td>Storage adapter for Cloudflare Workers KV</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/keyv-dynamodb">keyv-dynamodb</a></td>
+<td>DynamoDB storage adapter for Keyv</td>
+</tr>
+<tr>
+<td><a href="https://github.com/zaaack/keyv-file">keyv-file</a></td>
+<td>File system storage adapter for Keyv</td>
+</tr>
+<tr>
+<td><a href="https://github.com/goto-bus-stop/keyv-firestore">keyv-firestore</a></td>
+<td>Firebase Cloud Firestore adapter for Keyv</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/keyv-lru">keyv-lru</a></td>
+<td>LRU storage adapter for Keyv</td>
+</tr>
+<tr>
+<td><a href="https://github.com/momentohq/node-keyv-adaptor/">keyv-momento</a></td>
+<td>Momento storage adapter for Keyv</td>
+</tr>
+<tr>
+<td><a href="https://github.com/pmorgan3/keyv-mssql">keyv-mssql</a></td>
+<td>Microsoft SQL Server adapter for Keyv</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/keyv-null">keyv-null</a></td>
+<td>Null storage adapter for Keyv</td>
+</tr>
+<tr>
+<td><a href="https://github.com/mahdavipanah/keyv-upstash">keyv-upstash</a></td>
+<td>Upstash Redis adapter for Keyv</td>
+</tr>
+<tr>
+<td><a href="https://github.com/sindresorhus/quick-lru">quick-lru</a></td>
+<td>Simple "Least Recently Used" (LRU) cache</td>
+</tr>
+</tbody>
+</table>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>We love the community and the third-party storage adapters they have built. We welcome contributions of new storage adapters!</p>
+<h2 id="steps-to-add-your-adapter">Steps to Add Your Adapter</h2>
+<ol>
+<li><strong>Build your adapter</strong> following the <code>KeyvStoreAdapter</code> interface (see below)</li>
+<li><strong>Test your adapter</strong> using the official <a href="/docs/test-suite/">@keyv/test-suite</a> to ensure API compliance</li>
+<li><strong>Publish to npm</strong> with the <code>keyv</code> keyword in your <code>package.json</code></li>
+<li><strong>Submit a PR</strong> to the <a href="https://github.com/jaredwray/keyv">Keyv repository</a> adding your adapter to this list</li>
+</ol>
+<h2 id="creating-a-pull-request">Creating a Pull Request</h2>
+<p>Once your adapter is published to npm and tested, submit a pull request to add it to this page:</p>
+<ol>
+<li>Fork the <a href="https://github.com/jaredwray/keyv">Keyv repository</a></li>
+<li>Edit the file <code>website/site/docs/third-party-storage-adapters.md</code></li>
+<li>Add your adapter to the "Available Adapters" table in alphabetical order:
+<pre><code class="hljs language-markdown">| [<span class="hljs-string">your-adapter-name</span>](<span class="hljs-link">https://github.com/your-username/your-adapter</span>) | Brief description of your adapter |
+</code></pre>
+</li>
+<li>Create a pull request with:
+<ul>
+<li><strong>Title</strong>: <code>docs: add [your-adapter-name] to third-party storage adapters</code></li>
+<li><strong>Description</strong>: Include a link to your npm package and a brief explanation of what backend your adapter supports</li>
+</ul>
+</li>
+</ol>
+<p>We review pull requests regularly and appreciate your contributions to the Keyv ecosystem!</p>
+<h1 id="building-a-storage-adapter">Building a Storage Adapter</h1>
+<p>To build a storage adapter for Keyv, you need to implement the <code>KeyvStoreAdapter</code> interface. Here's the complete type definition:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">type</span> <span class="hljs-title class_">KeyvStorageGetResult</span>&#x3C;<span class="hljs-title class_">Value</span>> = { <span class="hljs-attr">value</span>?: <span class="hljs-title class_">Value</span>; <span class="hljs-attr">expires</span>?: <span class="hljs-built_in">number</span> } | <span class="hljs-literal">undefined</span>;
+
+<span class="hljs-keyword">type</span> <span class="hljs-title class_">IEventEmitter</span> = {
+  <span class="hljs-title function_">on</span>(<span class="hljs-attr">event</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">listener</span>: <span class="hljs-function">(<span class="hljs-params">...<span class="hljs-attr">args</span>: <span class="hljs-built_in">any</span>[]</span>) =></span> <span class="hljs-built_in">void</span>): <span class="hljs-title class_">IEventEmitter</span>;
+};
+
+<span class="hljs-keyword">type</span> <span class="hljs-title class_">KeyvStoreAdapter</span> = {
+  <span class="hljs-attr">namespace</span>?: <span class="hljs-built_in">string</span> | <span class="hljs-literal">undefined</span>;
+
+  <span class="hljs-comment">// Required methods</span>
+  get&#x3C;<span class="hljs-title class_">Value</span>>(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">KeyvStorageGetResult</span>&#x3C;<span class="hljs-title class_">Value</span>> | <span class="hljs-literal">undefined</span>>;
+  <span class="hljs-title function_">set</span>(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">value</span>: <span class="hljs-built_in">any</span>, <span class="hljs-attr">ttl</span>?: <span class="hljs-built_in">number</span>): <span class="hljs-built_in">any</span>;
+  <span class="hljs-title function_">delete</span>(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">boolean</span>>;
+  <span class="hljs-title function_">clear</span>(): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">void</span>>;
+
+  <span class="hljs-comment">// Optional methods for better performance</span>
+  setMany?(<span class="hljs-attr">values</span>: <span class="hljs-title class_">Array</span>&#x3C;{ <span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>; <span class="hljs-attr">value</span>: <span class="hljs-built_in">any</span>; <span class="hljs-attr">ttl</span>?: <span class="hljs-built_in">number</span> }>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">boolean</span>[] | <span class="hljs-literal">undefined</span>>;
+  has?(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">boolean</span>>;
+  hasMany?(<span class="hljs-attr">keys</span>: <span class="hljs-built_in">string</span>[]): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">boolean</span>[]>;
+  getMany?&#x3C;<span class="hljs-title class_">Value</span>>(<span class="hljs-attr">keys</span>: <span class="hljs-built_in">string</span>[]): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">Array</span>&#x3C;<span class="hljs-title class_">KeyvStorageGetResult</span>&#x3C;<span class="hljs-title class_">Value</span> | <span class="hljs-literal">undefined</span>>>>;
+  disconnect?(): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">void</span>>;
+  deleteMany?(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>[]): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">boolean</span>[]>;
+  iterator?&#x3C;<span class="hljs-title class_">Value</span>>(<span class="hljs-attr">namespace</span>?: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">AsyncGenerator</span>&#x3C;<span class="hljs-title class_">Array</span>&#x3C;<span class="hljs-built_in">string</span> | <span class="hljs-title class_">Awaited</span>&#x3C;<span class="hljs-title class_">Value</span>> | <span class="hljs-literal">undefined</span>>, <span class="hljs-built_in">void</span>>;
+} &#x26; <span class="hljs-title class_">IEventEmitter</span>;
+</code></pre>
+<h2 id="required-methods">Required Methods</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>get(key)</code></td>
+<td>Retrieve a value by key. Returns <code>undefined</code> if not found or expired.</td>
+</tr>
+<tr>
+<td><code>set(key, value, ttl?)</code></td>
+<td>Store a value with an optional TTL (time-to-live) in milliseconds.</td>
+</tr>
+<tr>
+<td><code>delete(key)</code></td>
+<td>Delete a key. Returns <code>true</code> if the key existed.</td>
+</tr>
+<tr>
+<td><code>clear()</code></td>
+<td>Delete all keys in the current namespace.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="optional-methods">Optional Methods</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>has(key)</code></td>
+<td>Check if a key exists.</td>
+</tr>
+<tr>
+<td><code>hasMany(keys)</code></td>
+<td>Check if multiple keys exist.</td>
+</tr>
+<tr>
+<td><code>getMany(keys)</code></td>
+<td>Retrieve multiple values at once.</td>
+</tr>
+<tr>
+<td><code>setMany(values)</code></td>
+<td>Store multiple values at once.</td>
+</tr>
+<tr>
+<td><code>deleteMany(keys)</code></td>
+<td>Delete multiple keys at once.</td>
+</tr>
+<tr>
+<td><code>disconnect()</code></td>
+<td>Close any open connections.</td>
+</tr>
+<tr>
+<td><code>iterator(namespace?)</code></td>
+<td>Async iterator over all keys/values in a namespace.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example-implementation">Example Implementation</h2>
+<p>Here's a minimal example of a custom storage adapter using an in-memory Map:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">EventEmitter</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'events'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">KeyvStoreAdapter</span>, <span class="hljs-title class_">KeyvStorageGetResult</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">CacheItem</span> {
+  <span class="hljs-attr">value</span>: <span class="hljs-built_in">any</span>;
+  <span class="hljs-attr">expires</span>?: <span class="hljs-built_in">number</span>;
+}
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyCustomStore</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">EventEmitter</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">KeyvStoreAdapter</span> {
+  <span class="hljs-keyword">private</span> <span class="hljs-attr">store</span>: <span class="hljs-title class_">Map</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-title class_">CacheItem</span>>;
+  <span class="hljs-keyword">public</span> <span class="hljs-attr">namespace</span>?: <span class="hljs-built_in">string</span>;
+
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"><span class="hljs-attr">options</span>: <span class="hljs-built_in">any</span> = {}</span>) {
+    <span class="hljs-variable language_">super</span>();
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">store</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>();
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">namespace</span> = options.<span class="hljs-property">namespace</span>;
+  }
+
+  <span class="hljs-keyword">async</span> get&#x3C;<span class="hljs-title class_">Value</span>>(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">KeyvStorageGetResult</span>&#x3C;<span class="hljs-title class_">Value</span>> | <span class="hljs-literal">undefined</span>> {
+    <span class="hljs-keyword">const</span> data = <span class="hljs-variable language_">this</span>.<span class="hljs-property">store</span>.<span class="hljs-title function_">get</span>(key);
+
+    <span class="hljs-keyword">if</span> (!data) {
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">undefined</span>;
+    }
+
+    <span class="hljs-comment">// Check if expired</span>
+    <span class="hljs-keyword">if</span> (data.<span class="hljs-property">expires</span> &#x26;&#x26; <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() > data.<span class="hljs-property">expires</span>) {
+      <span class="hljs-variable language_">this</span>.<span class="hljs-property">store</span>.<span class="hljs-title function_">delete</span>(key);
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">undefined</span>;
+    }
+
+    <span class="hljs-keyword">return</span> data <span class="hljs-keyword">as</span> <span class="hljs-title class_">KeyvStorageGetResult</span>&#x3C;<span class="hljs-title class_">Value</span>>;
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">set</span>(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">value</span>: <span class="hljs-built_in">any</span>, <span class="hljs-attr">ttl</span>?: <span class="hljs-built_in">number</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">boolean</span>> {
+    <span class="hljs-keyword">const</span> <span class="hljs-attr">data</span>: <span class="hljs-title class_">CacheItem</span> = {
+      value,
+      <span class="hljs-attr">expires</span>: ttl ? <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() + ttl : <span class="hljs-literal">undefined</span>,
+    };
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">store</span>.<span class="hljs-title function_">set</span>(key, data);
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">delete</span>(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">boolean</span>> {
+    <span class="hljs-keyword">return</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">store</span>.<span class="hljs-title function_">delete</span>(key);
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">clear</span>(): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">void</span>> {
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">store</span>.<span class="hljs-title function_">clear</span>();
+  }
+
+  <span class="hljs-comment">// Optional: Implement batch operations for better performance</span>
+  <span class="hljs-keyword">async</span> getMany&#x3C;<span class="hljs-title class_">Value</span>>(<span class="hljs-attr">keys</span>: <span class="hljs-built_in">string</span>[]): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">Array</span>&#x3C;<span class="hljs-title class_">KeyvStorageGetResult</span>&#x3C;<span class="hljs-title class_">Value</span> | <span class="hljs-literal">undefined</span>>>> {
+    <span class="hljs-keyword">const</span> <span class="hljs-attr">values</span>: <span class="hljs-title class_">Array</span>&#x3C;<span class="hljs-title class_">KeyvStorageGetResult</span>&#x3C;<span class="hljs-title class_">Value</span> | <span class="hljs-literal">undefined</span>>> = [];
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">of</span> keys) {
+      values.<span class="hljs-title function_">push</span>(<span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">get</span>&#x3C;<span class="hljs-title class_">Value</span>>(key));
+    }
+    <span class="hljs-keyword">return</span> values;
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">deleteMany</span>(<span class="hljs-attr">keys</span>: <span class="hljs-built_in">string</span>[]): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">boolean</span>[]> {
+    <span class="hljs-keyword">return</span> keys.<span class="hljs-title function_">map</span>(<span class="hljs-function">(<span class="hljs-params">key</span>) =></span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">store</span>.<span class="hljs-title function_">delete</span>(key));
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">has</span>(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">boolean</span>> {
+    <span class="hljs-keyword">const</span> data = <span class="hljs-variable language_">this</span>.<span class="hljs-property">store</span>.<span class="hljs-title function_">get</span>(key);
+    <span class="hljs-keyword">if</span> (!data) {
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+    }
+    <span class="hljs-keyword">if</span> (data.<span class="hljs-property">expires</span> &#x26;&#x26; <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() > data.<span class="hljs-property">expires</span>) {
+      <span class="hljs-variable language_">this</span>.<span class="hljs-property">store</span>.<span class="hljs-title function_">delete</span>(key);
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+    }
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">disconnect</span>(): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">void</span>> {
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">store</span>.<span class="hljs-title function_">clear</span>();
+  }
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-title class_">MyCustomStore</span>;
+</code></pre>
+<h2 id="using-your-custom-adapter">Using Your Custom Adapter</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">MyCustomStore</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'./my-custom-store'</span>;
+
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyCustomStore</span>({ <span class="hljs-attr">namespace</span>: <span class="hljs-string">'my-app'</span> });
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store });
+
+<span class="hljs-comment">// Use Keyv as normal</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar'</span>
+</code></pre>
+<h2 id="testing-your-adapter">Testing Your Adapter</h2>
+<p>Use the official <a href="/docs/test-suite/">@keyv/test-suite</a> to verify your adapter is API-compliant:</p>
+<pre><code class="hljs language-bash">npm install --save-dev vitest keyv @keyv/test-suite
+</code></pre>
+<p>Create a test file:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { describe } <span class="hljs-keyword">from</span> <span class="hljs-string">'vitest'</span>;
+<span class="hljs-keyword">import</span> keyvTestSuite <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/test-suite'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">MyCustomStore</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'./my-custom-store'</span>;
+
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">store</span> = (<span class="hljs-params"></span>) => <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyCustomStore</span>();
+<span class="hljs-title function_">keyvTestSuite</span>(describe, <span class="hljs-title class_">Keyv</span>, store);
+</code></pre>
+<p>Run with:</p>
+<pre><code class="hljs language-bash">npx vitest
+</code></pre>
+<h1 id="license">License</h1>
+<p><a href="LISCENCE">MIT © Jared Wray</a></p>

@@ -1,0 +1,797 @@
+<p><a href="https://github.com/jaredwray/cacheable"></a></p>
+<blockquote>
+<p>Cacheble Utils</p>
+</blockquote>
+<p><a href="https://codecov.io/gh/jaredwray/cacheable"><img src="https://codecov.io/gh/jaredwray/cacheable/branch/main/graph/badge.svg?token=lWZ9OBQ7GM" alt="codecov"></a>
+<a href="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://www.npmjs.com/package/@cacheable/utils"><img src="https://img.shields.io/npm/dm/@cacheable/utils.svg" alt="npm"></a>
+<a href="https://www.npmjs.com/package/@cacheable/utils"><img src="https://img.shields.io/npm/v/@cacheable/utils" alt="npm"></a>
+<a href="https://github.com/jaredwray/cacheable/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/cacheable" alt="license"></a></p>
+<p><code>@cacheable/utils</code> is a collecton of utility functions, helpers, and types for <code>cacheable</code> and other caching libraries. It provides a robust set of features to enhance caching capabilities, including:</p>
+<ul>
+<li>Data Types for Caching Items</li>
+<li>Hash Functions for Key Generation</li>
+<li>Coalesce Async for Handling Multiple Promises</li>
+<li>Statistics for Tracking Cache Metrics</li>
+<li>Sleep / Delay for Testing and Timing</li>
+<li>Memoization for wraping or get / set options</li>
+<li>Time to Live (TTL) Helpers</li>
+<li>Tag-Based Cache Invalidation</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#cacheable-types">Cacheable Types</a></li>
+<li><a href="#coalesce-async">Coalesce Async</a></li>
+<li><a href="#hash-functions">Hash Functions</a>
+<ul>
+<li><a href="#async-hashing-cryptographic-algorithms">Async Hashing (Cryptographic Algorithms)</a></li>
+<li><a href="#sync-hashing-non-cryptographic-algorithms">Sync Hashing (Non-Cryptographic Algorithms)</a></li>
+<li><a href="#available-hash-algorithms">Available Hash Algorithms</a></li>
+</ul>
+</li>
+<li><a href="#shorthand-time-helpers">Shorthand Time Helpers</a></li>
+<li><a href="#sleep-helper">Sleep Helper</a></li>
+<li><a href="#statistics">Statistics</a>
+<ul>
+<li><a href="#available-statistics">Available Statistics</a>
+<ul>
+<li><a href="#computed-properties">Computed Properties</a></li>
+<li><a href="#metadata">Metadata</a></li>
+</ul>
+</li>
+<li><a href="#enabling-disabling-and-clearing">Enabling, Disabling, and Clearing</a></li>
+<li><a href="#incrementing-and-decrementing">Incrementing and Decrementing</a></li>
+<li><a href="#snapshot">Snapshot</a></li>
+<li><a href="#event-driven-tracking">Event-Driven Tracking</a></li>
+<li><a href="#per-key-tracking-most-and-least-used-keys">Per-Key Tracking (Most and Least Used Keys)</a></li>
+</ul>
+</li>
+<li><a href="#time-to-live-ttl-helpers">Time to Live (TTL) Helpers</a></li>
+<li><a href="#run-if-function-helper">Run if Function Helper</a></li>
+<li><a href="#less-than-helper">Less Than Helper</a></li>
+<li><a href="#is-object-helper">Is Object Helper</a></li>
+<li><a href="#wrap--memoization-for-sync-and-async-functions">Wrap / Memoization for Sync and Async Functions</a></li>
+<li><a href="#get-or-set-memoization-function">Get Or Set Memoization Function</a></li>
+<li><a href="#cache-tags">Cache Tags</a></li>
+<li><a href="#how-to-contribute">How to Contribute</a></li>
+<li><a href="#license-and-copyright">License and Copyright</a></li>
+</ul>
+<h1 id="getting-started">Getting Started</h1>
+<pre><code class="hljs language-bash">npm install @cacheable/utils --save
+</code></pre>
+<h1 id="cacheable-types">Cacheable Types</h1>
+<p>The <code>@cacheable/utils</code> package provides various types that are used throughout the caching library. These types help in defining the structure of cached items, ensuring type safety and consistency across your caching operations.</p>
+<pre><code class="hljs language-typescript">
+<span class="hljs-comment">/**
+ * CacheableItem
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">Object</span>} <span class="hljs-variable">CacheableItem</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">key</span> - The key of the cacheable item
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">any</span>} <span class="hljs-variable">value</span> - The value of the cacheable item
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">number|string</span>} [ttl] - Time to Live - If you set a number it is miliseconds, if you set a string it is a human-readable
+ * format such as `1s` for 1 second or `1h` for 1 hour. Setting undefined means that it will use the default time-to-live. If both are
+ * undefined then it will not have a time-to-live.
+ */</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">CacheableItem</span> = {
+	<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>;
+	<span class="hljs-attr">value</span>: <span class="hljs-built_in">any</span>;
+	<span class="hljs-attr">ttl</span>?: <span class="hljs-built_in">number</span> | <span class="hljs-built_in">string</span>;
+};
+
+<span class="hljs-comment">/**
+ * CacheableStoreItem
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">Object</span>} <span class="hljs-variable">CacheableStoreItem</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">key</span> - The key of the cacheable store item
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">any</span>} <span class="hljs-variable">value</span> - The value of the cacheable store item
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">number</span>} [expires] - The expiration time in milliseconds since epoch. If not set, the item does not expire.
+ */</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">CacheableStoreItem</span> = {
+	<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>;
+	<span class="hljs-attr">value</span>: <span class="hljs-built_in">any</span>;
+	<span class="hljs-attr">expires</span>?: <span class="hljs-built_in">number</span>;
+};
+</code></pre>
+<h1 id="coalesce-async">Coalesce Async</h1>
+<p>The <code>coalesceAsync</code> function is a utility that allows you to handle multiple asynchronous operations efficiently. It was designed by <code>Douglas Cayers</code> <a href="https://github.com/douglascayers/promise-coalesce">https://github.com/douglascayers/promise-coalesce</a>. It helps in coalescing multiple promises into a single promise, ensuring that only one operation is executed at a time for the same key.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { coalesceAsync } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">fetchData</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params"><span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span></span>) => {
+  <span class="hljs-comment">// Simulate an asynchronous operation</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve</span>) =></span> <span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =></span> <span class="hljs-title function_">resolve</span>(<span class="hljs-string">`Data for <span class="hljs-subst">${key}</span>`</span>), <span class="hljs-number">1000</span>));
+};
+
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> <span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">all</span>([
+	<span class="hljs-title function_">coalesceAsync</span>(<span class="hljs-string">'my-key'</span>, fetchData),
+	<span class="hljs-title function_">coalesceAsync</span>(<span class="hljs-string">'my-key'</span>, fetchData),
+	<span class="hljs-title function_">coalesceAsync</span>(<span class="hljs-string">'my-key'</span>, fetchData),
+]);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result); <span class="hljs-comment">// Data for my-key only executed once</span>
+</code></pre>
+<h1 id="hash-functions">Hash Functions</h1>
+<p>The <code>@cacheable/utils</code> package provides hash functions that can be used to generate unique keys for caching operations. These functions are useful for creating consistent and unique identifiers for cached items.</p>
+<p>The hashing API provides both <strong>async</strong> (for cryptographic algorithms) and <strong>sync</strong> (for non-cryptographic algorithms) methods.</p>
+<h2 id="async-hashing-cryptographic-algorithms">Async Hashing (Cryptographic Algorithms)</h2>
+<p>Use <code>hash()</code> and <code>hashToNumber()</code> for cryptographic algorithms like SHA-256, SHA-384, and SHA-512:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { hash, hashToNumber, <span class="hljs-title class_">HashAlgorithm</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-comment">// Hash using SHA-256 (default)</span>
+<span class="hljs-keyword">const</span> key = <span class="hljs-keyword">await</span> <span class="hljs-title function_">hash</span>(<span class="hljs-string">'my-cache-key'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key); <span class="hljs-comment">// Unique hash for 'my-cache-key'</span>
+
+<span class="hljs-comment">// Hash with specific algorithm</span>
+<span class="hljs-keyword">const</span> sha512Hash = <span class="hljs-keyword">await</span> <span class="hljs-title function_">hash</span>(<span class="hljs-string">'my-data'</span>, { <span class="hljs-attr">algorithm</span>: <span class="hljs-title class_">HashAlgorithm</span>.<span class="hljs-property">SHA512</span> });
+
+<span class="hljs-comment">// Convert hash to number within range</span>
+<span class="hljs-keyword">const</span> min = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">const</span> max = <span class="hljs-number">10</span>;
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> <span class="hljs-title function_">hashToNumber</span>({<span class="hljs-attr">foo</span>: <span class="hljs-string">'bar'</span>}, { min, max, <span class="hljs-attr">algorithm</span>: <span class="hljs-title class_">HashAlgorithm</span>.<span class="hljs-property">SHA256</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result); <span class="hljs-comment">// A number between 0 and 10 based on the hash value</span>
+</code></pre>
+<h2 id="sync-hashing-non-cryptographic-algorithms">Sync Hashing (Non-Cryptographic Algorithms)</h2>
+<p>Use <code>hashSync()</code> and <code>hashToNumberSync()</code> for faster, non-cryptographic algorithms like DJB2, FNV1, MURMER, and CRC32:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { hashSync, hashToNumberSync, <span class="hljs-title class_">HashAlgorithm</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-comment">// Hash using DJB2 (default for sync)</span>
+<span class="hljs-keyword">const</span> key = <span class="hljs-title function_">hashSync</span>(<span class="hljs-string">'my-cache-key'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key); <span class="hljs-comment">// Unique hash for 'my-cache-key'</span>
+
+<span class="hljs-comment">// Hash with specific algorithm</span>
+<span class="hljs-keyword">const</span> fnv1Hash = <span class="hljs-title function_">hashSync</span>(<span class="hljs-string">'my-data'</span>, { <span class="hljs-attr">algorithm</span>: <span class="hljs-title class_">HashAlgorithm</span>.<span class="hljs-property">FNV1</span> });
+
+<span class="hljs-comment">// Convert hash to number within range</span>
+<span class="hljs-keyword">const</span> min = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">const</span> max = <span class="hljs-number">10</span>;
+<span class="hljs-keyword">const</span> result = <span class="hljs-title function_">hashToNumberSync</span>({<span class="hljs-attr">foo</span>: <span class="hljs-string">'bar'</span>}, { min, max, <span class="hljs-attr">algorithm</span>: <span class="hljs-title class_">HashAlgorithm</span>.<span class="hljs-property">DJB2</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result); <span class="hljs-comment">// A number between 0 and 10 based on the hash value</span>
+</code></pre>
+<h2 id="available-hash-algorithms">Available Hash Algorithms</h2>
+<p><strong>Cryptographic (Async):</strong></p>
+<ul>
+<li><code>HashAlgorithm.SHA256</code> - SHA-256 (default for async methods)</li>
+<li><code>HashAlgorithm.SHA384</code> - SHA-384</li>
+<li><code>HashAlgorithm.SHA512</code> - SHA-512</li>
+</ul>
+<p><strong>Non-Cryptographic (Sync):</strong></p>
+<ul>
+<li><code>HashAlgorithm.DJB2</code> - DJB2 (default for sync methods)</li>
+<li><code>HashAlgorithm.FNV1</code> - FNV-1</li>
+<li><code>HashAlgorithm.MURMER</code> - Murmur hash</li>
+<li><code>HashAlgorithm.CRC32</code> - CRC32</li>
+</ul>
+<h1 id="shorthand-time-helpers">Shorthand Time Helpers</h1>
+<p>The <code>@cacheable/utils</code> package provides a shorthand function to convert human-readable time strings into milliseconds. This is useful for setting time-to-live (TTL) values in caching operations.</p>
+<p>You can also use the <code>shorthandToMilliseconds</code> function:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { shorthandToMilliseconds } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-keyword">const</span> milliseconds = <span class="hljs-title function_">shorthandToMilliseconds</span>(<span class="hljs-string">'1h'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(milliseconds); <span class="hljs-comment">// 3600000</span>
+</code></pre>
+<p>You can also use the <code>shorthandToTime</code> function to get the current date plus the shorthand time:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { shorthandToTime } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-keyword">const</span> currentDate = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>();
+<span class="hljs-keyword">const</span> timeInMs = <span class="hljs-title function_">shorthandToTime</span>(<span class="hljs-string">'1h'</span>, currentDate);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(timeInMs); <span class="hljs-comment">// Current date + 1 hour in milliseconds since epoch</span>
+</code></pre>
+<h1 id="sleep-helper">Sleep Helper</h1>
+<p>The <code>sleep</code> function is a utility that allows you to pause execution for a specified duration. This can be useful in testing scenarios or when you need to introduce delays in your code.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { sleep } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">sleep</span>(<span class="hljs-number">1000</span>); <span class="hljs-comment">// Pause for 1 second</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Execution resumed after 1 second'</span>);
+</code></pre>
+<h1 id="statistics">Statistics</h1>
+<p>The <code>Stats</code> class provides a unified, event-driven way to track caching metrics such as hits, misses, hit rate, item counts, and approximate memory usage. It can be driven two ways:</p>
+<ul>
+<li><strong>Imperatively</strong> — call <code>increment</code> / <code>decrement</code> (or the named helpers) directly from your code.</li>
+<li><strong>Event-driven</strong> — <code>subscribe</code> it to an event emitter (such as <code>@cacheable/node-cache</code> or a Node <code>EventEmitter</code>) and let matching events update the counters automatically.</li>
+</ul>
+<p>Statistics are <strong>opt-in</strong>: a new <code>Stats</code> instance is disabled by default and ignores every update until enabled, so there is zero tracking overhead unless you ask for it.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Stats</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-keyword">const</span> stats = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Stats</span>({ <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span> });
+
+stats.<span class="hljs-title function_">incrementHits</span>();
+stats.<span class="hljs-title function_">incrementMisses</span>();
+stats.<span class="hljs-title function_">incrementGets</span>();
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats.<span class="hljs-property">hits</span>);    <span class="hljs-comment">// 1</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats.<span class="hljs-property">misses</span>);  <span class="hljs-comment">// 1</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats.<span class="hljs-property">hitRate</span>); <span class="hljs-comment">// 0.5</span>
+</code></pre>
+<h2 id="available-statistics">Available Statistics</h2>
+<p>Every counter is exposed as a read-only property:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hits</code></td>
+<td><code>number</code></td>
+<td>Number of cache hits.</td>
+</tr>
+<tr>
+<td><code>misses</code></td>
+<td><code>number</code></td>
+<td>Number of cache misses.</td>
+</tr>
+<tr>
+<td><code>gets</code></td>
+<td><code>number</code></td>
+<td>Number of get operations.</td>
+</tr>
+<tr>
+<td><code>sets</code></td>
+<td><code>number</code></td>
+<td>Number of set operations.</td>
+</tr>
+<tr>
+<td><code>deletes</code></td>
+<td><code>number</code></td>
+<td>Number of delete operations.</td>
+</tr>
+<tr>
+<td><code>clears</code></td>
+<td><code>number</code></td>
+<td>Number of clear operations.</td>
+</tr>
+<tr>
+<td><code>count</code></td>
+<td><code>number</code></td>
+<td>Number of items currently tracked.</td>
+</tr>
+<tr>
+<td><code>ksize</code></td>
+<td><code>number</code></td>
+<td>Approximate size of all keys, in bytes.</td>
+</tr>
+<tr>
+<td><code>vsize</code></td>
+<td><code>number</code></td>
+<td>Approximate size of all values, in bytes.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="computed-properties">Computed Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hitRate</code></td>
+<td><code>number</code></td>
+<td><code>hits / (hits + misses)</code>, or <code>0</code> when there have been no lookups.</td>
+</tr>
+<tr>
+<td><code>missRate</code></td>
+<td><code>number</code></td>
+<td><code>misses / (hits + misses)</code>, or <code>0</code> when there have been no lookups.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="metadata">Metadata</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td><code>boolean</code></td>
+<td>Whether tracking is currently on.</td>
+</tr>
+<tr>
+<td><code>lastUpdated</code></td>
+<td><code>number | undefined</code></td>
+<td>Timestamp (ms since epoch) of the last update while enabled.</td>
+</tr>
+<tr>
+<td><code>lastReset</code></td>
+<td><code>number | undefined</code></td>
+<td>Timestamp (ms since epoch) of the last <code>reset()</code> / <code>clear()</code>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="enabling-disabling-and-clearing">Enabling, Disabling, and Clearing</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> stats = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Stats</span>(); <span class="hljs-comment">// disabled by default</span>
+
+stats.<span class="hljs-title function_">enable</span>();          <span class="hljs-comment">// start tracking (or: stats.enabled = true)</span>
+stats.<span class="hljs-title function_">incrementHits</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats.<span class="hljs-property">hits</span>); <span class="hljs-comment">// 1</span>
+
+stats.<span class="hljs-title function_">disable</span>();         <span class="hljs-comment">// stop tracking (or: stats.enabled = false)</span>
+stats.<span class="hljs-title function_">incrementHits</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats.<span class="hljs-property">hits</span>); <span class="hljs-comment">// still 1</span>
+
+stats.<span class="hljs-title function_">clear</span>();           <span class="hljs-comment">// reset every counter back to 0 (alias of reset())</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats.<span class="hljs-property">hits</span>); <span class="hljs-comment">// 0</span>
+</code></pre>
+<ul>
+<li><code>reset()</code> / <code>clear()</code> — set every counter back to <code>0</code> and record <code>lastReset</code>.</li>
+<li><code>resetStoreValues()</code> — reset only <code>count</code>, <code>ksize</code>, and <code>vsize</code>, leaving the hit/miss history intact.</li>
+</ul>
+<h2 id="incrementing-and-decrementing">Incrementing and Decrementing</h2>
+<p>Use the unified <code>increment</code> / <code>decrement</code> methods with any counter field, or the named helpers. All updates are ignored while disabled.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> stats = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Stats</span>({ <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-comment">// Unified API — optional amount (defaults to 1)</span>
+stats.<span class="hljs-title function_">increment</span>(<span class="hljs-string">'hits'</span>);
+stats.<span class="hljs-title function_">increment</span>(<span class="hljs-string">'sets'</span>, <span class="hljs-number">5</span>);
+stats.<span class="hljs-title function_">decrement</span>(<span class="hljs-string">'count'</span>, <span class="hljs-number">2</span>);
+
+<span class="hljs-comment">// Named helpers</span>
+stats.<span class="hljs-title function_">incrementHits</span>();
+stats.<span class="hljs-title function_">incrementMisses</span>();
+stats.<span class="hljs-title function_">incrementGets</span>();
+stats.<span class="hljs-title function_">incrementSets</span>();
+stats.<span class="hljs-title function_">incrementDeletes</span>();
+stats.<span class="hljs-title function_">incrementClears</span>();
+stats.<span class="hljs-title function_">incrementCount</span>();
+stats.<span class="hljs-title function_">decreaseCount</span>();
+
+<span class="hljs-comment">// Approximate key/value sizes</span>
+stats.<span class="hljs-title function_">incrementKSize</span>(<span class="hljs-string">'my-key'</span>);  <span class="hljs-comment">// adds the byte size of the key</span>
+stats.<span class="hljs-title function_">incrementVSize</span>({ <span class="hljs-attr">a</span>: <span class="hljs-number">1</span> });  <span class="hljs-comment">// adds the byte size of the value</span>
+stats.<span class="hljs-title function_">decreaseKSize</span>(<span class="hljs-string">'my-key'</span>);
+stats.<span class="hljs-title function_">decreaseVSize</span>({ <span class="hljs-attr">a</span>: <span class="hljs-number">1</span> });
+stats.<span class="hljs-title function_">setCount</span>(<span class="hljs-number">10</span>);              <span class="hljs-comment">// set the item count directly</span>
+</code></pre>
+<p><code>StatField</code> is the union of countable fields: <code>'hits' | 'misses' | 'gets' | 'sets' | 'deletes' | 'clears' | 'count'</code>.</p>
+<h2 id="snapshot">Snapshot</h2>
+<p><code>toJSON()</code> (aliased as <code>snapshot()</code>) returns a plain object of every counter, the computed rates, and the timestamps — handy for logging or sending to a metrics system.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> stats = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Stats</span>({ <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span> });
+stats.<span class="hljs-title function_">incrementHits</span>(<span class="hljs-number">3</span>);
+stats.<span class="hljs-title function_">incrementMisses</span>();
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats.<span class="hljs-title function_">toJSON</span>());
+<span class="hljs-comment">// {</span>
+<span class="hljs-comment">//   enabled: true,</span>
+<span class="hljs-comment">//   hits: 3, misses: 1, gets: 0, sets: 0, deletes: 0, clears: 0,</span>
+<span class="hljs-comment">//   vsize: 0, ksize: 0, count: 0,</span>
+<span class="hljs-comment">//   hitRate: 0.75, missRate: 0.25,</span>
+<span class="hljs-comment">//   lastUpdated: 1749513600000, lastReset: undefined</span>
+<span class="hljs-comment">// }</span>
+</code></pre>
+<h2 id="event-driven-tracking">Event-Driven Tracking</h2>
+<p>Instead of calling the increment methods yourself, you can <code>subscribe</code> a <code>Stats</code> instance to an emitter and have events update the counters automatically. The emitter is duck-typed — anything with <code>.on()</code> (plus <code>.off()</code> or <code>.removeListener()</code> to detach) works, including <code>Hookified</code>-based classes and Node's <code>EventEmitter</code>.</p>
+<p>An <strong>event map</strong> describes how each event name updates the stats. A map value can be:</p>
+<ul>
+<li>a single field — <code>"sets"</code></li>
+<li>an array of fields — <code>["hits", "gets"]</code></li>
+<li>a custom handler — <code>(stats, ...args) => void</code></li>
+</ul>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Stats</span>, nodeCacheStatsEventMap } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">NodeCache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/node-cache'</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NodeCache</span>();
+<span class="hljs-keyword">const</span> stats = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Stats</span>({ <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-comment">// nodeCacheStatsEventMap maps set -> sets, del -> deletes, flush -> clears,</span>
+<span class="hljs-comment">// and flush_stats -> reset.</span>
+stats.<span class="hljs-title function_">subscribe</span>(cache, nodeCacheStatsEventMap);
+
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats.<span class="hljs-property">sets</span>); <span class="hljs-comment">// 1</span>
+
+stats.<span class="hljs-title function_">unsubscribe</span>(); <span class="hljs-comment">// detach all listeners (or pass an emitter to detach just one)</span>
+</code></pre>
+<p>You can also provide your own map for any emitter:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">EventEmitter</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'node:events'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Stats</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-keyword">const</span> emitter = <span class="hljs-keyword">new</span> <span class="hljs-title class_">EventEmitter</span>();
+<span class="hljs-keyword">const</span> stats = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Stats</span>({ <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span> });
+
+stats.<span class="hljs-title function_">subscribe</span>(emitter, {
+  <span class="hljs-string">'cache:hit'</span>: [<span class="hljs-string">'hits'</span>, <span class="hljs-string">'gets'</span>],
+  <span class="hljs-string">'cache:miss'</span>: [<span class="hljs-string">'misses'</span>, <span class="hljs-string">'gets'</span>],
+  <span class="hljs-attr">evicted</span>: <span class="hljs-function">(<span class="hljs-params">s</span>) =></span> s.<span class="hljs-title function_">incrementDeletes</span>(),
+});
+
+emitter.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'cache:hit'</span>, { <span class="hljs-attr">key</span>: <span class="hljs-string">'a'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats.<span class="hljs-property">hitRate</span>); <span class="hljs-comment">// 1</span>
+</code></pre>
+<p>You can subscribe to multiple emitters from a single <code>Stats</code> instance, and pass an emitter to <code>unsubscribe(emitter)</code> to detach just that one. Counting is gated by <code>enabled</code>, so you can subscribe first and toggle tracking on later — handlers do not run at all while disabled.</p>
+<h2 id="per-key-tracking-most-and-least-used-keys">Per-Key Tracking (Most and Least Used Keys)</h2>
+<p>To find your hottest and coldest keys, enable per-key tracking with <code>trackKeys</code>. Each recorded key keeps its own breakdown of <code>hits</code>, <code>misses</code>, <code>gets</code>, <code>sets</code>, and <code>deletes</code>, plus a computed total <code>count</code> and per-key <code>hitRate</code>.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Stats</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-keyword">const</span> stats = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Stats</span>({ <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">trackKeys</span>: <span class="hljs-literal">true</span> });
+
+stats.<span class="hljs-title function_">recordKey</span>(<span class="hljs-string">'user:1'</span>, <span class="hljs-string">'hits'</span>);
+stats.<span class="hljs-title function_">recordKey</span>(<span class="hljs-string">'user:1'</span>, <span class="hljs-string">'gets'</span>, <span class="hljs-number">5</span>);
+stats.<span class="hljs-title function_">recordKey</span>(<span class="hljs-string">'user:2'</span>, <span class="hljs-string">'misses'</span>);
+
+<span class="hljs-comment">// 100 most used keys by total operations (descending)</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats.<span class="hljs-title function_">mostUsedKeys</span>(<span class="hljs-number">100</span>));
+<span class="hljs-comment">// [</span>
+<span class="hljs-comment">//   { key: 'user:1', count: 6, hits: 1, misses: 0, gets: 5, sets: 0, deletes: 0, hitRate: 1 },</span>
+<span class="hljs-comment">//   { key: 'user:2', count: 1, hits: 0, misses: 1, gets: 0, sets: 0, deletes: 0, hitRate: 0 }</span>
+<span class="hljs-comment">// ]</span>
+
+<span class="hljs-comment">// 100 least used keys by total operations (ascending)</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats.<span class="hljs-title function_">leastUsedKeys</span>(<span class="hljs-number">100</span>));
+
+<span class="hljs-comment">// Rank by a single counter instead of the total</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats.<span class="hljs-title function_">mostUsedKeys</span>(<span class="hljs-number">100</span>, <span class="hljs-string">'hits'</span>));
+
+<span class="hljs-comment">// Inspect one key, or how many keys are tracked</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats.<span class="hljs-title function_">keyStats</span>(<span class="hljs-string">'user:1'</span>));
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stats.<span class="hljs-property">trackedKeyCount</span>);
+
+stats.<span class="hljs-title function_">clearKeys</span>(); <span class="hljs-comment">// clear per-key stats only (reset() clears these too)</span>
+</code></pre>
+<p>Both <code>mostUsedKeys</code> and <code>leastUsedKeys</code> default to 100 entries, and <code>trackedKeys</code> is included in <code>toJSON()</code> snapshots.</p>
+<p>Per-key tracking is fed two ways, just like the aggregate counters:</p>
+<ul>
+<li><strong>Imperatively</strong> — call <code>recordKey(key, field, amount?)</code> wherever you already increment stats.</li>
+<li><strong>Event-driven</strong> — <code>nodeCacheStatsEventMap</code> automatically records keys from <code>set</code>/<code>del</code> events when <code>trackKeys</code> is on, and custom event-map handlers can call <code>recordKey</code> with whatever the payload carries.</li>
+</ul>
+<p>Memory is proportional to the number of unique keys tracked, so <code>trackKeys</code> is off by default. You can also set <code>maxTrackedKeys</code> as a safety cap — when exceeded, the lowest-count keys are pruned. Note that pruning keeps <code>mostUsedKeys</code> approximately accurate but makes <code>leastUsedKeys</code> unreliable (the pruned keys <em>are</em> the least used), so leave it unset if you need exact least-used-key rankings.</p>
+<blockquote>
+<p><strong>Note:</strong> a built-in map is provided only where a library's events map cleanly to stats. <code>nodeCacheStatsEventMap</code> is included because <code>@cacheable/node-cache</code> emits each lifecycle event exactly once. Libraries that emit per-store probes or omit events on a miss (such as <code>cacheable</code> and <code>cache-manager</code>) should be wired with a custom map or driven imperatively so the counts stay accurate.</p>
+</blockquote>
+<h1 id="time-to-live-ttl-helpers">Time to Live (TTL) Helpers</h1>
+<p>The <code>@cacheable/utils</code> package provides helpers for managing time-to-live (TTL) values for cached items.</p>
+<p>You can use the <code>calculateTtlFromExpiration</code> function to calculate the TTL based on an expiration date:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { calculateTtlFromExpiration } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-keyword">const</span> expirationDate = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>(<span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() + <span class="hljs-number">1000</span> * <span class="hljs-number">60</span> * <span class="hljs-number">5</span>); <span class="hljs-comment">// 5 minutes from now</span>
+<span class="hljs-keyword">const</span> ttl = <span class="hljs-title function_">calculateTtlFromExpiration</span>(<span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>(), expirationDate);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(ttl); <span class="hljs-comment">// 300000</span>
+</code></pre>
+<p>You can also use <code>getTtlFromExpires</code> to get the TTL from an expiration date:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { getTtlFromExpires } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-keyword">const</span> expirationDate = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>(<span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() + <span class="hljs-number">1000</span> * <span class="hljs-number">60</span> * <span class="hljs-number">5</span>); <span class="hljs-comment">// 5 minutes from now</span>
+<span class="hljs-keyword">const</span> ttl = <span class="hljs-title function_">getTtlFromExpires</span>(expirationDate);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(ttl); <span class="hljs-comment">// 300000</span>
+</code></pre>
+<p>You can use <code>getCascadingTtl</code> to get the TTL for cascading cache operations:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { getCascadingTtl } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+<span class="hljs-keyword">const</span> cacheableTtl = <span class="hljs-number">1000</span> * <span class="hljs-number">60</span> * <span class="hljs-number">5</span>; <span class="hljs-comment">// 5 minutes</span>
+<span class="hljs-keyword">const</span> primaryTtl = <span class="hljs-number">1000</span> * <span class="hljs-number">60</span> * <span class="hljs-number">2</span>; <span class="hljs-comment">// 2 minutes</span>
+<span class="hljs-keyword">const</span> secondaryTtl = <span class="hljs-number">1000</span> * <span class="hljs-number">60</span>; <span class="hljs-comment">// 1 minute</span>
+<span class="hljs-keyword">const</span> ttl = <span class="hljs-title function_">getCascadingTtl</span>(cacheableTtl, primaryTtl, secondaryTtl);
+</code></pre>
+<h1 id="run-if-function-helper">Run if Function Helper</h1>
+<p>The <code>runIfFn</code> utility function provides a convenient way to conditionally execute functions or return values based on whether the input is a function or not. This pattern is commonly used in UI libraries and configuration systems where values can be either static or computed.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { runIfFn } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-comment">// Static value - returns the value as-is</span>
+<span class="hljs-keyword">const</span> staticValue = <span class="hljs-title function_">runIfFn</span>(<span class="hljs-string">'hello world'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(staticValue); <span class="hljs-comment">// 'hello world'</span>
+
+<span class="hljs-comment">// Function with no arguments - executes the function</span>
+<span class="hljs-keyword">const</span> dynamicValue = <span class="hljs-title function_">runIfFn</span>(<span class="hljs-function">() =></span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>().<span class="hljs-title function_">toISOString</span>());
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(dynamicValue); <span class="hljs-comment">// Current timestamp</span>
+
+<span class="hljs-comment">// Function with arguments - executes with provided arguments</span>
+<span class="hljs-keyword">const</span> sum = <span class="hljs-title function_">runIfFn</span>(<span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">a</span>: <span class="hljs-built_in">number</span>, <span class="hljs-attr">b</span>: <span class="hljs-built_in">number</span></span>) =></span> a + b, <span class="hljs-number">5</span>, <span class="hljs-number">10</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(sum); <span class="hljs-comment">// 15</span>
+
+<span class="hljs-comment">// Complex example with conditional logic</span>
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">getConfig</span> = (<span class="hljs-params"><span class="hljs-attr">isDevelopment</span>: <span class="hljs-built_in">boolean</span></span>) => ({
+  <span class="hljs-attr">apiUrl</span>: isDevelopment ? <span class="hljs-string">'http://localhost:3000'</span> : <span class="hljs-string">'https://api.example.com'</span>,
+  <span class="hljs-attr">timeout</span>: isDevelopment ? <span class="hljs-number">5000</span> : <span class="hljs-number">30000</span>
+});
+
+<span class="hljs-keyword">const</span> config = <span class="hljs-title function_">runIfFn</span>(getConfig, <span class="hljs-literal">true</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(config); <span class="hljs-comment">// { apiUrl: 'http://localhost:3000', timeout: 5000 }</span>
+</code></pre>
+<h1 id="less-than-helper">Less Than Helper</h1>
+<p>The <code>lessThan</code> utility function provides a safe way to compare two values and determine if the first value is less than the second. It only performs the comparison if both values are valid numbers, returning <code>false</code> for any non-number inputs.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { lessThan } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-comment">// Basic number comparisons</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">lessThan</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">lessThan</span>(<span class="hljs-number">2</span>, <span class="hljs-number">1</span>)); <span class="hljs-comment">// false</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">lessThan</span>(<span class="hljs-number">1</span>, <span class="hljs-number">1</span>)); <span class="hljs-comment">// false</span>
+
+<span class="hljs-comment">// Works with negative numbers</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">lessThan</span>(-<span class="hljs-number">1</span>, <span class="hljs-number">0</span>)); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">lessThan</span>(-<span class="hljs-number">2</span>, -<span class="hljs-number">1</span>)); <span class="hljs-comment">// true</span>
+
+<span class="hljs-comment">// Works with decimal numbers</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">lessThan</span>(<span class="hljs-number">1.5</span>, <span class="hljs-number">2.5</span>)); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">lessThan</span>(<span class="hljs-number">2.7</span>, <span class="hljs-number">2.7</span>)); <span class="hljs-comment">// false</span>
+
+<span class="hljs-comment">// Safe handling of non-number values</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">lessThan</span>(<span class="hljs-string">"1"</span>, <span class="hljs-number">2</span>)); <span class="hljs-comment">// false</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">lessThan</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"2"</span>)); <span class="hljs-comment">// false</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">lessThan</span>(<span class="hljs-literal">null</span>, <span class="hljs-number">1</span>)); <span class="hljs-comment">// false</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">lessThan</span>(<span class="hljs-literal">undefined</span>, <span class="hljs-number">1</span>)); <span class="hljs-comment">// false</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">lessThan</span>(<span class="hljs-title class_">NaN</span>, <span class="hljs-number">1</span>)); <span class="hljs-comment">// false</span>
+
+<span class="hljs-comment">// Useful in filtering and sorting operations</span>
+<span class="hljs-keyword">const</span> numbers = [<span class="hljs-number">5</span>, <span class="hljs-number">2</span>, <span class="hljs-number">8</span>, <span class="hljs-number">1</span>, <span class="hljs-number">9</span>];
+<span class="hljs-keyword">const</span> lessThanFive = numbers.<span class="hljs-title function_">filter</span>(<span class="hljs-function"><span class="hljs-params">n</span> =></span> <span class="hljs-title function_">lessThan</span>(n, <span class="hljs-number">5</span>));
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(lessThanFive); <span class="hljs-comment">// [2, 1]</span>
+
+<span class="hljs-comment">// Safe comparison in conditional logic</span>
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">processValue</span>(<span class="hljs-params"><span class="hljs-attr">a</span>?: <span class="hljs-built_in">number</span>, <span class="hljs-attr">b</span>?: <span class="hljs-built_in">number</span></span>) {
+  <span class="hljs-keyword">if</span> (<span class="hljs-title function_">lessThan</span>(a, b)) {
+    <span class="hljs-keyword">return</span> <span class="hljs-string">`<span class="hljs-subst">${a}</span> is less than <span class="hljs-subst">${b}</span>`</span>;
+  }
+  <span class="hljs-keyword">return</span> <span class="hljs-string">'Invalid comparison or a >= b'</span>;
+}
+</code></pre>
+<p>This utility is particularly useful when dealing with potentially undefined or invalid numeric values, ensuring type safety in comparison operations.</p>
+<h1 id="is-object-helper">Is Object Helper</h1>
+<p>The <code>isObject</code> utility function provides a type-safe way to determine if a value is a plain object. It returns <code>true</code> for objects but <code>false</code> for arrays, <code>null</code>, functions, and primitive types. This function also serves as a TypeScript type guard.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { isObject } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-comment">// Basic object detection</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>({})); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John'</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">30</span> })); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>(<span class="hljs-title class_">Object</span>.<span class="hljs-title function_">create</span>(<span class="hljs-literal">null</span>))); <span class="hljs-comment">// true</span>
+
+<span class="hljs-comment">// Arrays are not considered objects</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>([])); <span class="hljs-comment">// false</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>])); <span class="hljs-comment">// false</span>
+
+<span class="hljs-comment">// null is not considered an object (despite typeof null === 'object')</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>(<span class="hljs-literal">null</span>)); <span class="hljs-comment">// false</span>
+
+<span class="hljs-comment">// Primitive types return false</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>(<span class="hljs-string">'string'</span>)); <span class="hljs-comment">// false</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>(<span class="hljs-number">123</span>)); <span class="hljs-comment">// false</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>(<span class="hljs-literal">true</span>)); <span class="hljs-comment">// false</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>(<span class="hljs-literal">undefined</span>)); <span class="hljs-comment">// false</span>
+
+<span class="hljs-comment">// Functions return false</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>(<span class="hljs-function">() =></span> {})); <span class="hljs-comment">// false</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>(<span class="hljs-title class_">Date</span>)); <span class="hljs-comment">// false</span>
+
+<span class="hljs-comment">// Built-in object types return true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>())); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>(<span class="hljs-regexp">/regex/</span>)); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'test'</span>))); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">isObject</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>())); <span class="hljs-comment">// true</span>
+
+<span class="hljs-comment">// TypeScript type guard usage</span>
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">processValue</span>(<span class="hljs-params"><span class="hljs-attr">value</span>: <span class="hljs-built_in">unknown</span></span>) {
+  <span class="hljs-keyword">if</span> (isObject&#x3C;{ <span class="hljs-attr">name</span>: <span class="hljs-built_in">string</span>; <span class="hljs-attr">age</span>: <span class="hljs-built_in">number</span> }>(value)) {
+    <span class="hljs-comment">// TypeScript now knows value is an object with name and age properties</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Name: <span class="hljs-subst">${value.name}</span>, Age: <span class="hljs-subst">${value.age}</span>`</span>);
+  }
+}
+
+<span class="hljs-comment">// Useful for configuration validation</span>
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">validateConfig</span>(<span class="hljs-params"><span class="hljs-attr">config</span>: <span class="hljs-built_in">unknown</span></span>) {
+  <span class="hljs-keyword">if</span> (!<span class="hljs-title function_">isObject</span>(config)) {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'Configuration must be an object'</span>);
+  }
+
+  <span class="hljs-comment">// Safe to access object properties</span>
+  <span class="hljs-keyword">return</span> config;
+}
+
+<span class="hljs-comment">// Filtering arrays for objects only</span>
+<span class="hljs-keyword">const</span> mixedArray = [<span class="hljs-number">1</span>, <span class="hljs-string">'string'</span>, {}, [], <span class="hljs-literal">null</span>, { <span class="hljs-attr">valid</span>: <span class="hljs-literal">true</span> }];
+<span class="hljs-keyword">const</span> objectsOnly = mixedArray.<span class="hljs-title function_">filter</span>(isObject);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(objectsOnly); <span class="hljs-comment">// [{}', { valid: true }]</span>
+</code></pre>
+<p>This utility is particularly useful for:</p>
+<ul>
+<li><strong>Type validation</strong> - Ensuring values are objects before accessing properties</li>
+<li><strong>TypeScript type guarding</strong> - Narrowing types in conditional blocks</li>
+<li><strong>Configuration parsing</strong> - Validating that configuration values are objects</li>
+<li><strong>Data filtering</strong> - Separating objects from other data types</li>
+</ul>
+<h1 id="wrap--memoization-for-sync-and-async-functions">Wrap / Memoization for Sync and Async Functions</h1>
+<p>The <code>@cacheable/utils</code> package provides two main functions: <code>wrap</code> and <code>wrapSync</code>. These functions are used to memoize asynchronous and synchronous functions, respectively.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">asyncFunction</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params">value: number</span>) => {
+  <span class="hljs-keyword">return</span> <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">random</span>() * value;
+};
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+<span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>, <span class="hljs-comment">// 1 hour</span>
+  <span class="hljs-attr">keyPrefix</span>: <span class="hljs-string">'p1'</span>, <span class="hljs-comment">// key prefix. This is used if you have multiple functions and need to set a unique prefix.</span>
+  cache,
+}
+<span class="hljs-keyword">const</span> wrappedFunction = <span class="hljs-title function_">wrap</span>(asyncFunction, options);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> <span class="hljs-title function_">wrappedFunction</span>(<span class="hljs-number">2</span>)); <span class="hljs-comment">// 4</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> <span class="hljs-title function_">wrappedFunction</span>(<span class="hljs-number">2</span>)); <span class="hljs-comment">// 4 from cache</span>
+</code></pre>
+<p>With <code>wrap</code> we have also included stampede protection so that a <code>Promise</code> based call will only be called once if multiple requests of the same are executed at the same time. Here is an example of how to test for stampede protection:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">asyncFunction</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params">value: number</span>) => {
+  <span class="hljs-keyword">return</span> value;
+};
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+<span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>, <span class="hljs-comment">// 1 hour</span>
+  <span class="hljs-attr">keyPrefix</span>: <span class="hljs-string">'p1'</span>, <span class="hljs-comment">// key prefix. This is used if you have multiple functions and need to set a unique prefix.</span>
+  cache,
+}
+
+<span class="hljs-keyword">const</span> wrappedFunction = <span class="hljs-title function_">wrap</span>(asyncFunction, options);
+<span class="hljs-keyword">const</span> promises = [];
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &#x3C; <span class="hljs-number">10</span>; i++) {
+  promises.<span class="hljs-title function_">push</span>(<span class="hljs-title function_">wrappedFunction</span>(i));
+}
+
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> <span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">all</span>(promises); <span class="hljs-comment">// all results should be the same</span>
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(results); <span class="hljs-comment">// [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]</span>
+</code></pre>
+<p>In this example we are wrapping an <code>async</code> function in a cache with a <code>ttl</code> of <code>1 hour</code>. This will cache the result of the function for <code>1 hour</code> and then expire the value. You can also wrap a <code>sync</code> function in a cache:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">syncFunction</span> = (<span class="hljs-params">value: number</span>) => {
+  <span class="hljs-keyword">return</span> value * <span class="hljs-number">2</span>;
+};
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>();
+<span class="hljs-keyword">const</span> wrappedFunction = <span class="hljs-title function_">wrap</span>(syncFunction, { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>, <span class="hljs-attr">key</span>: <span class="hljs-string">'syncFunction'</span>, cache });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">wrappedFunction</span>(<span class="hljs-number">2</span>)); <span class="hljs-comment">// 4</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">wrappedFunction</span>(<span class="hljs-number">2</span>)); <span class="hljs-comment">// 4 from cache</span>
+</code></pre>
+<p>In this example we are wrapping a <code>sync</code> function in a cache with a <code>ttl</code> of <code>1 hour</code>. This will cache the result of the function for <code>1 hour</code> and then expire the value. You can also set the <code>key</code> property in the <code>wrap()</code> options to set a custom key for the cache.</p>
+<p>When an error occurs in the function it will not cache the value and will return the error. This is useful if you want to cache the results of a function but not cache the error. If you want it to cache the error you can set the <code>cacheError</code> property to <code>true</code> in the <code>wrap()</code> options. This is disabled by default.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">syncFunction</span> = (<span class="hljs-params">value: number</span>) => {
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'error'</span>);
+};
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>();
+<span class="hljs-keyword">const</span> wrappedFunction = <span class="hljs-title function_">wrap</span>(syncFunction, { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>, <span class="hljs-attr">key</span>: <span class="hljs-string">'syncFunction'</span>, <span class="hljs-attr">cacheError</span>: <span class="hljs-literal">true</span>, cache });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">wrappedFunction</span>()); <span class="hljs-comment">// error</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">wrappedFunction</span>()); <span class="hljs-comment">// error from cache</span>
+</code></pre>
+<p>If you would like to generate your own key for the wrapped function you can set the <code>createKey</code> property in the <code>wrap()</code> options. This is useful if you want to generate a key based on the arguments of the function or any other criteria.</p>
+<pre><code class="hljs language-javascript">  <span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+  <span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">WrapOptions</span> = {
+    cache,
+    <span class="hljs-attr">keyPrefix</span>: <span class="hljs-string">'test'</span>,
+    <span class="hljs-attr">createKey</span>: <span class="hljs-function">(<span class="hljs-params">function_, arguments_, options: WrapOptions</span>) =></span> <span class="hljs-string">`customKey:<span class="hljs-subst">${options?.keyPrefix}</span>:<span class="hljs-subst">${arguments_[<span class="hljs-number">0</span>]}</span>`</span>,
+  };
+
+  <span class="hljs-keyword">const</span> wrapped = <span class="hljs-title function_">wrap</span>(<span class="hljs-function">(<span class="hljs-params">argument: string</span>) =></span> <span class="hljs-string">`Result for <span class="hljs-subst">${argument}</span>`</span>, options);
+
+  <span class="hljs-keyword">const</span> result1 = <span class="hljs-keyword">await</span> <span class="hljs-title function_">wrapped</span>(<span class="hljs-string">'arg1'</span>);
+  <span class="hljs-keyword">const</span> result2 = <span class="hljs-keyword">await</span> <span class="hljs-title function_">wrapped</span>(<span class="hljs-string">'arg1'</span>); <span class="hljs-comment">// Should hit the cache</span>
+
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result1); <span class="hljs-comment">// Result for arg1</span>
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result2); <span class="hljs-comment">// Result for arg1 (from cache)</span>
+</code></pre>
+<p>We will pass in the <code>function</code> that is being wrapped, the <code>arguments</code> passed to the function, and the <code>options</code> used to wrap the function. You can then use these to generate a custom key for the cache.</p>
+<h1 id="get-or-set-memoization-function">Get Or Set Memoization Function</h1>
+<p>The <code>getOrSet</code> method provides a convenient way to implement the cache-aside pattern. It attempts to retrieve a value from cache, and if not found, calls the provided function to compute the value and store it in cache before returning it. Here are the options:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">GetOrSetFunctionOptions</span> = {
+	<span class="hljs-attr">ttl</span>?: <span class="hljs-built_in">number</span> | <span class="hljs-built_in">string</span>;
+	<span class="hljs-attr">cacheErrors</span>?: <span class="hljs-built_in">boolean</span>;
+	<span class="hljs-attr">throwErrors</span>?: <span class="hljs-built_in">boolean</span>;
+	<span class="hljs-attr">nonBlocking</span>?: <span class="hljs-built_in">boolean</span>;
+};
+</code></pre>
+<p>The <code>nonBlocking</code> option allows you to override the instance-level <code>nonBlocking</code> setting for the <code>get</code> call within <code>getOrSet</code>. When set to <code>false</code>, the <code>get</code> will block and wait for a response from the secondary store before deciding whether to call the provided function. When set to <code>true</code>, the primary store returns immediately and syncs from secondary in the background.</p>
+<p>Here is an example of how to use the <code>getOrSet</code> method:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+<span class="hljs-comment">// Use getOrSet to fetch user data</span>
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">function_</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params"></span>) => <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">random</span>() * <span class="hljs-number">100</span>;
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getOrSet</span>(<span class="hljs-string">'randomValue'</span>, function_, { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>, cache });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(value); <span class="hljs-comment">// e.g. 42.123456789</span>
+</code></pre>
+<p>You can also use a function to compute the key for the function:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span>, <span class="hljs-title class_">GetOrSetOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+
+<span class="hljs-comment">// Function to generate a key based on options</span>
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">generateKey</span> = (<span class="hljs-params">options?: GetOrSetOptions</span>) => {
+  <span class="hljs-keyword">return</span> <span class="hljs-string">`custom_key_:<span class="hljs-subst">${options?.cacheId || <span class="hljs-string">'default'</span>}</span>`</span>;
+};
+
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">function_</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params"></span>) => <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">random</span>() * <span class="hljs-number">100</span>;
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getOrSet</span>(<span class="hljs-title function_">generateKey</span>(), function_, { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>, cache });
+</code></pre>
+<h1 id="cache-tags">Cache Tags</h1>
+<p>The <code>CacheTags</code> service provides tag-based invalidation on top of any <a href="https://github.com/jaredwray/keyv">Keyv</a> store. It is store-agnostic and does not require any adapter changes.</p>
+<p>The service uses a lazy invalidation model. Instead of scanning and deleting keys, <code>invalidateTag</code> increments a per-tag version counter. Each cached key stores a snapshot of its tag versions at the time it was written, and <code>isKeyFresh</code> compares that snapshot to the current versions. If any tag version has been incremented since the snapshot was taken, the key is considered stale. Stale entries are not deleted explicitly and are expected to fall out of the cache via their TTL.</p>
+<p>This approach keeps invalidation constant-time regardless of how many keys reference a tag. The trade-off is one additional <code>isKeyFresh</code> read per cache lookup.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheTags</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+<span class="hljs-keyword">const</span> cacheTags = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheTags</span>({ store, <span class="hljs-attr">namespace</span>: <span class="hljs-string">'app'</span> });
+
+<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">setKeyTags</span>(<span class="hljs-string">'user:42'</span>, [<span class="hljs-string">'users'</span>, <span class="hljs-string">'org:7'</span>], { <span class="hljs-attr">ttl</span>: <span class="hljs-number">3600000</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">isKeyFresh</span>(<span class="hljs-string">'user:42'</span>)); <span class="hljs-comment">// true</span>
+
+<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">invalidateTag</span>(<span class="hljs-string">'users'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">isKeyFresh</span>(<span class="hljs-string">'user:42'</span>)); <span class="hljs-comment">// false</span>
+</code></pre>
+<p>The recommended pattern is to call <code>isKeyFresh</code> before trusting a value returned from your cache, and to refresh the tag snapshot whenever you write a new value:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheTags</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/utils'</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+<span class="hljs-keyword">const</span> cacheTags = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheTags</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>() });
+
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">getUser</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params"><span class="hljs-attr">id</span>: <span class="hljs-built_in">string</span></span>) => {
+  <span class="hljs-keyword">const</span> key = <span class="hljs-string">`user:<span class="hljs-subst">${id}</span>`</span>;
+
+  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">isKeyFresh</span>(key)) {
+    <span class="hljs-keyword">const</span> cached = <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(key);
+    <span class="hljs-keyword">if</span> (cached !== <span class="hljs-literal">undefined</span>) {
+      <span class="hljs-keyword">return</span> cached;
+    }
+  }
+
+  <span class="hljs-keyword">const</span> fresh = <span class="hljs-keyword">await</span> <span class="hljs-title function_">loadUser</span>(id);
+  <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(key, fresh, <span class="hljs-string">'1h'</span>);
+  <span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">setKeyTags</span>(key, [<span class="hljs-string">'users'</span>, <span class="hljs-string">`org:<span class="hljs-subst">${fresh.orgId}</span>`</span>], { <span class="hljs-attr">ttl</span>: <span class="hljs-number">3600000</span> });
+  <span class="hljs-keyword">return</span> fresh;
+};
+</code></pre>
+<p>You can invalidate one or many tags at a time. Both methods return the names of the tags that were bumped:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> bumped = <span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">invalidateTags</span>([<span class="hljs-string">'users'</span>, <span class="hljs-string">'org:7'</span>]);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(bumped); <span class="hljs-comment">// ['users', 'org:7']</span>
+</code></pre>
+<p>When integrating with a cache where most keys are untagged, use <code>isKeyStale</code> instead of <code>isKeyFresh</code>. It only reports <code>true</code> when a snapshot exists for the key and one of its tags has been invalidated, so keys that were never tagged are not treated as stale:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">isKeyStale</span>(<span class="hljs-string">'never-tagged'</span>)); <span class="hljs-comment">// false</span>
+<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">setKeyTags</span>(<span class="hljs-string">'user:42'</span>, [<span class="hljs-string">'users'</span>]);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">isKeyStale</span>(<span class="hljs-string">'user:42'</span>)); <span class="hljs-comment">// false</span>
+<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">invalidateTag</span>(<span class="hljs-string">'users'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">isKeyStale</span>(<span class="hljs-string">'user:42'</span>)); <span class="hljs-comment">// true</span>
+</code></pre>
+<p>The <code>getStaleKeys</code> method checks many keys at once using two batched store reads regardless of how many keys are passed — one for the snapshots and one for the union of their tag versions:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">setKeyTags</span>(<span class="hljs-string">'a'</span>, [<span class="hljs-string">'x'</span>]);
+<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">setKeyTags</span>(<span class="hljs-string">'b'</span>, [<span class="hljs-string">'y'</span>]);
+<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">invalidateTag</span>(<span class="hljs-string">'x'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">getStaleKeys</span>([<span class="hljs-string">'a'</span>, <span class="hljs-string">'b'</span>, <span class="hljs-string">'untagged'</span>])); <span class="hljs-comment">// ['a']</span>
+</code></pre>
+<p>The <code>getTags</code> method returns the tags currently associated with a key, or <code>undefined</code> if the key has no snapshot:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">setKeyTags</span>(<span class="hljs-string">'user:42'</span>, [<span class="hljs-string">'users'</span>, <span class="hljs-string">'org:7'</span>]);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">getTags</span>(<span class="hljs-string">'user:42'</span>)); <span class="hljs-comment">// ['users', 'org:7']</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">getTags</span>(<span class="hljs-string">'missing'</span>)); <span class="hljs-comment">// undefined</span>
+</code></pre>
+<p>The <code>removeKey</code> and <code>removeKeys</code> methods delete tag snapshots when the cached values themselves are deleted. <code>removeKeys</code> performs a single batched delete:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">removeKeys</span>([<span class="hljs-string">'user:1'</span>, <span class="hljs-string">'user:2'</span>]);
+</code></pre>
+<p>The service can be disabled via the <code>enabled</code> option or property so integrations pay no extra store reads for untagged workloads. While disabled, every method is a no-op: read methods return their neutral value (<code>isKeyFresh</code> returns <code>true</code>, <code>isKeyStale</code> returns <code>false</code>, <code>getStaleKeys</code> returns <code>[]</code>, and so on) and writes are skipped. The service never enables itself — you have to turn it on explicitly, which keeps behavior consistent across distributed instances sharing a store:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> cacheTags = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheTags</span>({ store, <span class="hljs-attr">enabled</span>: <span class="hljs-literal">false</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">isKeyStale</span>(<span class="hljs-string">'anything'</span>)); <span class="hljs-comment">// false, no store read</span>
+<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">setKeyTags</span>(<span class="hljs-string">'user:42'</span>, [<span class="hljs-string">'users'</span>]); <span class="hljs-comment">// no-op while disabled</span>
+cacheTags.<span class="hljs-property">enabled</span> = <span class="hljs-literal">true</span>; <span class="hljs-comment">// turn it on to use tags</span>
+</code></pre>
+<p><code>setKeyTags</code>, <code>removeKey</code>, and <code>removeKeys</code> accept a <code>nonBlocking</code> option to fire-and-forget the store write. Failures from non-blocking operations are reported to the <code>onError</code> constructor option since they cannot be thrown to the caller:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> cacheTags = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheTags</span>({ store, <span class="hljs-attr">onError</span>: <span class="hljs-function">(<span class="hljs-params">error</span>) =></span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(error) });
+<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">setKeyTags</span>(<span class="hljs-string">'user:42'</span>, [<span class="hljs-string">'users'</span>], { <span class="hljs-attr">ttl</span>: <span class="hljs-number">3600000</span>, <span class="hljs-attr">nonBlocking</span>: <span class="hljs-literal">true</span> });
+</code></pre>
+<p>The <code>getKeysByTag</code> method returns the keys currently referencing a given tag. It iterates the Keyv namespace and is therefore an <code>O(N)</code> operation. It is intended for debugging and tests rather than hot paths.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">setKeyTags</span>(<span class="hljs-string">'user:1'</span>, [<span class="hljs-string">'users'</span>]);
+<span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">setKeyTags</span>(<span class="hljs-string">'user:2'</span>, [<span class="hljs-string">'users'</span>]);
+<span class="hljs-keyword">const</span> keys = <span class="hljs-keyword">await</span> cacheTags.<span class="hljs-title function_">getKeysByTag</span>(<span class="hljs-string">'users'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(keys); <span class="hljs-comment">// ['user:1', 'user:2']</span>
+</code></pre>
+<p>The service stores its metadata under a reserved prefix so that it cannot collide with user keys:</p>
+<pre><code>--cacheable--tags--:&#x3C;namespace>:tag:&#x3C;tagName>  → integer version counter
+--cacheable--tags--:&#x3C;namespace>:key:&#x3C;keyName>  → { tags: { [tag]: versionAtSetTime } }
+</code></pre>
+<p>Tag version counters are stored without a TTL because they must outlive any key that references them. Key entries respect the <code>ttl</code> passed to <code>setKeyTags</code>, which should be set to match the TTL of the cached value it tracks.</p>
+<p>The namespace defaults to <code>default</code> and can be set via the constructor. Two services configured with different namespaces can share the same store without seeing each other's tags or keys.</p>
+<p>The read-version then write-snapshot sequence in <code>setKeyTags</code> is not atomic across processes. A concurrent <code>invalidateTag</code> that runs between the read and the write can leave a freshly written key referencing a stale version. An atomic Redis fast path using <code>MULTI</code> or Lua is a planned future enhancement.</p>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>You can contribute by forking the repo and submitting a pull request. Please make sure to add tests and update the documentation. To learn more about how to contribute go to our main README <a href="https://github.com/jaredwray/cacheable">https://github.com/jaredwray/cacheable</a>. This will talk about how to <code>Open a Pull Request</code>, <code>Ask a Question</code>, or <code>Post an Issue</code>.</p>
+<h1 id="license-and-copyright">License and Copyright</h1>
+<p><a href="./LICENSE">MIT © Jared Wray</a></p>

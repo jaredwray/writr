@@ -1,0 +1,461 @@
+<p><img src="https://jaredwray.com/images/fastify-fusion.svg" alt="Fastify Fusion"></p>
+<h1 id="fastify-fusion">fastify-fusion</h1>
+<p><a href="https://codecov.io/gh/jaredwray/fastify-fusion"><img src="https://codecov.io/gh/jaredwray/fastify-fusion/graph/badge.svg?token=ieUorXA15v" alt="codecov"></a>
+<a href="https://github.com/jaredwray/fastify-fusion/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/fastify-fusion/actions/workflows/tests.yaml/badge.svg" alt="tests"></a>
+<a href="https://www.npmjs.com/package/fastify-fusion"><img src="https://img.shields.io/npm/v/fastify-fusion" alt="npm"></a>
+<a href="https://www.npmjs.com/package/fastify-fusion"><img src="https://img.shields.io/npm/dm/fastify-fusion" alt="npm"></a>
+<a href="https://github.com/jaredwray/fastify-fusion/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/fastify-fusion" alt="license"></a></p>
+<p>Fastify API framework with <code>best practices</code> and <code>plugins</code> fused together to make it easy to build and maintain your API.</p>
+<h1 id="features">Features</h1>
+<ul>
+<li><strong>Fuse</strong> - Easily create a Fastify app with sensible defaults via <code>fuse()</code>.</li>
+<li><strong>Start</strong> - Easy to start your Fastify app with sensible defaults via <code>start()</code>.</li>
+<li><strong>Cache</strong> - High-performance layer 1/2 caching with the <code>cacheable</code> library integrated as <code>app.cache</code>.</li>
+<li><strong>OpenAPI</strong> - OpenAPI docs generated using <code>fastify-swagger</code> and <code>scalar</code> with sensible defaults.</li>
+<li><strong>Helmet</strong> - Security headers set using <code>@fastify/helmet</code> with sensible defaults.</li>
+<li><strong>CORS</strong> - CORS enabled using <code>@fastify/cors</code> with sensible defaults for apis.</li>
+<li><strong>Logging</strong> - Pino Configured using <code>pino-pretty</code> to make it easy to read and access to a <code>logger</code> instance.</li>
+<li><strong>Rate Limiting</strong> - Rate limiting using <code>@fastify/rate-limit</code> with sensible defaults.</li>
+<li><strong>Static Paths</strong>: Default <code>./public</code> static path and easy to add / configure your own.</li>
+<li><strong>Regularly updated</strong>: Updated regularly to keep up with the latest Fastify and TypeScript features.</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#fuse-options">Fuse Options</a></li>
+<li><a href="#fastify-start">Fastify Start</a></li>
+<li><a href="#cache">Cache</a>
+<ul>
+<li><a href="#default-configuration">Default Configuration</a></li>
+<li><a href="#basic-usage">Basic Usage</a></li>
+<li><a href="#configuration-options">Configuration Options</a></li>
+<li><a href="#cache-operations">Cache Operations</a></li>
+<li><a href="#advanced-features">Advanced Features</a>
+<ul>
+<li><a href="#memoization-with-wrap">Memoization with wrap()</a></li>
+<li><a href="#getorset-pattern">GetOrSet Pattern</a></li>
+<li><a href="#cache-statistics">Cache Statistics</a></li>
+<li><a href="#ttl-formats">TTL Formats</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#static-paths">Static Paths</a></li>
+<li><a href="#logging">Logging</a></li>
+<li><a href="#helmet">Helmet</a></li>
+<li><a href="#rate-limiting">Rate Limiting</a></li>
+<li><a href="#cors">CORS</a></li>
+<li><a href="#open-api-and-docs-ux">Open API and Docs UX</a></li>
+<li><a href="#how-to-contribute">How to Contribute</a></li>
+<li><a href="#licensing-and-copyright">Licensing and Copyright</a></li>
+</ul>
+<h1 id="installation">Installation</h1>
+<pre><code class="hljs language-bash">npm install fastify-fusion fastify
+</code></pre>
+<h1 id="usage">Usage</h1>
+<p>If you already have a Fastify app, you can use <code>fuse</code> to add the default options and plugins to your app.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> fastify <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify'</span>;
+<span class="hljs-keyword">import</span> { fuse, <span class="hljs-title class_">FuseOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">fastify</span>();
+
+<span class="hljs-comment">// Fuse the app. It will use the default options if none are provided. If you want to use your own options, pass them in as the second argument.</span>
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">fuse</span>(app);
+</code></pre>
+<p>You can also pass in the <code>FuseOptions</code> to customize your fastify instance.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> fastify <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify'</span>;
+<span class="hljs-keyword">import</span> { fuse, <span class="hljs-title class_">FuseOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+
+<span class="hljs-keyword">const</span> <span class="hljs-attr">fuseOptions</span>: <span class="hljs-title class_">FuseOptions</span> = {
+  <span class="hljs-attr">static</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">log</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">helmet</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">rateLimit</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">cache</span>: <span class="hljs-literal">true</span>
+};
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fuse</span>(app, fuseOptions);
+</code></pre>
+<p>You can also use the built in <code>start()</code> function to get up and running quickly. This function will create a Fastify app and start the server for you.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> fastify <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify'</span>;
+<span class="hljs-keyword">import</span> { start, fuse } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">fastify</span>();
+
+<span class="hljs-comment">// fuse the app with default options</span>
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">fuse</span>(app);
+
+<span class="hljs-comment">// start the app. Set the options with StartOptions type.</span>
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">start</span>(app);
+</code></pre>
+<h1 id="fuse-options">Fuse Options</h1>
+<p>You can customize the behavior of <code>fastify-fusion</code> by passing in options to the <code>fuse</code> function or when creating a new Fastify app with <code>fastify()</code>.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { fuse, <span class="hljs-title class_">FuseOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Fastify</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify'</span>;
+<span class="hljs-keyword">const</span> app = <span class="hljs-title class_">Fastify</span>();
+<span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">FuseOptions</span> = {
+  <span class="hljs-attr">helmet</span>: {
+    <span class="hljs-attr">contentSecurityPolicy</span>: <span class="hljs-literal">false</span>, <span class="hljs-comment">// Disable CSP for simplicity</span>
+  },
+  <span class="hljs-attr">static</span>: {
+    <span class="hljs-attr">path</span>: <span class="hljs-string">'/static/'</span>, <span class="hljs-comment">// Serve static files from /public</span>
+    <span class="hljs-attr">dir</span>: <span class="hljs-string">'./static'</span>, <span class="hljs-comment">// Path to the static files</span>
+  },
+  <span class="hljs-attr">rateLimit</span>: {
+	<span class="hljs-attr">max</span>: <span class="hljs-number">200</span>, <span class="hljs-comment">// Allow 200 requests per minute per IP address</span>
+  },
+};
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">fuse</span>(app, options);
+</code></pre>
+<p>Here is the <code>FuseOptions</code> interface with all the available options:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">FuseOptions</span> = {
+	<span class="hljs-attr">static</span>?: <span class="hljs-built_in">boolean</span> | <span class="hljs-title class_">StaticOptions</span>;
+	<span class="hljs-attr">log</span>?: <span class="hljs-built_in">boolean</span> | <span class="hljs-title class_">LoggerOptions</span>;
+	<span class="hljs-attr">helmet</span>?: <span class="hljs-built_in">boolean</span> | <span class="hljs-title class_">FastifyHelmetOptions</span>;
+	<span class="hljs-attr">rateLimit</span>?: <span class="hljs-built_in">boolean</span> | <span class="hljs-title class_">FastifyRateLimitOptions</span>;
+	<span class="hljs-attr">cors</span>?: <span class="hljs-built_in">boolean</span> | <span class="hljs-title class_">FastifyCorsOptions</span>;
+	<span class="hljs-attr">openApi</span>?: <span class="hljs-built_in">boolean</span> | <span class="hljs-title class_">OpenApiOptions</span>;
+	<span class="hljs-attr">cache</span>?: <span class="hljs-built_in">boolean</span> | <span class="hljs-title class_">CacheableOptions</span>;
+};
+</code></pre>
+<p>By default, all the options are set to <code>true</code>, which means that all of the default settings will be applied. You can learn about the default settings in each features's documentation below.</p>
+<h1 id="fastify-start">Fastify Start</h1>
+<p>You can start your Fastify app using the <code>start</code> function. This function will start the Fastify server and log the URL where the server is running. This will use the default configuration for the server, which includes a default port of <code>3000</code> and a host of <code>0.0.0.0</code> if <code>process.env.PORT</code> or <code>process.env.HOST</code> are not set.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { fastify, start } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fastify</span>();
+<span class="hljs-title function_">start</span>(app);
+</code></pre>
+<p>You can customize the port and host by passing in a <code>StartOptions</code> object to the <code>start</code> function.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { fastify, start, <span class="hljs-keyword">type</span> <span class="hljs-title class_">StartOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fastify</span>();
+<span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">StartOptions</span> = {
+  <span class="hljs-attr">port</span>: <span class="hljs-number">3001</span>, <span class="hljs-comment">// Set the port to 3000</span>
+  <span class="hljs-attr">host</span>: <span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-comment">// Set the host to 127.0.0.1</span>
+};
+
+<span class="hljs-title function_">start</span>(app, options);
+</code></pre>
+<p>If you want to also set the startup message when the server starts, you can pass in a <code>message</code> function to the <code>StartOptions</code>. This function will receive the host and port as arguments and should return a string that will be logged to the console.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { fastify, start, <span class="hljs-keyword">type</span> <span class="hljs-title class_">StartOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+<span class="hljs-keyword">const</span> app = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fastify</span>();
+<span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">StartOptions</span> = {
+  <span class="hljs-attr">message</span>: <span class="hljs-function">(<span class="hljs-params">host, port</span>) =></span> <span class="hljs-string">`🌏 started successfully at http://<span class="hljs-subst">${host}</span>:<span class="hljs-subst">${port}</span>`</span>,
+};
+<span class="hljs-title function_">start</span>(app, options);
+</code></pre>
+<h1 id="cache">Cache</h1>
+<p><code>fastify-fusion</code> integrates the high-performance <code>cacheable</code> library as <code>app.cache</code>, providing layer 1/2 caching capabilities with advanced features like statistics, TTL management, and non-blocking operations.</p>
+<h2 id="default-configuration">Default Configuration</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">defaultCacheableOptions</span>: <span class="hljs-title class_">CacheableOptions</span> = {
+	<span class="hljs-attr">ttl</span>: <span class="hljs-string">"1h"</span>, <span class="hljs-comment">// Default 1 hour TTL</span>
+	<span class="hljs-attr">stats</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// Enable statistics by default</span>
+	<span class="hljs-attr">nonBlocking</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// Non-blocking secondary operations</span>
+};
+</code></pre>
+<h2 id="basic-usage">Basic Usage</h2>
+<p>Once fused, the cache is available on your Fastify instance as <code>app.cache</code>:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> fastify <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify'</span>;
+<span class="hljs-keyword">import</span> { fuse } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">fastify</span>();
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">fuse</span>(app);
+
+<span class="hljs-comment">// Use cache in routes</span>
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">'/user/:id'</span>, <span class="hljs-title function_">async</span> (request, reply) => {
+  <span class="hljs-keyword">const</span> userId = request.<span class="hljs-property">params</span>.<span class="hljs-property">id</span>;
+  <span class="hljs-keyword">const</span> cacheKey = <span class="hljs-string">`user:<span class="hljs-subst">${userId}</span>`</span>;
+
+  <span class="hljs-comment">// Try to get from cache first</span>
+  <span class="hljs-keyword">let</span> user = <span class="hljs-keyword">await</span> request.<span class="hljs-property">server</span>.<span class="hljs-property">cache</span>.<span class="hljs-title function_">get</span>(cacheKey);
+
+  <span class="hljs-keyword">if</span> (!user) {
+    <span class="hljs-comment">// Fetch from database</span>
+    user = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getUserFromDatabase</span>(userId);
+    <span class="hljs-comment">// Cache for 10 minutes</span>
+    <span class="hljs-keyword">await</span> request.<span class="hljs-property">server</span>.<span class="hljs-property">cache</span>.<span class="hljs-title function_">set</span>(cacheKey, user, <span class="hljs-string">'10m'</span>);
+  }
+
+  <span class="hljs-keyword">return</span> user;
+});
+</code></pre>
+<h2 id="configuration-options">Configuration Options</h2>
+<p>You can customize the cache behavior by passing options to the <code>fuse</code> function:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { fuse, <span class="hljs-title class_">FuseOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+<span class="hljs-keyword">import</span> fastify <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify'</span>;
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">fastify</span>();
+<span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">FuseOptions</span> = {
+  <span class="hljs-attr">cache</span>: {
+    <span class="hljs-attr">ttl</span>: <span class="hljs-string">'30m'</span>, <span class="hljs-comment">// Default TTL of 30 minutes</span>
+    <span class="hljs-attr">stats</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// Enable cache statistics</span>
+    <span class="hljs-attr">nonBlocking</span>: <span class="hljs-literal">false</span>, <span class="hljs-comment">// Blocking secondary operations</span>
+  },
+};
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">fuse</span>(app, options);
+</code></pre>
+<p>You can also disable caching entirely:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">FuseOptions</span> = {
+  <span class="hljs-attr">cache</span>: <span class="hljs-literal">false</span>, <span class="hljs-comment">// Disable caching</span>
+};
+</code></pre>
+<h2 id="cache-operations">Cache Operations</h2>
+<p>The cache instance provides all the standard caching operations:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// Basic get/set</span>
+<span class="hljs-keyword">await</span> app.<span class="hljs-property">cache</span>.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>, <span class="hljs-string">'1h'</span>);
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> app.<span class="hljs-property">cache</span>.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>);
+
+<span class="hljs-comment">// Bulk operations</span>
+<span class="hljs-keyword">await</span> app.<span class="hljs-property">cache</span>.<span class="hljs-title function_">setMany</span>([
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key1'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value1'</span> },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key2'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value2'</span>, <span class="hljs-attr">ttl</span>: <span class="hljs-string">'30m'</span> }
+]);
+<span class="hljs-keyword">const</span> values = <span class="hljs-keyword">await</span> app.<span class="hljs-property">cache</span>.<span class="hljs-title function_">getMany</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>]);
+
+<span class="hljs-comment">// Check existence</span>
+<span class="hljs-keyword">const</span> exists = <span class="hljs-keyword">await</span> app.<span class="hljs-property">cache</span>.<span class="hljs-title function_">has</span>(<span class="hljs-string">'key'</span>);
+
+<span class="hljs-comment">// Delete operations</span>
+<span class="hljs-keyword">await</span> app.<span class="hljs-property">cache</span>.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'key'</span>);
+<span class="hljs-keyword">await</span> app.<span class="hljs-property">cache</span>.<span class="hljs-title function_">clear</span>(); <span class="hljs-comment">// Clear all</span>
+
+<span class="hljs-comment">// Take (get and delete)</span>
+<span class="hljs-keyword">const</span> takenValue = <span class="hljs-keyword">await</span> app.<span class="hljs-property">cache</span>.<span class="hljs-title function_">take</span>(<span class="hljs-string">'key'</span>);
+</code></pre>
+<h2 id="advanced-features">Advanced Features</h2>
+<h3 id="memoization-with-wrap">Memoization with wrap()</h3>
+<p>Automatically cache function results:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> expensiveFunction = app.<span class="hljs-property">cache</span>.<span class="hljs-title function_">wrap</span>(<span class="hljs-title function_">async</span> (input) => {
+  <span class="hljs-comment">// Expensive computation</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> <span class="hljs-title function_">processData</span>(input);
+}, { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span> });
+
+<span class="hljs-comment">// First call computes and caches</span>
+<span class="hljs-keyword">const</span> result1 = <span class="hljs-keyword">await</span> <span class="hljs-title function_">expensiveFunction</span>(<span class="hljs-string">'test'</span>);
+<span class="hljs-comment">// Second call returns cached result</span>
+<span class="hljs-keyword">const</span> result2 = <span class="hljs-keyword">await</span> <span class="hljs-title function_">expensiveFunction</span>(<span class="hljs-string">'test'</span>);
+</code></pre>
+<h3 id="getorset-pattern">GetOrSet Pattern</h3>
+<p>Fetch from cache or compute and store:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> posts = <span class="hljs-keyword">await</span> app.<span class="hljs-property">cache</span>.<span class="hljs-title function_">getOrSet</span>(<span class="hljs-string">'all-posts'</span>, <span class="hljs-title function_">async</span> () => {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetchPostsFromAPI</span>();
+}, { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'5m'</span> });
+</code></pre>
+<h3 id="cache-statistics">Cache Statistics</h3>
+<p>Monitor cache performance when stats are enabled:</p>
+<pre><code class="hljs language-typescript">app.<span class="hljs-title function_">get</span>(<span class="hljs-string">'/cache/stats'</span>, <span class="hljs-title function_">async</span> (request, reply) => {
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">hits</span>: app.<span class="hljs-property">cache</span>.<span class="hljs-property">stats</span>.<span class="hljs-property">hits</span>,
+    <span class="hljs-attr">misses</span>: app.<span class="hljs-property">cache</span>.<span class="hljs-property">stats</span>.<span class="hljs-property">misses</span>,
+    <span class="hljs-attr">gets</span>: app.<span class="hljs-property">cache</span>.<span class="hljs-property">stats</span>.<span class="hljs-property">gets</span>,
+    <span class="hljs-attr">sets</span>: app.<span class="hljs-property">cache</span>.<span class="hljs-property">stats</span>.<span class="hljs-property">sets</span>,
+    <span class="hljs-attr">count</span>: app.<span class="hljs-property">cache</span>.<span class="hljs-property">stats</span>.<span class="hljs-property">count</span>
+  };
+});
+</code></pre>
+<h3 id="ttl-formats">TTL Formats</h3>
+<p>The cache supports both milliseconds and human-readable time formats:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// Milliseconds</span>
+<span class="hljs-keyword">await</span> app.<span class="hljs-property">cache</span>.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>, <span class="hljs-number">3600000</span>); <span class="hljs-comment">// 1 hour</span>
+
+<span class="hljs-comment">// Human-readable</span>
+<span class="hljs-keyword">await</span> app.<span class="hljs-property">cache</span>.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>, <span class="hljs-string">'1h'</span>);    <span class="hljs-comment">// 1 hour</span>
+<span class="hljs-keyword">await</span> app.<span class="hljs-property">cache</span>.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>, <span class="hljs-string">'30m'</span>);   <span class="hljs-comment">// 30 minutes</span>
+<span class="hljs-keyword">await</span> app.<span class="hljs-property">cache</span>.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>, <span class="hljs-string">'15s'</span>);   <span class="hljs-comment">// 15 seconds</span>
+</code></pre>
+<p>The cache automatically handles cleanup and provides graceful shutdown when your Fastify server closes.</p>
+<h1 id="static-paths">Static Paths</h1>
+<p>By default <code>fastify-fusion</code> serves static files from the <code>./public</code> directory. You can change this by passing in a <code>StaticOptions</code> object to the <code>fuse</code> function. The default configuration serves static files from the <code>/public</code> path. Here is an example of how to customize the static file serving:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> defaultStaticPath = [
+    {
+        <span class="hljs-attr">dir</span>: path.<span class="hljs-title function_">resolve</span>(<span class="hljs-string">'./public'</span>),
+        <span class="hljs-attr">path</span>: <span class="hljs-string">'/'</span>,
+    },
+];
+</code></pre>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { fuse, <span class="hljs-title class_">FuseOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Fastify</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify'</span>;
+<span class="hljs-keyword">const</span> app = <span class="hljs-title class_">Fastify</span>();
+<span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">FuseOptions</span> = {
+  <span class="hljs-attr">static</span>: {
+    <span class="hljs-attr">dir</span>: <span class="hljs-string">'./static/'</span>, <span class="hljs-comment">// Serve static files from /static</span>
+    <span class="hljs-attr">path</span>: <span class="hljs-string">'/static'</span>, <span class="hljs-comment">// Path to the static files</span>
+  },
+};
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">fuse</span>(app, options);
+</code></pre>
+<h1 id="logging">Logging</h1>
+<p>By default, <code>fastify-fusion</code> uses Pino for logging and configures it with sensible defaults. You can customize the logging behavior by passing in a <code>LoggerOptions</code> object to the <code>fuse</code> function. The default logging configuration uses <code>pino-pretty</code> and here are the default options:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> defaultLoggingOptions = {
+	<span class="hljs-attr">transport</span>: {
+		<span class="hljs-attr">target</span>: <span class="hljs-string">'pino-pretty'</span>,
+		<span class="hljs-attr">options</span>: {
+			<span class="hljs-attr">colorize</span>: <span class="hljs-literal">true</span>,
+			<span class="hljs-attr">translateTime</span>: <span class="hljs-literal">true</span>,
+			<span class="hljs-attr">ignore</span>: <span class="hljs-string">'pid,hostname'</span>,
+			<span class="hljs-attr">singleLine</span>: <span class="hljs-literal">true</span>,
+		},
+	},
+};
+</code></pre>
+<p>Here is an example of how to customize the logging options:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { fuse, <span class="hljs-title class_">FuseOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Fastify</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify'</span>;
+<span class="hljs-keyword">const</span> app = <span class="hljs-title class_">Fastify</span>();
+<span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">FuseOptions</span> = {
+  <span class="hljs-attr">log</span>: {
+    <span class="hljs-attr">level</span>: <span class="hljs-string">'info'</span>, <span class="hljs-comment">// Set the log level</span>
+    <span class="hljs-attr">prettyPrint</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// Enable pretty print for development</span>
+  },
+};
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">fuse</span>(app, options);
+</code></pre>
+<p>If you want to access the logger instance, you can use the <code>logger</code> function. This function will return a logger instance that you can use to log messages in your application. This will use the default logging options if none are provided. Here is an example of how to use the logger instance:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { logger } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+
+<span class="hljs-keyword">const</span> log = <span class="hljs-title function_">logger</span>();
+log.<span class="hljs-title function_">info</span>(<span class="hljs-string">'This is an info message'</span>);
+</code></pre>
+<h1 id="helmet">Helmet</h1>
+<p><code>fastify-fusion</code> uses <code>fastify-helmet</code> to set security headers by default. You can customize the behavior of <code>fastify-helmet</code> by passing in a <code>FastifyHelmetOptions</code> object to the <code>fuse</code> function. The default configuration sets the following headers:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">defaultFastifyHelmetOptions</span>: <span class="hljs-title class_">FastifyHelmetOptions</span> = {
+	<span class="hljs-comment">// Turn off CSP (mostly for HTML) to avoid overhead</span>
+	<span class="hljs-attr">contentSecurityPolicy</span>: <span class="hljs-literal">false</span>,
+
+	<span class="hljs-comment">// Remove the X-Power-By header</span>
+	<span class="hljs-attr">hidePoweredBy</span>: <span class="hljs-literal">true</span>,
+
+	<span class="hljs-comment">// Prevent your API from being framed</span>
+	<span class="hljs-attr">frameguard</span>: {<span class="hljs-attr">action</span>: <span class="hljs-string">'deny'</span>},
+
+	<span class="hljs-comment">// Disable DNS prefetching</span>
+	<span class="hljs-attr">dnsPrefetchControl</span>: {<span class="hljs-attr">allow</span>: <span class="hljs-literal">false</span>},
+
+	<span class="hljs-comment">// Enable HSTS for one year on HTTPS endpoints</span>
+	<span class="hljs-attr">hsts</span>: {
+		<span class="hljs-attr">maxAge</span>: <span class="hljs-number">31_536_000</span>, <span class="hljs-comment">// 365 days in seconds</span>
+		<span class="hljs-attr">includeSubDomains</span>: <span class="hljs-literal">true</span>,
+		<span class="hljs-attr">preload</span>: <span class="hljs-literal">true</span>,
+	},
+
+	<span class="hljs-comment">// Block sniffing of MIME types</span>
+	<span class="hljs-attr">noSniff</span>: <span class="hljs-literal">true</span>,
+
+	<span class="hljs-comment">// Basic XSS protections</span>
+	<span class="hljs-attr">xssFilter</span>: <span class="hljs-literal">true</span>,
+
+	<span class="hljs-comment">// Don't send Referer at all</span>
+	<span class="hljs-attr">referrerPolicy</span>: {<span class="hljs-attr">policy</span>: <span class="hljs-string">'no-referrer'</span>},
+
+	<span class="hljs-comment">// Tighten cross-origin resource loading</span>
+	<span class="hljs-attr">crossOriginResourcePolicy</span>: {<span class="hljs-attr">policy</span>: <span class="hljs-string">'same-origin'</span>},
+
+	<span class="hljs-comment">// You generally don't need the embedder/policy on an API</span>
+	<span class="hljs-attr">crossOriginEmbedderPolicy</span>: <span class="hljs-literal">false</span>,
+
+	<span class="hljs-comment">// Leave CSP nonces off</span>
+	<span class="hljs-comment">// eslint-disable-next-line @typescript-eslint/naming-convention</span>
+	<span class="hljs-attr">enableCSPNonces</span>: <span class="hljs-literal">false</span>,
+};
+</code></pre>
+<p>You can customize the security headers by passing in a <code>FastifyHelmetOptions</code> object to the <code>fuse</code> function. The default configuration sets the following:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { fuse, <span class="hljs-title class_">FuseOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Fastify</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify'</span>;
+<span class="hljs-keyword">const</span> app = <span class="hljs-title class_">Fastify</span>();
+<span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">FuseOptions</span> = {
+  <span class="hljs-attr">helmet</span>: {
+    <span class="hljs-attr">contentSecurityPolicy</span>: <span class="hljs-literal">false</span>, <span class="hljs-comment">// Disable CSP for simplicity</span>
+    <span class="hljs-attr">crossOriginEmbedderPolicy</span>: <span class="hljs-literal">false</span>, <span class="hljs-comment">// Disable COEP for simplicity</span>
+  },
+};
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">fuse</span>(app, options);
+</code></pre>
+<h1 id="rate-limiting">Rate Limiting</h1>
+<p><code>fastify-fusion</code> uses <code>@fastify/rate-limit</code> to limit the number of requests to your API. By default, it allows 100 requests per minute per IP address. You can customize the rate limiting behavior by passing in a <code>RateLimitOptions</code> object to the <code>fuse</code> function. Here is an example of how to customize the rate limiting options:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">defaultFastifyRateLimitOptions</span>: <span class="hljs-title class_">FastifyRateLimitOptions</span> = {
+	<span class="hljs-comment">// Enable rate limiting</span>
+	<span class="hljs-attr">global</span>: <span class="hljs-literal">true</span>,
+	<span class="hljs-comment">// Limit to 100 requests per minute</span>
+	<span class="hljs-attr">max</span>: <span class="hljs-number">500</span>,
+	<span class="hljs-comment">// Time window for the rate limit</span>
+	<span class="hljs-attr">timeWindow</span>: <span class="hljs-number">60_000</span>, <span class="hljs-comment">// 1 minute in milliseconds</span>
+	<span class="hljs-comment">// allow list for local development and testing</span>
+	<span class="hljs-attr">allowList</span>: [<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-string">'0.0.0.0'</span>],
+};
+</code></pre>
+<p>You can customize the rate limiting options by passing in a <code>RateLimitOptions</code> object to the <code>fuse</code> function. Here is an example of how to customize the rate limiting options:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { fuse, <span class="hljs-title class_">FuseOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Fastify</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify'</span>;
+<span class="hljs-keyword">const</span> app = <span class="hljs-title class_">Fastify</span>();
+<span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">FuseOptions</span> = {
+  <span class="hljs-attr">rateLimit</span>: {
+	<span class="hljs-attr">max</span>: <span class="hljs-number">200</span>, <span class="hljs-comment">// Allow 200 requests per minute per IP address</span>
+  },
+};
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">fuse</span>(app, options);
+</code></pre>
+<h1 id="cors">CORS</h1>
+<p><code>fastify-fusion</code> uses <code>@fastify/cors</code> to enable CORS for your API. By default, it allows all origins and methods. You can customize the CORS behavior by passing in a <code>FastifyCorsOptions</code> object to the <code>fuse</code> function. Here is an example of how to customize the CORS options:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { fuse, <span class="hljs-title class_">FuseOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Fastify</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify'</span>;
+<span class="hljs-keyword">const</span> app = <span class="hljs-title class_">Fastify</span>();
+<span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">FuseOptions</span> = {
+  <span class="hljs-attr">cors</span>: {
+	<span class="hljs-attr">origin</span>: [
+		<span class="hljs-string">'https://app.yourdomain.com'</span>,
+		<span class="hljs-string">'https://staging.yourdomain.com'</span>
+	],
+	<span class="hljs-attr">methods</span>: [<span class="hljs-string">'GET'</span>, <span class="hljs-string">'POST'</span>, <span class="hljs-string">'PATCH'</span>, <span class="hljs-string">'PUT'</span>, <span class="hljs-string">'DELETE'</span>, <span class="hljs-string">'OPTIONS'</span>], <span class="hljs-comment">// Allowed methods</span>
+	<span class="hljs-attr">allowedHeaders</span>: [<span class="hljs-string">'Content-Type'</span>, <span class="hljs-string">'Authorization'</span>, <span class="hljs-string">'X-Requested-With'</span>, <span class="hljs-string">'Bearer'</span>], <span class="hljs-comment">// Allowed headers</span>
+	<span class="hljs-attr">exposedHeaders</span>: [<span class="hljs-string">'Content-Length'</span>, <span class="hljs-string">'X-Requested-With'</span>], <span class="hljs-comment">// Exposed headers</span>
+	<span class="hljs-attr">credentials</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// Allow credentials</span>
+  },
+};
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">fuse</span>(app, options);
+</code></pre>
+<p>Here are the default CORS options:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">defaultFastifyCorsOptions</span>: <span class="hljs-title class_">FastifyCorsOptions</span> = {
+	<span class="hljs-attr">origin</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// Allow all origins</span>
+	<span class="hljs-attr">methods</span>: [<span class="hljs-string">'GET'</span>, <span class="hljs-string">'POST'</span>, <span class="hljs-string">'PATCH'</span>, <span class="hljs-string">'PUT'</span>, <span class="hljs-string">'DELETE'</span>, <span class="hljs-string">'OPTIONS'</span>], <span class="hljs-comment">// Allowed methods</span>
+	<span class="hljs-attr">allowedHeaders</span>: [<span class="hljs-string">'Content-Type'</span>, <span class="hljs-string">'Authorization'</span>, <span class="hljs-string">'X-Requested-With'</span>, <span class="hljs-string">'Bearer'</span>], <span class="hljs-comment">// Allowed headers</span>
+	<span class="hljs-attr">exposedHeaders</span>: [<span class="hljs-string">'Content-Length'</span>, <span class="hljs-string">'X-Requested-With'</span>], <span class="hljs-comment">// Exposed headers</span>
+	<span class="hljs-attr">credentials</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// Allow credentials</span>
+};
+</code></pre>
+<h1 id="open-api-and-docs-ux">Open API and Docs UX</h1>
+<p><code>fastify-fusion</code> integrates with <code>fastify-swagger</code> and <code>scalar</code> to provide OpenAPI documentation and a user-friendly interface for exploring your API. By default, it serves the OpenAPI documentation at <code>/docs/json</code> and the Scalar UX at <code>/</code>. You can customize the route prefixes and the static path for the docs UX.</p>
+<p>You can customize the OpenAPI options by passing in an <code>OpenApiOptions</code> object to the <code>fuse</code> function. Here is an example of how to customize the OpenAPI options:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">OpenApiOptions</span> = {
+	<span class="hljs-attr">title</span>?: <span class="hljs-built_in">string</span>;
+	<span class="hljs-attr">description</span>?: <span class="hljs-built_in">string</span>;
+	<span class="hljs-attr">version</span>?: <span class="hljs-built_in">string</span>;
+	<span class="hljs-attr">openApiRoutePrefix</span>?: <span class="hljs-built_in">string</span>;
+	<span class="hljs-attr">docsRoutePath</span>?: <span class="hljs-built_in">string</span>;
+};
+</code></pre>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { fuse, <span class="hljs-title class_">FuseOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Fastify</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify'</span>;
+<span class="hljs-keyword">const</span> app = <span class="hljs-title class_">Fastify</span>();
+<span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">FuseOptions</span> = {
+  <span class="hljs-attr">openApi</span>: {
+	<span class="hljs-attr">openApiRoutePrefix</span>: <span class="hljs-string">'/api-docs'</span>, <span class="hljs-comment">// Change the OpenAPI JSON route prefix</span>
+	<span class="hljs-attr">docsRoutePath</span>: <span class="hljs-string">'/docs'</span>, <span class="hljs-comment">// Change the OpenAPI docs route prefix</span>
+  },
+};
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">fuse</span>(app, options);
+</code></pre>
+<p>You can also set it to <code>false</code> to disable the OpenAPI documentation and Scalar UX:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { fuse, <span class="hljs-title class_">FuseOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify-fusion'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Fastify</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify'</span>;
+<span class="hljs-keyword">const</span> app = <span class="hljs-title class_">Fastify</span>();
+<span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">FuseOptions</span> = {
+	<span class="hljs-attr">openApi</span>: <span class="hljs-literal">false</span>, <span class="hljs-comment">// Disable OpenAPI documentation and Scalar UX</span>
+};
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">fuse</span>(app, options);
+</code></pre>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>If you want to contribute to this project, please read the <a href="./CONTRIBUTING.md">Contributing Guide</a> for more information on how to get started.</p>
+<h1 id="licensing-and-copyright">Licensing and Copyright</h1>
+<p>This project is licensed under the <a href="./LICENSE">MIT License</a>. Copyright (c) Jared Wray.</p>

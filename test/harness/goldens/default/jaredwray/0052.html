@@ -1,0 +1,454 @@
+<h1 id="providers">Providers</h1>
+<p>import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { CopyChecklist } from '@site/src/components/custom/CopyChecklist';</p>
+<p><em>Providers</em> are responsible for performing flag evaluations.
+They provide an abstraction between the underlying flag management system and the OpenFeature SDK.
+Providers can wrap a vendor SDK, call a bespoke flag evaluation REST API, or even parse some locally stored file to resolve flag values.
+This allows the underlying flag evaluation logic to be changed without requiring a major code refactor.</p>
+<p>An <a href="/specification/glossary#application-integrator">application integrator</a> can register one provider at a time.
+Registering an additional provider will override any previously configured providers.
+If no provider is set, OpenFeature will <a href="https://en.wikipedia.org/wiki/NOP_(code)">no-op</a> and return the default value passed to the evaluation API.</p>
+<p>Providers are set through the <a href="./evaluation-api#setting-a-provider">evaluation API</a>.
+They're globally registered and a change affects both new and existing OpenFeature clients.</p>
+<pre><code class="hljs language-mdx-code-block">import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+
+&#x3C;div className="video-container">
+  &#x3C;LiteYouTubeEmbed
+    id="DU9f1PinQU8"
+    title="YouTube video player"
+    poster="maxresdefault"
+    webp
+  />
+&#x3C;/div>
+</code></pre>
+<h2 id="implementing-providers">Implementing Providers</h2>
+<h3 id="getting-started">Getting started</h3>
+<p>To develop a provider, start by confirming that an OpenFeature SDK is available in the language you're interested in.
+Next, you need to create a new project and include the OpenFeature SDK as a dependency.
+This can be a new repository or included in an <a href="https://github.com/open-feature?q=contrib&#x26;type=all&#x26;language=&#x26;sort=">existing contrib repository</a> available under the OpenFeature organization.
+Finally, you’ll then need to write the provider itself.
+In most languages, this can be accomplished by implementing the provider interface exported by the OpenFeature SDK.</p>
+<h3 id="naming-recommendations">Naming recommendations</h3>
+<p>The following naming recommendations can be used to ensure consistency between providers developed among the community.</p>
+<h4 id="repository-name">Repository name</h4>
+<p>If you're creating a new repository, it's recommended that you use one the following naming conventions:</p>
+<ul>
+<li><code>openfeature-provider-&#x3C;language name></code></li>
+<li><code>&#x3C;vender/tool name>-openfeature-provider-&#x3C;language name></code></li>
+</ul>
+<p>:::note</p>
+<p>It is <strong>not</strong> required that a provider be open source, but it's highly recommended.</p>
+<p>:::</p>
+<h4 id="artifact-name">Artifact name</h4>
+<p>The name of the artifact will vary based on the package manager.
+Ultimately, it's up to the publisher to decide what name makes the most sense.
+However, the following items should be used in the package name:</p>
+<ul>
+<li>OpenFeature (can also be stylized as openfeature or open-feature)</li>
+<li>Vender/tool name</li>
+<li>The word <code>provider</code> should be included in the name</li>
+</ul>
+<p>An example of what it could look like in NPM: <code>@openfeature/flagd-provider</code></p>
+<h3 id="domain-scoped-providers">Domain scoped providers</h3>
+<p>OpenFeature supports multiple providers <a href="https://openfeature.dev/specification/glossary/#domain">domain-scoped</a> to multiple clients in a single application.
+This allows teams to scope flag evaluation to a particular flag management system, making it easier for developers to mix and match providers based on their needs, all from a unified SDK.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProvider</span>(<span class="hljs-string">'ProviderA'</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">ProviderA</span>());
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProvider</span>(<span class="hljs-string">'ProviderB'</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">ProviderB</span>());
+
+<span class="hljs-keyword">const</span> clientA = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>(<span class="hljs-string">'ProviderA'</span>);
+<span class="hljs-keyword">const</span> clientB = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>(<span class="hljs-string">'ProviderB'</span>);
+</code></pre>
+<blockquote>
+<p>To learn more, please refer to the <a href="https://github.com/open-feature/ofep/blob/main/OFEP/provider-client-mapping.md">OpenFeature Enhancement Proposal</a> or <a href="https://openfeature.dev/specification/sections/flag-evaluation/#requirement-113">spec change</a>.</p>
+</blockquote>
+<h3 id="multi-provider-support">Multi-Provider support</h3>
+<p>OpenFeature SDKs also support combining multiple providers under a single client using the <a href="/specification/appendix-a#multi-provider">Multi-Provider specification</a>.
+This interface allows your application to transparently interact with multiple providers from different flag management systems through a single interface.
+The logic of how the different providers are accessed through the multi-provider is handled through the assigned <a href="/specification/appendix-a#strategies">multi-provider strategy</a>.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> multiProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MultiProvider</span>(
+  [
+    {
+      <span class="hljs-attr">provider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">ProviderA</span>(),
+    },
+    {
+      <span class="hljs-attr">provider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">ProviderB</span>(),
+    },
+  ],
+  <span class="hljs-keyword">new</span> <span class="hljs-title class_">FirstMatchStrategy</span>(),
+);
+
+<span class="hljs-keyword">await</span> <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProviderAndWait</span>(multiProvider);
+</code></pre>
+<h3 id="examples">Examples</h3>
+<h4 id="dynamic-context-implementations-server-side-sdks">Dynamic Context Implementations (Server-side SDKs)</h4>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> {
+  <span class="hljs-title class_">Provider</span>,
+  <span class="hljs-title class_">ResolutionDetails</span>,
+  <span class="hljs-title class_">EvaluationContext</span>,
+  <span class="hljs-title class_">JsonValue</span>,
+  <span class="hljs-title class_">OpenFeatureEventEmitter</span>,
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/server-sdk'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyFeatureProvider</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Provider</span> {
+  <span class="hljs-keyword">readonly</span> metadata = {
+    <span class="hljs-attr">name</span>: <span class="hljs-string">'My Feature Provider'</span>,
+  } <span class="hljs-keyword">as</span> <span class="hljs-keyword">const</span>;
+
+  <span class="hljs-keyword">readonly</span> runsOn = <span class="hljs-string">'server'</span>;
+
+  <span class="hljs-comment">// emitter for provider events</span>
+  events = <span class="hljs-keyword">new</span> <span class="hljs-title class_">OpenFeatureEventEmitter</span>();
+
+  <span class="hljs-title function_">resolveBooleanEvaluation</span>(
+    <span class="hljs-attr">flagKey</span>: <span class="hljs-built_in">string</span>,
+    <span class="hljs-attr">defaultValue</span>: <span class="hljs-built_in">boolean</span>,
+    <span class="hljs-attr">context</span>: <span class="hljs-title class_">EvaluationContext</span>,
+  ): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">ResolutionDetails</span>&#x3C;<span class="hljs-built_in">boolean</span>>> {
+    <span class="hljs-comment">// code to resolve boolean details</span>
+  }
+
+  <span class="hljs-title function_">resolveStringEvaluation</span>(
+    <span class="hljs-attr">flagKey</span>: <span class="hljs-built_in">string</span>,
+    <span class="hljs-attr">defaultValue</span>: <span class="hljs-built_in">string</span>,
+    <span class="hljs-attr">context</span>: <span class="hljs-title class_">EvaluationContext</span>,
+  ): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">ResolutionDetails</span>&#x3C;<span class="hljs-built_in">string</span>>> {
+    <span class="hljs-comment">// code to resolve string details</span>
+  }
+
+  <span class="hljs-title function_">resolveNumberEvaluation</span>(
+    <span class="hljs-attr">flagKey</span>: <span class="hljs-built_in">string</span>,
+    <span class="hljs-attr">defaultValue</span>: <span class="hljs-built_in">number</span>,
+    <span class="hljs-attr">context</span>: <span class="hljs-title class_">EvaluationContext</span>,
+  ): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">ResolutionDetails</span>&#x3C;<span class="hljs-built_in">number</span>>> {
+    <span class="hljs-comment">// code to resolve number details</span>
+  }
+
+  <span class="hljs-title function_">resolveObjectEvaluation</span>(
+    <span class="hljs-attr">flagKey</span>: <span class="hljs-built_in">string</span>,
+    <span class="hljs-attr">defaultValue</span>: <span class="hljs-title class_">JsonValue</span>,
+    <span class="hljs-attr">context</span>: <span class="hljs-title class_">EvaluationContext</span>,
+  ): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">ResolutionDetails</span>&#x3C;<span class="hljs-title class_">JsonValue</span>>> {
+    <span class="hljs-comment">// code to resolve object details</span>
+  }
+}
+</code></pre>
+<pre><code class="hljs language-java"><span class="hljs-keyword">package</span> dev.openfeature.javasdk;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyFeatureProvider</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">FeatureProvider</span> {
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-type">String</span> <span class="hljs-variable">name</span> <span class="hljs-operator">=</span> <span class="hljs-string">"My Feature Provider"</span>;
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getName</span><span class="hljs-params">()</span> {
+      <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.name;
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> Metadata <span class="hljs-title function_">getMetadata</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Metadata</span>() {
+            <span class="hljs-meta">@Override</span>
+            <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getName</span><span class="hljs-params">()</span> {
+                <span class="hljs-keyword">return</span> name;
+            }
+        };
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ProviderEvaluation&#x3C;Boolean> <span class="hljs-title function_">getBooleanEvaluation</span><span class="hljs-params">(String key, Boolean defaultValue, EvaluationContext ctx)</span> {
+      <span class="hljs-comment">// code to resolve boolean details</span>
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ProviderEvaluation&#x3C;String> <span class="hljs-title function_">getStringEvaluation</span><span class="hljs-params">(String key, String defaultValue, EvaluationContext ctx)</span> {
+      <span class="hljs-comment">// code to resolve string details</span>
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ProviderEvaluation&#x3C;Integer> <span class="hljs-title function_">getIntegerEvaluation</span><span class="hljs-params">(String key, Integer defaultValue, EvaluationContext ctx)</span> {
+      <span class="hljs-comment">// code to resolve integer details</span>
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ProviderEvaluation&#x3C;Double> <span class="hljs-title function_">getDoubleEvaluation</span><span class="hljs-params">(String key, Double defaultValue, EvaluationContext ctx)</span> {
+      <span class="hljs-comment">// code to resolve double details</span>
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ProviderEvaluation&#x3C;Value> <span class="hljs-title function_">getObjectEvaluation</span><span class="hljs-params">(String key, Value defaultValue, EvaluationContext invocationContext)</span> {
+      <span class="hljs-comment">// code to resolve object details</span>
+    }
+}
+</code></pre>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">using</span> System.Threading.Tasks;
+<span class="hljs-keyword">using</span> OpenFeature;
+<span class="hljs-keyword">using</span> OpenFeature.Model;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">MyFeatureProvider</span> : <span class="hljs-title">FeatureProvider</span>
+{
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-built_in">string</span> Name => <span class="hljs-string">"My Feature Provider"</span>;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Metadata <span class="hljs-title">GetMetadata</span>()</span>
+    {
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Metadata(Name);
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Task&#x3C;ResolutionDetails&#x3C;<span class="hljs-built_in">bool</span>>> ResolveBooleanValue(<span class="hljs-built_in">string</span> flagKey, <span class="hljs-built_in">bool</span> defaultValue,
+        EvaluationContext context = <span class="hljs-literal">null</span>)
+    {
+        <span class="hljs-comment">// code to resolve boolean details</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Task&#x3C;ResolutionDetails&#x3C;<span class="hljs-built_in">string</span>>> ResolveStringValue(<span class="hljs-built_in">string</span> flagKey, <span class="hljs-built_in">string</span> defaultValue,
+        EvaluationContext context = <span class="hljs-literal">null</span>)
+    {
+        <span class="hljs-comment">// code to resolve string details</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Task&#x3C;ResolutionDetails&#x3C;<span class="hljs-built_in">int</span>>> ResolveIntegerValue(<span class="hljs-built_in">string</span> flagKey, <span class="hljs-built_in">int</span> defaultValue,
+        EvaluationContext context = <span class="hljs-literal">null</span>)
+    {
+        <span class="hljs-comment">// code to resolve integer details</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Task&#x3C;ResolutionDetails&#x3C;<span class="hljs-built_in">double</span>>> ResolveDoubleValue(<span class="hljs-built_in">string</span> flagKey, <span class="hljs-built_in">double</span> defaultValue,
+        EvaluationContext context = <span class="hljs-literal">null</span>)
+    {
+        <span class="hljs-comment">// code to resolve double details</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Task&#x3C;ResolutionDetails&#x3C;Value>> ResolveStructureValue(<span class="hljs-built_in">string</span> flagKey, Value defaultValue,
+        EvaluationContext context = <span class="hljs-literal">null</span>)
+    {
+        <span class="hljs-comment">// code to resolve object details</span>
+    }
+}
+</code></pre>
+<pre><code class="hljs language-go"><span class="hljs-keyword">package</span> provider
+
+<span class="hljs-comment">// MyFeatureProvider implements the FeatureProvider interface and provides functions for evaluating flags</span>
+<span class="hljs-keyword">type</span> MyFeatureProvider <span class="hljs-keyword">struct</span>{}
+
+<span class="hljs-comment">// Metadata returns the metadata of the provider</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(e MyFeatureProvider)</span></span> Metadata() Metadata {
+    <span class="hljs-keyword">return</span> Metadata{Name: <span class="hljs-string">"MyFeatureProvider"</span>}
+}
+
+<span class="hljs-comment">// BooleanEvaluation returns a boolean flag</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(e MyFeatureProvider)</span></span> BooleanEvaluation(flag <span class="hljs-type">string</span>, defaultValue <span class="hljs-type">bool</span>, evalCtx EvaluationContext) BoolResolutionDetail {
+    <span class="hljs-comment">// code to evaluate boolean</span>
+}
+
+<span class="hljs-comment">// StringEvaluation returns a string flag</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(e MyFeatureProvider)</span></span> StringEvaluation(flag <span class="hljs-type">string</span>, defaultValue <span class="hljs-type">string</span>, evalCtx EvaluationContext) StringResolutionDetail {
+    <span class="hljs-comment">// code to evaluate string</span>
+}
+
+<span class="hljs-comment">// FloatEvaluation returns a float flag</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(e MyFeatureProvider)</span></span> FloatEvaluation(flag <span class="hljs-type">string</span>, defaultValue <span class="hljs-type">float64</span>, evalCtx EvaluationContext) FloatResolutionDetail {
+    <span class="hljs-comment">// code to evaluate float</span>
+}
+
+<span class="hljs-comment">// IntEvaluation returns an int flag</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(e MyFeatureProvider)</span></span> IntEvaluation(flag <span class="hljs-type">string</span>, defaultValue <span class="hljs-type">int64</span>, evalCtx EvaluationContext) IntResolutionDetail {
+    <span class="hljs-comment">// code to evaluate int</span>
+}
+
+<span class="hljs-comment">// ObjectEvaluation returns an object flag</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(e MyFeatureProvider)</span></span> ObjectEvaluation(flag <span class="hljs-type">string</span>, defaultValue <span class="hljs-keyword">interface</span>{}, evalCtx EvaluationContext) ResolutionDetail {
+    <span class="hljs-comment">// code to evaluate object</span>
+}
+
+<span class="hljs-comment">// Hooks returns hooks</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(e MyFeatureProvider)</span></span> Hooks() []Hook {
+    <span class="hljs-comment">// code to retrieve hooks</span>
+}
+</code></pre>
+<pre><code class="hljs language-php"><span class="hljs-keyword">namespace</span> <span class="hljs-title class_">OpenFeature</span>\<span class="hljs-title class_">Dev</span>\<span class="hljs-title class_">MyFeature</span>;
+
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">hooks</span>\<span class="hljs-title">HooksAwareTrait</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">OpenFeature</span>\<span class="hljs-title">interfaces</span>\<span class="hljs-title">provider</span>\<span class="hljs-title">Provider</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">Psr</span>\<span class="hljs-title">Log</span>\<span class="hljs-title">LoggerAwareTrait</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyFeatureProvider</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">Provider</span>
+</span>{
+    <span class="hljs-keyword">use</span> <span class="hljs-title">HooksAwareTrait</span>;
+    <span class="hljs-keyword">use</span> <span class="hljs-title">LoggerAwareTrait</span>;
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">const</span> <span class="hljs-variable constant_">NAME</span> = <span class="hljs-string">'MyFeatureProvider'</span>;
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getMetadata</span>(<span class="hljs-params"></span>): <span class="hljs-title">MetadataInterface</span>
+    </span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Metadata</span>(<span class="hljs-built_in">self</span>::<span class="hljs-variable constant_">NAME</span>);
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveBooleanValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-keyword">bool</span> <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetails</span>
+    </span>{
+        <span class="hljs-comment">// code to evaluate boolean</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveStringValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-keyword">string</span> <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetails</span>
+    </span>{
+        <span class="hljs-comment">// code to evaluate string</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveIntegerValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-keyword">int</span> <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetails</span>
+    </span>{
+        <span class="hljs-comment">// code to evaluate integer</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveFloatValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-keyword">float</span> <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetails</span>
+    </span>{
+        <span class="hljs-comment">// code to evaluate float</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">resolveObjectValue</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> <span class="hljs-variable">$flagKey</span>, <span class="hljs-variable">$defaultValue</span>, ?EvaluationContext <span class="hljs-variable">$context</span> = <span class="hljs-literal">null</span></span>): <span class="hljs-title">ResolutionDetails</span>
+    </span>{
+        <span class="hljs-comment">// code to evaluate object</span>
+    }
+}
+</code></pre>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> <span class="hljs-type">List</span>, <span class="hljs-type">Optional</span>
+
+<span class="hljs-keyword">from</span> openfeature.evaluation_context <span class="hljs-keyword">import</span> EvaluationContext
+<span class="hljs-keyword">from</span> openfeature.flag_evaluation <span class="hljs-keyword">import</span> FlagResolutionDetails
+<span class="hljs-keyword">from</span> openfeature.provider.provider <span class="hljs-keyword">import</span> AbstractProvider
+<span class="hljs-keyword">from</span> openfeature.provider.metadata <span class="hljs-keyword">import</span> Metadata
+
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyProvider</span>(<span class="hljs-title class_ inherited__">AbstractProvider</span>):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">get_metadata</span>(<span class="hljs-params">self</span>) -> Metadata:
+        <span class="hljs-keyword">return</span> Metadata(name=<span class="hljs-string">"MyFeatureProvider"</span>)
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">get_provider_hooks</span>(<span class="hljs-params">self</span>) -> <span class="hljs-type">List</span>[Hook]:
+        <span class="hljs-keyword">return</span> []
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_boolean_details</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-built_in">bool</span>,
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-built_in">bool</span>]:
+        ...  <span class="hljs-comment"># code to evaluate boolean</span>
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_string_details</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-built_in">str</span>,
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-built_in">str</span>]:
+        ...  <span class="hljs-comment"># code to evaluate string</span>
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_integer_details</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-built_in">int</span>,
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-built_in">int</span>]:
+        ...  <span class="hljs-comment"># code to evaluate integer</span>
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_float_details</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-built_in">float</span>,
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-built_in">float</span>]:
+        ...  <span class="hljs-comment"># code to evaluate float</span>
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_object_details</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-type">Union</span>[<span class="hljs-built_in">dict</span>, <span class="hljs-built_in">list</span>],
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-type">Union</span>[<span class="hljs-built_in">dict</span>, <span class="hljs-built_in">list</span>]]:
+        ...  <span class="hljs-comment"># code to evaluate object</span>
+</code></pre>
+<h3 id="static-context-implementations-client-side-sdks">Static Context Implementations (Client-side SDKs)</h3>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">EvaluationContext</span>, <span class="hljs-title class_">Provider</span>, <span class="hljs-title class_">JsonValue</span>, <span class="hljs-title class_">ResolutionDetails</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/web-sdk'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">TestProvider</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Provider</span> {
+  metadata = {
+    <span class="hljs-attr">name</span>: <span class="hljs-title class_">TestProvider</span>.<span class="hljs-property">name</span>,
+  };
+
+  <span class="hljs-keyword">readonly</span> runsOn = <span class="hljs-string">'client'</span>;
+
+  hooks = [];
+
+  <span class="hljs-title function_">onContextChange</span>(<span class="hljs-attr">oldContext</span>: <span class="hljs-title class_">EvaluationContext</span>, <span class="hljs-attr">newContext</span>: <span class="hljs-title class_">EvaluationContext</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">void</span>> {
+    <span class="hljs-comment">// code to run to reconcile the providers state with the newly updated context</span>
+  }
+
+  <span class="hljs-title function_">resolveBooleanEvaluation</span>(<span class="hljs-attr">flagKey</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">defaultValue</span>: <span class="hljs-built_in">boolean</span>): <span class="hljs-title class_">ResolutionDetails</span>&#x3C;<span class="hljs-built_in">boolean</span>> {
+    <span class="hljs-comment">// code to evaluate boolean</span>
+  }
+
+  <span class="hljs-title function_">resolveStringEvaluation</span>(<span class="hljs-attr">flagKey</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">defaultValue</span>: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">ResolutionDetails</span>&#x3C;<span class="hljs-built_in">string</span>> {
+    <span class="hljs-comment">// code to evaluate string</span>
+  }
+
+  <span class="hljs-title function_">resolveNumberEvaluation</span>(<span class="hljs-attr">flagKey</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">defaultValue</span>: <span class="hljs-built_in">number</span>): <span class="hljs-title class_">ResolutionDetails</span>&#x3C;<span class="hljs-built_in">number</span>> {
+    <span class="hljs-comment">// code to evaluate number</span>
+  }
+
+  resolveObjectEvaluation&#x3C;U <span class="hljs-keyword">extends</span> <span class="hljs-title class_">JsonValue</span>>(<span class="hljs-attr">flagKey</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">defaultValue</span>: U): <span class="hljs-title class_">ResolutionDetails</span>&#x3C;U> {
+    <span class="hljs-comment">// code to evaluate object</span>
+  }
+}
+</code></pre>
+<h3 id="checklist">Checklist</h3>
+<p>Here is a checklist of important considerations when implementing a provider.</p>
+<h4 id="functional-requirements">Functional requirements</h4>
+<p>&#x3C;CopyChecklist
+items={[
+'All resolution methods are implemented (see <code>Provider</code> / <code>FeatureProvider</code> interface in applicable SDK).',
+'Relevant configuration options for the underlying backend are exposed (typically using the provider constructor).',
+'Flag-keys are transformed appropriately for the underlying backend (OpenFeature defines no restrictions in valid flag keys).',
+'Context is transformed appropriately for the underlying backend.',
+'Provider is named according to the <a href="https://openfeature.dev/docs/reference/concepts/provider#naming-recommendations">naming conventions</a>',
+]}
+/></p>
+<h4 id="non-functional-requirements">Non-functional requirements</h4>
+<p>&#x3C;CopyChecklist
+items={[
+'Documentation for installation, all behaviors (options, context transformation, flag-key transformation).',
+'Provider is adequately tested.',
+'Provider is added to <a href="https://github.com/open-feature/openfeature.dev/issues/new?assignees=&#x26;labels=provider&#x26;template=document-provider.yaml&#x26;title=%5BProvider%5D%3A+">the documentation site</a>.',
+'Provider releases follow <a href="https://semver.org/">semantic versioning</a>.',
+'Document the version of the OpenFeature specification to which your provider complies.',
+]}
+/></p>
+<h3 id="faq">FAQ</h3>
+<h4 id="does-my-providers-version-need-to-match-the-spec-version-to-which-it-complies">Does my provider's version need to match the spec version to which it complies?</h4>
+<p>No.
+You should document the version of the OpenFeature specification your provider complies to, and otherwise use <a href="https://semver.org/">semantic versioning</a> in your artifact numbers.</p>
+<h4 id="my-backend-needs-a-targeting-key-or-other-user-identifier-how-can-i-ensure-one-exists">My backend needs a targeting key (or other user identifier), how can I ensure one exists?</h4>
+<p>Targeting keys are not required by the Evaluation API.
+If your backend requires one, you have a couple options:</p>
+<ul>
+<li>Indicate an error in your provider (this will result in the default value being returned).</li>
+<li>Generate one automatically.</li>
+</ul>
+<p>Be sure to document this behavior.</p>
+<h4 id="how-should-i-handle-error-conditions">How should I handle error conditions?</h4>
+<p>If an error condition is encountered in your provider, an error should be <a href="/specification/types#error-code">indicated</a> by throwing or returning an error, as language idioms dictate.
+The SDK will ensure the default value is returned and expose the relevant error data.</p>
+<h4 id="why-isnt-there-an-error-code-for-disabled-flags">Why isn't there an <a href="/specification/types#error-code">error code</a> for disabled flags?</h4>
+<p>The evaluation of disabled flags does not constitute an "exceptional" occurrence.
+Flag management systems which feature the ability to disable flags typically expect that flags in this state might be evaluated by client applications.
+For this reason, OpenFeature defines a <a href="/specification/types#resolution-details">disabled reason</a>, not a disabled error.</p>
+<h4 id="my-flag-system-doesnt-support-flags-of-a-particular-type-what-should-i-do">My flag system doesn't support flags of a particular type. What should I do?</h4>
+<p>If your backend system doesn't support a particular flag type, you can:</p>
+<ul>
+<li>Do a conversion from a type the system supports (for example, store JSON objects in a string, or booleans as <code>0</code>/<code>1</code>), and document this pattern.</li>
+<li>Indicate an error in your provider (this will result in the default value being returned).</li>
+</ul>
+<h4 id="how-can-people-find-my-provider">How can people find my provider?</h4>
+<p>Please add your provider to the <a href="https://github.com/open-feature/openfeature.dev/issues/new?assignees=&#x26;labels=provider&#x26;template=document-provider.yaml&#x26;title=%5BProvider%5D%3A+">documentation</a> so people can find it!</p>
+<h4 id="where-should-i-put-my-provider-source-code">Where should I put my provider source code?</h4>
+<p>If you are a vendor and you want to maintain full control over your provider, you should host the provider in your organization's SCM.
+If you would like your provider to be maintained as a community project, please take a look at our various <a href="https://github.com/orgs/open-feature/repositories?q=contrib&#x26;type=all&#x26;language=&#x26;sort=">contrib repositories</a>.
+We encourage you to make your code open source, but obviously it's your decision.</p>
+<h4 id="where-should-i-publish-my-provider-artifact">Where should I publish my provider artifact?</h4>
+<p>You should publish your provider on the appropriate package management repository for your language, keeping in mind the <a href="https://openfeature.dev/docs/reference/concepts/provider#naming-recommendations">naming conventions</a>.
+Our <a href="https://github.com/orgs/open-feature/repositories?q=contrib&#x26;type=all&#x26;language=&#x26;sort=">contrib repositories</a> publish all their artifacts as part of their release processes.</p>

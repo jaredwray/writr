@@ -1,0 +1,153 @@
+<blockquote>
+<p><strong>Availability:</strong> Registered in the Node build only. Not available in the browser build.</p>
+</blockquote>
+<h2 id="logging">logging</h2>
+<blockquote>
+<p><strong>Note:</strong> These helpers are only available in Node.js environments. They are not compatible with browser-based Handlebars usage.</p>
+</blockquote>
+<p>These helpers output messages to the terminal with ANSI color formatting. All logging helpers return an empty string to avoid affecting template output.</p>
+<h3 id="log">{{log}}</h3>
+<p>Logs an unstyled message to the terminal via <code>console.log</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>...args</code> <strong>{any}</strong>: Values to log</li>
+<li><code>returns</code> <strong>{String}</strong>: Empty string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{log "Processing item:" itemName}}
+<span class="hljs-comment">&#x3C;!-- outputs to console: Processing item: Widget --></span>
+</code></pre>
+<h3 id="ok">{{ok}}</h3>
+<p>Logs a green colored message preceded by a checkmark to the terminal. Useful for indicating successful operations.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>...args</code> <strong>{any}</strong>: Values to log (will be joined with spaces)</li>
+<li><code>returns</code> <strong>{String}</strong>: Empty string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{ok "Build completed successfully"}}
+<span class="hljs-comment">&#x3C;!-- outputs to console: ✓ Build completed successfully (in green) --></span>
+</code></pre>
+<h3 id="success">{{success}}</h3>
+<p>Logs a green colored message to the terminal. Similar to <code>ok</code> but without the checkmark.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>...args</code> <strong>{any}</strong>: Values to log (will be joined with spaces)</li>
+<li><code>returns</code> <strong>{String}</strong>: Empty string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{success "All tests passed"}}
+<span class="hljs-comment">&#x3C;!-- outputs to console: All tests passed (in green) --></span>
+</code></pre>
+<h3 id="info">{{info}}</h3>
+<p>Logs a cyan colored informational message to the terminal.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>...args</code> <strong>{any}</strong>: Values to log (will be joined with spaces)</li>
+<li><code>returns</code> <strong>{String}</strong>: Empty string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{info "Processing" totalCount "items"}}
+<span class="hljs-comment">&#x3C;!-- outputs to console: Processing 42 items (in cyan) --></span>
+</code></pre>
+<h3 id="warning">{{warning}}</h3>
+<p>Logs a yellow colored warning message to stderr.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>...args</code> <strong>{any}</strong>: Values to log (will be joined with spaces)</li>
+<li><code>returns</code> <strong>{String}</strong>: Empty string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{warning "Deprecated feature detected"}}
+<span class="hljs-comment">&#x3C;!-- outputs to stderr: Deprecated feature detected (in yellow) --></span>
+</code></pre>
+<h3 id="warn">{{warn}}</h3>
+<p>Alias for <code>{{warning}}</code>. Logs a yellow colored warning message to stderr.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>...args</code> <strong>{any}</strong>: Values to log (will be joined with spaces)</li>
+<li><code>returns</code> <strong>{String}</strong>: Empty string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{warn "This method will be removed in v5"}}
+<span class="hljs-comment">&#x3C;!-- outputs to stderr: This method will be removed in v5 (in yellow) --></span>
+</code></pre>
+<h3 id="error">{{error}}</h3>
+<p>Logs a red colored error message to stderr.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>...args</code> <strong>{any}</strong>: Values to log (will be joined with spaces)</li>
+<li><code>returns</code> <strong>{String}</strong>: Empty string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{error "Failed to process item:" itemId}}
+<span class="hljs-comment">&#x3C;!-- outputs to stderr: Failed to process item: 123 (in red) --></span>
+</code></pre>
+<h3 id="danger">{{danger}}</h3>
+<p>Alias for <code>{{error}}</code>. Logs a red colored error message to stderr.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>...args</code> <strong>{any}</strong>: Values to log (will be joined with spaces)</li>
+<li><code>returns</code> <strong>{String}</strong>: Empty string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{danger "Critical failure in module"}}
+<span class="hljs-comment">&#x3C;!-- outputs to stderr: Critical failure in module (in red) --></span>
+</code></pre>
+<h3 id="bold">{{bold}}</h3>
+<p>Logs a bold formatted message to stderr.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>...args</code> <strong>{any}</strong>: Values to log (will be joined with spaces)</li>
+<li><code>returns</code> <strong>{String}</strong>: Empty string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{bold "Important Notice"}}
+<span class="hljs-comment">&#x3C;!-- outputs to stderr: Important Notice (in bold) --></span>
+</code></pre>
+<h3 id="_debug">{{_debug}}</h3>
+<p>Outputs debug information including the provided value and the current Handlebars context. Useful for inspecting template data during development.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>...args</code> <strong>{any}</strong>: Optional values to inspect</li>
+<li><code>returns</code> <strong>{String}</strong>: Empty string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{_debug user}}
+<span class="hljs-comment">&#x3C;!-- outputs to stderr:
+──────────────────────────────────────────────────
+VALUE: { name: "John", role: "admin" }
+CONTEXT: { users: [...], settings: {...} }
+──────────────────────────────────────────────────
+--></span>
+</code></pre>
+<h3 id="_inspect">{{_inspect}}</h3>
+<p>Formats a value as JSON and returns it for display in the template. Supports different output formats.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>context</code> <strong>{any}</strong>: The value to inspect</li>
+<li><code>options.hash.type</code> <strong>{String}</strong>: Output format: <code>"html"</code> (default), <code>"md"</code>, or any other value for raw JSON</li>
+<li><code>returns</code> <strong>{String}</strong>: Formatted JSON string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{_inspect user}}
+<span class="hljs-comment">&#x3C;!-- returns HTML formatted JSON:
+&#x3C;div class="highlight highlight-json">
+&#x3C;pre>&#x3C;code>
+{
+  "name": "John",
+  "role": "admin"
+}&#x3C;/code>&#x3C;/pre>&#x3C;/div>
+--></span>
+
+{{_inspect user type="md"}}
+<span class="hljs-comment">&#x3C;!-- returns Markdown formatted JSON:
+```json
+{
+  "name": "John",
+  "role": "admin"
+}
+</span></code></pre>
+<p>--></p>
+<p>{{_inspect user type="raw"}}</p>
+<pre><code></code></pre>

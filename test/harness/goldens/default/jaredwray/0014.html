@@ -1,0 +1,45 @@
+<h1 id="deploy-with-cloudflare-global-load-balancing">Deploy with Cloudflare Global Load Balancing</h1>
+<p>Cloudflare is a natural fit for <code>http-cache</code> because its network is <strong>anycast by
+design</strong> — a single IP is announced from data centers worldwide, and each user is
+automatically routed to the nearest one. That is exactly the
+<a href="/docs/architecture">global-load-balancing model</a> <code>http-cache</code> is built around.</p>
+<h2 id="why-cloudflare">Why Cloudflare</h2>
+<ul>
+<li><strong>Anycast everywhere.</strong> No regional IPs to juggle; the nearest edge answers.</li>
+<li><strong>Health-aware steering.</strong> Cloudflare Load Balancing checks gateway health and routes
+around failures automatically.</li>
+<li><strong>Geo steering.</strong> Pin EU traffic to EU gateways for data-residency requirements.</li>
+<li><strong>DDoS + TLS at the edge.</strong> Your gateways focus on caching, not perimeter concerns.</li>
+</ul>
+<h2 id="setup">Setup</h2>
+<ol>
+<li>
+<p><strong>Run gateways in two or more regions</strong> (any host — VMs, containers, or a
+container platform):</p>
+<pre><code class="hljs language-bash">docker run -p 8080:8080 \
+  -e HTTP_CACHE_TOKEN=<span class="hljs-variable">$TOKEN</span> \
+  -e HTTP_CACHE_STORE=redis://your-redis:6379 \
+  ghcr.io/jaredwray/http-cache:latest
+</code></pre>
+</li>
+<li>
+<p><strong>Create a Cloudflare Load Balancer</strong> (Traffic → Load Balancing):</p>
+<ul>
+<li>Add an <strong>origin pool per region</strong>, each pointing at that region's gateway(s).</li>
+<li>Set the <strong>health check</strong> to <code>GET /health</code> (expect <code>200</code>).</li>
+<li>Choose <strong>Proxied (orange cloud)</strong> so traffic rides Cloudflare's anycast network.</li>
+</ul>
+</li>
+<li>
+<p><strong>Set steering to "Dynamic (lowest latency)"</strong> so each user reaches the closest
+healthy gateway pool.</p>
+</li>
+<li>
+<p><strong>Point a hostname</strong> (e.g. <code>cache.example.com</code>) at the load balancer.</p>
+</li>
+</ol>
+<h2 id="result">Result</h2>
+<pre><code>user ─▶ Cloudflare anycast edge ─▶ nearest http-cache gateway ─▶ L1/L2 → keyv backend
+</code></pre>
+<p>Each request is served from memory in the region closest to the user, with no cluster
+to operate. Add or drain a region by editing the pool — no rebalancing required.</p>

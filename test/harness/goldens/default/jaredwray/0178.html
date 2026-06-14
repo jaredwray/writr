@@ -1,0 +1,35 @@
+<h1 id="agentsmd">AGENTS.md</h1>
+<p>Guidelines for AI coding agents (Claude, Gemini, Codex).</p>
+<h2 id="project">Project</h2>
+<p>Qified is a task and message queue library with multiple providers, built with TypeScript and Node.js (>=22). This is a monorepo containing:</p>
+<ul>
+<li><code>qified</code> - Core package with in-memory provider</li>
+<li><code>@qified/redis</code> - Redis provider</li>
+<li><code>@qified/rabbitmq</code> - RabbitMQ provider</li>
+<li><code>@qified/nats</code> - NATS provider</li>
+<li><code>@qified/zeromq</code> - ZeroMQ provider</li>
+</ul>
+<h2 id="commands">Commands</h2>
+<ul>
+<li><code>pnpm install</code> - Install dependencies</li>
+<li><code>pnpm build</code> - Build all packages</li>
+<li><code>pnpm test</code> - Run linter and tests with coverage</li>
+<li><code>pnpm test:services:start</code> - Start Docker services (Redis, RabbitMQ, etc.)</li>
+<li><code>pnpm test:services:stop</code> - Stop Docker services</li>
+</ul>
+<p><strong>Use pnpm, not npm.</strong></p>
+<h2 id="development-rules">Development Rules</h2>
+<ol>
+<li><strong>Always run <code>pnpm test</code> after every change</strong> - You must test your changes every time, no exceptions. All tests must pass before committing.</li>
+<li><strong>Maintain 100% code coverage</strong> - Add tests for any new code. Every change must achieve 100% coverage. If coverage drops below 100%, add or update tests until it is restored.</li>
+<li><strong>Follow existing code style</strong> - Biome enforces formatting and linting</li>
+</ol>
+<h2 id="structure">Structure</h2>
+<ul>
+<li><code>packages/qified/</code> - Core package with types and in-memory providers</li>
+<li><code>packages/redis/</code> - Redis provider</li>
+<li><code>packages/rabbitmq/</code> - RabbitMQ provider</li>
+<li><code>packages/nats/</code> - NATS provider</li>
+<li><code>packages/zeromq/</code> - ZeroMQ provider</li>
+<li><code>site/</code> - Website assets</li>
+</ul>

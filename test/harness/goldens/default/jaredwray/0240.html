@@ -1,0 +1,39 @@
+<h1 id="how-to-implement-caching-in-javascript">How to Implement Caching in Javascript</h1>
+<h2 id="what-is-a-cache">What is a Cache?</h2>
+<p>A cache is a short-term, high-speed data storage layer that stores a subset of data, enabling it to be retrieved faster than accessing it from its primary storage location. Caching allows you to reuse previously retrieved data efficiently.</p>
+<h2 id="caching-support-in-keyv">Caching Support in Keyv</h2>
+<p>Caching will work in memory by default. However, users can also install a Keyv storage adapter that is initialized with a connection string or any other storage that implements the Map API.</p>
+<h2 id="extend-your-own-module-with-keyv-to-add-cache-support">Extend your own Module with Keyv to Add Cache Support</h2>
+<ul>
+<li>Keyv can be easily embedded into other modules to add cache support.</li>
+<li>You should also set a namespace for your module to safely call <code>.clear()</code> without clearing unrelated app data.</li>
+</ul>
+<blockquote>
+<p><strong>Note</strong>:
+The recommended pattern is to expose a cache option in your module's options which is passed through to Keyv.</p>
+</blockquote>
+<h3 id="example---add-cache-support-to-a-module">Example - Add Cache Support to a Module</h3>
+<ol>
+<li>Install whichever storage adapter you will be using, <code>@keyv/redis</code> in this example</li>
+</ol>
+<pre><code class="hljs language-sh">npm install --save @keyv/redis
+</code></pre>
+<ol start="2">
+<li>Declare the Module with the cache controlled by a Keyv instance</li>
+</ol>
+<pre><code class="hljs language-js"><span class="hljs-keyword">class</span> <span class="hljs-title class_">AwesomeModule</span> {
+	<span class="hljs-title function_">constructor</span>(<span class="hljs-params">opts</span>) {
+		<span class="hljs-variable language_">this</span>.<span class="hljs-property">cache</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({
+			<span class="hljs-attr">uri</span>: <span class="hljs-keyword">typeof</span> opts.<span class="hljs-property">cache</span> === <span class="hljs-string">'string'</span> &#x26;&#x26; opts.<span class="hljs-property">cache</span>,
+			<span class="hljs-attr">store</span>: <span class="hljs-keyword">typeof</span> opts.<span class="hljs-property">cache</span> !== <span class="hljs-string">'string'</span> &#x26;&#x26; opts.<span class="hljs-property">cache</span>,
+			<span class="hljs-attr">namespace</span>: <span class="hljs-string">'awesome-module'</span>
+		});
+	}
+}
+</code></pre>
+<ol start="3">
+<li>Create an Instance of the Module with caching support</li>
+</ol>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">AwesomeModule</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'awesome-module'</span>);
+<span class="hljs-keyword">const</span> awesomeModule = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AwesomeModule</span>({ <span class="hljs-attr">cache</span>: <span class="hljs-string">'redis://localhost'</span> });
+</code></pre>

@@ -1,0 +1,859 @@
+![Airhorn](https://airhorn.org/logo.svg "Airhorn")
+
+[![tests](https://github.com/jaredwray/airhorn/actions/workflows/tests.yml/badge.svg)](https://github.com/jaredwray/airhorn/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/jaredwray/airhorn/branch/main/graph/badge.svg?token=4OJEEB67Q5)](https://codecov.io/gh/jaredwray/airhorn)
+[![license](https://img.shields.io/github/license/jaredwray/airhorn)](https://github.com/jaredwray/airhorn/blob/master/LICENSE)
+[![npm](https://img.shields.io/npm/dm/airhorn)](https://npmjs.com/package/airhorn)
+[![npm](https://img.shields.io/npm/v/airhorn)](https://npmjs.com/package/airhorn)
+
+# Cloud Native Notifications
+
+`Airhorn` simplifies the process of notifications by using templates to send messages across various providers with a common easy to use interface. 
+
+- Supports multiple notification types: SMS, Email, Mobile Push, Webhooks
+- A unified API for all notification types using the `send()` method.
+- Hooks and Emitting built in by default for extendability and observability.
+- Send Strategy (Round Robin, Fail Over, All) Choose the best delivery method for each notification.
+- Built in Webhook support for sending notifications to external services.
+- Built in support for retries and error handling on sends.
+- Advanced caching on template compilation and execution.
+- Load a template from a file for easy GitOps based workflows.
+- Many supported providers such as Twilio (with Sendgrid), AWS, and Google Cloud.
+- Robust (6+ template formats) templating via [ecto](https://github.com/jaredwray/ecto)
+- Easily build your own provider with minimal effort via `AirhornProvider` interface.
+- Statistics tracking for send successes, failures, and execution times (instance only).
+- ESM and Typescript based supporting Nodejs 20+
+- Maintained on a regular basis with updates and improvements.
+
+# Table of Contents
+
+- [Getting Started](#getting-started)
+- [Airhorn Options](#airhorn-options)
+- [Using Send Helper Methods](#using-send-helper-methods)
+- [Airhorn Send Response](#airhorn-send-response)
+- [Send Strategies](#send-strategies)
+- [Airhorn API](#airhorn-api)
+  - [Constructor](#constructor)
+  - [Properties](#properties)
+    - [.cache](#cache)
+    - [.sendStrategy](#sendstrategy)
+    - [.throwOnErrors](#throwonerrors)
+    - [.statistics](#statistics-1)
+    - [.providers](#providers)
+  - [Methods](#methods)
+    - [.send()](#send)
+    - [.sendAll()](#sendall)
+    - [.sendFailOver()](#sendfailover)
+    - [.sendRoundRobin()](#sendroundrobin)
+    - [.sendSMS()](#sendsms)
+    - [.sendEmail()](#sendemail)
+    - [.sendMobilePush()](#sendmobilepush)
+    - [.sendWebhook()](#sendwebhook)
+    - [.loadTemplate()](#loadtemplate)
+    - [.addProvider()](#addprovider)
+    - [.addProviders()](#addproviders)
+    - [.getProvidersByType()](#getprovidersbytype)
+    - [.generateMessage()](#generatemessage)
+- [Using Webhooks](#using-webhooks)
+- [Statistics](#statistics)
+- [Hooks](#hooks)
+- [Emitting Events](#emitting-events)
+- [Load Template Helper](#load-template-helper)
+- [Migration to v7](#migration-to-v7)
+- [Migration to v6](#migration-to-v6)
+- [Core Supported Providers](#core-supported-providers)
+- [Third Party Providers](#third-party-providers)
+- [Creating a Provider](#creating-a-provider)
+- [How to Contribute](#how-to-contribute)
+- [Licensing and Copyright](#licensing-and-copyright)
+
+# Getting Started
+
+To get started with Airhorn, you can install it via npm:
+
+```bash
+npm install airhorn
+```
+
+Once installed, this gives you the main send functionality and built in webhook support. You can use it in your project like so:
+
+```typescript
+import { Airhorn, AirhornProviderType } from "airhorn";
+
+const airhorn = new Airhorn();
+
+const template = {
+	from: "https://mywebhookdomain.com",
+	content: "Hey <%= name %> this is a test message from Airhorn",
+	templateEngine: "ejs",
+}
+
+const data = { name: "John" };
+
+await airhorn.send("https://mockhttp.org/post", template, data, AirhornProviderType.WEBHOOK);
+```
+
+Now lets configure the Airhorn instance with your preferred providers such as `Twilio` for SMS and `SendGrid` for Email.
+
+```bash
+npm install airhorn @airhornjs/twilio
+```
+
+```typescript
+import { Airhorn, AirhornProviderType } from "airhorn";
+import { AirhornTwilio } from "@airhornjs/twilio";
+
+const providers = [
+	new AirhornTwilio({
+		accountSid: "your_account_sid",
+		authToken: "your_auth_token"
+	}),
+];
+
+const airhorn = new Airhorn({
+	providers
+});
+
+// this will give you twilio and webhook (built in) support. Now lets create a template and send it!
+const template = {
+	from: "+12223334444",
+	content: "Hey <%= name %> this is a test message from Airhorn",
+	templateEngine: "ejs",
+}
+
+const data = { name: "John" };
+
+await airhorn.send("+1234567890", template, data, AirhornProviderType.SMS);
+```
+
+To learn about the available providers and their capabilities, check the [Providers](#core-supported-providers) section.
+
+# Airhorn Options
+
+Airhorn provides a variety of options to customize its behavior. You can configure these options when creating an instance of the `Airhorn` class:
+
+```typescript
+import { Airhorn, AirhornSendStrategy } from "airhorn";
+
+const airhorn = new Airhorn({
+	sendStrategy: AirhornSendStrategy.RoundRobin
+});
+```
+
+Here is the `AirhornOptions` type:
+
+```typescript
+export type AirhornOptions = {
+	/**
+	 * Whether to enable caching.
+	 * @default true
+	 */
+	cache?: boolean | Cacheable | CacheableOptions;
+	/**
+	 * Whether to collect statistics.
+	 * @default false
+	 */
+	statistics?: boolean;
+	/**
+	 * The providers to add to the Airhorn instance. AirhornWebhook is added by default unless `useWebhookProvider` is set to false.
+	 */
+	providers?: Array<AirhornProvider>;
+	/**
+	 * Whether to use the built-in webhook provider.
+	 * @default true
+	 */
+	useWebhookProvider?: boolean;
+	/**
+	 * The retry strategy to use when sending messages.
+	 * @default 0
+	 */
+	retryStrategy?: AirhornRetryStrategy;
+	/**
+	 * The timeout to use when sending messages.
+	 * @default 100
+	 */
+	timeout?: number;
+	/**
+	 * The send strategy to use when sending messages.
+	 * @default AirhornSendStrategy.RoundRobin
+	 */
+	sendStrategy?: AirhornSendStrategy;
+	/**
+	 * Whether to throw an error if sending fails. By default we use emitting for errors.
+	 * Delegates to hookified's `throwOnEmitError` and `throwOnHookError`.
+	 * @default false
+	 */
+	throwOnErrors?: boolean;
+};
+```
+
+# Using Send Helper Methods
+
+Airhorn provides helper methods for common tasks. For example, you can use the `sendSMS` method to send SMS messages easily:
+
+```typescript
+import { Airhorn } from "airhorn";
+import { AirhornTwilio } from "@airhornjs/twilio";
+
+const providers = [
+	new AirhornTwilio({
+		accountSid: "your_account_sid",
+		authToken: "your_auth_token"
+	}),
+];
+
+const airhorn = new Airhorn({
+	providers
+});
+
+const template = {
+	from: "+12223334444",
+	content: "Hey <%= name %> this is a test message from Airhorn",
+	templateEngine: "ejs",
+}
+
+const data = { name: "John" };
+
+await airhorn.sendSMS("+1234567890", template, data);
+```
+
+All helper methods accept an optional `AirhornSendOptions` parameter to override the send strategy per call:
+
+```typescript
+import { Airhorn, AirhornSendStrategy } from "airhorn";
+import { AirhornTwilio } from "@airhornjs/twilio";
+
+const airhorn = new Airhorn({
+	providers: [
+		new AirhornTwilio({ accountSid: "sid_1", authToken: "token_1" }),
+		new AirhornTwilio({ accountSid: "sid_2", authToken: "token_2" }),
+	]
+});
+
+const template = {
+	from: "+12223334444",
+	content: "Hey <%= name %> this is a test message from Airhorn",
+	templateEngine: "ejs",
+}
+
+const data = { name: "John" };
+
+// Send SMS using fail-over strategy
+await airhorn.sendSMS("+1234567890", template, data, {
+	sendStrategy: AirhornSendStrategy.FailOver
+});
+```
+
+Here are the following helper methods available:
+
+- `sendSMS`: Sends an SMS message.
+- `sendEmail`: Sends an email message.
+- `sendMobilePush`: Sends a mobile push notification.
+- `sendWebhook`: Sends a webhook notification.
+- `sendAll`: Sends to all providers simultaneously.
+- `sendFailOver`: Tries providers in order until one succeeds.
+- `sendRoundRobin`: Cycles through providers round-robin.
+
+# Airhorn Send Response
+
+The `send` method returns an `AirhornSendResult` object that contains information about the send operation. Here is the structure of the `AirhornSendResult` type:
+
+```typescript
+export type AirhornSendResult = {
+	/**
+	 * The providers that were used to send the message.
+	 */
+	providers: Array<AirhornProvider>;
+	/**
+	 * The message that was sent.
+	 */
+	message?: AirhornProviderMessage;
+	/**
+	 * Whether the message was sent successfully.
+	 */
+	success: boolean;
+	/**
+	 * The response from the provider.
+	 */
+	// biome-ignore lint/suspicious/noExplicitAny: expected
+	response: any;
+	/**
+	 * The number of times the message was retried.
+	 */
+	retries: number;
+	/**
+	 * The errors that occurred while sending the message.
+	 */
+	errors: Array<Error>;
+	/**
+	 * The time taken to execute the send operation.
+	 */
+	executionTime: number;
+};
+```
+
+# Send Strategies
+
+Airhorn supports multiple send strategies to control how notifications are delivered. The `send()` method dispatches to the appropriate strategy method based on the configured `sendStrategy` (default: `RoundRobin`). You can also call each strategy method directly.
+
+- **Round Robin** (`sendRoundRobin`): Cycles through providers, selecting the next one on each call. _(Default)_
+- **Fail Over** (`sendFailOver`): Tries each provider in order until one succeeds.
+- **All** (`sendAll`): Sends the notification to all providers simultaneously.
+
+You can configure the default send strategy when creating the Airhorn instance:
+
+```typescript
+import { Airhorn, AirhornSendStrategy } from "airhorn";
+
+const airhorn = new Airhorn({
+	sendStrategy: AirhornSendStrategy.RoundRobin
+});
+```
+
+Or call a strategy method directly:
+
+## `sendAll`
+
+Sends a notification to all providers simultaneously. Succeeds if at least one provider succeeds.
+
+```typescript
+import { Airhorn, AirhornSendType } from "airhorn";
+
+const airhorn = new Airhorn();
+
+const template = {
+	from: "https://mywebhookdomain.com",
+	content: "Hey <%= name %> this is a notification from Airhorn",
+	templateEngine: "ejs",
+}
+
+const data = { name: "John" };
+
+const result = await airhorn.sendAll("https://mockhttp.org/post", template, data, AirhornSendType.Webhook);
+```
+
+## `sendFailOver`
+
+Tries each provider in order until one succeeds. If the first provider fails, it moves to the next.
+
+```typescript
+import { Airhorn, AirhornSendType } from "airhorn";
+
+const airhorn = new Airhorn();
+
+const template = {
+	from: "https://mywebhookdomain.com",
+	content: "Hey <%= name %> this is a notification from Airhorn",
+	templateEngine: "ejs",
+}
+
+const data = { name: "John" };
+
+const result = await airhorn.sendFailOver("https://mockhttp.org/post", template, data, AirhornSendType.Webhook);
+```
+
+## `sendRoundRobin`
+
+Cycles through providers, selecting the next one on each call. This is the default strategy.
+
+```typescript
+import { Airhorn, AirhornSendType } from "airhorn";
+
+const airhorn = new Airhorn();
+
+const template = {
+	from: "https://mywebhookdomain.com",
+	content: "Hey <%= name %> this is a notification from Airhorn",
+	templateEngine: "ejs",
+}
+
+const data = { name: "John" };
+
+const result = await airhorn.sendRoundRobin("https://mockhttp.org/post", template, data, AirhornSendType.Webhook);
+```
+
+# Airhorn API
+
+## Constructor
+
+### `new Airhorn(options?: AirhornOptions)`
+
+Creates a new Airhorn instance. See [Airhorn Options](#airhorn-options) for available configuration options.
+
+## Properties
+
+### `.cache`
+
+Gets/sets the cache instance which is based on `cacheable`.
+
+### `.sendStrategy`
+
+Gets/sets the send strategy (`RoundRobin`, `FailOver`, or `All`).
+
+### `.throwOnErrors`
+
+Gets/sets the throw on errors flag. Delegates to hookified's `throwOnEmitError` and `throwOnHookError`.
+
+### `.statistics`
+
+Access the statistics instance. See [Statistics](#statistics) to learn more.
+
+### `.providers`
+
+Gets/sets the list of configured providers.
+
+## Methods
+
+### `.send()`
+
+Dispatches to the appropriate strategy method based on the configured `sendStrategy`.
+
+### `.sendAll()`
+
+Sends to all providers simultaneously. Succeeds if at least one provider succeeds.
+
+### `.sendFailOver()`
+
+Tries providers in order until one succeeds.
+
+### `.sendRoundRobin()`
+
+Cycles through providers round-robin. This is the default strategy.
+
+### `.sendSMS()`
+
+Sends an SMS message using the configured SMS providers.
+
+### `.sendEmail()`
+
+Sends an email message using the configured email providers.
+
+### `.sendMobilePush()`
+
+Sends a mobile push notification using the configured push providers.
+
+### `.sendWebhook()`
+
+Sends a webhook notification using the built-in webhook provider.
+
+### `.loadTemplate()`
+
+Loads a template from the file system. See [Load Template Helper](#load-template-helper) to learn more.
+
+### `.addProvider()`
+
+Adds a single provider to the Airhorn instance.
+
+### `.addProviders()`
+
+Adds multiple providers to the Airhorn instance.
+
+### `.getProvidersByType()`
+
+Gets the list of providers filtered by type (SMS, Email, Push, Webhook).
+
+### `.generateMessage()`
+
+Generates a message from a template and data using the configured template engine.
+
+# Using Webhooks
+
+Webhooks is built into Airhorn as a default provider and can be used to send notifications to external services. To use the built in webhooks just create an instance of the `Airhorn` class and call the `send` or `sendWebhook` method.
+
+An example using the `send` method (recommended):
+
+```typescript
+import { Airhorn, AirhornProviderType } from "airhorn";
+
+const template = {
+	from: "+12223334444",
+	to: "+1234567890",
+	content: "Hey <%= name %> this is a test message from Airhorn",
+	templateEngine: "ejs",
+}
+
+const data = { name: "John" };
+
+await airhorn.send("https://mockhttp.org/post", template, data, AirhornProviderType.WEBHOOK);
+```
+
+To send using the helper function `sendWebhook`: 
+
+```typescript
+import { Airhorn } from "airhorn";
+
+const airhorn = new Airhorn();
+
+const template = {
+	from: "+12223334444",
+	to: "+1234567890",
+	content: "Hey <%= name %> this is a test message from Airhorn",
+	templateEngine: "ejs",
+}
+
+const data = { name: "John" };
+
+await airhorn.sendWebhook("https://mockhttp.org/post", template, data);
+```
+
+# Statistics
+
+Airhorn provides built-in statistics to help you monitor the performance of your notifications. You can access the statistics instance through the `.statistics` property:
+
+```typescript
+import { Airhorn } from "airhorn";
+
+const airhorn = new Airhorn({ statistics: true });
+
+// Now you can use the stats object to get information about sent notifications
+console.log(`Total Sends: ${airhorn.statistics.totalSends}`);
+console.log(`Total Successful Sends: ${airhorn.statistics.totalSendSuccesses}`);
+console.log(`Total Failed Sends: ${airhorn.statistics.totalSendFailures}`);
+
+// execution time statistics
+console.log(`Total Execution Time: ${airhorn.statistics.totalExecutionTime} ms`);
+console.log(`Average Execution Time: ${airhorn.statistics.averageExecutionTime} ms`);
+console.log(`Minimum Execution Time: ${airhorn.statistics.minimumExecutionTime} ms`);
+console.log(`Maximum Execution Time: ${airhorn.statistics.maxExecutionTime} ms`);
+
+// execution time data Array<SendStatistic>
+console.log(`All Execution Times: ${airhorn.statistics.executionTimes}`);
+console.log(`Slowest Execution Times: ${airhorn.statistics.slowestExecutionTimes}`);
+console.log(`Fastest Execution Times: ${airhorn.statistics.fastestExecutionTimes}`);
+```
+
+By default, Airhorn statistics are disabled. You can enable them by setting the `statistics` option to `true` when creating the Airhorn instance. If you want to enable it after the Airhorn instance is created do the following:
+
+```typescript
+import { Airhorn } from "airhorn";
+
+const airhorn = new Airhorn();
+
+airhorn.statistics.enable();
+```
+
+To reset the statistics, you can call the `reset` method:
+
+```typescript
+import { Airhorn } from "airhorn";
+
+const airhorn = new Airhorn();
+
+airhorn.statistics.reset();
+```
+
+# Hooks
+
+Airhorn extends [Hookified](https://hookified.org) and provides two built-in hooks for intercepting the send pipeline:
+
+- `before:Send` (`AirhornHook.BeforeSend`) — Called before a message is sent. Receives `{ message, options }`.
+- `after:Send` (`AirhornHook.AfterSend`) — Called after a message is sent. Receives `{ result }`.
+
+## Registering Hooks with `onHook`
+
+You can register hooks using the `onHook` method. It supports both a simple `(event, handler)` signature and the `IHook` object format (recommended):
+
+```typescript
+import { Airhorn, AirhornHook } from "airhorn";
+import type { IHook } from "hookified";
+
+const airhorn = new Airhorn();
+
+airhorn.onHook({
+	event: AirhornHook.BeforeSend,
+	handler: async ({ message, options }) => {
+		message.content = `[PREFIX] ${message.content}`;
+	},
+});
+
+// IHook object with an id and OnHookOptions for positioning
+airhorn.onHook(
+	{
+		id: 'hook-after-send-1',
+		event: AirhornHook.AfterSend,
+		handler: async ({ result }) => {
+			console.log("Send result:", result.success);
+		},
+	},
+	{ position: "Top" },
+);
+```
+
+## Modifying Messages with BeforeSend
+
+The `BeforeSend` hook receives the message object by reference, so you can modify it before it is sent:
+
+```typescript
+import { Airhorn, AirhornHook, AirhornSendType } from "airhorn";
+
+const airhorn = new Airhorn();
+
+airhorn.onHook(AirhornHook.BeforeSend, async ({ message }) => {
+	// Redirect the message
+	message.to = "https://new-endpoint.example.com/webhook";
+	// Modify content
+	message.content = `[MODIFIED] ${message.content}`;
+});
+
+const template = {
+	from: "sender@example.com",
+	content: "Hello <%= name %>!",
+	templateEngine: "ejs",
+};
+
+await airhorn.send("https://original.example.com/webhook", template, { name: "World" }, AirhornSendType.Webhook);
+```
+
+## Inspecting Results with AfterSend
+
+The `AfterSend` hook is called after the send completes (even on failure):
+
+```typescript
+import { Airhorn, AirhornHook } from "airhorn";
+
+const airhorn = new Airhorn();
+
+airhorn.onHook(AirhornHook.AfterSend, async ({ result }) => {
+	if (result.success) {
+		console.log("Message sent successfully");
+	} else {
+		console.error("Send failed with errors:", result.errors);
+	}
+});
+```
+
+## Managing Hooks by ID
+
+Using `IHook` objects with an `id` allows you to look up or remove hooks later:
+
+```typescript
+import { Airhorn, AirhornHook } from "airhorn";
+
+const airhorn = new Airhorn();
+
+// Register with an id
+airhorn.onHook({
+	id: "logging-hook",
+	event: AirhornHook.BeforeSend,
+	handler: async ({ message }) => {
+		console.log("Sending:", message);
+	},
+});
+
+// Look up by id
+const hook = airhorn.getHook("logging-hook");
+
+// Remove by id
+airhorn.removeHookById("logging-hook");
+```
+
+# Emitting Events
+
+Airhorn provides event emitting by default with the following events:
+
+- `error`: Emitted when there is an error.
+- `send.success`: Emitted when a notification is successfully sent.
+- `send.failure`: Emitted when a notification fails to send.
+
+You can listen for these events using the `on` method:
+
+```typescript
+import { Airhorn, AirhornEvent, type AirhornSendResult } from "airhorn";
+
+const airhorn = new Airhorn();
+
+airhorn.on(AirhornEvent.SendSuccess, (data: AirhornSendResult) => {
+  console.log(`Notification sent successfully: ${data}`);
+});
+
+airhorn.on(AirhornEvent.SendFailure, (data: AirhornSendResult) => {
+  console.error(`Failed to send notification: ${data}`);
+});
+```
+
+# Load Template Helper
+
+In previous versions of `Airhon` we used the file system to load all the templates into a store that was used by the instance. Now, we offer an easy method to just load it from a markdown file if you want from anywhere on the file system. 
+
+Here is an example of how to use the `loadTemplate` helper method:
+
+```typescript
+import { Airhorn } from "airhorn";
+
+const airhorn = new Airhorn();
+
+const template = await airhorn.loadTemplate("path/to/template.md");
+
+// now you can send with that template
+await airhorn.send("https://mockhttp.org/post", template, data, AirhornProviderType.WEBHOOK);
+```
+
+An example of the `markdown` format is located at `./packages/airhorn/test/fixtures`.
+
+# Core Supported Providers
+
+We currently support `twilio`, `aws`, and `azure` with thier offerings. Here is a chart showing what functionality is in each:
+
+| Provider | SMS | Email | Push | Webhook |
+|----------|-----|-------|------|---------|
+| (built in `airhorn`) | ❌  | ❌    | ❌   | ✅      |
+| `@airhornjs/twilio`   | ✅  | ✅    | ❌   | ❌      |
+| `@airhornjs/aws`      | ✅  | ✅    | ✅   | ❌      |
+| `@airhornjs/azure`      | ✅  | ✅    | ✅   | ❌      |
+
+Note: We used to support firebase because of mobile push but it made more sense to focus on `aws` and `azure` because it is more comprehensive.
+
+# Third Party Providers
+
+If you have built a provider library let us know! We are more than happy to list it here!
+
+# Creating a Provider
+
+To create a provider you can extend the `AirhornProvider` interface and implement the required methods for your specific provider.
+
+```typescript
+import { AirhornProvider } from "airhorn";
+
+class MyCustomProvider implements AirhornProvider {
+  // Implement required methods
+}
+```
+
+Once implemented, you can use your custom provider just like any other provider in Airhorn.
+
+```typescript
+import { Airhorn, AirhornProvider } from "airhorn";
+
+class MyCustomProvider implements AirhornProvider {
+  // Implement required methods
+}
+const airhorn = new Airhorn({
+  providers: [new MyCustomProvider()]
+});
+```
+
+Use one of the built in providers as a reference such as `@airhornjs/twilio`.
+
+# Migration to v7
+
+Airhorn v7 raises the minimum Node.js version to **`>=22.18.0`** and upgrades to [Hookified v3](https://hookified.org). Hookified v3 contains **no API changes** — the hooks API is identical to v6 — so for most users the only required change is updating the Node.js runtime.
+
+## Breaking Changes
+
+### Node.js >=22.18.0 required
+
+The minimum supported Node.js version is now **22.18.0** (previously `>=20`). Node.js 20 reached end-of-life in April 2026, and [Hookified v3](https://hookified.org) — which `Airhorn` extends — requires `>=22.18.0`.
+
+```jsonc
+// package.json (airhorn)
+"engines": {
+	"node": ">=22.18.0"
+}
+```
+
+**Migration:** Upgrade your runtime to Node.js 22 LTS (>= 22.18.0) or Node.js 24+. No code changes are required.
+
+### Hookified upgraded to v3 (no API changes)
+
+`Airhorn` extends [Hookified](https://hookified.org), which was upgraded from v2 to v3. Hookified v3's only breaking change is the Node.js requirement above — `onHook`, `removeHook`, `removeHookById`, `getHooks`, and `throwOnErrors` all behave exactly as they did in v6:
+
+```typescript
+// Unchanged from v6 — still works in v7
+airhorn.onHook({
+	id: "my-hook",
+	event: "before:Send",
+	handler: async (data) => {},
+});
+```
+
+If you already migrated your hooks from v5 to v6, upgrading from v6 to v7 requires no hooks-related code changes.
+
+## Migration Checklist
+
+- [ ] Upgrade your runtime to Node.js >= 22.18.0 (Node 22 LTS or Node 24+)
+- [ ] No code changes required — the hooks API is unchanged from v6
+
+# Migration to v6
+
+Airhorn v6 upgrades to [Hookified v2](https://hookified.org), which introduces breaking changes to the hooks API. If you were using hooks in v5, you will need to update your code.
+
+## Breaking Changes
+
+### `addHook` renamed to `onHook`
+
+The `addHook` method has been renamed to `onHook`. The `onHook` method also now supports `IHook` objects and `OnHookOptions` for hook positioning and ID management:
+
+```typescript
+// v5
+airhorn.addHook("before:Send", async (data) => {});
+
+// v6 — simple signature (drop-in replacement)
+airhorn.onHook("before:Send", async (data) => {});
+
+// v6 — IHook object (recommended)
+airhorn.onHook({
+	id: "my-hook",
+	event: "before:Send",
+	handler: async (data) => {},
+});
+```
+
+### `removeHook` now accepts `IHook` objects
+
+The `removeHook` method signature has changed to accept `IHook` objects and now returns the removed hook:
+
+```typescript
+// v5
+airhorn.removeHook("before:Send", handler);
+
+// v6
+const removed = airhorn.removeHook({ event: "before:Send", handler });
+```
+
+You can also remove hooks by ID:
+
+```typescript
+airhorn.removeHookById("my-hook");
+```
+
+### `getHooks` returns `IHook[]` instead of functions
+
+If you were calling `getHooks()`, it now returns `IHook[]` objects instead of raw handler functions:
+
+```typescript
+// v5 — returns Function[]
+const hooks = airhorn.getHooks("before:Send");
+
+// v6 — returns IHook[] with { id, event, handler }
+const hooks = airhorn.getHooks("before:Send");
+hooks.forEach((hook) => console.log(hook.handler));
+```
+
+### `throwOnErrors` now delegates to hookified
+
+The `throwOnErrors` option still works the same way from a user perspective, but internally it now delegates to hookified's `throwOnEmitError` and `throwOnHookError` properties. The private `handleError` method has been removed — error throwing is handled by hookified automatically when `throwOnErrors` is set to `true`.
+
+### Hookified constructor option renames
+
+These are handled internally by Airhorn, but if you were extending the class:
+
+| v5 | v6 |
+|----|----|
+| `throwHookErrors` | `throwOnHookError` |
+| `logger` | `eventLogger` |
+
+## Migration Checklist
+
+- [ ] Replace all `addHook()` calls with `onHook()`
+- [ ] Update `removeHook()` calls to use `IHook` objects
+- [ ] Update code that reads `getHooks()` results to handle `IHook[]`
+- [ ] If extending Airhorn, rename `throwHookErrors` to `throwOnHookError` in `super()` calls
+
+# How to Contribute
+
+Now that you've set up your workspace, you're ready to contribute changes to the `airhorn` repository you can refer to the [CONTRIBUTING](../../CONTRIBUTING.md) guide. If you have any questions please feel free to ask by creating an issue and label it `question`.
+
+# Licensing and Copyright
+
+This project is [MIT License © Jared Wray](LICENSE)
+

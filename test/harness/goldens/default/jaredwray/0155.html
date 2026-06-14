@@ -1,0 +1,111 @@
+<p>import FlagdContent from '@site/src/components/custom/tutorial/flagd-content.mdx';
+import FlagdChangeContent from '@site/src/components/custom/tutorial/flagd-change-content.mdx';
+import WhyDefaultContent from '@site/src/components/custom/tutorial/why-default-content.mdx';</p>
+<h1 id="getting-started-with-the-openfeature-python-sdk">Getting Started with the OpenFeature Python SDK</h1>
+<h2 id="introduction">Introduction</h2>
+<p>This walk-through teaches you the basics of using OpenFeature with Python.
+You'll learn how to:</p>
+<ul>
+<li>Install the Python SDK</li>
+<li>Install and configure a provider</li>
+<li>Perform basic feature flagging</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<p>This walk-through assumes that:</p>
+<ul>
+<li>You have a basic understanding of Python and Flask.</li>
+<li>You have Flask 3.x and Python 3.10 or later.</li>
+<li>You have Docker installed and running on the host system.
+The latest version of Docker can be found <a href="https://docs.docker.com/engine/install/">here</a>.</li>
+</ul>
+<blockquote>
+<p><strong>NOTE:</strong> If you don't have docker installed, check the available options to install Flagd <a href="https://flagd.dev/installation/">here</a>.</p>
+</blockquote>
+<h2 id="walk-through">Walk-through</h2>
+<h3 id="step-1-create-a-minimal-flask-application">Step 1: Create a minimal flask application</h3>
+<p>To get started, create a new folder, bootstrap the project, and install the dependencies.
+This can be done by running the following commands.</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> openfeature-python-intro
+<span class="hljs-built_in">cd</span> openfeature-python-intro
+pip install Flask
+</code></pre>
+<h3 id="step-2-create-a-flask-app">Step 2: Create a Flask app</h3>
+<p>Create a new file named <code>app.py</code> inside openfeature-python-intro directory and include the following code.</p>
+<pre><code class="hljs language-python">  <span class="hljs-keyword">from</span> flask <span class="hljs-keyword">import</span> Flask
+  app = Flask(__name__)
+
+<span class="hljs-meta">  @app.route(<span class="hljs-params"><span class="hljs-string">"/"</span></span>)</span>
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">index</span>():
+      <span class="hljs-keyword">return</span> <span class="hljs-string">"Flask Server"</span>
+</code></pre>
+<h3 id="step-3-add-the-openfeature-sdk">Step 3: Add the OpenFeature SDK</h3>
+<p>Let's install the OpenFeature SDK using the following commands.</p>
+<pre><code class="hljs language-sh">pip install typing-extensions
+pip install openfeature-sdk
+pip install openfeature-provider-flagd
+</code></pre>
+<p>Update <code>app.py</code> to import the SDK.</p>
+<pre><code class="hljs language-python">  <span class="hljs-keyword">from</span> openfeature <span class="hljs-keyword">import</span> api
+  <span class="hljs-keyword">from</span> openfeature.contrib.provider.flagd <span class="hljs-keyword">import</span> FlagdProvider
+</code></pre>
+<p>Once you've imported <code>OpenFeature</code>, a new client can be created using the <code>FlagdProvider</code>.</p>
+<pre><code class="hljs language-python">  api.set_provider(FlagdProvider())
+  client = api.get_client()
+</code></pre>
+<p>The client can now be used to get a feature flag value.
+In this case, we'll get a <code>boolean</code> value using the <code>welcome-message</code> <a href="/specification/glossary#flag-key">flag key</a>
+and fallback value, which is returned if there's abnormal behavior using the <code>client.get_boolean_value()</code> method.</p>
+<pre><code class="hljs language-python"><span class="hljs-meta">@app.route(<span class="hljs-params"><span class="hljs-string">"/"</span></span>)</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">index</span>():
+    show_welcome_message = client.get_boolean_value(<span class="hljs-string">"welcome-message"</span>, <span class="hljs-literal">False</span>)
+    <span class="hljs-keyword">if</span> show_welcome_message:
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Flask + OpenFeature Server"</span>
+
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"Flask Server"</span>
+</code></pre>
+<h3 id="step-4-run-the-application">Step 4: Run the application</h3>
+<p>Let's start the app and see it in action, use the final code below.</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> flask <span class="hljs-keyword">import</span> Flask
+<span class="hljs-keyword">from</span> openfeature <span class="hljs-keyword">import</span> api
+<span class="hljs-keyword">from</span> openfeature.contrib.provider.flagd <span class="hljs-keyword">import</span> FlagdProvider
+
+app = Flask(__name__)
+api.set_provider(FlagdProvider())
+client = api.get_client()
+
+
+<span class="hljs-meta">@app.route(<span class="hljs-params"><span class="hljs-string">"/"</span></span>)</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">index</span>():
+    show_welcome_message = client.get_boolean_value(<span class="hljs-string">"welcome-message"</span>, <span class="hljs-literal">False</span>)
+    <span class="hljs-keyword">if</span> show_welcome_message:
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Flask + OpenFeature Server"</span>
+
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"Flask Server"</span>
+</code></pre>
+<p>Run the following command to start the server.</p>
+<pre><code class="hljs language-sh">flask run
+</code></pre>
+<p>Open your favorite browser and navigate to <a href="http://127.0.0.1:5000"> http://127.0.0.1:5000</a>.
+If all goes as planned, you should see "Flask Server".</p>
+<blockquote>
+<p>NOTE: You should stop the app by using the keyboard short <code>ctrl + c</code> before moving on to the next step.</p>
+</blockquote>
+<h3 id="step-5-configure-a-provider-flagd">Step 5: Configure a provider (flagd)</h3>
+<p>Flagd can be run as a <a href="https://flagd.dev/reference/flagd-cli/flagd/">standalone binary</a> or <a href="https://openfeature.dev/docs/tutorials/ofo/">Kubernetes Operator</a>
+as well.
+If you don't have docker installed, get and install the <a href="https://github.com/open-feature/flagd/releases">Flagd binary</a>.
+With the flagd configuration in place, start flagd service with the following command.</p>
+<pre><code class="hljs language-sh">flagd start -f file:flags.flagd.json
+</code></pre>
+<h3 id="step-6-rerun-the-application">Step 6: Rerun the application</h3>
+<p>Now that everything is in place, let's start the app again.</p>
+<pre><code class="hljs language-sh">flask run
+</code></pre>
+<p>Open your browser and navigate to <a href="http://127.0.0.1:5000"> http://127.0.0.1:5000</a> should show the same value as before.
+This difference is now the feature flag value can be changed at runtime!</p>
+<p>Save the changes to <code>flags.flagd.json</code> and refresh the browser tab.
+You should now be greeted with <code>Flask + OpenFeature Server</code>.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>This walk-through introduced you to the OpenFeature Python SDK.
+It covered how a provider can be configured to perform the flag evaluation and introduced basic feature flagging concepts.
+It also showcased how feature flags can be updated at runtime, without requiring a redeployment.</p>

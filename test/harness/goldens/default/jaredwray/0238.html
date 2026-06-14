@@ -1,0 +1,39 @@
+<h1 id="how-to-implement-caching-with-fastify">How to Implement Caching with Fastify</h1>
+<h2 id="what-is-fastify">What is Fastify?</h2>
+<p>Fastify is a web framework that provides a powerful plugin-based developer experience (inspired by Hapi and Express) with minimal overhead and is one of the fastest frameworks available, serving up to 30k requests per second. It is fully extensible via hooks, plugins, and decorators. Being schema-based, Fastify compiles schemas very efficiently. A TypeScript type declaration file is also maintained to support the growing TypeScript community.</p>
+<h2 id="what-is-a-cache">What is a Cache?</h2>
+<p>A cache is a short-term, high-speed data storage layer that stores a subset of data, enabling it to be retrieved faster than accessing it from its primary storage location. Caching allows you to reuse previously retrieved data efficiently.</p>
+<h2 id="caching-support-in-keyv-via-cacheable">Caching Support in Keyv via Cacheable</h2>
+<p>We can use Keyv to implement caching using <a href="https://npmjs.org/package/cacheable">Cacheable</a> which is a high performance layer 1 / layer 2 caching framework built on Keyv. It supports multiple storage backends and provides a simple, consistent API for caching.</p>
+<h3 id="example---add-cache-support-using-fastify">Example - Add Cache Support Using Fastify</h3>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">import</span> fastify <span class="hljs-keyword">from</span> <span class="hljs-string">'fastify'</span>;
+
+<span class="hljs-comment">// by default layer 1 cache is in-memory. If you want to add a layer 2 cache, you can use KeyvRedis</span>
+<span class="hljs-keyword">const</span> secondary = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({ secondary, <span class="hljs-attr">ttl</span>: <span class="hljs-string">'4h'</span> }); <span class="hljs-comment">// default time to live set to 4 hours</span>
+
+<span class="hljs-keyword">const</span> fastify = <span class="hljs-title function_">fastify</span>();
+fastify
+  .<span class="hljs-title function_">register</span>(<span class="hljs-built_in">require</span>(<span class="hljs-string">'@fastify/caching'</span>), {
+    cache
+  });
+
+fastify.<span class="hljs-title function_">get</span>(<span class="hljs-string">'/'</span>, <span class="hljs-title function_">async</span> (req, reply) => {
+  <span class="hljs-keyword">const</span> cachedResponse = <span class="hljs-keyword">await</span> fastify.<span class="hljs-property">cache</span>.<span class="hljs-title function_">get</span>(<span class="hljs-string">'hello'</span>);
+  <span class="hljs-keyword">if</span> (cachedResponse) {
+    <span class="hljs-keyword">return</span> reply.<span class="hljs-title function_">send</span>(cachedResponse);
+  }
+  <span class="hljs-keyword">const</span> data = { <span class="hljs-attr">hello</span>: <span class="hljs-string">'world'</span> };
+
+  <span class="hljs-keyword">await</span> fastify.<span class="hljs-property">cache</span>.<span class="hljs-title function_">set</span>(<span class="hljs-string">'hello'</span>, data);
+
+  reply.<span class="hljs-title function_">send</span>({<span class="hljs-attr">hello</span>: <span class="hljs-string">'world'</span>})
+});
+
+fastify.<span class="hljs-title function_">listen</span>({ <span class="hljs-attr">port</span>: <span class="hljs-number">3000</span> }, <span class="hljs-function">(<span class="hljs-params">err</span>) =></span> {
+  <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err
+})
+
+</code></pre>

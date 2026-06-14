@@ -1,0 +1,181 @@
+<p><a href="http://expressjs.com/"><img src="https://i.cloudup.com/zfY6lL7eFa-3000x3000.png" alt="Express Logo"></a></p>
+<p><strong>Fast, unopinionated, minimalist web framework for <a href="http://nodejs.org">Node.js</a>.</strong></p>
+<p><strong>This project has a <a href="https://github.com/expressjs/express/blob/master/Code-Of-Conduct.md">Code of Conduct</a>.</strong></p>
+<h2 id="table-of-contents">Table of contents</h2>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#features">Features</a></li>
+<li><a href="#docs--community">Docs &#x26; Community</a></li>
+<li><a href="#quick-start">Quick Start</a></li>
+<li><a href="#philosophy">Philosophy</a></li>
+<li><a href="#examples">Examples</a></li>
+<li><a href="#contributing">Contributing</a>
+<ul>
+<li><a href="#security-issues">Security Issues</a></li>
+<li><a href="#running-tests">Running Tests</a></li>
+</ul>
+</li>
+<li><a href="#people">People</a>
+<ul>
+<li><a href="#tc-technical-committee">TC (Technical Committee)</a>
+<ul>
+<li><a href="#tc-emeriti-members">TC emeriti members</a></li>
+</ul>
+</li>
+<li><a href="#triagers">Triagers</a>
+<ul>
+<li><a href="#emeritus-triagers">Emeritus Triagers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#license">License</a></li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>This is a <a href="https://nodejs.org/en/">Node.js</a> module available through the
+<a href="https://www.npmjs.com/">npm registry</a>.</p>
+<p>Before installing, <a href="https://nodejs.org/en/download/">download and install Node.js</a>.
+Node.js 0.10 or higher is required.</p>
+<p>If this is a brand new project, make sure to create a <code>package.json</code> first with
+the <a href="https://docs.npmjs.com/creating-a-package-json-file"><code>npm init</code> command</a>.</p>
+<p>Installation is done using the
+<a href="https://docs.npmjs.com/getting-started/installing-npm-packages-locally"><code>npm install</code> command</a>:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="bash">npm install express</span>
+</code></pre>
+<p>Follow <a href="http://expressjs.com/en/starter/installing.html">our installing guide</a>
+for more information.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Robust routing</li>
+<li>Focus on high performance</li>
+<li>Super-high test coverage</li>
+<li>HTTP helpers (redirection, caching, etc)</li>
+<li>View system supporting 14+ template engines</li>
+<li>Content negotiation</li>
+<li>Executable for generating applications quickly</li>
+</ul>
+<h2 id="docs--community">Docs &#x26; Community</h2>
+<ul>
+<li><a href="http://expressjs.com/">Website and Documentation</a> - [<a href="https://github.com/expressjs/expressjs.com">website repo</a>]</li>
+<li><a href="https://web.libera.chat/#express">#express</a> on <a href="https://libera.chat">Libera Chat</a> IRC</li>
+<li><a href="https://github.com/expressjs">GitHub Organization</a> for Official Middleware &#x26; Modules</li>
+<li>Visit the <a href="https://github.com/expressjs/express/wiki">Wiki</a></li>
+<li><a href="https://groups.google.com/group/express-js">Google Group</a> for discussion</li>
+<li><a href="https://gitter.im/expressjs/express">Gitter</a> for support and discussion</li>
+</ul>
+<p><strong>PROTIP</strong> Be sure to read <a href="https://github.com/expressjs/express/wiki/Migrating-from-3.x-to-4.x">Migrating from 3.x to 4.x</a> as well as <a href="https://github.com/expressjs/express/wiki/New-features-in-4.x">New features in 4.x</a>.</p>
+<h2 id="quick-start">Quick Start</h2>
+<p>The quickest way to get started with express is to utilize the executable <a href="https://github.com/expressjs/generator"><code>express(1)</code></a> to generate an application as shown below:</p>
+<p>Install the executable. The executable's major version will match Express's:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="bash">npm install -g express-generator@4</span>
+</code></pre>
+<p>Create the app:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="bash">express /tmp/foo &#x26;&#x26; <span class="hljs-built_in">cd</span> /tmp/foo</span>
+</code></pre>
+<p>Install dependencies:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="bash">npm install</span>
+</code></pre>
+<p>Start the server:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="bash">npm start</span>
+</code></pre>
+<p>View the website at: <a href="http://localhost:3000">http://localhost:3000</a></p>
+<h2 id="philosophy">Philosophy</h2>
+<p>The Express philosophy is to provide small, robust tooling for HTTP servers, making
+it a great solution for single page applications, websites, hybrids, or public
+HTTP APIs.</p>
+<p>Express does not force you to use any specific ORM or template engine. With support for over
+14 template engines via <a href="https://github.com/tj/consolidate.js">Consolidate.js</a>,
+you can quickly craft your perfect framework.</p>
+<h2 id="examples">Examples</h2>
+<p>To view the examples, clone the Express repo and install the dependencies:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="bash">git <span class="hljs-built_in">clone</span> https://github.com/expressjs/express.git --depth 1</span>
+<span class="hljs-meta prompt_">$ </span><span class="bash"><span class="hljs-built_in">cd</span> express</span>
+<span class="hljs-meta prompt_">$ </span><span class="bash">npm install</span>
+</code></pre>
+<p>Then run whichever example you want:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="bash">node examples/content-negotiation</span>
+</code></pre>
+<h2 id="contributing">Contributing</h2>
+<p><a href="https://github.com/expressjs/express/actions/workflows/ci.yml"><img src="https://badgen.net/github/checks/expressjs/express/master?label=linux" alt="Linux Build"></a>
+<a href="https://ci.appveyor.com/project/dougwilson/express"><img src="https://badgen.net/appveyor/ci/dougwilson/express/master?label=windows" alt="Windows Build"></a>
+<a href="https://coveralls.io/r/expressjs/express?branch=master"><img src="https://badgen.net/coveralls/c/github/expressjs/express/master" alt="Test Coverage"></a></p>
+<p>The Express.js project welcomes all constructive contributions. Contributions take many forms,
+from code for bug fixes and enhancements, to additions and fixes to documentation, additional
+tests, triaging incoming pull requests and issues, and more!</p>
+<p>See the <a href="Contributing.md">Contributing Guide</a> for more technical details on contributing.</p>
+<h3 id="security-issues">Security Issues</h3>
+<p>If you discover a security vulnerability in Express, please see <a href="Security.md">Security Policies and Procedures</a>.</p>
+<h3 id="running-tests">Running Tests</h3>
+<p>To run the test suite, first install the dependencies, then run <code>npm test</code>:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="bash">npm install</span>
+<span class="hljs-meta prompt_">$ </span><span class="bash">npm <span class="hljs-built_in">test</span></span>
+</code></pre>
+<h2 id="people">People</h2>
+<p>The original author of Express is <a href="https://github.com/tj">TJ Holowaychuk</a></p>
+<p><a href="https://github.com/expressjs/express/graphs/contributors">List of all contributors</a></p>
+<h3 id="tc-technical-committee">TC (Technical Committee)</h3>
+<ul>
+<li><a href="https://github.com/UlisesGascon">UlisesGascon</a> - <strong>Ulises Gascón</strong> (he/him)</li>
+<li><a href="https://github.com/jonchurch">jonchurch</a> - <strong>Jon Church</strong></li>
+<li><a href="https://github.com/wesleytodd">wesleytodd</a> - <strong>Wes Todd</strong></li>
+<li><a href="https://github.com/LinusU">LinusU</a> - <strong>Linus Unnebäck</strong></li>
+<li><a href="https://github.com/blakeembrey">blakeembrey</a> - <strong>Blake Embrey</strong></li>
+<li><a href="https://github.com/sheplu">sheplu</a> - <strong>Jean Burellier</strong></li>
+<li><a href="https://github.com/crandmck">crandmck</a> - <strong>Rand McKinney</strong></li>
+<li><a href="https://github.com/ctcpip">ctcpip</a> - <strong>Chris de Almeida</strong></li>
+</ul>
+<h4 id="tc-emeriti-members">TC emeriti members</h4>
+<ul>
+<li><a href="https://github.com/dougwilson">dougwilson</a> - <strong>Douglas Wilson</strong></li>
+<li><a href="https://github.com/hacksparrow">hacksparrow</a> - <strong>Hage Yaapa</strong></li>
+<li><a href="https://github.com/jonathanong">jonathanong</a> - <strong>jongleberry</strong></li>
+<li><a href="https://github.com/niftylettuce">niftylettuce</a> - <strong>niftylettuce</strong></li>
+<li><a href="https://github.com/troygoode">troygoode</a> - <strong>Troy Goode</strong></li>
+</ul>
+<h3 id="triagers">Triagers</h3>
+<ul>
+<li><a href="https://github.com/aravindvnair99">aravindvnair99</a> - <strong>Aravind Nair</strong></li>
+<li><a href="https://github.com/carpasse">carpasse</a> - <strong>Carlos Serrano</strong></li>
+<li><a href="https://github.com/CBID2">CBID2</a> - <strong>Christine Belzie</strong></li>
+<li><a href="https://github.com/enyoghasim">enyoghasim</a> - <strong>David Enyoghasim</strong></li>
+<li><a href="https://github.com/UlisesGascon">UlisesGascon</a> - <strong>Ulises Gascón</strong> (he/him)</li>
+<li><a href="https://github.com/mertcanaltin">mertcanaltin</a> - <strong>Mert Can Altin</strong></li>
+<li><a href="https://github.com/0ss">0ss</a> - <strong>Salah</strong></li>
+<li><a href="https://github.com/import-brain">import-brain</a> - <strong>Eric Cheng</strong> (he/him)</li>
+<li><a href="https://github.com/3imed-jaberi">3imed-jaberi</a> - <strong>Imed Jaberi</strong></li>
+<li><a href="https://github.com/dakshkhetan">dakshkhetan</a> - <strong>Daksh Khetan</strong> (he/him)</li>
+<li><a href="https://github.com/lucasraziel">lucasraziel</a> - <strong>Lucas Soares Do Rego</strong></li>
+<li><a href="https://github.com/IamLizu">IamLizu</a> - <strong>S M Mahmudul Hasan</strong> (he/him)</li>
+<li><a href="https://github.com/Sushmeet">Sushmeet</a> - <strong>Sushmeet Sunger</strong></li>
+</ul>
+<h4 id="emeritus-triagers">Emeritus Triagers</h4>
+<ul>
+<li><a href="https://github.com/AuggieH">AuggieH</a> - <strong>Auggie Hudak</strong></li>
+<li><a href="https://github.com/G-Rath">G-Rath</a> - <strong>Gareth Jones</strong></li>
+<li><a href="https://github.com/MohammadXroid">MohammadXroid</a> - <strong>Mohammad Ayashi</strong></li>
+<li><a href="https://github.com/NawafSwe">NawafSwe</a> - <strong>Nawaf Alsharqi</strong></li>
+<li><a href="https://github.com/NotMoni">NotMoni</a> - <strong>Moni</strong></li>
+<li><a href="https://github.com/VigneshMurugan">VigneshMurugan</a> - <strong>Vignesh Murugan</strong></li>
+<li><a href="https://github.com/davidmashe">davidmashe</a> - <strong>David Ashe</strong></li>
+<li><a href="https://github.com/digitaIfabric">digitaIfabric</a> - <strong>David</strong></li>
+<li><a href="https://github.com/e-l-i-s-e">e-l-i-s-e</a> - <strong>Elise Bonner</strong></li>
+<li><a href="https://github.com/fed135">fed135</a> - <strong>Frederic Charette</strong></li>
+<li><a href="https://github.com/firmanJS">firmanJS</a> - <strong>Firman Abdul Hakim</strong></li>
+<li><a href="https://github.com/getspooky">getspooky</a> - <strong>Yasser Ameur</strong></li>
+<li><a href="https://github.com/ghinks">ghinks</a> - <strong>Glenn</strong></li>
+<li><a href="https://github.com/ghousemohamed">ghousemohamed</a> - <strong>Ghouse Mohamed</strong></li>
+<li><a href="https://github.com/gireeshpunathil">gireeshpunathil</a> - <strong>Gireesh Punathil</strong></li>
+<li><a href="https://github.com/jake32321">jake32321</a> - <strong>Jake Reed</strong></li>
+<li><a href="https://github.com/jonchurch">jonchurch</a> - <strong>Jon Church</strong></li>
+<li><a href="https://github.com/lekanikotun">lekanikotun</a> - <strong>Troy Goode</strong></li>
+<li><a href="https://github.com/marsonya">marsonya</a> - <strong>Lekan Ikotun</strong></li>
+<li><a href="https://github.com/mastermatt">mastermatt</a> - <strong>Matt R. Wilson</strong></li>
+<li><a href="https://github.com/maxakuru">maxakuru</a> - <strong>Max Edell</strong></li>
+<li><a href="https://github.com/mlrawlings">mlrawlings</a> - <strong>Michael Rawlings</strong></li>
+<li><a href="https://github.com/rodion-arr">rodion-arr</a> - <strong>Rodion Abdurakhimov</strong></li>
+<li><a href="https://github.com/sheplu">sheplu</a> - <strong>Jean Burellier</strong></li>
+<li><a href="https://github.com/tarunyadav1">tarunyadav1</a> - <strong>Tarun yadav</strong></li>
+<li><a href="https://github.com/tunniclm">tunniclm</a> - <strong>Mike Tunnicliffe</strong></li>
+</ul>
+<h2 id="license">License</h2>
+<p><a href="LICENSE">MIT</a></p>

@@ -1,0 +1,192 @@
+<p><a href="https://github.com/jaredwray/cacheable"></a></p>
+<blockquote>
+<p>High Performance Network Caching for Node.js with fetch support and HTTP cache semantics</p>
+</blockquote>
+<p><a href="https://codecov.io/gh/jaredwray/cacheable"><img src="https://codecov.io/gh/jaredwray/cacheable/branch/main/graph/badge.svg?token=lWZ9OBQ7GM" alt="codecov"></a>
+<a href="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://www.npmjs.com/package/@cacheable/net"><img src="https://img.shields.io/npm/dm/@cacheable/net.svg" alt="npm"></a>
+<a href="https://www.npmjs.com/package/@cacheable/net"><img src="https://img.shields.io/npm/v/@cacheable/net.svg" alt="npm"></a>
+<a href="https://github.com/jaredwray/cacheable/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/cacheable" alt="license"></a></p>
+<p>Features:</p>
+<ul>
+<li>Drop-in <code>fetch</code> with native semantics (built on the runtime's global <code>fetch</code>) — resolves with a <code>Response</code> on any status (check <code>response.ok</code>, no throwing on <code>4xx</code>/<code>5xx</code>) and preserves <code>response.url</code>, <code>redirected</code>, and <code>type</code></li>
+<li>Optional response caching via <code>cacheable</code> — pass a cache instance (or use <code>CacheableNet</code>) to enable it</li>
+<li>HTTP method helpers: <code>get</code>, <code>post</code>, <code>put</code>, <code>patch</code>, <code>delete</code>, and <code>head</code> for easier development</li>
+<li><a href="http://httpwg.org/specs/rfc7234.html">RFC 7234</a> compliant HTTP caching with <code>http-cache-semantics</code></li>
+<li>Smart caching with automatic cache key generation</li>
+<li>Support for custom serialization/deserialization with <code>stringify</code> and <code>parse</code> functions</li>
+<li>Configurable cache policies - use HTTP cache semantics or simple TTL-based caching</li>
+<li>Full TypeScript support with comprehensive type definitions</li>
+<li>Request-level cache control with the <code>caching</code> option</li>
+<li>All the features of <a href="https://npmjs.com/package/cacheable">cacheable</a> - layered caching, LRU, TTL expiration, and more!</li>
+<li>Extensively tested with 100% code coverage</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#getting-started">Getting Started</a>
+<ul>
+<li><a href="#basic-usage">Basic Usage</a></li>
+<li><a href="#custom-serialization">Custom Serialization</a></li>
+<li><a href="#caching-control">Caching Control</a></li>
+<li><a href="#error-handling">Error Handling</a></li>
+<li><a href="#api-reference">API Reference</a>
+<ul>
+<li><a href="#cacheablenet-class">CacheableNet Class</a>
+<ul>
+<li><a href="#constructor-options">Constructor Options</a></li>
+<li><a href="#methods">Methods</a></li>
+<li><a href="#caching-behavior">Caching Behavior</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#how-to-contribute">How to Contribute</a></li>
+<li><a href="#license-and-copyright">License and Copyright</a></li>
+</ul>
+<h1 id="getting-started">Getting Started</h1>
+<pre><code class="hljs language-bash">npm install @cacheable/net
+</code></pre>
+<h2 id="basic-usage">Basic Usage</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableNet</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/net'</span>;
+
+<span class="hljs-keyword">const</span> net = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableNet</span>();
+
+<span class="hljs-comment">// Simple GET request with caching</span>
+<span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> net.<span class="hljs-title function_">get</span>(<span class="hljs-string">'https://api.example.com/data'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(response.<span class="hljs-property">data</span>);
+
+<span class="hljs-comment">// POST request with data</span>
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> net.<span class="hljs-title function_">post</span>(<span class="hljs-string">'https://api.example.com/users'</span>, {
+  <span class="hljs-attr">name</span>: <span class="hljs-string">'John Doe'</span>,
+  <span class="hljs-attr">email</span>: <span class="hljs-string">'john@example.com'</span>
+});
+
+<span class="hljs-comment">// Using fetch directly with caching</span>
+<span class="hljs-keyword">const</span> fetchResponse = <span class="hljs-keyword">await</span> net.<span class="hljs-title function_">fetch</span>(<span class="hljs-string">'https://api.example.com/data'</span>, {
+  <span class="hljs-attr">method</span>: <span class="hljs-string">'GET'</span>,
+  <span class="hljs-attr">headers</span>: {
+    <span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer token'</span>
+  }
+});
+</code></pre>
+<h2 id="custom-serialization">Custom Serialization</h2>
+<p>You can provide custom <code>stringify</code> and <code>parse</code> functions for handling data serialization. This is particularly useful when working with complex data types that JSON doesn't natively support:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableNet</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/net'</span>;
+<span class="hljs-keyword">import</span> superjson <span class="hljs-keyword">from</span> <span class="hljs-string">'superjson'</span>;
+
+<span class="hljs-comment">// Using superjson for enhanced serialization</span>
+<span class="hljs-comment">// Supports Dates, BigInt, RegExp, Set, Map, Error and more</span>
+<span class="hljs-keyword">const</span> net = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableNet</span>({
+  <span class="hljs-attr">stringify</span>: <span class="hljs-function">(<span class="hljs-params">value</span>) =></span> superjson.<span class="hljs-title function_">stringify</span>(value),
+  <span class="hljs-attr">parse</span>: <span class="hljs-function">(<span class="hljs-params">text</span>) =></span> superjson.<span class="hljs-title function_">parse</span>(text)
+});
+
+<span class="hljs-comment">// Now you can work with complex data types</span>
+<span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> net.<span class="hljs-title function_">post</span>(<span class="hljs-string">'https://api.example.com/data'</span>, {
+  <span class="hljs-attr">timestamp</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>(),
+  <span class="hljs-attr">userId</span>: <span class="hljs-title class_">BigInt</span>(<span class="hljs-number">12345</span>),
+  <span class="hljs-attr">pattern</span>: <span class="hljs-regexp">/[a-z]+/gi</span>,
+  <span class="hljs-attr">metadata</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>([[<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>]]),
+  <span class="hljs-attr">tags</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Set</span>([<span class="hljs-string">'important'</span>, <span class="hljs-string">'urgent'</span>])
+});
+
+<span class="hljs-comment">// Or provide per-request custom serialization</span>
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> net.<span class="hljs-title function_">get</span>(<span class="hljs-string">'https://api.example.com/data'</span>, {
+  <span class="hljs-attr">parse</span>: <span class="hljs-function">(<span class="hljs-params">text</span>) =></span> {
+    <span class="hljs-comment">// Custom parsing with superjson for this request only</span>
+    <span class="hljs-keyword">return</span> superjson.<span class="hljs-title function_">parse</span>(text);
+  }
+});
+</code></pre>
+<h2 id="caching-control">Caching Control</h2>
+<p>You can control caching behavior at multiple levels:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableNet</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/net'</span>;
+
+<span class="hljs-keyword">const</span> net = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableNet</span>({
+  <span class="hljs-attr">httpCachePolicy</span>: <span class="hljs-literal">true</span>  <span class="hljs-comment">// Enable HTTP cache semantics globally (default)</span>
+});
+
+<span class="hljs-comment">// GET requests are cached by default</span>
+<span class="hljs-keyword">const</span> data1 = <span class="hljs-keyword">await</span> net.<span class="hljs-title function_">get</span>(<span class="hljs-string">'https://api.example.com/data'</span>);
+
+<span class="hljs-comment">// Disable caching for a specific GET request</span>
+<span class="hljs-keyword">const</span> data2 = <span class="hljs-keyword">await</span> net.<span class="hljs-title function_">get</span>(<span class="hljs-string">'https://api.example.com/data'</span>, {
+  <span class="hljs-attr">caching</span>: <span class="hljs-literal">false</span>
+});
+
+<span class="hljs-comment">// POST requests are NOT cached by default</span>
+<span class="hljs-keyword">const</span> result1 = <span class="hljs-keyword">await</span> net.<span class="hljs-title function_">post</span>(<span class="hljs-string">'https://api.example.com/data'</span>, { <span class="hljs-attr">value</span>: <span class="hljs-number">1</span> });
+
+<span class="hljs-comment">// Enable caching for a specific POST request</span>
+<span class="hljs-keyword">const</span> result2 = <span class="hljs-keyword">await</span> net.<span class="hljs-title function_">post</span>(<span class="hljs-string">'https://api.example.com/data'</span>, { <span class="hljs-attr">value</span>: <span class="hljs-number">1</span> }, {
+  <span class="hljs-attr">caching</span>: <span class="hljs-literal">true</span>
+});
+</code></pre>
+<h2 id="error-handling">Error Handling</h2>
+<p><code>@cacheable/net</code> follows native <code>fetch</code> semantics. It <strong>resolves</strong> with a <code>Response</code> for
+every completed HTTP exchange — including <code>4xx</code> and <code>5xx</code> — and only rejects when the request
+itself fails (DNS failure, connection refused, abort, etc.). Use <code>response.ok</code> (or
+<code>response.status</code>) to detect HTTP errors instead of a <code>try/catch</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> net = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableNet</span>();
+
+<span class="hljs-keyword">const</span> { response, data } = <span class="hljs-keyword">await</span> net.<span class="hljs-title function_">get</span>(<span class="hljs-string">'https://api.example.com/thing'</span>);
+<span class="hljs-keyword">if</span> (!response.<span class="hljs-property">ok</span>) {
+  <span class="hljs-comment">// 404, 500, etc. — `data` holds any error body the server returned</span>
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">`Request failed with status <span class="hljs-subst">${response.status}</span>`</span>);
+}
+</code></pre>
+<p>Only successful responses are cached. Under the default HTTP cache mode, <code>2xx</code> responses are
+cached per RFC 7234 (honoring <code>Cache-Control</code>, <code>ETag</code>, <code>Expires</code>, etc.); in simple mode
+(<code>httpCachePolicy: false</code>) every <code>2xx</code> response is cached. Error responses (<code>4xx</code>/<code>5xx</code>) are
+always returned to the caller but <strong>never</strong> cached, so a transient failure is never replayed
+from a cache hit.</p>
+<h2 id="api-reference">API Reference</h2>
+<h3 id="cacheablenet-class">CacheableNet Class</h3>
+<p>The main class that provides cached network operations.</p>
+<h4 id="constructor-options">Constructor Options</h4>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">CacheableNetOptions</span> {
+  <span class="hljs-attr">cache</span>?: <span class="hljs-title class_">Cacheable</span> | <span class="hljs-title class_">CacheableOptions</span>;   <span class="hljs-comment">// Cacheable instance or options</span>
+  <span class="hljs-attr">httpCachePolicy</span>?: <span class="hljs-built_in">boolean</span>;              <span class="hljs-comment">// Enable HTTP cache semantics (default: true)</span>
+  <span class="hljs-attr">stringify</span>?: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">value</span>: <span class="hljs-built_in">unknown</span></span>) =></span> <span class="hljs-built_in">string</span>; <span class="hljs-comment">// Custom JSON stringifier (default: JSON.stringify)</span>
+  <span class="hljs-attr">parse</span>?: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">value</span>: <span class="hljs-built_in">string</span></span>) =></span> <span class="hljs-built_in">unknown</span>;     <span class="hljs-comment">// Custom JSON parser (default: JSON.parse)</span>
+}
+</code></pre>
+<h4 id="methods">Methods</h4>
+<p>All methods accept request options of type <code>FetchOptions</code> (excluding the <code>cache</code> property which is managed internally):</p>
+<ul>
+<li><strong>fetch(url: string, options?: FetchOptions)</strong>: Fetch with caching support</li>
+<li><strong>get(url: string, options?: NetFetchOptions)</strong>: GET request helper with caching control</li>
+<li><strong>post(url: string, data?: unknown, options?: NetFetchOptions)</strong>: POST request helper with caching control</li>
+<li><strong>put(url: string, data?: unknown, options?: NetFetchOptions)</strong>: PUT request helper with caching control</li>
+<li><strong>patch(url: string, data?: unknown, options?: NetFetchOptions)</strong>: PATCH request helper with caching control</li>
+<li><strong>delete(url: string, data?: unknown, options?: NetFetchOptions)</strong>: DELETE request helper with caching control</li>
+<li><strong>head(url: string, options?: NetFetchOptions)</strong>: HEAD request helper with caching control</li>
+</ul>
+<p>The <code>FetchOptions</code> type extends the standard fetch <code>RequestInit</code> options with additional caching controls:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">type</span> <span class="hljs-title class_">FetchOptions</span> = <span class="hljs-title class_">Omit</span>&#x3C;<span class="hljs-title class_">RequestInit</span>, <span class="hljs-string">'cache'</span>> &#x26; {
+  <span class="hljs-attr">cache</span>?: <span class="hljs-title class_">Cacheable</span>;          <span class="hljs-comment">// Optional cache instance (if not provided, no caching)</span>
+  <span class="hljs-attr">httpCachePolicy</span>?: <span class="hljs-built_in">boolean</span>;     <span class="hljs-comment">// Override instance-level HTTP cache setting</span>
+};
+</code></pre>
+<p>The <code>NetFetchOptions</code> type (used by all HTTP method helpers) provides additional control:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">type</span> <span class="hljs-title class_">NetFetchOptions</span> = {
+  <span class="hljs-attr">caching</span>?: <span class="hljs-built_in">boolean</span>;          <span class="hljs-comment">// Enable/disable caching for this request</span>
+  <span class="hljs-attr">stringify</span>?: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">value</span>: <span class="hljs-built_in">unknown</span></span>) =></span> <span class="hljs-built_in">string</span>;  <span class="hljs-comment">// Custom JSON stringifier</span>
+  <span class="hljs-attr">parse</span>?: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">value</span>: <span class="hljs-built_in">string</span></span>) =></span> <span class="hljs-built_in">unknown</span>;      <span class="hljs-comment">// Custom JSON parser</span>
+} &#x26; <span class="hljs-title class_">Omit</span>&#x3C;<span class="hljs-title class_">FetchOptions</span>, <span class="hljs-string">'method'</span> | <span class="hljs-string">'cache'</span>>;
+</code></pre>
+<p><strong>Note</strong>: When using the CacheableNet methods, you don't need to provide the <code>cache</code> property as it's automatically injected from the instance.</p>
+<h4 id="caching-behavior">Caching Behavior</h4>
+<p>By default:</p>
+<ul>
+<li><strong>GET</strong> and <strong>HEAD</strong> requests are cached automatically</li>
+<li><strong>POST</strong>, <strong>PUT</strong>, <strong>PATCH</strong>, and <strong>DELETE</strong> requests are NOT cached by default</li>
+<li>To enable caching for POST/PUT/PATCH/DELETE, set <code>caching: true</code> in the options</li>
+<li>To disable caching for GET/HEAD, set <code>caching: false</code> in the options</li>
+</ul>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>You can contribute by forking the repo and submitting a pull request. Please make sure to add tests and update the documentation. To learn more about how to contribute go to our main README <a href="https://github.com/jaredwray/cacheable">https://github.com/jaredwray/cacheable</a>. This will talk about how to <code>Open a Pull Request</code>, <code>Ask a Question</code>, or <code>Post an Issue</code>.</p>
+<h1 id="license-and-copyright">License and Copyright</h1>
+<p><a href="./LICENSE">MIT © Jared Wray</a></p>

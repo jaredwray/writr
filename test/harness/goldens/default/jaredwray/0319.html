@@ -1,0 +1,23 @@
+<h1 id="agentsmd">AGENTS.md</h1>
+<p>Guidelines for AI coding agents (Claude, Gemini, Codex).</p>
+<h2 id="project">Project</h2>
+<p>Docula is a documentation/website generator built with TypeScript and Node.js (>=22).</p>
+<h2 id="commands">Commands</h2>
+<ul>
+<li><code>pnpm install</code> - Install dependencies</li>
+<li><code>pnpm build</code> - Build the project</li>
+<li><code>pnpm test</code> - Run linter and tests with coverage</li>
+</ul>
+<p><strong>Use pnpm, not npm.</strong></p>
+<h2 id="development-rules">Development Rules</h2>
+<ol>
+<li><strong>Always run <code>pnpm test</code> before committing</strong> - All tests must pass</li>
+<li><strong>Maintain 100% code coverage</strong> - Add tests for any new code</li>
+<li><strong>Follow existing code style</strong> - Biome enforces formatting and linting</li>
+</ol>
+<h2 id="structure">Structure</h2>
+<ul>
+<li><code>src/</code> - TypeScript source code</li>
+<li><code>test/</code> - Test files (Vitest)</li>
+<li><code>template/</code> - Handlebars templates</li>
+</ul>

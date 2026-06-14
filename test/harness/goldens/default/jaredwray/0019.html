@@ -1,0 +1,125 @@
+<h1 id="agents">Agents</h1>
+<h2 id="common-commands">Common Commands</h2>
+<h3 id="build">Build</h3>
+<ul>
+<li><code>pnpm build</code> - Build all packages (keyv first, then all others)</li>
+<li><code>pnpm build:keyv</code> - Build only the keyv package</li>
+</ul>
+<h3 id="testing">Testing</h3>
+<ul>
+<li><code>pnpm test</code> - Run all tests across all packages with coverage</li>
+<li><code>pnpm -r --workspace-concurrency 1 test:ci</code> - Run CI tests (same as <code>pnpm test</code>)</li>
+<li><code>pnpm test:services:start</code> - Start Docker services for testing (requires Docker with host networking enabled)</li>
+<li><code>pnpm test:services:stop</code> - Stop Docker services</li>
+</ul>
+<p>Individual package tests:</p>
+<ul>
+<li><code>cd {category}/{package-name} &#x26;&#x26; pnpm test</code> - Test specific package (e.g., <code>cd storage/redis &#x26;&#x26; pnpm test</code>)</li>
+<li><code>cd {category}/{package-name} &#x26;&#x26; pnpm test:ci</code> - Run CI tests for specific package</li>
+</ul>
+<h3 id="linting-and-code-quality">Linting and Code Quality</h3>
+<ul>
+<li><code>biome check</code> - Check code with Biome linter</li>
+<li><code>biome check --write</code> - Fix auto-fixable issues</li>
+<li>Individual packages use Biome for linting, configured with tabs and double quotes</li>
+</ul>
+<h3 id="development-workflow">Development Workflow</h3>
+<ol>
+<li>Start test services: <code>pnpm test:services:start</code></li>
+<li>Run tests: <code>pnpm test</code></li>
+<li>Build packages: <code>pnpm build</code></li>
+<li>Stop test services: <code>pnpm test:services:stop</code></li>
+</ol>
+<h3 id="clean-up">Clean Up</h3>
+<ul>
+<li><code>pnpm clean</code> - Remove node_modules and generated files from all packages</li>
+</ul>
+<h2 id="architecture-overview">Architecture Overview</h2>
+<h3 id="monorepo-structure">Monorepo Structure</h3>
+<ul>
+<li><strong>Root</strong>: Workspace configuration with pnpm</li>
+<li><strong>core/keyv</strong>: Core Keyv library - the main key-value storage interface</li>
+<li><strong>core/test-suite</strong>: Shared test suite (@keyv/test-suite) for API compliance testing</li>
+<li><strong>serialization/superjson</strong>: SuperJSON serializer (@keyv/serialize-superjson) - optional</li>
+<li><strong>serialization/msgpackr</strong>: MessagePack serializer (@keyv/serialize-msgpackr) - optional</li>
+<li><strong>core/bigmap</strong>: BigMap - scalable in-memory Map implementation</li>
+<li><strong>storage/</strong>: Storage adapters - Redis, MySQL, PostgreSQL, MongoDB, SQLite, Etcd, Memcache, Valkey, DynamoDB</li>
+<li><strong>compression/</strong>: Compression adapters - Brotli, Gzip, LZ4</li>
+<li><strong>website</strong>: Documentation website</li>
+</ul>
+<h3 id="key-architecture-concepts">Key Architecture Concepts</h3>
+<p><strong>Core Keyv Class</strong> (<code>core/keyv/src/index.ts</code>):</p>
+<ul>
+<li>Extends EventManager for event emission</li>
+<li>Uses HooksManager for pre/post operation hooks</li>
+<li>Includes KeyvStats for usage statistics</li>
+<li>Supports pluggable storage adapters, serialization, and compression</li>
+<li>Handles namespacing, TTL, and key prefixing</li>
+</ul>
+<p><strong>Storage Adapter Interface</strong>:</p>
+<ul>
+<li>Must implement: <code>get()</code>, <code>set()</code>, <code>delete()</code>, <code>clear()</code></li>
+<li>Optional: <code>getMany()</code>, <code>setMany()</code>, <code>deleteMany()</code>, <code>has()</code>, <code>hasMany()</code>, <code>iterator()</code>, <code>disconnect()</code></li>
+<li>Should emit events and extend EventEmitter-like interface</li>
+</ul>
+<p><strong>Serialization</strong>:</p>
+<ul>
+<li>Default uses built-in <code>KeyvJsonSerializer</code> with JSON.stringify/parse</li>
+<li>Compression adapters can be plugged in</li>
+<li>Data format: <code>{ value: T, expires?: number }</code></li>
+</ul>
+<h3 id="build-dependencies">Build Dependencies</h3>
+<ol>
+<li><code>keyv</code> core must be built first (used by adapters and serialization packages)</li>
+<li>All other packages can be built in parallel</li>
+</ol>
+<h3 id="testing-requirements">Testing Requirements</h3>
+<ul>
+<li>Docker is required for integration tests with databases/services</li>
+<li>Enable "host networking" in Docker settings for Redis cluster tests</li>
+<li>Test services are managed via scripts in <code>/scripts/</code> directory</li>
+<li>Each storage adapter should use <code>@keyv/test-suite</code> for compliance testing</li>
+<li>Tests use Vitest with coverage reporting</li>
+</ul>
+<h3 id="code-style">Code Style</h3>
+<ul>
+<li>TypeScript with strict mode enabled</li>
+<li>Biome for linting and formatting</li>
+<li>Tab indentation, double quotes</li>
+<li>ES modules (<code>type: "module"</code>)</li>
+<li>Build targets: CommonJS and ESM with TypeScript definitions</li>
+</ul>
+<h3 id="package-dependencies">Package Dependencies</h3>
+<ul>
+<li>Workspace packages use <code>workspace:^</code> protocol</li>
+<li>Core package (<code>keyv</code>) has no external dependencies (serializer is built-in)</li>
+<li>Storage adapters depend on <code>keyv</code> as peer dependency</li>
+<li>Test suite depends on <code>keyv</code> and various testing utilities</li>
+</ul>
+<h2 id="pull-request-guidelines">Pull Request Guidelines</h2>
+<h3 id="pr-title-format">PR Title Format</h3>
+<p>Use the following format for pull request titles:</p>
+<pre><code>{package} - {type}: {description}
+</code></pre>
+<p><strong>Examples:</strong></p>
+<ul>
+<li><code>sqlite - feat: Add WAL (Write-Ahead Logging) mode support</code></li>
+<li><code>redis - fix: Connection timeout handling</code></li>
+<li><code>keyv - docs: Update API documentation</code></li>
+<li><code>mono - chore: Upgrade dependencies</code></li>
+</ul>
+<p><strong>Package names:</strong></p>
+<ul>
+<li>Use the package name (e.g., <code>sqlite</code>, <code>redis</code>, <code>postgres</code>, <code>keyv</code>, <code>serialize</code>)</li>
+<li>Use <code>mono</code> for changes that affect the entire monorepo</li>
+</ul>
+<p><strong>Types:</strong></p>
+<ul>
+<li><code>feat</code>: New feature</li>
+<li><code>fix</code>: Bug fix</li>
+<li><code>docs</code>: Documentation changes</li>
+<li><code>chore</code>: Maintenance tasks (dependencies, CI, etc.)</li>
+<li><code>refactor</code>: Code refactoring</li>
+<li><code>test</code>: Test additions or changes</li>
+<li><code>perf</code>: Performance improvements</li>
+</ul>

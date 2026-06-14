@@ -1,0 +1,58 @@
+<h1 id="deploy-on-google-cloud">Deploy on Google Cloud</h1>
+<p>Google Cloud's <strong>Global External Application Load Balancer</strong> gives you a <em>single
+anycast IP</em> served from Google's edge worldwide, routing users to the nearest healthy
+backend. That maps directly onto the <code>http-cache</code> <a href="/docs/architecture">architecture</a>.</p>
+<h2 id="why-google-cloud">Why Google Cloud</h2>
+<ul>
+<li><strong>One global anycast IP</strong> — no per-region addresses to manage.</li>
+<li><strong>Closest-region routing</strong> with automatic failover.</li>
+<li><strong>Managed instance groups / Cloud Run</strong> for elastic, regional gateways.</li>
+<li><strong>Cloud CDN</strong> can sit in front for an extra static tier when useful.</li>
+</ul>
+<h2 id="setup">Setup</h2>
+<ol>
+<li>
+<p><strong>Deploy regional gateways</strong> as either:</p>
+<ul>
+<li><strong>Cloud Run</strong> services (one per region), or</li>
+<li><strong>Managed Instance Groups</strong> running the container in two or more regions.</li>
+</ul>
+<pre><code class="hljs language-bash">gcloud run deploy http-cache \
+  --image ghcr.io/jaredwray/http-cache:latest \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --vpc-egress private-ranges-only \
+  --network default --subnet default \
+  --set-env-vars HTTP_CACHE_STORE=redis://10.0.0.3:6379
+</code></pre>
+<ul>
+<li><code>--allow-unauthenticated</code> lets the external load balancer and its health checks
+reach the service. Cloud Run is private by default; without this (or an equivalent
+invoker IAM/IAP setup) the backends return auth failures instead of serving traffic.</li>
+<li><code>--vpc-egress</code> + <code>--network</code>/<code>--subnet</code> (Direct VPC egress; or use a
+<code>--vpc-connector</code>) is required to reach a private RFC1918 Redis such as
+<code>10.0.0.3</code> (e.g. Memorystore). Without VPC egress the gateway cannot reach its
+backend. Front the public ingress with the load balancer (and Cloud Armor) rather
+than exposing the gateway directly.</li>
+</ul>
+</li>
+<li>
+<p><strong>Create backend services</strong> and add each region's group/service as a backend.</p>
+</li>
+<li>
+<p><strong>Add a health check</strong> for <code>GET /health</code>; unhealthy backends are drained
+automatically.</p>
+</li>
+<li>
+<p><strong>Create a Global External Application Load Balancer</strong>, attach the backend services,
+and reserve a <strong>global anycast IP</strong>.</p>
+</li>
+<li>
+<p><strong>Point your DNS</strong> at that single global IP.</p>
+</li>
+</ol>
+<h2 id="result">Result</h2>
+<pre><code>user ─▶ Google global anycast IP ─▶ nearest regional gateway ─▶ L1/L2 → keyv backend
+</code></pre>
+<p>Scale by adding a region's backend service to the load balancer — no clustering, no
+rebalancing.</p>

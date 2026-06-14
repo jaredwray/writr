@@ -1,0 +1,116 @@
+<p><img src="site/logo.svg" alt="Docula"></p>
+<h1 id="beautiful-website-for-your-projects">Beautiful Website for Your Projects</h1>
+<p><a href="https://github.com/jaredwray/docula/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/docula/actions/workflows/tests.yaml/badge.svg" alt="tests"></a>
+<a href="https://github.com/jaredwray/docula/blob/master/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/docula" alt="GitHub license"></a>
+<a href="https://codecov.io/gh/jaredwray/docula"><img src="https://codecov.io/gh/jaredwray/docula/branch/main/graph/badge.svg?token=RS0GPY4V4M" alt="codecov"></a>
+<a href="https://npmjs.com/package/docula"><img src="https://img.shields.io/npm/dm/docula" alt="npm"></a>
+<a href="https://npmjs.com/package/docula"><img src="https://img.shields.io/npm/v/docula" alt="npm"></a></p>
+<h1 id="features">Features</h1>
+<ul>
+<li>No configuration required. Just setup the folder structure with a logo, favicon, and css file.</li>
+<li>Builds a static website that can be hosted anywhere.</li>
+<li>Simple search is provided by default out of the box.</li>
+<li>Support for single page with readme or multiple markdown pages in a docs folder.</li>
+<li>Full TypeScript support with typed configuration and IDE autocompletion.</li>
+<li>For more complex projects easily add a <code>docula.config.ts</code> (TypeScript) or <code>docula.config.mjs</code> (JavaScript) file to customize the build process with lifecycle hooks and <code>DoculaConsole</code> logging.</li>
+<li>Will generate a sitemap.xml, robots.txt, and <code>feed.xml</code> for your site.</li>
+<li>Automatically generates <code>llms.txt</code> and <code>llms-full.txt</code> for LLM-friendly indexing of docs, API reference, and changelog content.</li>
+<li>OpenAPI / Swagger support for auto-generating an interactive API reference page.</li>
+<li>Uses Github release notes and file-based changelog entries to generate a changelog with individual pages, pagination, and preview text.</li>
+<li>Uses Github to show contributors and link to their profiles.</li>
+<li>Light, dark, and system theme modes with a built-in toggle.</li>
+<li>Easy styling customization via <code>variables.css</code> with no template editing required.</li>
+<li>Watch mode with auto-rebuild for local development.</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#standalone-binary">Standalone Binary</a>
+<ul>
+<li><a href="#building-the-binary">Building the Binary</a></li>
+<li><a href="#what-the-build-does">What the Build Does</a></li>
+<li><a href="#testing-the-binary">Testing the Binary</a></li>
+<li><a href="#cross-platform-binaries">Cross-Platform Binaries</a></li>
+</ul>
+</li>
+<li><a href="#open-source-examples">Open Source Examples</a></li>
+<li><a href="#code-of-conduct-and-contributing">Code of Conduct and Contributing</a></li>
+<li><a href="#security">Security</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h1 id="standalone-binary">Standalone Binary</h1>
+<p>You can build Docula as a standalone binary that runs without Node.js installed. This uses <a href="https://nodejs.org/api/single-executable-applications.html">Node.js Single Executable Applications (SEA)</a> to embed the runtime and all dependencies into a single executable.</p>
+<h2 id="building-the-binary">Building the Binary</h2>
+<p>Requires Node.js >= 25.7.0 to build (the resulting binary does not need Node.js to run). The build uses <a href="https://tsdown.dev/options/exe">tsdown's <code>exe</code> option</a>, which wraps Node.js's <a href="https://nodejs.org/api/single-executable-applications.html">Single Executable Applications</a> feature added in Node 25.7.</p>
+<pre><code class="hljs language-bash">pnpm install
+pnpm build:binary
+</code></pre>
+<p>This produces a platform-specific binary at <code>dist/docula</code> (or <code>dist/docula.exe</code> on Windows).</p>
+<h2 id="what-the-build-does">What the Build Does</h2>
+<ol>
+<li>Embeds all built-in templates (modern, classic) into the bundle as base64</li>
+<li>Bundles all source code and dependencies into a single CJS file via <a href="https://tsdown.dev/">tsdown</a></li>
+<li>Uses tsdown's built-in <code>exe</code> option to create a Node.js SEA binary — blob generation, injection, and (on macOS hosts) ad-hoc code signing are handled automatically</li>
+</ol>
+<h2 id="testing-the-binary">Testing the Binary</h2>
+<p>After building, test it locally:</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Show help</span>
+./dist/docula <span class="hljs-built_in">help</span>
+
+<span class="hljs-comment"># Show version</span>
+./dist/docula version
+
+<span class="hljs-comment"># Initialize a new project</span>
+./dist/docula init -s ./my-site
+
+<span class="hljs-comment"># Build a site</span>
+./dist/docula build -s ./my-site -o ./my-site/dist
+</code></pre>
+<h2 id="cross-platform-binaries">Cross-Platform Binaries</h2>
+<p>The CI workflow (<code>.github/workflows/build-binaries.yaml</code>) builds each platform natively on its own runner. Native builds avoid the cross-compile signing pitfall on Apple Silicon, where unsigned Mach-O binaries are killed on launch.</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Runner</th>
+<th>Artifact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linux x64</td>
+<td><code>ubuntu-latest</code></td>
+<td><code>docula-linux-x64</code></td>
+</tr>
+<tr>
+<td>macOS ARM64</td>
+<td><code>macos-latest</code></td>
+<td><code>docula-macos-arm64</code></td>
+</tr>
+<tr>
+<td>Windows x64</td>
+<td><code>windows-latest</code></td>
+<td><code>docula-windows-x64</code></td>
+</tr>
+</tbody>
+</table>
+<p>Binaries are uploaded as build artifacts on every run and attached to GitHub releases automatically.</p>
+<h1 id="open-source-examples">Open Source Examples</h1>
+<p>See Docula in action with these open source projects that use it for their documentation:</p>
+<ul>
+<li><strong><a href="https://cacheable.org">Cacheable.org</a></strong> - High-performance caching library for Node.js with layered caching support (<a href="https://github.com/jaredwray/cacheable">Source</a>)</li>
+<li><strong><a href="https://keyv.org">Keyv.org</a></strong> - Simple key-value storage with support for multiple backends (<a href="https://github.com/jaredwray/keyv">Source</a>)</li>
+<li><strong><a href="https://docula.org">Docula.org</a></strong> - Docula's own documentation site, built with Docula (<a href="https://github.com/jaredwray/docula">Source</a>)</li>
+</ul>
+<h1 id="code-of-conduct-and-contributing">Code of Conduct and Contributing</h1>
+<p><a href="CODE_OF_CONDUCT.md">Code of Conduct</a> and <a href="CONTRIBUTING.md">Contributing</a> guidelines.</p>
+<h1 id="security">Security</h1>
+<p>We take the security of Docula seriously and have multiple layers of protection in place:</p>
+<ul>
+<li><strong>Aikido Security</strong>: Continuous scanning of our codebase, dependencies, and infrastructure for vulnerabilities. Review our public audit report by clicking the badge above.</li>
+<li><strong>Pull Request Scans</strong>: Every pull request against <code>main</code> is automatically scanned for security issues before merging.</li>
+<li><strong>CodeQL Analysis</strong>: GitHub CodeQL static analysis runs on every push and pull request targeting <code>main</code>.</li>
+<li><strong>npm Package Provenance</strong>: Releases are published with <a href="https://docs.npmjs.com/generating-provenance-statements">npm provenance</a> for cryptographically verifiable links to source and build.</li>
+</ul>
+<p>For full details, see <a href="SECURITY.md">SECURITY.md</a> or our <a href="https://docula.org/docs/project-guidelines/security/">Security Guidelines</a>.</p>
+<h1 id="license">License</h1>
+<p>MIT © <a href="https://jaredwray.com">Jared Wray</a></p>

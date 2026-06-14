@@ -1,0 +1,20 @@
+<h1 id="agentsmd">AGENTS.md</h1>
+<p>MockHTTP is an HTTP mock server for testing, built with Fastify and TypeScript.</p>
+<h2 id="commands">Commands</h2>
+<ul>
+<li><code>pnpm install</code> — install dependencies (always use pnpm, not npm)</li>
+<li><code>pnpm build</code> — build the project</li>
+<li><code>pnpm test</code> — run linter and tests with coverage</li>
+<li><code>pnpm lint</code> — run Biome linter with auto-fixes</li>
+</ul>
+<h2 id="testing">Testing</h2>
+<ul>
+<li>Framework: Vitest with <code>@vitest/coverage-v8</code></li>
+<li>Tests are in the <code>test/</code> directory</li>
+<li>Linting: Biome (not ESLint or Prettier)</li>
+</ul>
+<h2 id="after-making-changes">After Making Changes</h2>
+<ul>
+<li>Run <code>pnpm test</code> to ensure all tests pass</li>
+<li>Maintain 100% code coverage — add or update tests as needed</li>
+</ul>

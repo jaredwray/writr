@@ -1,0 +1,70 @@
+---
+title: i18n Helpers
+description: >
+    Handlebars helpers for working with internationalization (i18n). These helpers are used to look up and display localized content in templates.
+order: 13
+---
+
+> **Availability:** Registered in both the Node and browser builds.
+
+## i18n
+
+### {{i18n}}
+
+Looks up a translation key for the current language. The helper expects a `language` (or `lang`) property in the context, along with an object containing translations for that language.
+
+**Params**
+
+* `key` **{String}**: The translation key to look up (supports dot notation for nested keys)
+* `returns` **{String}**: The translated string
+
+**Example**
+
+Given the following context:
+
+```js
+{
+  language: 'en',
+  en: {
+    greeting: 'Hello',
+    messages: {
+      welcome: 'Welcome to our site'
+    }
+  },
+  es: {
+    greeting: 'Hola',
+    messages: {
+      welcome: 'Bienvenido a nuestro sitio'
+    }
+  }
+}
+```
+
+```handlebars
+{{i18n "greeting"}}
+<!-- Output: Hello -->
+
+{{i18n "messages.welcome"}}
+<!-- Output: Welcome to our site -->
+```
+
+To switch languages, change the `language` property in the context:
+
+```js
+{
+  language: 'es',
+  // ... translations
+}
+```
+
+```handlebars
+{{i18n "greeting"}}
+<!-- Output: Hola -->
+```
+
+**Notes**
+
+- The helper throws an error if the `key` parameter is not a string
+- The helper throws an error if `language` or `lang` is not set or is not a string
+- The helper throws an error if the language object is not found in the context
+- The helper throws an error if the translation key is not found

@@ -1,0 +1,91 @@
+<h1 id="qifiednats">@qified/nats</h1>
+<p>NATS message provider for <a href="https://github.com/jaredwray/qified">Qified</a>.</p>
+<p>This package implements a message provider backed by NATS using the <code>publish</code>/<code>subscribe</code> operations. A special thanks to <a href="mailto:santoshg550@gmail.com">Santosh Bandichode</a> for creating this package!</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#usage-with-qified">Usage with Qified</a></li>
+<li><a href="#api">API</a>
+<ul>
+<li><a href="#natsmessageprovideroptions">NatsMessageProviderOptions</a></li>
+<li><a href="#defaultnatsuri">defaultNatsUri</a></li>
+<li><a href="#natsmessageprovider">NatsMessageProvider</a>
+<ul>
+<li><a href="#constructoroptions-natsmessageprovideroptions">constructor(options?: NatsMessageProviderOptions)</a></li>
+<li><a href="#publishtopic-string-message-message">publish(topic: string, message: Message)</a></li>
+<li><a href="#subscribetopic-string-handler-topichandler">subscribe(topic: string, handler: TopicHandler)</a></li>
+<li><a href="#unsubscribetopic-string-id-string">unsubscribe(topic: string, id?: string)</a></li>
+<li><a href="#disconnect">disconnect()</a></li>
+</ul>
+</li>
+<li><a href="#createqifiedoptions-natsmessageprovideroptions">createQified(options?: NatsMessageProviderOptions)</a></li>
+</ul>
+</li>
+<li><a href="#draining-messages">Draining Messages</a></li>
+<li><a href="#contributing">Contributing</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h2 id="installation">Installation</h2>
+<pre><code class="hljs language-bash">pnpm add @qified/nats
+</code></pre>
+<h2 id="usage-with-qified">Usage with Qified</h2>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { createQified } <span class="hljs-keyword">from</span> <span class="hljs-string">"@qified/nats"</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">Message</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"qified"</span>;
+
+<span class="hljs-keyword">const</span> qified = <span class="hljs-title function_">createQified</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">"localhost:4222"</span> });
+
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">subscribe</span>(<span class="hljs-string">"example-topic"</span>, {
+        <span class="hljs-keyword">async</span> <span class="hljs-title function_">handler</span>(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-title class_">Message</span></span>) {
+                <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(message);
+        },
+});
+
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">publish</span>(<span class="hljs-string">"example-topic"</span>, { <span class="hljs-attr">id</span>: <span class="hljs-string">"1"</span>, <span class="hljs-attr">data</span>: <span class="hljs-string">"Hello from NATS!"</span> });
+
+<span class="hljs-keyword">await</span> qified.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h2 id="api">API</h2>
+<h3 id="natsmessageprovideroptions">NatsMessageProviderOptions</h3>
+<p>Configuration options for the NATS message provider.</p>
+<ul>
+<li><code>uri?</code>: NATS connection URI. Defaults to <a href="#defaultnatsuri"><code>defaultNatsUri</code></a>.</li>
+</ul>
+<h3 id="defaultnatsuri">defaultNatsUri</h3>
+<p>Default NATS connection string (<code>"localhost:4222"</code>).</p>
+<h3 id="natsmessageprovider">NatsMessageProvider</h3>
+<p>Implements the <code>MessageProvider</code> interface using NATS publish/subscribe.</p>
+<h4 id="constructoroptions-natsmessageprovideroptions">constructor(options?: NatsMessageProviderOptions)</h4>
+<p>Creates a new provider.</p>
+<p>Options:</p>
+<ul>
+<li><code>uri</code>: NATS connection URI (defaults to <code>"localhost:4222"</code>).</li>
+</ul>
+<h4 id="publishtopic-string-message-message">publish(topic: string, message: Message)</h4>
+<p>Publishes a message to a topic.</p>
+<h4 id="subscribetopic-string-handler-topichandler">subscribe(topic: string, handler: TopicHandler)</h4>
+<p>Subscribes a handler to a topic.</p>
+<h4 id="unsubscribetopic-string-id-string">unsubscribe(topic: string, id?: string)</h4>
+<p>Unsubscribes a handler by id or all handlers for a topic.</p>
+<h4 id="disconnect">disconnect()</h4>
+<p>Disconnects from the NATS server and clears all subscriptions.</p>
+<h3 id="createqifiedoptions-natsmessageprovideroptions">createQified(options?: NatsMessageProviderOptions)</h3>
+<p>Convenience factory that returns a <code>Qified</code> instance configured with <code>NatsMessageProvider</code>.</p>
+<h2 id="draining-messages">Draining Messages</h2>
+<p>NATS allows processing in-flight messages before unsubscribing/disconnecting. If this is needed, override unsubscribe and/or disconnect methods and call drain instead of unsubscribe/close.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">public</span> <span class="hljs-keyword">async</span> <span class="hljs-title function_">unsubscribe</span>(<span class="hljs-attr">topic</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">id</span>?: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">void</span>> {
+    <span class="hljs-comment">// ...</span>
+    <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">_subscriptions</span>.<span class="hljs-title function_">get</span>(topic)?.<span class="hljs-title function_">drain</span>();
+    <span class="hljs-comment">// ...</span>
+}
+</code></pre>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">public</span> <span class="hljs-keyword">async</span> <span class="hljs-title function_">disconnect</span>(): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">void</span>> {
+    <span class="hljs-comment">// ...</span>
+    <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">_connection</span>?.<span class="hljs-title function_">drain</span>();
+    <span class="hljs-comment">// ...</span>
+}
+</code></pre>
+<p>Please read <a href="https://github.com/nats-io/nats.js/blob/main/core/README.md">NATS Pub/Sub</a> to know about message draining.</p>
+<h2 id="contributing">Contributing</h2>
+<p>Contributions are welcome! Please read the <a href="../../CONTRIBUTING.md">CONTRIBUTING.md</a> and <a href="../../CODE_OF_CONDUCT.md">CODE_OF_CONDUCT.md</a> for details on our process.</p>
+<h2 id="license">License</h2>
+<p>MIT © Jared Wray. See <a href="../../LICENSE">LICENSE</a> for details.</p>

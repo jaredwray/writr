@@ -1,0 +1,145 @@
+<blockquote>
+<p><strong>Availability</strong></p>
+<table>
+<thead>
+<tr>
+<th>Helper</th>
+<th align="center">Node</th>
+<th align="center">Browser</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>decodeURI</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>encodeURI</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>escape</code></td>
+<td align="center">✅</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td><code>stripProtocol</code></td>
+<td align="center">✅</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td><code>stripQuerystring</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>urlParse</code></td>
+<td align="center">✅</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td><code>urlResolve</code></td>
+<td align="center">✅</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td><code>url_decode</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>url_encode</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+<h2 id="url">url</h2>
+<h3 id="encodeuri">{{encodeURI}}</h3>
+<p>Encodes a Uniform Resource Identifier (URI) component by replacing each instance of certain characters by one, two, three, or four escape sequences representing the UTF-8 encoding of the character.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong>: The un-encoded string</li>
+<li><code>returns</code> <strong>{String}</strong>: The encoded string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{encodeURI "http://example.com?comment=Thyme &#x26;time=again"}}
+<span class="hljs-comment">&#x3C;!-- results in: 'http%3A%2F%2Fexample.com%3Fcomment%3DThyme%20%26time%3Dagain' --></span>
+</code></pre>
+<h3 id="escape">{{escape}}</h3>
+<p>Escape the given string by replacing characters with escape sequences. Useful for allowing the string to be used in a URL, etc.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong>: Escaped string.</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{escape "http://example.com?comment=Thyme &#x26;time=again"}}
+<span class="hljs-comment">&#x3C;!-- results in: 'http%3A%2F%2Fexample.com%3Fcomment%3DThyme%20%26time%3Dagain' --></span>
+</code></pre>
+<h3 id="decodeuri">{{decodeURI}}</h3>
+<p>Decode a Uniform Resource Identifier (URI) component.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{decodeURI "http%3A%2F%2Fexample.com%3Fcomment%3DThyme%20%26time%3Dagain"}}
+<span class="hljs-comment">&#x3C;!-- results in: 'http://example.com?comment=Thyme &#x26;time=again' --></span>
+</code></pre>
+<h3 id="url_encode">{{url_encode}}</h3>
+<p>Alias for <a href="#encodeuri">encodeURI</a>.</p>
+<h3 id="url_decode">{{url_decode}}</h3>
+<p>Alias for <a href="#decodeuri">decodeURI</a>.</p>
+<h3 id="urlresolve">{{urlResolve}}</h3>
+<p>Take a base URL, and a href URL, and resolve them as a browser would for an anchor tag.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>base</code> <strong>{String}</strong></li>
+<li><code>href</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{urlResolve "/one/two/three" "four"}}
+<span class="hljs-comment">&#x3C;!-- results in: '/one/two/four' --></span>
+
+{{urlResolve "http://example.com/" "/one"}}
+<span class="hljs-comment">&#x3C;!-- results in: 'http://example.com/one' --></span>
+</code></pre>
+<h3 id="urlparse">{{urlParse}}</h3>
+<p>Parses a <code>url</code> string into an object.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong>: URL string</li>
+<li><code>returns</code> <strong>{Object}</strong>: Returns parsed URL object</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{urlParse "http://foo.com/bar/baz?key=value"}}
+<span class="hljs-comment">&#x3C;!-- results in an object with: protocol: 'http:', hostname: 'foo.com', pathname: '/bar/baz', query: 'key=value' --></span>
+</code></pre>
+<h3 id="stripquerystring">{{stripQuerystring}}</h3>
+<p>Strip the query string from the given <code>url</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>url</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong>: the url without the queryString</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{stripQuerystring "http://example.com?tests=true"}}
+<span class="hljs-comment">&#x3C;!-- results in: 'http://example.com' --></span>
+</code></pre>
+<h3 id="stripprotocol">{{stripProtocol}}</h3>
+<p>Strip protocol from a <code>url</code>. Useful for displaying media that may have an 'http' protocol on secure connections.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong>: the url with http protocol stripped</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{stripProtocol "http://foo.bar"}}
+<span class="hljs-comment">&#x3C;!-- results in: '//foo.bar/' --></span>
+</code></pre>

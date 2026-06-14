@@ -1,0 +1,135 @@
+<p>Today we're announcing the release of the OpenFeature SDK for .NET, v2.0!
+This release contains several ergonomic improvements to the SDK, which .NET developers will appreciate.
+It also includes some performance optimizations brought to you by the latest .NET primitives.</p>
+<h2 id="notable-improvements">Notable Improvements</h2>
+<h3 id="support-for-cancellation-tokens-idiomatic-method-names">Support for Cancellation Tokens, Idiomatic Method Names</h3>
+<p>Methods on some key interfaces (such as provider resolvers) have been updated to indicate that they work asynchronously, by appending the <code>Async</code> suffix in accordance with .NET conventions:</p>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// diff-remove</span>
+    <span class="hljs-keyword">await</span> Api.Instance.SetProvider(myProviderInstance);
+<span class="hljs-comment">// diff-add</span>
+    <span class="hljs-keyword">await</span> Api.Instance.SetProviderAsync(myProviderInstance);
+</code></pre>
+<p>Additionally, optional cancellation tokens can now be passed to applicable asynchronous methods.
+This allows for the cancellation of async tasks, and is consistent with .NET norms:</p>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// diff-remove</span>
+    <span class="hljs-keyword">await</span> client.GetBooleanValue(<span class="hljs-string">"my-flag"</span>, <span class="hljs-literal">false</span>, context, options);
+<span class="hljs-comment">// diff-add</span>
+    <span class="hljs-keyword">await</span> client.GetBooleanValueAsync(<span class="hljs-string">"my-flag"</span>, <span class="hljs-literal">false</span>, context, options, cancellationToken);
+</code></pre>
+<h3 id="valuetasks-for-hooks">ValueTasks for Hooks</h3>
+<p>The return types for stages within <a href="/docs/reference/concepts/hooks">hooks</a> have been updated to take advantage of the performance benefit provided by <a href="https://devblogs.microsoft.com/dotnet/understanding-the-whys-whats-and-whens-of-valuetask/">ValueTasks</a>.
+The vast majority of hook stages run synchronously, and they are awaited internally by the SDK; so we can avoid the additional allocations associated with <code>Tasks</code> by using <code>ValueTasks</code>:</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">MyBeforeHook</span> : <span class="hljs-title">Hook</span>
+{
+<span class="hljs-comment">// diff-remove-block-start</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">Task</span>&#x3C;<span class="hljs-title">EvaluationContext</span>> <span class="hljs-title">Before</span>&#x3C;<span class="hljs-title">T</span>>(<span class="hljs-params">HookContext&#x3C;T> context,
+        IReadOnlyDictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">object</span>> hints = <span class="hljs-literal">null</span></span>)</span>
+    {
+      <span class="hljs-comment">// code to run before flag evaluation</span>
+    }
+<span class="hljs-comment">// diff-remove-block-end</span>
+<span class="hljs-comment">// diff-add-block-start</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">ValueTask</span>&#x3C;<span class="hljs-title">EvaluationContext</span>> <span class="hljs-title">BeforeAsync</span>&#x3C;<span class="hljs-title">T</span>>(<span class="hljs-params">HookContext&#x3C;T> context,
+        IReadOnlyDictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">object</span>> hints = <span class="hljs-literal">null</span>, CancellationToken cancellationToken = <span class="hljs-literal">default</span></span>)</span>
+    {
+      <span class="hljs-comment">// code to run before flag evaluation</span>
+    }
+<span class="hljs-comment">// diff-add-block-end</span>
+}
+</code></pre>
+<h2 id="migration-steps">Migration Steps</h2>
+<h3 id="application-authors">Application Authors</h3>
+<h4 id="async-suffixes-and-cancellation-tokens">Async suffixes and Cancellation Tokens</h4>
+<p>Generally, application authors won't have to make many changes.</p>
+<p>As mentioned above, some async methods have been changed to conform to .NET conventions.
+Evaluation methods now have the "Async" suffix, and accept an optional cancellationToken:</p>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// diff-remove</span>
+    <span class="hljs-keyword">await</span> client.GetBooleanValue(<span class="hljs-string">"my-flag"</span>, <span class="hljs-literal">false</span>, context, options);
+<span class="hljs-comment">// diff-add</span>
+    <span class="hljs-keyword">await</span> client.GetBooleanValueAsync(<span class="hljs-string">"my-flag"</span>, <span class="hljs-literal">false</span>, context, options, cancellationToken);
+</code></pre>
+<p>The method for setting a provider has been updated similarly:</p>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// diff-remove</span>
+    <span class="hljs-keyword">await</span> Api.Instance.SetProvider(myProviderInstance);
+<span class="hljs-comment">// diff-add</span>
+    <span class="hljs-keyword">await</span> Api.Instance.SetProviderAsync(myProviderInstance);
+</code></pre>
+<h4 id="client-name-has-changed-to-domain">"Client Name" has Changed to "Domain"</h4>
+<p>Parameters previously named "client name" are now named "domain".
+"<a href="https://openfeature.dev/specification/glossary/#domain">Domains</a>" are a more powerful concept than "named clients", but in instances where named clients were previously used, function identically.
+No changes to consuming code are necessary these cases.</p>
+<h3 id="provider-authors">Provider Authors</h3>
+<h4 id="provider-method-name-changes">Provider Method Name Changes</h4>
+<p>Provider authors must change their implementations in accordance with new methods names on the provider interface.
+Optionally, you can make use of the new cancellation token:</p>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// diff-remove-block-start</span>
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Task&#x3C;ResolutionDetails&#x3C;<span class="hljs-built_in">bool</span>>> ResolveBooleanValue(
+                <span class="hljs-built_in">string</span> flagKey,
+                <span class="hljs-built_in">bool</span> defaultValue,
+                EvaluationContext? context = <span class="hljs-literal">null</span>)
+            {
+                <span class="hljs-comment">// return boolean flag details</span>
+            }
+<span class="hljs-comment">// diff-remove-block-end</span>
+<span class="hljs-comment">// diff-add-block-start</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Task&#x3C;ResolutionDetails&#x3C;<span class="hljs-built_in">bool</span>>> ResolveBooleanValueAsync(
+                <span class="hljs-built_in">string</span> flagKey,
+                <span class="hljs-built_in">bool</span> defaultValue,
+                EvaluationContext? context = <span class="hljs-literal">null</span>,
+                CancellationToken cancellationToken = <span class="hljs-literal">default</span>)
+            {
+                <span class="hljs-comment">// return boolean flag details</span>
+            }
+<span class="hljs-comment">// diff-add-block-end</span>
+</code></pre>
+<h4 id="no-need-for-provider-status">No Need for Provider Status</h4>
+<p>It's no longer necessary to define, update or expose provider status.
+If your provider requires initialization, simply define the optional <code>InitializeAsync</code> method:</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">MyProvider</span> : <span class="hljs-title">FeatureProvider</span>
+{
+<span class="hljs-comment">// diff-remove-block-start</span>
+
+    <span class="hljs-keyword">private</span> ProviderStatus _status = ProviderStatus.NotReady;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> ProviderStatus <span class="hljs-title">GetStatus</span>()</span>
+    {
+        <span class="hljs-keyword">return</span> _status;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Task <span class="hljs-title">Initialize</span>(<span class="hljs-params">EvaluationContext context</span>)
+<span class="hljs-comment">// diff-remove-block-end</span>
+<span class="hljs-comment">// diff-add</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Task <span class="hljs-title">InitializeAsync</span>(<span class="hljs-params">EvaluationContext context, CancellationToken cancellationToken = <span class="hljs-literal">default</span></span>)</span>
+    {
+        <span class="hljs-comment">// some async initialization</span>
+    }
+}
+</code></pre>
+<p>For more details about this change, see our <a href="/blog/reconciling-with-state">previous blog post</a>.</p>
+<h3 id="hook-authors">Hook Authors</h3>
+<h4 id="hooks-must-return-valuetask">Hooks Must Return ValueTask</h4>
+<p>Hooks must now return <code>ValueTask</code> instead of <code>Task</code>:</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">MyBeforeHook</span> : <span class="hljs-title">Hook</span>
+{
+<span class="hljs-comment">// diff-remove-block-start</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">Task</span>&#x3C;<span class="hljs-title">EvaluationContext</span>> <span class="hljs-title">Before</span>&#x3C;<span class="hljs-title">T</span>>(<span class="hljs-params">HookContext&#x3C;T> context,
+        IReadOnlyDictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">object</span>> hints = <span class="hljs-literal">null</span></span>)</span>
+    {
+      <span class="hljs-comment">// code to run before flag evaluation</span>
+    }
+<span class="hljs-comment">// diff-remove-block-end</span>
+<span class="hljs-comment">// diff-add-block-start</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">ValueTask</span>&#x3C;<span class="hljs-title">EvaluationContext</span>> <span class="hljs-title">BeforeAsync</span>&#x3C;<span class="hljs-title">T</span>>(<span class="hljs-params">HookContext&#x3C;T> context,
+        IReadOnlyDictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">object</span>> hints = <span class="hljs-literal">null</span>, CancellationToken cancellationToken = <span class="hljs-literal">default</span></span>)</span>
+    {
+      <span class="hljs-comment">// code to run before flag evaluation</span>
+    }
+}
+<span class="hljs-comment">// diff-add-block-end</span>
+</code></pre>
+<h2 id="full-changelog">Full Changelog</h2>
+<p>See <a href="https://github.com/open-feature/dotnet-sdk/blob/main/CHANGELOG.md#200-2024-08-21">here</a> for the full changelog.</p>
+<h2 id="thanks">Thanks!</h2>
+<p>Thanks to all our users, and a special thanks to everyone who contributed to the .NET SDK:</p>
+<p>&#x3C;img src={require('@site/static/img/blog/2024-08-21-dotnet-sdk-v2/contributors.png').default} /></p>

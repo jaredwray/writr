@@ -1,0 +1,44 @@
+<h1 id="keyvencrypt-web-">@keyv/encrypt-web <a href="https://github.com/jaredwray/keyv"></a></h1>
+<blockquote>
+<p>Web Crypto API encryption for Keyv</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://www.npmjs.com/package/@keyv/encrypt-web"><img src="https://img.shields.io/npm/v/@keyv/encrypt-web.svg" alt="npm"></a>
+<a href="https://npmjs.com/package/@keyv/encrypt-web"><img src="https://img.shields.io/npm/dm/@keyv/encrypt-web" alt="npm"></a></p>
+<p>Encrypt and decrypt values stored in <a href="https://github.com/jaredwray/keyv">Keyv</a> using the Web Crypto API (<code>crypto.subtle</code>). Works in browsers, Deno, Cloudflare Workers, and Node.js 18+. No Node.js-specific dependencies.</p>
+<h2 id="install">Install</h2>
+<pre><code class="hljs language-shell">npm install --save keyv @keyv/encrypt-web
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvEncryptWeb</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/encrypt-web'</span>;
+
+<span class="hljs-keyword">const</span> encryption = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEncryptWeb</span>({ <span class="hljs-attr">key</span>: <span class="hljs-string">'your-secret-key'</span> });
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ encryption });
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar' (decrypted automatically)</span>
+</code></pre>
+<h2 id="api">API</h2>
+<h3 id="new-keyvencryptweboptions">new KeyvEncryptWeb(options)</h3>
+<h4 id="optionskey">options.key</h4>
+<p>Type: <code>string | Uint8Array</code><br>
+<strong>Required</strong></p>
+<p>The encryption key. String keys are hashed with SHA-256 and truncated to the required length for the algorithm. Uint8Array keys are used directly and must match the expected key length.</p>
+<h4 id="optionsalgorithm">options.algorithm</h4>
+<p>Type: <code>WebAlgorithm</code><br>
+Default: <code>'aes-256-gcm'</code></p>
+<p>The cipher algorithm to use. Supported values:</p>
+<ul>
+<li><code>aes-256-gcm</code>, <code>aes-192-gcm</code>, <code>aes-128-gcm</code> (AEAD, recommended)</li>
+<li><code>aes-256-cbc</code>, <code>aes-192-cbc</code>, <code>aes-128-cbc</code></li>
+</ul>
+<h2 id="cross-compatibility">Cross-Compatibility</h2>
+<p>Data encrypted with <code>@keyv/encrypt-web</code> using AES-GCM or AES-CBC can be decrypted by <code>@keyv/encrypt-node</code> (and vice versa) when using the same key and algorithm. Both packages use the same wire format:</p>
+<ul>
+<li><strong>AES-GCM</strong>: <code>base64([IV (12 bytes) || AuthTag (16 bytes) || Ciphertext])</code></li>
+<li><strong>AES-CBC</strong>: <code>base64([IV (16 bytes) || Ciphertext])</code></li>
+</ul>
+<h2 id="license">License</h2>
+<p><a href="LICENSE">MIT © Jared Wray</a></p>

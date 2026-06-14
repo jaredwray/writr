@@ -1,0 +1,59 @@
+<h1 id="storage-backends">Storage Backends</h1>
+<p><code>http-cache</code> does not lock you into one storage engine. The source of truth for cached
+data is <strong>pluggable</strong>, powered by <a href="https://github.com/jaredwray/keyv">keyv</a> and its
+ecosystem of storage adapters.</p>
+<h2 id="bring-your-own-backend">Bring your own backend</h2>
+<p>Choose a backend based on the infrastructure you already operate:</p>
+<table>
+<thead>
+<tr>
+<th>Backend</th>
+<th>Use it when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Redis</strong></td>
+<td>You want a fast, ubiquitous, network-shared cache store.</td>
+</tr>
+<tr>
+<td><strong>Memcache</strong></td>
+<td>You have an existing Memcached fleet.</td>
+</tr>
+<tr>
+<td><strong>MongoDB</strong></td>
+<td>You want durable, document-shaped cache state.</td>
+</tr>
+<tr>
+<td><strong>Postgres / MySQL / SQLite</strong></td>
+<td>You prefer to reuse a relational store.</td>
+</tr>
+<tr>
+<td><strong>Memory</strong></td>
+<td>Local development, or an ephemeral edge tier.</td>
+</tr>
+</tbody>
+</table>
+<p>Because every backend implements the same keyv interface, switching is a configuration
+change — your gateway behavior and API stay identical.</p>
+<h2 id="configuration">Configuration</h2>
+<p>Point the gateway at a backend with a connection string:</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Redis</span>
+HTTP_CACHE_STORE=redis://redis:6379
+
+<span class="hljs-comment"># Memcache</span>
+HTTP_CACHE_STORE=memcache://memcache:11211
+
+<span class="hljs-comment"># MongoDB</span>
+HTTP_CACHE_STORE=mongodb://mongo:27017/httpcache
+</code></pre>
+<h2 id="provider-based-not-opinionated">Provider-based, not opinionated</h2>
+<p>The backend is one of several <strong>provider frameworks</strong> in <code>http-cache</code>. Just as storage
+is a provider (keyv), so are <a href="/docs/statistics">statistics</a> (ClickHouse),
+<a href="/docs/realtime-and-webhooks">queues/webhooks</a> (qified/airhorn), and
+<a href="/docs/management-and-config">configuration</a> (MongoDB). Each can be swapped to match
+your stack.</p>
+<h2 id="how-it-relates-to-the-memory-tier">How it relates to the memory tier</h2>
+<p>The storage backend is the <strong>shared</strong> source of truth. On top of it, each gateway keeps
+an <strong>L1/L2 in-memory tier</strong> for the hottest data — see
+<a href="/docs/caching-layers">Caching Layers</a>.</p>

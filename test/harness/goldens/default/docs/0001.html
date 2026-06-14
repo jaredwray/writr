@@ -1,0 +1,153 @@
+<h1 id="markdown-it-design-principles">markdown-it design principles</h1>
+<h2 id="data-flow">Data flow</h2>
+<p>Input data is parsed via nested chains of rules. There are 3 nested chains --
+<code>core</code>, <code>block</code>, &#x26; <code>inline</code>:</p>
+<pre><code>core
+    core.rule1 (normalize)
+    ...
+    core.ruleX
+
+    block
+        block.rule1 (blockquote)
+        ...
+        block.ruleX
+
+    core.ruleX1 (intermediate rule that applies on block tokens, nothing yet)
+    ...
+    core.ruleXX
+
+    inline (applied to each block token with "inline" type)
+        inline.rule1 (text)
+        ...
+        inline.ruleX
+
+    core.ruleYY (applies to all tokens)
+    ... (abbreviation, footnote, typographer, linkifier)
+</code></pre>
+<p>The result of parsing is a token stream that will be passed to the renderer to generate HTML content.</p>
+<p>These tokens can themselves be parsed again to generate more tokens (ex: a <code>list</code> token can be divided into multiple <code>inline</code> tokens).</p>
+<p>An <code>env</code> object can be used alongside tokens to inject external variables into your parsers and renderers.</p>
+<p>Each chain (<code>core</code>, <code>block</code>, &#x26; <code>inline</code>) uses an independent <code>state</code> object when parsing data so that each parsing operation is independent and can be disabled on the fly.</p>
+<h2 id="token-stream">Token stream</h2>
+<p>Instead of a traditional AST, we use more low-level data representation -- <em>tokens</em>.
+The difference is simple:</p>
+<ul>
+<li>Tokens are a simple sequence (an array).</li>
+<li>Opening and closing tags are separate.</li>
+<li>There are special token objects, "inline containers", that have nested tokens.
+These are sequences with inline markup, such as bold, italic, text, etc.</li>
+</ul>
+<p>See the <a href="https://github.com/markdown-it/markdown-it/blob/master/lib/token.mjs"><code>Token</code></a> class
+for details about each token's content.</p>
+<p>In total, a token stream is:</p>
+<ul>
+<li>On the top level -- an array of paired or single "block" tokens:
+<ul>
+<li>open/close for headers, lists, blockquotes, paragraphs, etc.</li>
+<li>code blocks, fenced blocks, horizontal rules, HTML blocks, inline containers</li>
+</ul>
+</li>
+<li>Each inline token has a <code>children</code> property with a nested token stream for inline content:
+<ul>
+<li>open/close for bold, italic, links, inline code, etc.</li>
+<li>text, line breaks</li>
+</ul>
+</li>
+</ul>
+<p>Why not an AST? It's not needed for our tasks. We follow the KISS principle.
+If you wish, you can call a parser without a renderer and convert the token stream
+into an AST.</p>
+<p>More details about tokens:</p>
+<ul>
+<li><a href="https://github.com/markdown-it/markdown-it/blob/master/lib/renderer.mjs"><code>Renderer</code> source</a></li>
+<li><a href="https://github.com/markdown-it/markdown-it/blob/master/lib/token.mjs"><code>Token</code> source</a></li>
+<li><a href="https://markdown-it.github.io/">Live demo</a> - type your text and click the <code>debug</code> tab.</li>
+</ul>
+<h2 id="rules">Rules</h2>
+<p>Rules are functions, doing "magic" with parser <code>state</code> objects. A rule is associated with one or more <em>chains</em> and is unique. For instance, a <code>blockquote</code> token is associated with the <code>blockquote</code>, <code>paragraph</code>, <code>heading</code>, and <code>list</code> chains.</p>
+<p>Rules are managed by name via <a href="https://markdown-it.github.io/markdown-it/#Ruler"><code>Ruler</code></a> instances and can be enabled and disabled from <a href="https://markdown-it.github.io/markdown-it/#MarkdownIt"><code>MarkdownIt</code></a>'s methods.</p>
+<p>Note that some rules have a <code>validation mode</code> -- in this mode, rules do not
+modify the token stream and only look ahead for the end of a token. It's one
+important design principle -- a token stream is "write only" on the <code>block</code> &#x26; <code>inline</code> parse stages.</p>
+<p>Parsers are designed to keep rules independent of each other. You can safely enable/disable them or
+add new ones. There are no universal recipes for how to create new rules -- the design of
+distributed state machines with good data isolation is a tricky business. However, you
+can investigate existing rules &#x26; plugins to see possible approaches.</p>
+<p>In complex cases you can try to ask for help in the <a href="https://github.com/markdown-it/markdown-it/issues">issue tracker</a>.
+The condition is very simple -- it should be clear from your ticket that you studied the docs, sources,
+and tried to do something yourself. We never reject with help to real developers.</p>
+<h2 id="renderer">Renderer</h2>
+<p>After the token stream is generated, it's passed to a <a href="https://markdown-it.github.io/markdown-it/#Renderer"><code>Renderer</code></a>.
+It then iterates through all the tokens, passing each to a rule with the same name as its token type.</p>
+<p>Renderer rules are located in <code>md.renderer.rules[name]</code> and are simple functions
+with the same signature:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> (<span class="hljs-params">tokens, idx, options, env, renderer</span>) {
+  <span class="hljs-comment">// ...</span>
+  <span class="hljs-keyword">return</span> htmlResult;
+}
+</code></pre>
+<p>In many cases, that allows easy output changes even without parser intrusion.
+For example, let's convert every image that uses a Vimeo link into a player iframe:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">var</span> md = <span class="hljs-built_in">require</span>(<span class="hljs-string">'markdown-it'</span>)();
+
+<span class="hljs-keyword">var</span> defaultRender = md.<span class="hljs-property">renderer</span>.<span class="hljs-property">rules</span>.<span class="hljs-property">image</span>,
+    vimeoRE       = <span class="hljs-regexp">/^https?:\/\/(www\.)?vimeo.com\/(\d+)($|\/)/</span>;
+
+md.<span class="hljs-property">renderer</span>.<span class="hljs-property">rules</span>.<span class="hljs-property">image</span> = <span class="hljs-keyword">function</span> (<span class="hljs-params">tokens, idx, options, env, self</span>) {
+  <span class="hljs-keyword">var</span> src = tokens[idx].<span class="hljs-title function_">attrGet</span>(<span class="hljs-string">'src'</span>);
+
+  <span class="hljs-keyword">if</span> (vimeoRE.<span class="hljs-title function_">test</span>(src)) {
+    <span class="hljs-keyword">var</span> id = src.<span class="hljs-title function_">match</span>(vimeoRE)[<span class="hljs-number">2</span>];
+
+    <span class="hljs-keyword">return</span> <span class="hljs-string">'&#x3C;div class="embed-responsive embed-responsive-16by9">\n'</span> +
+           <span class="hljs-string">'  &#x3C;iframe class="embed-responsive-item" src="//player.vimeo.com/video/'</span> + id + <span class="hljs-string">'">&#x3C;/iframe>\n'</span> +
+           <span class="hljs-string">'&#x3C;/div>\n'</span>;
+  }
+
+  <span class="hljs-comment">// Pass the token to the default renderer.</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-title function_">defaultRender</span>(tokens, idx, options, env, self);
+};
+</code></pre>
+<p>Here is another example on how to add <code>target="_blank"</code> to all links:</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// Remember the old renderer if overridden, or proxy to the default renderer.</span>
+<span class="hljs-keyword">var</span> defaultRender = md.<span class="hljs-property">renderer</span>.<span class="hljs-property">rules</span>.<span class="hljs-property">link_open</span> || <span class="hljs-keyword">function</span> (<span class="hljs-params">tokens, idx, options, env, self</span>) {
+  <span class="hljs-keyword">return</span> self.<span class="hljs-title function_">renderToken</span>(tokens, idx, options);
+};
+
+md.<span class="hljs-property">renderer</span>.<span class="hljs-property">rules</span>.<span class="hljs-property">link_open</span> = <span class="hljs-keyword">function</span> (<span class="hljs-params">tokens, idx, options, env, self</span>) {
+  <span class="hljs-comment">// Add a new `target` attribute, or replace the value of the existing one.</span>
+  tokens[idx].<span class="hljs-title function_">attrSet</span>(<span class="hljs-string">'target'</span>, <span class="hljs-string">'_blank'</span>);
+
+  <span class="hljs-comment">// Pass the token to the default renderer.</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-title function_">defaultRender</span>(tokens, idx, options, env, self);
+};
+</code></pre>
+<p>Note that if you need to add attributes, you can do so without a renderer override.
+For example, you can update tokens in the <code>core</code> chain. This is slower than a direct
+renderer override, but it can be more simple. Let's use the
+<a href="https://github.com/markdown-it/markdown-it-for-inline"><code>markdown-it-for-inline</code></a> plugin
+to do the same thing as in previous example:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">var</span> iterator = <span class="hljs-built_in">require</span>(<span class="hljs-string">'markdown-it-for-inline'</span>);
+
+<span class="hljs-keyword">var</span> md = <span class="hljs-built_in">require</span>(<span class="hljs-string">'markdown-it'</span>)()
+            .<span class="hljs-title function_">use</span>(iterator, <span class="hljs-string">'url_new_win'</span>, <span class="hljs-string">'link_open'</span>, <span class="hljs-keyword">function</span> (<span class="hljs-params">tokens, idx</span>) {
+              tokens[idx].<span class="hljs-title function_">attrSet</span>(<span class="hljs-string">'target'</span>, <span class="hljs-string">'_blank'</span>);
+            });
+</code></pre>
+<p>You also can write your own renderer to generate formats other than HTML, such as
+JSON and XML. You can even use it to generate an AST.</p>
+<h2 id="summary">Summary</h2>
+<p>This was mentioned in <a href="#data-flow">Data flow</a>, but let's repeat the sequence again:</p>
+<ol>
+<li>Blocks are parsed, and the top level of each token stream is filled with block tokens.</li>
+<li>Content in inline containers is parsed, filling their <code>children</code> properties.</li>
+<li>Rendering happens.</li>
+</ol>
+<p>And somewhere in between, you can apply additional transformations.</p>
+<p>Source code for each chain can be seen in the following files:</p>
+<ul>
+<li><a href="https://github.com/markdown-it/markdown-it/blob/master/lib/parser_core.mjs"><code>parser_core.mjs</code></a></li>
+<li><a href="https://github.com/markdown-it/markdown-it/blob/master/lib/parser_block.mjs"><code>parser_block.mjs</code></a></li>
+<li><a href="https://github.com/markdown-it/markdown-it/blob/master/lib/parser_inline.mjs"><code>parser_inline.mjs</code></a></li>
+</ul>
+<p>Also, you can change output directly in a <a href="https://markdown-it.github.io/markdown-it/#Renderer"><code>Renderer</code></a> for many simple cases.</p>

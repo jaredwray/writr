@@ -1,0 +1,98 @@
+<blockquote>
+<p><strong>Availability:</strong> Registered in the Node build only. Not available in the browser build.</p>
+</blockquote>
+<h2 id="path">path</h2>
+<h3 id="absolute">{{absolute}}</h3>
+<p>Resolve an absolute path from the given <code>filepath</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>filepath</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{absolute "docs/toc.md"}}
+<span class="hljs-comment">&#x3C;!-- results in: '/User/dev/docs/toc.md' --></span>
+</code></pre>
+<h3 id="dirname">{{dirname}}</h3>
+<p>Get the directory path segment from the given <code>filepath</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>filepath</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{dirname "docs/toc.md"}}
+<span class="hljs-comment">&#x3C;!-- results in: 'docs' --></span>
+</code></pre>
+<h3 id="relative">{{relative}}</h3>
+<p>Get the relative filepath from <code>a</code> to <code>b</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{String}</strong></li>
+<li><code>b</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{relative a b}}
+</code></pre>
+<h3 id="basename">{{basename}}</h3>
+<p>Get the filename from the given <code>filepath</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>filepath</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{basename "docs/toc.md"}}
+<span class="hljs-comment">&#x3C;!-- results in: 'toc.md' --></span>
+</code></pre>
+<h3 id="stem">{{stem}}</h3>
+<p>Get the "stem" (filename without extension) from the given <code>filepath</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>filepath</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{stem "docs/toc.md"}}
+<span class="hljs-comment">&#x3C;!-- results in: 'toc' --></span>
+</code></pre>
+<h3 id="extname">{{extname}}</h3>
+<p>Get the file extension from the given <code>filepath</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>filepath</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{extname "docs/toc.md"}}
+<span class="hljs-comment">&#x3C;!-- results in: '.md' --></span>
+</code></pre>
+<h3 id="resolve">{{resolve}}</h3>
+<p>Resolve an absolute path from the given <code>filepath</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>filepath</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{resolve "docs/toc.md"}}
+<span class="hljs-comment">&#x3C;!-- results in: '/User/dev/docs/toc.md' --></span>
+</code></pre>
+<h3 id="segments">{{segments}}</h3>
+<p>Get specific (joined) segments of a file path by passing a range of array indices.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>filepath</code> <strong>{String}</strong>: The file path to split into segments.</li>
+<li><code>returns</code> <strong>{String}</strong>: Returns a single, joined file path.</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{segments "a/b/c/d" "2" "3"}}
+<span class="hljs-comment">&#x3C;!-- results in: 'c/d' --></span>
+
+{{segments "a/b/c/d" "1" "3"}}
+<span class="hljs-comment">&#x3C;!-- results in: 'b/c/d' --></span>
+
+{{segments "a/b/c/d" "1" "2"}}
+<span class="hljs-comment">&#x3C;!-- results in: 'b/c' --></span>
+</code></pre>

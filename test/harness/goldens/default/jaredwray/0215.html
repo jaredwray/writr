@@ -1,0 +1,89 @@
+<p>We are excited to unveil the first official release of the <a href="/docs/reference/sdks/client/web/angular">@openfeature/angular-sdk</a>! 🚀
+This SDK extends OpenFeature capabilities to Angular applications, with a focus on Angular's unique patterns and practices.
+In this post, we’ll walk you through some of the standout features and how they integrate seamlessly with Angular development.</p>
+<p>&#x3C;img src={require('@site/static/img/blog/2024-09-17-announcing-angular-sdk/angular.png').default} /></p>
+<h2 id="features">Features</h2>
+<h3 id="angular-module-system-integration">Angular Module System Integration</h3>
+<p>The Angular SDK exports a module that allows you to configure your <a href="https://openfeature.dev/docs/reference/concepts/provider">OpenFeature provider</a> using Angular constructs.
+You can set your default provider, and optionally configure additional providers for other domains.
+Besides configuring your provider, you'll also need to use the <code>OpenFeatureModule</code> in order to utilize the other features of the SDK.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">NgModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@angular/core'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CommonModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@angular/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeatureModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/angular-sdk'</span>;
+
+<span class="hljs-meta">@NgModule</span>({
+  <span class="hljs-attr">declarations</span>: [
+    <span class="hljs-comment">// Other components</span>
+  ],
+  <span class="hljs-attr">imports</span>: [
+    <span class="hljs-title class_">CommonModule</span>,
+    <span class="hljs-title class_">OpenFeatureModule</span>.<span class="hljs-title function_">forRoot</span>({
+      <span class="hljs-attr">provider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">YourOpenFeatureProvider</span>(),
+      <span class="hljs-comment">// domainBoundProviders are optional, mostly needed if more than one provider is needed</span>
+      <span class="hljs-attr">domainBoundProviders</span>: {
+        <span class="hljs-attr">domain1</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">YourOtherOpenFeatureProvider</span>(),
+        <span class="hljs-attr">domain2</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">YourOtherOtherOpenFeatureProvider</span>(),
+      },
+    })
+  ],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AppModule</span> {
+}
+</code></pre>
+<h3 id="easy-templating-with-directives">Easy Templating with Directives</h3>
+<p>Perhaps the most useful part of the Angular SDK is the inclusion of the built in evaluation directives.
+These directives handle all the flag evaluation boilerplate for you, using Angular's directive abstractions which add functionality to elements.
+In its most basic form, the directive differentially renders templates based on the flag evaluation result:</p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- evaluate a flag called new-message and show a render a different template based on the result --></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">div</span>
+  *<span class="hljs-attr">booleanFeatureFlag</span>=<span class="hljs-string">"'new-message'; default: true; else: booleanFeatureElse;"</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Welcome to this OpenFeature-enabled Angular app!<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">booleanFeatureElse</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Welcome to this Angular app.<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+</code></pre>
+<p>String, Numeric, and Object flags are also supported.
+For these, you can supply templates based by matching against the returned flag value:</p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- render this template if the value == 10 --></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">div</span>
+  *<span class="hljs-attr">numberFeatureFlag</span>=<span class="hljs-string">"'discountRate'; value: 10; default: 5; else: numberFeatureElse"</span>></span>
+  This is shown when the feature flag matches the specified discount rate.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span>
+<span class="hljs-comment">&#x3C;!-- render this template if the value != 10 --></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">numberFeatureElse</span>></span>
+  This is shown when the feature flag does not match the specified discount rate.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+</code></pre>
+<p>Additionally, it's possible to bind the evaluation result and related metadata to the template by omitting the <code>value</code> to match:</p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- omitting the `value` to match against unconditionally renders this template --></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">div</span> *<span class="hljs-attr">stringFeatureFlag</span>=<span class="hljs-string">"'themeColor'; default: 'light'; let value;"</span>></span>
+  The theme color is {{ value }}.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span>
+</code></pre>
+<h3 id="loading-and-automatic-re-rendering">Loading and Automatic Re-Rendering</h3>
+<p>You may want to hide some content until your provider is ready.
+For this reason, the directives support specifying templates to render before your provider is ready, and while it's <a href="https://openfeature.dev/docs/reference/concepts/sdk-paradigms#static-context-paradigms-client-side-sdks">reconciling its state</a> after context changes.
+The directive will automatically re-render when the provider's readiness changes, or if the flag values themselves change.</p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- render different templates based on the readiness of the flag provider --></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">div</span>
+  *<span class="hljs-attr">booleanFeatureFlag</span>=<span class="hljs-string">"'my-feature'; default: true; else: booleanFeatureElse; initializing: booleanFeatureInitializing; reconciling: booleanFeatureReconciling"</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>This is shown when the feature flag is enabled.<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">booleanFeatureElse</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>This is shown when the feature flag is disabled.<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">booleanFeatureInitializing</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>This is shown when the feature flag is initializing.<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">booleanFeatureReconciling</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>This is shown when the feature flag is reconciling.<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+</code></pre>
+<h2 id="compatibility">Compatibility</h2>
+<p>As with other framework-specific SDKs, the Angular SDK is built on top of the existing <code>@openfeature/web-sdk</code>.
+Any OpenFeature provider built to support the web SDK can also be used with the <code>@openfeature/angular-sdk</code>, no changes required.</p>
+<h2 id="looking-ahead">Looking Ahead</h2>
+<p>We’re eager to expand the Angular SDK’s capabilities with future updates!
+If you're an Angular developer or interested in exploring how feature flags can enhance your applications, we encourage you to try out the OpenFeature Angular SDK.
+Happy coding! 🎉</p>

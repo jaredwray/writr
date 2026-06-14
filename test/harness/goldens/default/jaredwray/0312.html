@@ -1,0 +1,62 @@
+<h1 id="utilizing-keyv-for-caching-in-nodejs-a-step-by-step-guide">Utilizing Keyv for Caching in Node.js: A Step-by-Step Guide</h1>
+<h2 id="1-setting-up-the-project">1. Setting up the Project</h2>
+<p>To start a new Node.js project, you first need to create a new directory for your project and then initialize a new Node.js project in that directory.</p>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">mkdir</span> keyv-cache-demo
+<span class="hljs-built_in">cd</span> keyv-cache-demo
+npm init -y
+</code></pre>
+<p>The npm init -y command will create a new package.json file in your project directory with default settings.</p>
+<h2 id="2-installing-keyv-and-its-dependencies">2. Installing Keyv and its Dependencies</h2>
+<p>In this step, you'll install Keyv and a Keyv storage adapter for your project. For this example, we'll use SQLite as the storage adapter.</p>
+<pre><code class="hljs language-bash">npm install keyv @keyv/sqlite
+</code></pre>
+<p>Keyv supports a variety of storage adapters like Redis, MongoDB, PostgreSQL, etc. Feel free to choose the one that best fits your project requirements.</p>
+<h2 id="3-creating-a-caching-service-example">3. Creating a Caching Service Example</h2>
+<p>In this step, we'll create a simple caching service using Keyv.</p>
+<p>Create a new file named cacheService.js in your project directory and add the following code to that file.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'keyv'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-string">'sqlite://path/to/database.sqlite'</span>);
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">CacheService</span> {
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">get</span>(<span class="hljs-params">key</span>) {
+    <span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(key);
+    <span class="hljs-keyword">if</span> (value) {
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Cache hit'</span>);
+    } <span class="hljs-keyword">else</span> {
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Cache miss'</span>);
+    }
+    <span class="hljs-keyword">return</span> value;
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">set</span>(<span class="hljs-params">key, value, ttlInMilliseconds</span>) {
+    <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(key, value, ttlInMilliseconds);
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">delete</span>(<span class="hljs-params">key</span>) {
+    <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">delete</span>(key);
+  }
+}
+
+<span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = <span class="hljs-title class_">CacheService</span>;
+</code></pre>
+<p>In this code:</p>
+<p>We're importing the Keyv library and initializing it with an SQLite database.</p>
+<p>We're creating a CacheService class with get, set, and delete methods that wrap the corresponding methods of the Keyv instance. The get method includes console logs to indicate whether the requested value was found in the cache.</p>
+<p>The set method includes an optional ttlInMilliseconds parameter, which you can use to set a time-to-live (TTL) for the cached value.</p>
+<p>Now you have a reusable CacheService that you can use to add caching to your Node.js project.</p>
+<p>Here is how you could use the CacheService:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">CacheService</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./cacheService'</span>);
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheService</span>();
+
+<span class="hljs-comment">// Usage</span>
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">fetchData</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">const</span> key = <span class="hljs-string">'myData'</span>;
+  <span class="hljs-keyword">let</span> data = <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(key);
+  <span class="hljs-keyword">if</span> (!data) {
+    data = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getMyData</span>(); <span class="hljs-comment">// Function that fetches your data</span>
+    <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(key, data, <span class="hljs-number">10000</span>); <span class="hljs-comment">// Cache for 10 seconds</span>
+  }
+  <span class="hljs-keyword">return</span> data;
+}
+</code></pre>
+<p>This is a basic example, and Keyv provides a lot of flexibility, so you can modify this service to better suit your project's needs.</p>

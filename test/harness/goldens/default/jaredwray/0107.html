@@ -1,0 +1,382 @@
+<p><a href="https://github.com/jaredwray/cacheable"></a></p>
+<blockquote>
+<p>High Performance Layer 1 / Layer 2 Caching with Keyv Storage</p>
+</blockquote>
+<p><a href="https://codecov.io/gh/jaredwray/cacheable"><img src="https://codecov.io/gh/jaredwray/cacheable/branch/main/graph/badge.svg?token=lWZ9OBQ7GM" alt="codecov"></a>
+<a href="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://www.npmjs.com/package/@cacheable/memory"><img src="https://img.shields.io/npm/dm/@cacheable/memory.svg" alt="npm"></a>
+<a href="https://www.npmjs.com/package/@cacheable/memory"><img src="https://img.shields.io/npm/v/@cacheable/memory.svg" alt="npm"></a>
+<a href="https://github.com/jaredwray/cacheable/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/cacheable" alt="license"></a></p>
+<p>You can use <code>CacheableMemory</code> as a standalone cache or as a primary store for <code>cacheable</code>. You can also set the <code>useClones</code> property to <code>false</code> if you want to use the same reference for the values. This is useful if you are using large objects and want to save memory. The <code>lruSize</code> property is the size of the LRU cache and is set to <code>0</code> by default, which disables the LRU cache (no LRU eviction is performed and the cache size is bounded only by the underlying <code>Map</code> stores). When the <code>lruSize</code> property is set to a value greater than <code>0</code>, it limits the number of keys in the cache and evicts the least recently used entries when full.</p>
+<p>This simple in-memory cache uses multiple Map objects and a with <code>expiration</code> and <code>lru</code> policies if set to manage the in memory cache at scale.</p>
+<p>By default we use lazy expiration deletion which means on <code>get</code> and <code>getMany</code> type functions we look if it is expired and then delete it. If you want to have a more aggressive expiration policy you can set the <code>checkInterval</code> property to a value greater than <code>0</code> which will check for expired keys at the interval you set.</p>
+<p>Here are some of the main features of <code>CacheableMemory</code>:</p>
+<ul>
+<li>High performance in-memory cache with a robust API and feature set. 🚀</li>
+<li>Can scale past the <code>16,777,216 (2^24) keys</code> limit of a single <code>Map</code> via <code>hashStoreSize</code>. Default is <code>16</code> Map objects.</li>
+<li>LRU (Least Recently Used) cache feature to limit the number of keys in the cache via <code>lruSize</code>. Limit to <code>16,777,216 (2^24) keys</code> total.</li>
+<li>Expiration policy to delete expired keys with lazy deletion or aggressive deletion via <code>checkInterval</code>.</li>
+<li><code>Wrap</code> feature to memoize <code>sync</code> and <code>async</code> functions with stampede protection.</li>
+<li>Ability to do many operations at once such as <code>setMany</code>, <code>getMany</code>, <code>deleteMany</code>, and <code>takeMany</code>.</li>
+<li>Supports <code>raw</code> data retrieval with <code>getRaw</code> and <code>getManyRaw</code> methods to get the full metadata of the cache entry.</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#basic-usage">Basic Usage</a></li>
+<li><a href="#shorthand-for-time-to-live-ttl">Shorthand for Time to Live (ttl)</a>
+<ul>
+<li><a href="#retrieving-raw-cache-entries">Retrieving raw cache entries</a></li>
+<li><a href="#cacheablememory-store-hashing">CacheableMemory Store Hashing</a></li>
+<li><a href="#cacheablememory-lru-feature">CacheableMemory LRU Feature</a></li>
+<li><a href="#cacheablememory-performance">CacheableMemory Performance</a></li>
+<li><a href="#maximum-time-to-live-maxttl">Maximum Time to Live (maxTtl)</a></li>
+<li><a href="#cacheablememory-options">CacheableMemory Options</a></li>
+<li><a href="#cacheablememory---api">CacheableMemory - API</a></li>
+</ul>
+</li>
+<li><a href="#keyv-storage-adapter---keyvcacheablememory">Keyv Storage Adapter - KeyvCacheableMemory</a></li>
+<li><a href="#wrap--memoization-for-sync-and-async-functions">Wrap / Memoization for Sync and Async Functions</a></li>
+<li><a href="#how-to-contribute">How to Contribute</a></li>
+<li><a href="#license-and-copyright">License and Copyright</a></li>
+</ul>
+<h1 id="getting-started">Getting Started</h1>
+<pre><code class="hljs language-bash">npm install @cacheable/memory
+</code></pre>
+<h1 id="basic-usage">Basic Usage</h1>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/memory'</span>;
+
+<span class="hljs-keyword">const</span> cacheable = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>();
+<span class="hljs-keyword">await</span> cacheable.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>, <span class="hljs-number">1000</span>);
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> cacheable.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>);
+</code></pre>
+<p>In this example, the primary store we will use <code>lru-cache</code> and the secondary store is Redis. You can also set multiple stores in the options:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/memory'</span>;
+
+<span class="hljs-comment">// we set the storeHashSize to 1 so that we only use a single Map object as the lru is limited to a single Map size</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>({<span class="hljs-attr">storeHashSize</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">lruSize</span>: <span class="hljs-number">80000</span>});
+
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">const</span> result = cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key1'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result); <span class="hljs-comment">// 'value1'</span>
+</code></pre>
+<p>This is a more advanced example and not needed for most use cases.</p>
+<h1 id="shorthand-for-time-to-live-ttl">Shorthand for Time to Live (ttl)</h1>
+<p>By default <code>Cacheable</code> and <code>CacheableMemory</code> the <code>ttl</code> is in milliseconds but you can use shorthand for the time to live. Here are the following shorthand values:</p>
+<ul>
+<li><code>ms</code>: Milliseconds such as (1ms = 1)</li>
+<li><code>s</code>: Seconds such as (1s = 1000)</li>
+<li><code>m</code>: Minutes such as (1m = 60000)</li>
+<li><code>h</code> or <code>hr</code>: Hours such as (1h = 3600000)</li>
+<li><code>d</code>: Days such as (1d = 86400000)</li>
+</ul>
+<p>Here is an example of how to use the shorthand for the <code>ttl</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>({ <span class="hljs-attr">ttl</span>: <span class="hljs-string">'15m'</span> }); <span class="hljs-comment">//sets the default ttl to 15 minutes (900000 ms)</span>
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>, <span class="hljs-string">'1h'</span>); <span class="hljs-comment">//sets the ttl to 1 hour (3600000 ms) and overrides the default</span>
+</code></pre>
+<p>if you want to disable the <code>ttl</code> you can set it to <code>0</code> or <code>undefined</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>({ <span class="hljs-attr">ttl</span>: <span class="hljs-number">0</span> }); <span class="hljs-comment">//sets the default ttl to 0 which is disabled</span>
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>, <span class="hljs-number">0</span>); <span class="hljs-comment">//sets the ttl to 0 which is disabled</span>
+</code></pre>
+<p>If you set the ttl to anything below <code>0</code> or <code>undefined</code> it will disable the ttl for the cache and the value that returns will be <code>undefined</code>. With no ttl set the value will be stored <code>indefinitely</code>.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>({ <span class="hljs-attr">ttl</span>: <span class="hljs-number">0</span> }); <span class="hljs-comment">//sets the default ttl to 0 which is disabled</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(cache.<span class="hljs-property">ttl</span>); <span class="hljs-comment">// undefined</span>
+cache.<span class="hljs-property">ttl</span> = <span class="hljs-string">'1h'</span>; <span class="hljs-comment">// sets the default ttl to 1 hour (3600000 ms)</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(cache.<span class="hljs-property">ttl</span>); <span class="hljs-comment">// '1h'</span>
+cache.<span class="hljs-property">ttl</span> = -<span class="hljs-number">1</span>; <span class="hljs-comment">// sets the default ttl to 0 which is disabled</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(cache.<span class="hljs-property">ttl</span>); <span class="hljs-comment">// undefined</span>
+</code></pre>
+<h2 id="retrieving-raw-cache-entries">Retrieving raw cache entries</h2>
+<p>The <code>getRaw</code> and <code>getManyRaw</code> methods return the full stored metadata (<code>StoredDataRaw&#x3C;T></code>) instead of just the value:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>();
+
+<span class="hljs-comment">// store a value</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'user:1'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'Alice'</span> }, <span class="hljs-string">'1h'</span>); <span class="hljs-comment">// 1 hour</span>
+
+<span class="hljs-comment">// default: only the value</span>
+<span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> cache.<span class="hljs-property">get</span>&#x3C;{ <span class="hljs-attr">name</span>: <span class="hljs-built_in">string</span> }>(<span class="hljs-string">'user:1'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user); <span class="hljs-comment">// { name: 'Alice' }</span>
+
+<span class="hljs-comment">// with raw: full record including expiration</span>
+<span class="hljs-keyword">const</span> raw = <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">getRaw</span>(<span class="hljs-string">'user:1'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(raw.<span class="hljs-property">value</span>);   <span class="hljs-comment">// { name: 'Alice' }</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(raw.<span class="hljs-property">expires</span>); <span class="hljs-comment">// e.g. 1677628495000 or null</span>
+</code></pre>
+<h2 id="cacheablememory-store-hashing">CacheableMemory Store Hashing</h2>
+<p><code>CacheableMemory</code> uses <code>Map</code> objects to store the keys and values. To make this scale past the <code>16,777,216 (2^24) keys</code> limit of a single <code>Map</code> we use a hash to balance the data across multiple <code>Map</code> objects. This is done by hashing the key and using the hash to determine which <code>Map</code> object to use. The default hashing algorithm is <code>djb2</code> but you can change it by setting the <code>storeHashAlgorithm</code> property in the options. Supported algorithms include DJB2, FNV1, MURMER, and CRC32. By default we set the amount of <code>Map</code> objects to <code>16</code>.</p>
+<p>NOTE: if you are using the LRU cache feature the <code>lruSize</code> no matter how many <code>Map</code> objects you have it will be limited to the <code>16,777,216 (2^24) keys</code> limit of a single <code>Map</code> object. This is because we use a double linked list to manage the LRU cache and it is not possible to have more than <code>16,777,216 (2^24) keys</code> in a single <code>Map</code> object.</p>
+<p>Here is an example of how to set the number of <code>Map</code> objects and the hashing algorithm:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/memory'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>({
+  <span class="hljs-attr">storeSize</span>: <span class="hljs-number">32</span>, <span class="hljs-comment">// set the number of Map objects to 32</span>
+});
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>);
+<span class="hljs-keyword">const</span> value = cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>); <span class="hljs-comment">// value</span>
+</code></pre>
+<p>Here is an example of how to use the <code>storeHashAlgorithm</code> property with supported algorithms:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span>, <span class="hljs-title class_">HashAlgorithm</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/memory'</span>;
+
+<span class="hljs-comment">// Using DJB2 (default)</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>({ <span class="hljs-attr">storeHashAlgorithm</span>: <span class="hljs-title class_">HashAlgorithm</span>.<span class="hljs-property">DJB2</span> });
+
+<span class="hljs-comment">// Or other non-cryptographic algorithms for better performance</span>
+<span class="hljs-keyword">const</span> cache2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>({ <span class="hljs-attr">storeHashAlgorithm</span>: <span class="hljs-title class_">HashAlgorithm</span>.<span class="hljs-property">FNV1</span> });
+<span class="hljs-keyword">const</span> cache3 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>({ <span class="hljs-attr">storeHashAlgorithm</span>: <span class="hljs-title class_">HashAlgorithm</span>.<span class="hljs-property">MURMER</span> });
+<span class="hljs-keyword">const</span> cache4 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>({ <span class="hljs-attr">storeHashAlgorithm</span>: <span class="hljs-title class_">HashAlgorithm</span>.<span class="hljs-property">CRC32</span> });
+
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>);
+<span class="hljs-keyword">const</span> value = cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>); <span class="hljs-comment">// value</span>
+</code></pre>
+<p><strong>Available algorithms:</strong> DJB2 (default), FNV1, MURMER, CRC32. Note: Cryptographic algorithms (SHA-256, SHA-384, SHA-512) are not recommended for store hashing due to performance overhead.</p>
+<p>If you want to provide your own hashing function you can set the <code>storeHashAlgorithm</code> property to a function that takes an object and returns a <code>number</code> that is in the range of the amount of <code>Map</code> stores you have.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-comment">/**
+ * Custom hash function that takes a key and the size of the store
+ * and returns a number between 0 and storeHashSize - 1.
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">key</span> - The key to hash.
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">number</span>} <span class="hljs-variable">storeHashSize</span> - The size of the store (number of Map objects).
+ * <span class="hljs-doctag">@returns</span> {<span class="hljs-type">number</span>} - A number between 0 and storeHashSize - 1.
+ */</span>
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">customHash</span> = (<span class="hljs-params">key, storeHashSize</span>) => {
+  <span class="hljs-comment">// custom hashing logic</span>
+  <span class="hljs-keyword">return</span> key.<span class="hljs-property">length</span> % storeHashSize; <span class="hljs-comment">// returns a number between 0 and 31 for 32 Map objects</span>
+};
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>({ <span class="hljs-attr">storeHashAlgorithm</span>: customHash, <span class="hljs-attr">storeSize</span>: <span class="hljs-number">32</span> });
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>);
+<span class="hljs-keyword">const</span> value = cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>); <span class="hljs-comment">// value</span>
+</code></pre>
+<h2 id="cacheablememory-lru-feature">CacheableMemory LRU Feature</h2>
+<p>You can enable the LRU (Least Recently Used) feature in <code>CacheableMemory</code> by setting the <code>lruSize</code> property in the options. This will limit the number of keys in the cache to the size you set. When the cache reaches the limit it will remove the least recently used keys from the cache. This is useful if you want to limit the memory usage of the cache.</p>
+<p>When you set the <code>lruSize</code>, we use a doubly linked list to track the LRU order across the underlying <code>Map</code> stores. The <code>lruSize</code> itself is capped at <code>16,777,216 (2^24) keys</code> — values above this limit are rejected and an <code>error</code> event is emitted. Setting <code>lruSize</code> does not change <code>storeHashSize</code>; the underlying stores keep whatever <code>storeHashSize</code> you configured (default <code>16</code>).</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>({ <span class="hljs-attr">lruSize</span>: <span class="hljs-number">1</span> }); <span class="hljs-comment">// sets the LRU cache size to 1 key</span>
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+<span class="hljs-keyword">const</span> value1 = cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key1'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(value1); <span class="hljs-comment">// undefined if the cache is full and key1 is the least recently used</span>
+<span class="hljs-keyword">const</span> value2 = cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key2'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(value2); <span class="hljs-comment">// value2 if key2 is still in the cache</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(cache.<span class="hljs-title function_">size</span>()); <span class="hljs-comment">// 1</span>
+</code></pre>
+<p>NOTE: if you set the <code>lruSize</code> property to <code>0</code> after it was enabled it will disable the LRU cache feature and will not limit the number of keys in the cache. This will remove the <code>16,777,216 (2^24) keys</code> limit of a single <code>Map</code> object and will allow you to store more keys in the cache.</p>
+<h2 id="cacheablememory-performance">CacheableMemory Performance</h2>
+<p>Our goal with <code>cacheable</code> and <code>CacheableMemory</code> is to provide a high performance caching engine that is simple to use and has a robust API. We test it against other cacheing engines such that are less feature rich to make sure there is little difference. Here are some of the benchmarks we have run:</p>
+<p><em>Memory Benchmark Results:</em></p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cacheable Memory (v1.10.0) - set / get</td>
+<td align="center">🥇</td>
+<td align="right">152K</td>
+<td align="right">7µs</td>
+<td align="center">±0.94%</td>
+<td align="right">147K</td>
+</tr>
+<tr>
+<td>Map (v22) - set / get</td>
+<td align="center">-1.1%</td>
+<td align="right">151K</td>
+<td align="right">7µs</td>
+<td align="center">±0.69%</td>
+<td align="right">145K</td>
+</tr>
+<tr>
+<td>Node Cache - set / get</td>
+<td align="center">-4.3%</td>
+<td align="right">146K</td>
+<td align="right">7µs</td>
+<td align="center">±1.13%</td>
+<td align="right">142K</td>
+</tr>
+<tr>
+<td>bentocache (v1.4.0) - set / get</td>
+<td align="center">-20%</td>
+<td align="right">121K</td>
+<td align="right">8µs</td>
+<td align="center">±0.40%</td>
+<td align="right">119K</td>
+</tr>
+</tbody>
+</table>
+<p><em>Memory LRU Benchmark Results:</em></p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>quick-lru (v7.0.1) - set / get</td>
+<td align="center">🥇</td>
+<td align="right">118K</td>
+<td align="right">9µs</td>
+<td align="center">±0.85%</td>
+<td align="right">112K</td>
+</tr>
+<tr>
+<td>Map (v22) - set / get</td>
+<td align="center">-0.56%</td>
+<td align="right">117K</td>
+<td align="right">9µs</td>
+<td align="center">±1.35%</td>
+<td align="right">110K</td>
+</tr>
+<tr>
+<td>lru.min (v1.1.2) - set / get</td>
+<td align="center">-1.7%</td>
+<td align="right">116K</td>
+<td align="right">9µs</td>
+<td align="center">±0.90%</td>
+<td align="right">110K</td>
+</tr>
+<tr>
+<td>Cacheable Memory (v1.10.0) - set / get</td>
+<td align="center">-3.3%</td>
+<td align="right">114K</td>
+<td align="right">9µs</td>
+<td align="center">±1.16%</td>
+<td align="right">108K</td>
+</tr>
+</tbody>
+</table>
+<p>As you can see from the benchmarks <code>CacheableMemory</code> is on par with other caching engines such as <code>Map</code>, <code>Node Cache</code>, and <code>bentocache</code>. We have also tested it against other LRU caching engines such as <code>quick-lru</code> and <code>lru.min</code> and it performs well against them too.</p>
+<h2 id="maximum-time-to-live-maxttl">Maximum Time to Live (maxTtl)</h2>
+<p>You can set a <code>maxTtl</code> option to enforce an upper bound on any TTL in the cache. When <code>maxTtl</code> is set:</p>
+<ul>
+<li>Any per-entry TTL that exceeds <code>maxTtl</code> will be capped to <code>maxTtl</code>.</li>
+<li>Entries with no TTL (that would otherwise live indefinitely) will be capped to <code>maxTtl</code>.</li>
+<li>The default TTL is still respected if it is within the <code>maxTtl</code> limit.</li>
+</ul>
+<p>This is useful when you want to guarantee that no cache entry lives longer than a certain duration, regardless of what TTL is passed to individual <code>set()</code> calls.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/memory'</span>;
+
+<span class="hljs-comment">// No entry can live longer than 1 hour</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>({ <span class="hljs-attr">maxTtl</span>: <span class="hljs-string">'1h'</span> });
+
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>, <span class="hljs-string">'2h'</span>); <span class="hljs-comment">// capped to 1 hour</span>
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);        <span class="hljs-comment">// also capped to 1 hour (would otherwise be indefinite)</span>
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key3'</span>, <span class="hljs-string">'value3'</span>, <span class="hljs-string">'30m'</span>); <span class="hljs-comment">// 30 minutes is within maxTtl, so it stays as-is</span>
+</code></pre>
+<p>You can also set <code>maxTtl</code> after construction:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>();
+cache.<span class="hljs-property">maxTtl</span> = <span class="hljs-number">5000</span>; <span class="hljs-comment">// 5 seconds max</span>
+cache.<span class="hljs-property">maxTtl</span> = <span class="hljs-string">'10m'</span>; <span class="hljs-comment">// 10 minutes max</span>
+cache.<span class="hljs-property">maxTtl</span> = <span class="hljs-literal">undefined</span>; <span class="hljs-comment">// disable maxTtl (no upper bound)</span>
+</code></pre>
+<h2 id="cacheablememory-options">CacheableMemory Options</h2>
+<ul>
+<li><code>ttl</code>: The time to live for the cache in milliseconds. Default is <code>undefined</code> which is means indefinitely.</li>
+<li><code>maxTtl</code>: The maximum time to live for any cache entry. When set, TTLs exceeding this value are capped. Default is <code>undefined</code> (no maximum).</li>
+<li><code>useClones</code>: If the cache should use clones for the values. Default is <code>true</code>.</li>
+<li><code>lruSize</code>: The size of the LRU cache. Default is <code>0</code>, which disables the LRU cache (no LRU eviction is performed). Maximum is <code>16,777,216 (2^24)</code>.</li>
+<li><code>checkInterval</code>: The interval to check for expired keys in milliseconds. Default is <code>0</code> which is disabled.</li>
+<li><code>storeHashSize</code>: The number of <code>Map</code> objects to use for the cache. Default is <code>16</code>.</li>
+<li><code>storeHashAlgorithm</code>: The hashing algorithm to use for the cache. Default is <code>djb2</code>. Supported: DJB2, FNV1, MURMER, CRC32.</li>
+</ul>
+<h2 id="cacheablememory---api">CacheableMemory - API</h2>
+<ul>
+<li><code>set(key, value, ttl?)</code>: Sets a value in the cache.</li>
+<li><code>setMany([{key, value, ttl?}])</code>: Sets multiple values in the cache from <code>CacheableItem</code>.</li>
+<li><code>get(key)</code>: Gets a value from the cache.</li>
+<li><code>getMany([keys])</code>: Gets multiple values from the cache.</li>
+<li><code>getRaw(key)</code>: Gets a value from the cache as <code>CacheableStoreItem</code>.</li>
+<li><code>getManyRaw([keys])</code>: Gets multiple values from the cache as <code>CacheableStoreItem</code>.</li>
+<li><code>has(key)</code>: Checks if a value exists in the cache.</li>
+<li><code>hasMany([keys])</code>: Checks if multiple values exist in the cache.</li>
+<li><code>delete(key)</code>: Deletes a value from the cache.</li>
+<li><code>deleteMany([keys])</code>: Deletes multiple values from the cache.</li>
+<li><code>take(key)</code>: Takes a value from the cache and deletes it.</li>
+<li><code>takeMany([keys])</code>: Takes multiple values from the cache and deletes them.</li>
+<li><code>wrap(function, WrapSyncOptions)</code>: Wraps a <code>sync</code> function in a cache.</li>
+<li><code>clear()</code>: Clears the cache.</li>
+<li><code>ttl</code>: The default time to live for the cache in milliseconds. Default is <code>undefined</code> which is disabled.</li>
+<li><code>maxTtl</code>: The maximum time to live for any cache entry. When set, TTLs exceeding this value are capped. Default is <code>undefined</code> (no maximum).</li>
+<li><code>useClones</code>: If the cache should use clones for the values. Default is <code>true</code>.</li>
+<li><code>lruSize</code>: The size of the LRU cache. Default is <code>0</code>, which disables the LRU cache (no LRU eviction is performed). Maximum is <code>16,777,216 (2^24)</code>.</li>
+<li><code>size</code>: The number of keys in the cache.</li>
+<li><code>checkInterval</code>: The interval to check for expired keys in milliseconds. Default is <code>0</code> which is disabled.</li>
+<li><code>storeHashSize</code>: The number of <code>Map</code> objects to use for the cache. Default is <code>16</code>.</li>
+<li><code>storeHashAlgorithm</code>: The hashing algorithm to use for the cache. Default is <code>djb2</code>. Supported: DJB2, FNV1, MURMER, CRC32.</li>
+<li><code>keys</code>: Get the keys in the cache. Not able to be set.</li>
+<li><code>items</code>: Get the items in the cache as <code>CacheableStoreItem</code> example <code>{ key, value, expires? }</code>.</li>
+<li><code>store</code>: The hash store for the cache which is an array of <code>Map</code> objects.</li>
+<li><code>checkExpired()</code>: Checks for expired keys in the cache. This is used by the <code>checkInterval</code> property.</li>
+<li><code>startIntervalCheck()</code>: Starts the interval check for expired keys if <code>checkInterval</code> is above 0 ms.</li>
+<li><code>stopIntervalCheck()</code>: Stops the interval check for expired keys.</li>
+</ul>
+<h1 id="keyv-storage-adapter---keyvcacheablememory">Keyv Storage Adapter - KeyvCacheableMemory</h1>
+<p><code>cacheable</code> comes with a built-in storage adapter for Keyv called <code>KeyvCacheableMemory</code>. This takes <code>CacheableMemory</code> and creates a storage adapter for Keyv. This is useful if you want to use <code>CacheableMemory</code> as a storage adapter for Keyv. Here is an example of how to use <code>KeyvCacheableMemory</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">KeyvCacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvCacheableMemory</span>() });
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(value); <span class="hljs-comment">// bar</span>
+</code></pre>
+<h1 id="wrap--memoization-for-sync-and-async-functions">Wrap / Memoization for Sync and Async Functions</h1>
+<p><code>CacheableMemory</code> has a feature called <code>wrap</code> that allows you to wrap a function in a cache. This is useful for memoization and caching the results of a function. You can wrap a <code>sync</code> function in a cache. Here is an example of how to use the <code>wrap</code> function:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">syncFunction</span> = (<span class="hljs-params">value: number</span>) => {
+  <span class="hljs-keyword">return</span> value * <span class="hljs-number">2</span>;
+};
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>();
+<span class="hljs-keyword">const</span> wrappedFunction = cache.<span class="hljs-title function_">wrap</span>(syncFunction, { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>, <span class="hljs-attr">key</span>: <span class="hljs-string">'syncFunction'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">wrappedFunction</span>(<span class="hljs-number">2</span>)); <span class="hljs-comment">// 4</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">wrappedFunction</span>(<span class="hljs-number">2</span>)); <span class="hljs-comment">// 4 from cache</span>
+</code></pre>
+<p>In this example we are wrapping a <code>sync</code> function in a cache with a <code>ttl</code> of <code>1 hour</code>. This will cache the result of the function for <code>1 hour</code> and then expire the value. You can also set the <code>key</code> property in the <code>wrap()</code> options to set a custom key for the cache.</p>
+<p>When an error occurs in the function it will not cache the value and will return the error. This is useful if you want to cache the results of a function but not cache the error. If you want it to cache the error you can set the <code>cacheError</code> property to <code>true</code> in the <code>wrap()</code> options. This is disabled by default.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">syncFunction</span> = (<span class="hljs-params">value: number</span>) => {
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'error'</span>);
+};
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>();
+<span class="hljs-keyword">const</span> wrappedFunction = cache.<span class="hljs-title function_">wrap</span>(syncFunction, { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>, <span class="hljs-attr">key</span>: <span class="hljs-string">'syncFunction'</span>, <span class="hljs-attr">cacheError</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">wrappedFunction</span>()); <span class="hljs-comment">// error</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">wrappedFunction</span>()); <span class="hljs-comment">// error from cache</span>
+</code></pre>
+<p>If you would like to generate your own key for the wrapped function you can set the <code>createKey</code> property in the <code>wrap()</code> options. This is useful if you want to generate a key based on the arguments of the function or any other criteria.</p>
+<pre><code class="hljs language-javascript">  <span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>();
+  <span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">WrapOptions</span> = {
+    cache,
+    <span class="hljs-attr">keyPrefix</span>: <span class="hljs-string">'test'</span>,
+    <span class="hljs-attr">createKey</span>: <span class="hljs-function">(<span class="hljs-params">function_, arguments_, options: WrapOptions</span>) =></span> <span class="hljs-string">`customKey:<span class="hljs-subst">${options?.keyPrefix}</span>:<span class="hljs-subst">${arguments_[<span class="hljs-number">0</span>]}</span>`</span>,
+  };
+
+  <span class="hljs-keyword">const</span> wrapped = <span class="hljs-title function_">wrap</span>(<span class="hljs-function">(<span class="hljs-params">argument: string</span>) =></span> <span class="hljs-string">`Result for <span class="hljs-subst">${argument}</span>`</span>, options);
+
+  <span class="hljs-keyword">const</span> result1 = <span class="hljs-title function_">wrapped</span>(<span class="hljs-string">'arg1'</span>);
+  <span class="hljs-keyword">const</span> result2 = <span class="hljs-title function_">wrapped</span>(<span class="hljs-string">'arg1'</span>); <span class="hljs-comment">// Should hit the cache</span>
+
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result1); <span class="hljs-comment">// Result for arg1</span>
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result2); <span class="hljs-comment">// Result for arg1 (from cache)</span>
+</code></pre>
+<p>We will pass in the <code>function</code> that is being wrapped, the <code>arguments</code> passed to the function, and the <code>options</code> used to wrap the function. You can then use these to generate a custom key for the cache.</p>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>You can contribute by forking the repo and submitting a pull request. Please make sure to add tests and update the documentation. To learn more about how to contribute go to our main README <a href="https://github.com/jaredwray/cacheable">https://github.com/jaredwray/cacheable</a>. This will talk about how to <code>Open a Pull Request</code>, <code>Ask a Question</code>, or <code>Post an Issue</code>.</p>
+<h1 id="license-and-copyright">License and Copyright</h1>
+<p><a href="./LICENSE">MIT © Jared Wray</a></p>

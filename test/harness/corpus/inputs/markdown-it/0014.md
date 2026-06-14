@@ -1,0 +1,3 @@
+foo <!--- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ->
+
+foo <!------------------------------------------------------------------->

@@ -1,0 +1,47 @@
+<h1 id="keyvtiered">@keyv/tiered</h1>
+<blockquote>
+<p>Tiered storage adapter for Keyv to manage local and remote store as one for Keyv</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://www.npmjs.com/package/@keyv/tiered"><img src="https://img.shields.io/npm/v/@keyv/tiered.svg" alt="npm"></a>
+<a href="https://npmjs.com/package/@keyv/tiered"><img src="https://img.shields.io/npm/dm/@keyv/tiered" alt="npm"></a></p>
+<p>Tiered storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a>.</p>
+<h2 id="install">Install</h2>
+<pre><code class="hljs language-shell">npm install --save keyv @keyv/tiered
+</code></pre>
+<h2 id="usage">Usage</h2>
+<p>First, you need to provide your <code>local</code> and <code>remote</code> stores to be used, being possible to use any <a href="https://github.com/jaredwray/keyv#storage-adapters">Keyv storage adapter</a>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'keyv'</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">KeyvSqlite</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'@keyv/sqlite'</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">KeyvTiered</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'@keyv/tiered'</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">remoteStore</span> = (<span class="hljs-params"></span>) => <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({
+	<span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvSqlite</span>({
+		<span class="hljs-attr">uri</span>: <span class="hljs-string">'sqlite://test/testdb.sqlite'</span>,
+		<span class="hljs-attr">busyTimeout</span>: <span class="hljs-number">30_000</span>,
+	}),
+});
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">localStore</span> = (<span class="hljs-params"></span>) => <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+<span class="hljs-keyword">const</span> remote = <span class="hljs-title function_">remoteStore</span>();
+<span class="hljs-keyword">const</span> local = <span class="hljs-title function_">localStore</span>();
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvTiered</span>({remote, local});
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({store});
+keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, handleConnectionError);
+</code></pre>
+<h2 id="api">API</h2>
+<h3 id="keyvtieredoptions">KeyvTiered([options])</h3>
+<h4 id="options">options</h4>
+<h5 id="local">local</h5>
+<p>Type: <code>Object</code>
+Default: <code>new Keyv()</code></p>
+<p>A keyv instance to be used as local strategy.</p>
+<h5 id="remote">remote</h5>
+<p>Type: <code>Object</code>
+Default: <code>new Keyv()</code></p>
+<p>A keyv instance to be used as remote strategy.</p>
+<h5 id="validator">validator</h5>
+<p>Type: <code>Function</code>
+Default: <code>() =>  true</code></p>
+<p>The validator function is used as a precondition to determining is remote storage should be checked.</p>
+<h2 id="license">License</h2>
+<p>MIT © Jared Wray</p>

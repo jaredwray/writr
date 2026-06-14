@@ -1,0 +1,273 @@
+<h1 id="keyvvalkey-">@keyv/valkey <a href="https://github.com/jaredwray/keyv"></a></h1>
+<blockquote>
+<p>Valkey storage adapter for Keyv</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://www.npmjs.com/package/@keyv/valkey"><img src="https://img.shields.io/npm/v/@keyv/valkey.svg" alt="npm"></a>
+<a href="https://npmjs.com/package/@keyv/valkey"><img src="https://img.shields.io/npm/dm/@keyv/valkey" alt="npm"></a></p>
+<p><a href="https://valkey.io">Valkey</a> storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a>.</p>
+<p>Valkey is the open source replacement to Redis which decided to do a <a href="https://redis.com/blog/redis-adopts-dual-source-available-licensing/">dual license</a> approach moving forward. Valkey is a drop-in replacement for Redis and is fully compatible with the Redis protocol.</p>
+<p>We are using the <a href="https://www.npmjs.com/package/iovalkey">iovalkey</a> which is a Node.js client for Valkey based on the <code>ioredis</code> client.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#install">Install</a></li>
+<li><a href="#usage">Usage</a>
+<ul>
+<li><a href="#migrating-to-v6">Migrating to v6</a>
+<ul>
+<li><a href="#breaking-changes">Breaking changes</a>
+<ul>
+<li><a href="#properties-instead-of-opts">Properties instead of opts</a></li>
+<li><a href="#useredissets-renamed-to-usesets"><code>useRedisSets</code> renamed to <code>useSets</code></a></li>
+<li><a href="#redis-property-renamed-to-client"><code>redis</code> property renamed to <code>client</code></a></li>
+<li><a href="#usesets-default-changed-from-true-to-false"><code>useSets</code> default changed from <code>true</code> to <code>false</code></a></li>
+<li><a href="#usesets-key-prefix-changed-from-namespace-to-sets"><code>useSets</code> key prefix changed from <code>namespace:</code> to <code>sets:</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#constructor-options">Constructor Options</a></li>
+<li><a href="#properties">Properties</a>
+<ul>
+<li><a href="#namespace">namespace</a></li>
+<li><a href="#usesets">useSets</a></li>
+<li><a href="#useredissets-deprecated">useRedisSets (deprecated)</a></li>
+<li><a href="#client">client</a></li>
+</ul>
+</li>
+<li><a href="#methods">Methods</a>
+<ul>
+<li><a href="#getkey">.get(key)</a></li>
+<li><a href="#getmanykeys">.getMany(keys)</a></li>
+<li><a href="#setkey-value-ttl">.set(key, value, ttl?)</a></li>
+<li><a href="#setmanyentries">.setMany(entries)</a></li>
+<li><a href="#deletekey">.delete(key)</a></li>
+<li><a href="#deletemanykeys">.deleteMany(keys)</a></li>
+<li><a href="#haskey">.has(key)</a></li>
+<li><a href="#hasmanykeys">.hasMany(keys)</a></li>
+<li><a href="#clear">.clear()</a></li>
+<li><a href="#iterator">.iterator()</a></li>
+<li><a href="#disconnect">.disconnect()</a></li>
+</ul>
+</li>
+<li><a href="#clustering">Clustering</a>
+<ul>
+<li><a href="#cluster-gotchas">Cluster gotchas</a></li>
+</ul>
+</li>
+<li><a href="#license">License</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="install">Install</h1>
+<pre><code class="hljs language-shell">npm install --save keyv @keyv/valkey
+</code></pre>
+<h1 id="usage">Usage</h1>
+<p>This is using the helper <code>createKeyv</code> function to create a Keyv instance with the Valkey storage adapter:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> {createKeyv} <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/valkey'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'redis://localhost:6379'</span>);
+keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, handleConnectionError);
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>)); <span class="hljs-comment">// 'bar'</span>
+</code></pre>
+<p>If you want to specify the <code>KeyvValkey</code> class directly, you can do so:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvValkey</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/valkey'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvValkey</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>, { <span class="hljs-attr">disable_resubscribing</span>: <span class="hljs-literal">true</span> }));
+</code></pre>
+<p>Or you can manually create a storage adapter instance and pass it to Keyv:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvValkey</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/valkey'</span>;
+
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">KeyvValkey</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvValkey</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-title class_">KeyvValkey</span> });
+</code></pre>
+<p>Or reuse a previous Redis instance:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Redis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'iovalkey'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvValkey</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/valkey'</span>;
+
+<span class="hljs-keyword">const</span> redis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Redis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">KeyvValkey</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvValkey</span>(redis);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-title class_">KeyvValkey</span> });
+</code></pre>
+<p>Or reuse a previous Redis cluster:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Redis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'iovalkey'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvValkey</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/valkey'</span>;
+
+<span class="hljs-keyword">const</span> redis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Redis</span>.<span class="hljs-title class_">Cluster</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">KeyvValkey</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvValkey</span>(redis);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-title class_">KeyvValkey</span> });
+</code></pre>
+<h2 id="migrating-to-v6">Migrating to v6</h2>
+<h3 id="breaking-changes">Breaking changes</h3>
+<h4 id="properties-instead-of-opts">Properties instead of opts</h4>
+<p>In v6, all configuration options are exposed as top-level properties with getters and setters:</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// v6</span>
+store.<span class="hljs-property">useSets</span>; <span class="hljs-comment">// true</span>
+store.<span class="hljs-property">useSets</span> = <span class="hljs-literal">false</span>;
+</code></pre>
+<p>The <code>opts</code> getter still exists for backward compatibility but should not be used for new code.</p>
+<h4 id="useredissets-renamed-to-usesets"><code>useRedisSets</code> renamed to <code>useSets</code></h4>
+<p>The <code>useRedisSets</code> option has been renamed to <code>useSets</code>. The <code>useRedisSets</code> property is still available as a deprecated getter/setter on the class but will be removed in a future version.</p>
+<h4 id="redis-property-renamed-to-client"><code>redis</code> property renamed to <code>client</code></h4>
+<p>The <code>redis</code> property has been renamed to <code>client</code> and is now properly typed as <code>Redis | Cluster</code> instead of <code>any</code>. Update any code that accesses the underlying iovalkey instance:</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// v5</span>
+store.<span class="hljs-property">redis</span>;
+
+<span class="hljs-comment">// v6</span>
+store.<span class="hljs-property">client</span>;
+</code></pre>
+<h4 id="usesets-default-changed-from-true-to-false"><code>useSets</code> default changed from <code>true</code> to <code>false</code></h4>
+<p>The default value of <code>useSets</code> has changed from <code>true</code> to <code>false</code> for performance reasons. When enabled, a set is maintained for each namespace to track keys, which can lead to memory leaks in high-throughput scenarios. If you depend on the previous behavior, explicitly set <code>useSets: true</code> in your options:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvValkey</span>(<span class="hljs-string">'redis://localhost:6379'</span>, { <span class="hljs-attr">useSets</span>: <span class="hljs-literal">true</span> });
+</code></pre>
+<h4 id="usesets-key-prefix-changed-from-namespace-to-sets"><code>useSets</code> key prefix changed from <code>namespace:</code> to <code>sets:</code></h4>
+<p>When <code>useSets</code> is enabled, all keys (both data keys and the SET tracking key) now use a <code>sets:</code> prefix instead of <code>namespace:</code>. This prevents <code>WRONGTYPE</code> collisions between the SET tracking key and regular string data keys that could share the same name.</p>
+<ul>
+<li><strong>Data keys</strong>: <code>sets:&#x3C;namespace>:&#x3C;key></code> (was <code>namespace:&#x3C;namespace>:&#x3C;key></code>)</li>
+<li><strong>SET tracking key</strong>: <code>sets:&#x3C;namespace></code> (was <code>namespace:&#x3C;namespace></code>)</li>
+</ul>
+<p>The <code>clear()</code> method automatically detects and cleans up legacy <code>namespace:</code>-prefixed SET keys, so no manual migration is needed.</p>
+<h2 id="constructor-options">Constructor Options</h2>
+<p><code>KeyvValkey</code> accepts a connection URI string, an options object, or an existing iovalkey <code>Redis</code>/<code>Cluster</code> instance. The options object accepts the following properties along with any <a href="https://github.com/valkey-io/iovalkey#connect-to-valkey"><code>RedisOptions</code></a> from the <code>iovalkey</code> library:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uri</code></td>
+<td><code>string</code></td>
+<td><code>undefined</code></td>
+<td>Valkey connection URI</td>
+</tr>
+<tr>
+<td><code>useSets</code></td>
+<td><code>boolean</code></td>
+<td><code>false</code></td>
+<td>Whether to use sets for namespace key management</td>
+</tr>
+</tbody>
+</table>
+<h2 id="properties">Properties</h2>
+<p>All configuration options are exposed as properties with getters and setters on the <code>KeyvValkey</code> instance. You can read or update them after construction.</p>
+<h3 id="namespace">namespace</h3>
+<p>Get or set the namespace for the adapter. Used for key prefixing and scoping operations like <code>clear()</code>.</p>
+<ul>
+<li>Type: <code>string | undefined</code></li>
+<li>Default: <code>undefined</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvValkey</span>(<span class="hljs-string">'redis://localhost:6379'</span>);
+store.<span class="hljs-property">namespace</span> = <span class="hljs-string">'my-namespace'</span>;
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">namespace</span>); <span class="hljs-comment">// 'my-namespace'</span>
+</code></pre>
+<h3 id="usesets">useSets</h3>
+<p>Get or set whether to use sets for key management. When <code>true</code>, a set is maintained for each namespace to track keys. When <code>false</code>, keys are prefixed with the namespace and pattern matching is used instead.</p>
+<ul>
+<li>Type: <code>boolean</code></li>
+<li>Default: <code>false</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvValkey</span>(<span class="hljs-string">'redis://localhost:6379'</span>, { <span class="hljs-attr">useSets</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">useSets</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<p><strong>Note</strong>: When <code>useSets</code> is <code>true</code>, a set is maintained for each namespace which can lead to memory leaks in high-performance scenarios. This is why the default is <code>false</code>.</p>
+<p>When <code>useSets</code> is enabled, all keys use the <code>sets:</code> prefix (e.g., <code>sets:myns:mykey</code>) to isolate them from non-useSets keys. The SET tracking key is stored at <code>sets:&#x3C;namespace></code>.</p>
+<p>When <code>useSets</code> is <code>false</code>, the <code>clear()</code> function uses pattern matching (<code>KEYS</code> command) to find and delete keys, which may be slower on very large databases.</p>
+<h3 id="useredissets-deprecated">useRedisSets (deprecated)</h3>
+<p>Deprecated alias for <code>useSets</code>. Use <code>useSets</code> instead.</p>
+<h3 id="client">client</h3>
+<p>Get or set the underlying iovalkey <code>Redis</code> or <code>Cluster</code> client instance.</p>
+<ul>
+<li>Type: <code>Redis | Cluster</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Redis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'iovalkey'</span>;
+
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvValkey</span>(<span class="hljs-string">'redis://localhost:6379'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">client</span>); <span class="hljs-comment">// Redis instance</span>
+
+<span class="hljs-comment">// Replace with a new instance</span>
+store.<span class="hljs-property">client</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Redis</span>(<span class="hljs-string">'redis://localhost:6380'</span>);
+</code></pre>
+<h2 id="methods">Methods</h2>
+<h3 id="getkey">.get(key)</h3>
+<p>Returns the value for the given key. Returns <code>undefined</code> if the key does not exist.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>);
+</code></pre>
+<h3 id="getmanykeys">.getMany(keys)</h3>
+<p>Returns an array of values for the given keys. Returns <code>undefined</code> for any key that does not exist.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> values = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">getMany</span>([<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>]);
+</code></pre>
+<h3 id="setkey-value-ttl">.set(key, value, ttl?)</h3>
+<p>Sets a value for the given key with an optional TTL in milliseconds.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">5000</span>); <span class="hljs-comment">// expires in 5 seconds</span>
+</code></pre>
+<h3 id="setmanyentries">.setMany(entries)</h3>
+<p>Sets multiple key-value pairs in a single batch operation using <code>MULTI/EXEC</code> transactions. Each entry is a <code>KeyvEntry&#x3C;Value></code> object (<code>{ key: string, value: Value, ttl?: number }</code>), where <code>Value</code> is inferred from the entries provided. Entries with <code>undefined</code> values are skipped. Returns a <code>boolean[]</code> with per-entry success tracking by inspecting each command's result. In cluster mode, entries are grouped by hash slot with results mapped back to the original order.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">setMany</span>([
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'foo'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'bar'</span> },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'baz'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'qux'</span>, <span class="hljs-attr">ttl</span>: <span class="hljs-number">5000</span> },
+]); <span class="hljs-comment">// [true, true]</span>
+</code></pre>
+<h3 id="deletekey">.delete(key)</h3>
+<p>Deletes a key-value pair from the store. Returns <code>true</code> if the key existed and was deleted, <code>false</code> otherwise.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> deleted = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'foo'</span>);
+</code></pre>
+<h3 id="deletemanykeys">.deleteMany(keys)</h3>
+<p>Deletes multiple key-value pairs from the store in a single batch operation. Returns a <code>boolean[]</code> indicating whether each key was deleted.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">deleteMany</span>([<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>]); <span class="hljs-comment">// [true, true]</span>
+</code></pre>
+<h3 id="haskey">.has(key)</h3>
+<p>Returns <code>true</code> if the key exists in the store, <code>false</code> otherwise.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> exists = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">has</span>(<span class="hljs-string">'foo'</span>);
+</code></pre>
+<h3 id="hasmanykeys">.hasMany(keys)</h3>
+<p>Checks if multiple keys exist in the store in a single batch operation. Returns an array of booleans.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">hasMany</span>([<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-string">'baz'</span>]);
+<span class="hljs-comment">// [true, true, false]</span>
+</code></pre>
+<h3 id="clear">.clear()</h3>
+<p>Clears all entries from the store. If a namespace is set, only entries within that namespace are cleared.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> store.<span class="hljs-title function_">clear</span>();
+</code></pre>
+<h3 id="iterator">.iterator()</h3>
+<p>Returns an async iterator for iterating over all key-value pairs in the store. The iterator uses the namespace configured on the instance.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">for</span> <span class="hljs-title function_">await</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> store.<span class="hljs-title function_">iterator</span>()) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key, value);
+}
+</code></pre>
+<h3 id="disconnect">.disconnect()</h3>
+<p>Disconnects from the Valkey server.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> store.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h2 id="clustering">Clustering</h2>
+<p>The adapter supports Valkey and Redis clusters via iovalkey's <code>Cluster</code> class. Pass a <code>Redis.Cluster</code> instance directly to the constructor:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvValkey</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/valkey'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Redis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'iovalkey'</span>;
+
+<span class="hljs-keyword">const</span> cluster = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Redis</span>.<span class="hljs-title class_">Cluster</span>([
+  { <span class="hljs-attr">host</span>: <span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">7001</span> },
+  { <span class="hljs-attr">host</span>: <span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">7002</span> },
+  { <span class="hljs-attr">host</span>: <span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">7003</span> },
+]);
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvValkey</span>(cluster);
+</code></pre>
+<p>Batch methods (<code>getMany</code>, <code>setMany</code>, <code>deleteMany</code>, <code>hasMany</code>) automatically group keys by hash slot and run separate transactions per slot group. This avoids <code>CROSSSLOT</code> errors without any extra configuration.</p>
+<p>Single-key methods (<code>get</code>, <code>set</code>, <code>delete</code>, <code>has</code>) work automatically in cluster mode — iovalkey routes each command to the correct node.</p>
+<h3 id="cluster-gotchas">Cluster gotchas</h3>
+<ul>
+<li><strong><code>clear()</code> with <code>useSets: false</code> (the default)</strong> uses the <code>KEYS</code> command, which only scans the node that receives the command. In cluster mode this may miss keys on other nodes. Set <code>useSets: true</code> if you need reliable <code>clear()</code> across all cluster nodes.</li>
+<li><strong><code>iterator()</code> in cluster mode</strong> uses <code>SCAN</code>, which only iterates keys on the node the command is routed to. It may not return all keys across the cluster.</li>
+</ul>
+<h2 id="license">License</h2>
+<p><a href="LISCENCE">MIT © Jared Wray</a></p>

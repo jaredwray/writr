@@ -1,0 +1,289 @@
+<p><a href="https://github.com/jaredwray/cacheable"></a></p>
+<h1 id="cacheable-request">cacheable-request</h1>
+<blockquote>
+<p>Wrap native HTTP requests with RFC compliant cache support</p>
+</blockquote>
+<p><a href="https://codecov.io/gh/jaredwray/cacheable"><img src="https://codecov.io/gh/jaredwray/cacheable/branch/main/graph/badge.svg?token=lWZ9OBQ7GM" alt="codecov"></a>
+<a href="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://www.npmjs.com/package/cacheable-request"><img src="https://img.shields.io/npm/dm/cacheable-request.svg" alt="npm"></a>
+<a href="https://www.npmjs.com/package/cacheable-request"><img src="https://img.shields.io/npm/v/cacheable-request.svg" alt="npm"></a>
+<a href="https://github.com/jaredwray/cacheable/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/cacheable" alt="license"></a></p>
+<p><a href="http://httpwg.org/specs/rfc7234.html">RFC 7234</a> compliant HTTP caching for native Node.js HTTP/HTTPS requests. Caching works out of the box in memory or is easily pluggable with a wide range of storage adapters.</p>
+<p><strong>Note:</strong> This is a low level wrapper around the core HTTP modules, it's not a high level request library.</p>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#latest-changes">Latest Changes</a>
+<ul>
+<li><a href="#breaking-changes-with-v1300">Breaking Changes with v13.0.0</a></li>
+<li><a href="#breaking-changes-with-v1000">Breaking Changes with v10.0.0</a>
+<ul>
+<li><a href="#usage-before-v10">Usage Before v10</a></li>
+<li><a href="#usage-after-v1010">Usage After v10.1.0</a></li>
+<li><a href="#esm-support-in-version-9-and-higher">ESM Support in version 9 and higher.</a></li>
+</ul>
+</li>
+<li><a href="#features">Features</a></li>
+<li><a href="#install-and-usage">Install and Usage</a></li>
+<li><a href="#storage-adapters">Storage Adapters</a></li>
+<li><a href="#api">API</a>
+<ul>
+<li><a href="#new-cacheablerequestrequest-storageadapter">new cacheableRequest(request, [storageAdapter])</a>
+<ul>
+<li><a href="#request">request</a></li>
+<li><a href="#storageadapter">storageAdapter</a></li>
+</ul>
+</li>
+<li><a href="#instance">Instance</a>
+<ul>
+<li><a href="#cacheablerequestopts-cb">cacheableRequest(opts, [cb])</a>
+<ul>
+<li><a href="#opts">opts</a>
+<ul>
+<li><a href="#optscache">opts.cache</a></li>
+<li><a href="#optsstrictttl">opts.strictTtl</a></li>
+<li><a href="#optsmaxttl">opts.maxTtl</a></li>
+<li><a href="#optsautomaticfailover">opts.automaticFailover</a></li>
+<li><a href="#optsforcerefresh">opts.forceRefresh</a></li>
+</ul>
+</li>
+<li><a href="#cb">cb</a></li>
+<li><a href="#onrequest-request">.on('request', request)</a></li>
+<li><a href="#onresponse-response">.on('response', response)</a></li>
+<li><a href="#onerror-error">.on('error', error)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#using-hooks">Using Hooks</a>
+<ul>
+<li><a href="#add-hooks">Add Hooks</a></li>
+<li><a href="#remove-hooks">Remove Hooks</a></li>
+</ul>
+</li>
+<li><a href="#how-to-contribute">How to Contribute</a></li>
+<li><a href="#post-an-issue">Post an Issue</a></li>
+<li><a href="#ask-a-question">Ask a Question</a></li>
+<li><a href="#license-and-copyright">License and Copyright</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="latest-changes">Latest Changes</h1>
+<h2 id="breaking-changes-with-v1300">Breaking Changes with v13.0.0</h2>
+<p><a href="https://keyv.org">Keyv</a> has been updated to version 5. With this update, you can no longer pass in a connection string directly to the <code>CacheableRequest</code> constructor. Instead, you should pass in a Keyv or Keyv storage adapter instance.</p>
+<h2 id="breaking-changes-with-v1000">Breaking Changes with v10.0.0</h2>
+<p>This release contains breaking changes. This is the new way to use this package.</p>
+<h3 id="usage-before-v10">Usage Before v10</h3>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> http <span class="hljs-keyword">from</span> <span class="hljs-string">'http'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">CacheableRequest</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable-request'</span>;
+
+<span class="hljs-comment">// Then instead of</span>
+<span class="hljs-keyword">const</span> req = http.<span class="hljs-title function_">request</span>(<span class="hljs-string">'http://example.com'</span>, cb);
+req.<span class="hljs-title function_">end</span>();
+
+<span class="hljs-comment">// You can do</span>
+<span class="hljs-keyword">const</span> cacheableRequest = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableRequest</span>(http.<span class="hljs-property">request</span>);
+<span class="hljs-keyword">const</span> cacheReq = <span class="hljs-title function_">cacheableRequest</span>(<span class="hljs-string">'http://example.com'</span>, cb);
+cacheReq.<span class="hljs-title function_">on</span>(<span class="hljs-string">'request'</span>, <span class="hljs-function"><span class="hljs-params">req</span> =></span> req.<span class="hljs-title function_">end</span>());
+<span class="hljs-comment">// Future requests to 'example.com' will be returned from cache if still valid</span>
+
+<span class="hljs-comment">// You pass in any other http.request API compatible method to be wrapped with cache support:</span>
+<span class="hljs-keyword">const</span> cacheableRequest = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableRequest</span>(https.<span class="hljs-property">request</span>);
+<span class="hljs-keyword">const</span> cacheableRequest = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableRequest</span>(electron.<span class="hljs-property">net</span>);
+</code></pre>
+<h3 id="usage-after-v1010">Usage After v10.1.0</h3>
+<pre><code class="hljs language-js">
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">CacheableRequest</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable-request'</span>;
+
+<span class="hljs-comment">// Now You can do</span>
+<span class="hljs-keyword">const</span> cacheableRequest = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableRequest</span>(http.<span class="hljs-property">request</span>).<span class="hljs-title function_">request</span>();
+<span class="hljs-keyword">const</span> cacheReq = <span class="hljs-title function_">cacheableRequest</span>(<span class="hljs-string">'http://example.com'</span>, cb);
+cacheReq.<span class="hljs-title function_">on</span>(<span class="hljs-string">'request'</span>, <span class="hljs-function"><span class="hljs-params">req</span> =></span> req.<span class="hljs-title function_">end</span>());
+<span class="hljs-comment">// Future requests to 'example.com' will be returned from cache if still valid</span>
+
+<span class="hljs-comment">// You pass in any other http.request API compatible method to be wrapped with cache support:</span>
+<span class="hljs-keyword">const</span> cacheableRequest = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableRequest</span>(https.<span class="hljs-property">request</span>).<span class="hljs-title function_">request</span>();
+<span class="hljs-keyword">const</span> cacheableRequest = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableRequest</span>(electron.<span class="hljs-property">net</span>).<span class="hljs-title function_">request</span>();
+</code></pre>
+<p>The biggest change is that when you do a <code>new</code> CacheableRequest you now want to call <code>request</code> method will give you the instance to use.</p>
+<pre><code class="hljs language-diff"><span class="hljs-deletion">- const cacheableRequest = new CacheableRequest(http.request);</span>
+<span class="hljs-addition">+ const cacheableRequest = new CacheableRequest(http.request).request();</span>
+</code></pre>
+<h3 id="esm-support-in-version-9-and-higher">ESM Support in version 9 and higher.</h3>
+<p>We are now using pure esm support in our package. If you need to use commonjs you can use v8 or lower. To learn more about using ESM please read this from <code>sindresorhus</code>: <a href="https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c">https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c</a></p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Only stores cacheable responses as defined by RFC 7234</li>
+<li>Fresh cache entries are served directly from cache</li>
+<li>Stale cache entries are revalidated with <code>If-None-Match</code>/<code>If-Modified-Since</code> headers</li>
+<li>304 responses from revalidation requests use cached body</li>
+<li>Updates <code>Age</code> header on cached responses</li>
+<li>Can completely bypass cache on a per request basis</li>
+<li>In memory cache by default</li>
+<li>Official support for Redis, Memcache, Etcd, MongoDB, SQLite, PostgreSQL and MySQL storage adapters</li>
+<li>Easily plug in your own or third-party storage adapters</li>
+<li>If DB connection fails, cache is automatically bypassed (<a href="#optsautomaticfailover">disabled by default</a>)</li>
+<li>Adds cache support to any existing HTTP code with minimal changes</li>
+<li>Uses <a href="https://github.com/pornel/http-cache-semantics">http-cache-semantics</a> internally for HTTP RFC 7234 compliance</li>
+</ul>
+<h2 id="install-and-usage">Install and Usage</h2>
+<pre><code class="hljs language-shell">npm install cacheable-request
+</code></pre>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> http <span class="hljs-keyword">from</span> <span class="hljs-string">'http'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">CacheableRequest</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable-request'</span>;
+
+<span class="hljs-comment">// Then instead of</span>
+<span class="hljs-keyword">const</span> req = http.<span class="hljs-title function_">request</span>(<span class="hljs-string">'http://example.com'</span>, cb);
+req.<span class="hljs-title function_">end</span>();
+
+<span class="hljs-comment">// You can do</span>
+<span class="hljs-keyword">const</span> cacheableRequest = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableRequest</span>(http.<span class="hljs-property">request</span>).<span class="hljs-title function_">createCacheableRequest</span>();
+<span class="hljs-keyword">const</span> cacheReq = <span class="hljs-title function_">cacheableRequest</span>(<span class="hljs-string">'http://example.com'</span>, cb);
+cacheReq.<span class="hljs-title function_">on</span>(<span class="hljs-string">'request'</span>, <span class="hljs-function"><span class="hljs-params">req</span> =></span> req.<span class="hljs-title function_">end</span>());
+<span class="hljs-comment">// Future requests to 'example.com' will be returned from cache if still valid</span>
+
+<span class="hljs-comment">// You pass in any other http.request API compatible method to be wrapped with cache support:</span>
+<span class="hljs-keyword">const</span> cacheableRequest = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableRequest</span>(https.<span class="hljs-property">request</span>).<span class="hljs-title function_">createCacheableRequest</span>();
+<span class="hljs-keyword">const</span> cacheableRequest = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableRequest</span>(electron.<span class="hljs-property">net</span>).<span class="hljs-title function_">createCacheableRequest</span>();
+</code></pre>
+<h2 id="storage-adapters">Storage Adapters</h2>
+<p><code>cacheable-request</code> uses <a href="https://github.com/jaredwray/keyv">Keyv</a> to support a wide range of storage adapters.</p>
+<p>For example, to use Redis as a cache backend, you just need to install the official Redis Keyv storage adapter:</p>
+<pre><code>npm install @keyv/redis
+</code></pre>
+<p>And then you can pass <code>CacheableRequest</code> your connection string:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">CacheableRequest</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable-request'</span>;
+
+<span class="hljs-keyword">const</span> keyvRedis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://localhost:6379'</span>);
+<span class="hljs-keyword">const</span> cacheableRequest = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableRequest</span>(http.<span class="hljs-property">request</span>, <span class="hljs-title class_">KeyvRedis</span>).<span class="hljs-title function_">createCacheableRequest</span>();
+</code></pre>
+<p><a href="https://github.com/jaredwray/keyv#official-storage-adapters">View all official Keyv storage adapters.</a></p>
+<p>Keyv also supports anything that follows the Map API so it's easy to write your own storage adapter or use a third-party solution.</p>
+<p>e.g The following are all valid storage adapters</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> storageAdapter = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>();
+<span class="hljs-comment">// or</span>
+<span class="hljs-keyword">const</span> storageAdapter = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./my-storage-adapter'</span>);
+<span class="hljs-comment">// or</span>
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">QuickLRU</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'quick-lru'</span>);
+<span class="hljs-keyword">const</span> storageAdapter = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QuickLRU</span>({ <span class="hljs-attr">maxSize</span>: <span class="hljs-number">1000</span> });
+
+<span class="hljs-keyword">const</span> cacheableRequest = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableRequest</span>(http.<span class="hljs-property">request</span>, storageAdapter).<span class="hljs-title function_">createCacheableRequest</span>();
+</code></pre>
+<p>View the <a href="https://github.com/jaredwray/keyv">Keyv docs</a> for more information on how to use storage adapters.</p>
+<h2 id="api">API</h2>
+<h3 id="new-cacheablerequestrequest-storageadapter">new cacheableRequest(request, [storageAdapter])</h3>
+<p>Returns the provided request function wrapped with cache support.</p>
+<h4 id="request">request</h4>
+<p>Type: <code>function</code></p>
+<p>Request function to wrap with cache support. Should be <a href="https://nodejs.org/api/http.html#http_http_request_options_callback"><code>http.request</code></a> or a similar API compatible request function.</p>
+<h4 id="storageadapter">storageAdapter</h4>
+<p>Type: <code>Keyv storage adapter</code>
+Default: <code>new Map()</code></p>
+<p>A <a href="https://github.com/jaredwray/keyv">Keyv</a> storage adapter instance, or connection string if using with an official Keyv storage adapter.</p>
+<h3 id="instance">Instance</h3>
+<h4 id="cacheablerequestopts-cb">cacheableRequest(opts, [cb])</h4>
+<p>Returns an event emitter.</p>
+<h5 id="opts">opts</h5>
+<p>Type: <code>object</code>, <code>string</code></p>
+<ul>
+<li>Any of the default request functions options.</li>
+<li>Any <a href="https://github.com/kornelski/http-cache-semantics#constructor-options"><code>http-cache-semantics</code></a> options.</li>
+<li>Any of the following:</li>
+</ul>
+<h6 id="optscache">opts.cache</h6>
+<p>Type: <code>boolean</code>
+Default: <code>true</code></p>
+<p>If the cache should be used. Setting this to false will completely bypass the cache for the current request.</p>
+<h6 id="optsstrictttl">opts.strictTtl</h6>
+<p>Type: <code>boolean</code>
+Default: <code>false</code></p>
+<p>If set to <code>true</code> once a cached resource has expired it is deleted and will have to be re-requested.</p>
+<p>If set to <code>false</code> (default), after a cached resource's TTL expires it is kept in the cache and will be revalidated on the next request with <code>If-None-Match</code>/<code>If-Modified-Since</code> headers.</p>
+<h6 id="optsmaxttl">opts.maxTtl</h6>
+<p>Type: <code>number</code>
+Default: <code>undefined</code></p>
+<p>Limits TTL. The <code>number</code> represents milliseconds.</p>
+<h6 id="optsautomaticfailover">opts.automaticFailover</h6>
+<p>Type: <code>boolean</code>
+Default: <code>false</code></p>
+<p>When set to <code>true</code>, if the DB connection fails we will automatically fallback to a network request. DB errors will still be emitted to notify you of the problem even though the request callback may succeed.</p>
+<h6 id="optsforcerefresh">opts.forceRefresh</h6>
+<p>Type: <code>boolean</code>
+Default: <code>false</code></p>
+<p>Forces refreshing the cache. If the response could be retrieved from the cache, it will perform a new request and override the cache instead.</p>
+<h5 id="cb">cb</h5>
+<p>Type: <code>function</code></p>
+<p>The callback function which will receive the response as an argument.</p>
+<p>The response can be either a <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">Node.js HTTP response stream</a> or a <a href="https://github.com/lukechilds/responselike">responselike object</a>. The response will also have a <code>fromCache</code> property set with a boolean value.</p>
+<h5 id="onrequest-request">.on('request', request)</h5>
+<p><code>request</code> event to get the request object of the request.</p>
+<p><strong>Note:</strong> This event will only fire if an HTTP request is actually made, not when a response is retrieved from cache. However, you should always handle the <code>request</code> event to end the request and handle any potential request errors.</p>
+<h5 id="onresponse-response">.on('response', response)</h5>
+<p><code>response</code> event to get the response object from the HTTP request or cache.</p>
+<h5 id="onerror-error">.on('error', error)</h5>
+<p><code>error</code> event emitted in case of an error with the cache.</p>
+<p>Errors emitted here will be an instance of <code>CacheableRequest.RequestError</code> or <code>CacheableRequest.CacheError</code>. You will only ever receive a <code>RequestError</code> if the request function throws (normally caused by invalid user input). Normal request errors should be handled inside the <code>request</code> event.</p>
+<p>To properly handle all error scenarios you should use the following pattern:</p>
+<pre><code class="hljs language-js"><span class="hljs-title function_">cacheableRequest</span>(<span class="hljs-string">'example.com'</span>, cb)
+  .<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-params">err</span> =></span> {
+    <span class="hljs-keyword">if</span> (err <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">CacheableRequest</span>.<span class="hljs-property">CacheError</span>) {
+      <span class="hljs-title function_">handleCacheError</span>(err); <span class="hljs-comment">// Cache error</span>
+    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (err <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">CacheableRequest</span>.<span class="hljs-property">RequestError</span>) {
+      <span class="hljs-title function_">handleRequestError</span>(err); <span class="hljs-comment">// Request function thrown</span>
+    }
+  })
+  .<span class="hljs-title function_">on</span>(<span class="hljs-string">'request'</span>, <span class="hljs-function"><span class="hljs-params">req</span> =></span> {
+    req.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, handleRequestError); <span class="hljs-comment">// Request error emitted</span>
+    req.<span class="hljs-title function_">end</span>();
+  });
+</code></pre>
+<p><strong>Note:</strong> Database connection errors are emitted here, however <code>cacheable-request</code> will attempt to re-request the resource and bypass the cache on a connection error. Therefore a database connection error doesn't necessarily mean the request won't be fulfilled.</p>
+<h2 id="using-hooks">Using Hooks</h2>
+<p>Hooks have been implemented since version <code>v9</code> and are very useful to modify response before saving it in cache. You can use hooks to modify response before saving it in cache.</p>
+<h3 id="add-hooks">Add Hooks</h3>
+<p>The hook will pre compute response right before saving it in cache. You can include many hooks and it will run in order you add hook on response object.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> http <span class="hljs-keyword">from</span> <span class="hljs-string">'http'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">CacheableRequest</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable-request'</span>;
+
+<span class="hljs-keyword">const</span> cacheableRequest = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableRequest</span>(request, cache).<span class="hljs-title function_">request</span>();
+
+<span class="hljs-comment">// adding a hook to decompress response</span>
+cacheableRequest.<span class="hljs-title function_">addHook</span>(<span class="hljs-string">'onResponse'</span>, <span class="hljs-title function_">async</span> (<span class="hljs-attr">value</span>: <span class="hljs-title class_">CacheValue</span>, <span class="hljs-attr">response</span>: any) => {
+  <span class="hljs-keyword">const</span> buffer = <span class="hljs-keyword">await</span> <span class="hljs-title function_">pm</span>(gunzip)(value.<span class="hljs-property">body</span>);
+  value.<span class="hljs-property">body</span> = buffer.<span class="hljs-title function_">toString</span>();
+  <span class="hljs-keyword">return</span> value;
+});
+</code></pre>
+<p>here is also an example of how to add in the remote address</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">CacheableRequest</span>, {<span class="hljs-title class_">CacheValue</span>} <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable-request'</span>;
+
+<span class="hljs-keyword">const</span> cacheableRequest = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableRequest</span>(request, cache).<span class="hljs-title function_">request</span>();
+cacheableRequest.<span class="hljs-title function_">addHook</span>(<span class="hljs-string">'onResponse'</span>, <span class="hljs-function">(<span class="hljs-params">value: CacheValue, response: any</span>) =></span> {
+  <span class="hljs-keyword">if</span> (response.<span class="hljs-property">connection</span>) {
+    value.<span class="hljs-property">remoteAddress</span> = response.<span class="hljs-property">connection</span>.<span class="hljs-property">remoteAddress</span>;
+  }
+
+  <span class="hljs-keyword">return</span> value;
+});
+</code></pre>
+<h3 id="remove-hooks">Remove Hooks</h3>
+<p>You can also remove hook by using below</p>
+<pre><code class="hljs language-js"><span class="hljs-title class_">CacheableRequest</span>.<span class="hljs-title function_">removeHook</span>(<span class="hljs-string">'onResponse'</span>);
+</code></pre>
+<h2 id="how-to-contribute">How to Contribute</h2>
+<p>Cacheable-Request is an open source package and community driven that is maintained regularly. In addition we have a couple of other guidelines for review:</p>
+<ul>
+<li><a href="CODE_OF_CONDUCT.md">CODE_OF_CONDUCT.md</a> - Our code of conduct</li>
+<li><a href="CONTRIBUTING.md">CONTRIBUTING.md</a> - How to contribute to this project</li>
+<li><a href="SECURITY.md">SECURITY.md</a> - Security guidelines and supported versions</li>
+</ul>
+<h2 id="post-an-issue">Post an Issue</h2>
+<p>To post an issue, navigate to the "Issues" tab in the main repository, and then select "New Issue." Enter a clear title describing the issue, as well as a description containing additional relevant information. Also select the label that best describes your issue type. For a bug report, for example, create an issue with the label "bug." In the description field, Be sure to include replication steps, as well as any relevant error messages.</p>
+<p>If you're reporting a security violation, be sure to check out the project's <a href="SECURITY.md">security policy</a>.</p>
+<p>Please also refer to our <a href="CODE_OF_CONDUCT.md">Code of Conduct</a> for more information on how to report issues.</p>
+<h2 id="ask-a-question">Ask a Question</h2>
+<p>To ask a question, create an issue with the label "question." In the issue description, include the related code and any context that can help us answer your question.</p>
+<h2 id="license-and-copyright">License and Copyright</h2>
+<p><a href="./LICENSE">MIT © Luke Childs 2017-2021 and Jared Wray 2022+</a></p>

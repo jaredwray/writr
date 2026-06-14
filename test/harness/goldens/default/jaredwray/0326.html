@@ -1,0 +1,408 @@
+<h1 id="keyvdynamo-">@keyv/dynamo <a href="https://github.com/jaredwray/keyv"></a></h1>
+<blockquote>
+<p>DynamoDB storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a></p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://github.com/jaredwray/keyv/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/keyv" alt="GitHub license"></a>
+<a href="https://www.npmjs.com/package/@keyv/dynamo"><img src="https://img.shields.io/npm/v/@keyv/dynamo.svg" alt="npm"></a>
+<a href="https://npmjs.com/package/@keyv/dynamo"><img src="https://img.shields.io/npm/dm/@keyv/dynamo" alt="npm"></a></p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Built on <a href="https://www.npmjs.com/package/@aws-sdk/client-dynamodb">@aws-sdk/client-dynamodb</a> and <a href="https://www.npmjs.com/package/@aws-sdk/lib-dynamodb">@aws-sdk/lib-dynamodb</a> with full TypeScript support</li>
+<li>TTL support via DynamoDB TTL indexes (6-hour default when no TTL is specified)</li>
+<li>Namespace support for key isolation across multiple Keyv instances</li>
+<li>Automatic table creation with <code>PAY_PER_REQUEST</code> billing mode</li>
+<li><code>setMany</code>, <code>getMany</code>, <code>deleteMany</code>, and <code>hasMany</code> batch operations</li>
+<li><code>createKeyv</code> helper for quick setup</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> DynamoDB doesn't guarantee data will be deleted immediately upon expiration. See the <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html">DynamoDB TTL documentation</a> for details.</p>
+</blockquote>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#install">Install</a></li>
+<li><a href="#quick-start-with-createkeyv">Quick Start with createKeyv</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#usage-with-namespaces">Usage with Namespaces</a></li>
+<li><a href="#usage-with-nestjs">Usage with NestJS</a>
+<ul>
+<li><a href="#with-a-payload-less-than-or-equal-to-400kb">With a payload less than or equal to 400KB</a></li>
+<li><a href="#with-a-payload-greater-than-400kb">With a payload greater than 400KB</a></li>
+</ul>
+</li>
+<li><a href="#options">Options</a></li>
+<li><a href="#properties">Properties</a>
+<ul>
+<li><a href="#client">.client</a></li>
+<li><a href="#namespace">.namespace</a></li>
+<li><a href="#keyprefixseparator">.keyPrefixSeparator</a></li>
+<li><a href="#sixhoursinmilliseconds">.sixHoursInMilliseconds</a></li>
+</ul>
+</li>
+<li><a href="#methods">Methods</a>
+<ul>
+<li><a href="#constructoroptions">constructor(options?)</a></li>
+<li><a href="#getkey">.get(key)</a></li>
+<li><a href="#getmanykeys">.getMany(keys)</a></li>
+<li><a href="#setkey-value-ttl">.set(key, value, ttl?)</a></li>
+<li><a href="#setmanyentries">.setMany(entries)</a></li>
+<li><a href="#deletekey">.delete(key)</a></li>
+<li><a href="#deletemanykeys">.deleteMany(keys)</a></li>
+<li><a href="#clear">.clear()</a></li>
+<li><a href="#haskey">.has(key)</a></li>
+<li><a href="#hasmanykeys">.hasMany(keys)</a></li>
+<li><a href="#formatkeykey">.formatKey(key)</a></li>
+<li><a href="#createkeyprefixkey-namespace">.createKeyPrefix(key, namespace?)</a></li>
+<li><a href="#removekeyprefixkey-namespace">.removeKeyPrefix(key, namespace?)</a></li>
+<li><a href="#ensuretabletablename">.ensureTable(tableName)</a></li>
+<li><a href="#createtabletablename">.createTable(tableName)</a></li>
+</ul>
+</li>
+<li><a href="#license">License</a></li>
+</ul>
+<h2 id="install">Install</h2>
+<pre><code class="hljs language-shell">npm install --save keyv @keyv/dynamo
+</code></pre>
+<h2 id="quick-start-with-createkeyv">Quick Start with createKeyv</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/dynamo'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+
+<span class="hljs-comment">// set a value</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+
+<span class="hljs-comment">// get a value</span>
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>);
+
+<span class="hljs-comment">// set with TTL (milliseconds)</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">6000</span>);
+
+<span class="hljs-comment">// delete a value</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'foo'</span>);
+</code></pre>
+<p>You can also pass options:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/dynamo'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>({
+  <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span>,
+  <span class="hljs-attr">tableName</span>: <span class="hljs-string">'cacheTable'</span>,
+  <span class="hljs-attr">namespace</span>: <span class="hljs-string">'my-app'</span>,
+});
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvDynamo</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/dynamo'</span>;
+
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(store, { <span class="hljs-attr">useKeyPrefix</span>: <span class="hljs-literal">false</span> });
+
+<span class="hljs-comment">// set a value</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+
+<span class="hljs-comment">// set a value with TTL (in milliseconds)</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">6000</span>);
+
+<span class="hljs-comment">// get a value</span>
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>);
+
+<span class="hljs-comment">// delete a value</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'foo'</span>);
+
+<span class="hljs-comment">// clear all values</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">clear</span>();
+</code></pre>
+<h2 id="usage-with-namespaces">Usage with Namespaces</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvDynamo</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/dynamo'</span>;
+
+<span class="hljs-keyword">const</span> store1 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+store1.<span class="hljs-property">namespace</span> = <span class="hljs-string">'namespace1'</span>;
+<span class="hljs-keyword">const</span> keyv1 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(store1, { <span class="hljs-attr">namespace</span>: <span class="hljs-string">'namespace1'</span>, <span class="hljs-attr">useKeyPrefix</span>: <span class="hljs-literal">false</span> });
+
+<span class="hljs-keyword">const</span> store2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+store2.<span class="hljs-property">namespace</span> = <span class="hljs-string">'namespace2'</span>;
+<span class="hljs-keyword">const</span> keyv2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(store2, { <span class="hljs-attr">namespace</span>: <span class="hljs-string">'namespace2'</span>, <span class="hljs-attr">useKeyPrefix</span>: <span class="hljs-literal">false</span> });
+
+<span class="hljs-comment">// keys are isolated by namespace</span>
+<span class="hljs-keyword">await</span> keyv1.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar1'</span>);
+<span class="hljs-keyword">await</span> keyv2.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar2'</span>);
+
+<span class="hljs-keyword">const</span> value1 = <span class="hljs-keyword">await</span> keyv1.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar1'</span>
+<span class="hljs-keyword">const</span> value2 = <span class="hljs-keyword">await</span> keyv2.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar2'</span>
+</code></pre>
+<h2 id="usage-with-nestjs">Usage with NestJS</h2>
+<p>Since DynamoDB has a 400KB limit per item, compressing data can help in some cases.</p>
+<h3 id="with-a-payload-less-than-or-equal-to-400kb">With a payload less than or equal to 400KB</h3>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">KeyvDynamo</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/dynamo'</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/cache-manager'</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Module</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>
+
+@<span class="hljs-title class_">Module</span>({
+  <span class="hljs-attr">imports</span>: [
+    <span class="hljs-title class_">CacheModule</span>.<span class="hljs-title function_">registerAsync</span>({
+      <span class="hljs-attr">isGlobal</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-attr">useFactory</span>: <span class="hljs-title function_">async</span> () => {
+        <span class="hljs-keyword">return</span> {
+          <span class="hljs-attr">stores</span>: [
+            <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({
+              <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({
+                <span class="hljs-attr">tableName</span>: <span class="hljs-string">'TableName'</span>,
+              }),
+            }),
+          ],
+        }
+      },
+    }),
+  ],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InfrastructureModule</span> {}
+</code></pre>
+<h3 id="with-a-payload-greater-than-400kb">With a payload greater than 400KB</h3>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvBrotli</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/compress-brotli'</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">KeyvDynamo</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/dynamo'</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/cache-manager'</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Module</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>
+
+@<span class="hljs-title class_">Module</span>({
+  <span class="hljs-attr">imports</span>: [
+    <span class="hljs-title class_">CacheModule</span>.<span class="hljs-title function_">registerAsync</span>({
+      <span class="hljs-attr">isGlobal</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-attr">useFactory</span>: <span class="hljs-title function_">async</span> () => {
+        <span class="hljs-keyword">return</span> {
+          <span class="hljs-attr">stores</span>: [
+            <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({
+              <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({
+                <span class="hljs-attr">tableName</span>: <span class="hljs-string">'TableName'</span>,
+              }),
+              <span class="hljs-attr">compression</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvBrotli</span>(),
+            }),
+          ],
+        }
+      },
+    }),
+  ],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InfrastructureModule</span> {}
+</code></pre>
+<h2 id="options">Options</h2>
+<p>Options extend <a href="https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/dynamodb/"><code>DynamoDBClientConfig</code></a> so all AWS SDK options (endpoint, region, credentials, etc.) are supported.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tableName</code></td>
+<td><code>string</code></td>
+<td><code>'keyv'</code></td>
+<td>The DynamoDB table name. Created automatically if it doesn't exist.</td>
+</tr>
+<tr>
+<td><code>namespace</code></td>
+<td><code>string</code></td>
+<td><code>undefined</code></td>
+<td>Key prefix for namespace isolation</td>
+</tr>
+<tr>
+<td><code>endpoint</code></td>
+<td><code>string</code></td>
+<td>—</td>
+<td>The DynamoDB endpoint URL (e.g., <code>'http://localhost:8000'</code> for local development)</td>
+</tr>
+<tr>
+<td><code>region</code></td>
+<td><code>string</code></td>
+<td>—</td>
+<td>The AWS region (e.g., <code>'us-east-1'</code>)</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvDynamo</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/dynamo'</span>;
+
+<span class="hljs-comment">// Using an endpoint string</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>(<span class="hljs-string">'http://localhost:8000'</span>);
+
+<span class="hljs-comment">// Using an options object</span>
+<span class="hljs-keyword">const</span> store2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span>, <span class="hljs-attr">tableName</span>: <span class="hljs-string">'cacheTable'</span> });
+</code></pre>
+<h2 id="properties">Properties</h2>
+<h3 id="client">.client</h3>
+<p>The underlying <code>DynamoDBDocument</code> client instance. Can be used to access the DynamoDB client directly.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DynamoDBDocument</code></td>
+<td>Created from the options</td>
+</tr>
+</tbody>
+</table>
+<h3 id="namespace">.namespace</h3>
+<p>Key prefix for namespace isolation. When set, all keys are prefixed with <code>namespace:</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>string | undefined</code></td>
+<td><code>undefined</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="keyprefixseparator">.keyPrefixSeparator</h3>
+<p>The separator between the namespace and key.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>string</code></td>
+<td><code>':'</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="sixhoursinmilliseconds">.sixHoursInMilliseconds</h3>
+<p>The default TTL fallback in milliseconds. Used when no TTL is specified in a <code>set()</code> call.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>number</code></td>
+<td><code>21600000</code> (6 hours)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="methods">Methods</h2>
+<h3 id="constructoroptions">constructor(options?)</h3>
+<p>Creates a new <code>KeyvDynamo</code> instance. Automatically creates the DynamoDB table if it doesn't exist.</p>
+<ul>
+<li><code>options</code> — A <code>KeyvDynamoOptions</code> object or an endpoint string. Defaults to <code>{ tableName: 'keyv' }</code>.</li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvDynamo</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/dynamo'</span>;
+
+<span class="hljs-comment">// Using an endpoint string</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>(<span class="hljs-string">'http://localhost:8000'</span>);
+
+<span class="hljs-comment">// Using an options object</span>
+<span class="hljs-keyword">const</span> store2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span>, <span class="hljs-attr">tableName</span>: <span class="hljs-string">'cacheTable'</span> });
+</code></pre>
+<h3 id="getkey">.get(key)</h3>
+<p>Retrieves a value from DynamoDB. Returns the stored value or <code>undefined</code> if the key does not exist.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar'</span>
+</code></pre>
+<h3 id="getmanykeys">.getMany(keys)</h3>
+<p>Retrieves multiple values from DynamoDB. Returns an array of stored data corresponding to each key.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">getMany</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>]);
+</code></pre>
+<h3 id="setkey-value-ttl">.set(key, value, ttl?)</h3>
+<p>Stores a value in DynamoDB. Uses a 6-hour default TTL if no TTL is specified. TTL is in milliseconds.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+
+<span class="hljs-comment">// with TTL (milliseconds)</span>
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">60000</span>);
+</code></pre>
+<h3 id="setmanyentries">.setMany(entries)</h3>
+<p>Stores multiple values in DynamoDB using <code>BatchWriteItem</code> in chunks of 25. Each entry is a <code>KeyvEntry&#x3C;Value></code> object (<code>{ key: string, value: Value, ttl?: number }</code>), where <code>Value</code> is inferred from the entries provided. Returns a <code>boolean[]</code> with per-entry success tracking — any items reported as <code>UnprocessedItems</code> by DynamoDB are marked as <code>false</code>.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">setMany</span>([
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key1'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value1'</span> },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key2'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value2'</span>, <span class="hljs-attr">ttl</span>: <span class="hljs-number">60000</span> },
+]); <span class="hljs-comment">// [true, true]</span>
+</code></pre>
+<h3 id="deletekey">.delete(key)</h3>
+<p>Deletes a key from DynamoDB. Returns <code>true</code> if the key was deleted, <code>false</code> otherwise.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">const</span> deleted = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<h3 id="deletemanykeys">.deleteMany(keys)</h3>
+<p>Deletes multiple keys from DynamoDB. Returns a <code>boolean[]</code> indicating whether each key was deleted.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">deleteMany</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>]); <span class="hljs-comment">// [true, true]</span>
+</code></pre>
+<h3 id="clear">.clear()</h3>
+<p>Clears data from DynamoDB. If a namespace is set, only keys with the namespace prefix are deleted. Otherwise, all keys are deleted.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">clear</span>();
+</code></pre>
+<h3 id="haskey">.has(key)</h3>
+<p>Checks whether a key exists in DynamoDB.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">const</span> exists = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">has</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// true</span>
+<span class="hljs-keyword">const</span> missing = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">has</span>(<span class="hljs-string">'baz'</span>); <span class="hljs-comment">// false</span>
+</code></pre>
+<h3 id="hasmanykeys">.hasMany(keys)</h3>
+<p>Checks whether multiple keys exist in DynamoDB. Returns an array of booleans corresponding to each key.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">hasMany</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>, <span class="hljs-string">'key3'</span>]); <span class="hljs-comment">// [true, true, false]</span>
+</code></pre>
+<h3 id="formatkeykey">.formatKey(key)</h3>
+<p>Formats a key by prepending the namespace if one is set. If the key already starts with the namespace prefix, it is returned as-is to avoid double-prefixing.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+store.<span class="hljs-title function_">formatKey</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'foo'</span>
+
+store.<span class="hljs-property">namespace</span> = <span class="hljs-string">'myapp'</span>;
+store.<span class="hljs-title function_">formatKey</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'myapp:foo'</span>
+store.<span class="hljs-title function_">formatKey</span>(<span class="hljs-string">'myapp:foo'</span>); <span class="hljs-comment">// 'myapp:foo' (no double-prefix)</span>
+</code></pre>
+<h3 id="createkeyprefixkey-namespace">.createKeyPrefix(key, namespace?)</h3>
+<p>Creates a prefixed key by prepending the namespace and separator. Returns the key as-is if no namespace is provided.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+store.<span class="hljs-title function_">createKeyPrefix</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'ns'</span>); <span class="hljs-comment">// 'ns:key'</span>
+store.<span class="hljs-title function_">createKeyPrefix</span>(<span class="hljs-string">'key'</span>); <span class="hljs-comment">// 'key'</span>
+</code></pre>
+<h3 id="removekeyprefixkey-namespace">.removeKeyPrefix(key, namespace?)</h3>
+<p>Removes the namespace prefix from a key. Returns the key as-is if no namespace is provided.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+store.<span class="hljs-title function_">removeKeyPrefix</span>(<span class="hljs-string">'ns:key'</span>, <span class="hljs-string">'ns'</span>); <span class="hljs-comment">// 'key'</span>
+store.<span class="hljs-title function_">removeKeyPrefix</span>(<span class="hljs-string">'key'</span>); <span class="hljs-comment">// 'key'</span>
+</code></pre>
+<h3 id="ensuretabletablename">.ensureTable(tableName)</h3>
+<p>Ensures the DynamoDB table exists and is active. If the table is in <code>CREATING</code> status, waits for it to become active. If it doesn't exist, creates it.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">ensureTable</span>(<span class="hljs-string">'my-table'</span>);
+</code></pre>
+<h3 id="createtabletablename">.createTable(tableName)</h3>
+<p>Creates a new DynamoDB table with TTL support enabled on the <code>expiresAt</code> attribute. Uses <code>PAY_PER_REQUEST</code> billing mode.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvDynamo</span>({ <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'http://localhost:8000'</span> });
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">createTable</span>(<span class="hljs-string">'my-table'</span>);
+</code></pre>
+<h2 id="license">License</h2>
+<p><a href="LICENSE">MIT © Jared Wray</a></p>

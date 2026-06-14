@@ -1,0 +1,29 @@
+<p>Providers are an important concept in OpenFeature because they are responsible for the flag evaluation itself.
+As we saw in the previous step, OpenFeature without a provider always returns the default value. If we want to actually perform feature
+flagging, we'll need to register a provider.</p>
+<p>Create a new file named <code>flags.flagd.json</code> and add the following JSON. Notice that there's a flag called <code>welcome-message</code> which matches the flag
+key referenced earlier. The <code>welcome-message</code> flag has <code>on</code> and <code>off</code> variants that return <code>true</code> and <code>false</code> respectively.
+The state property controls whether the feature flag is active or not. Finally, the defaultVariant property controls the variant that should be returned.
+In this case, the defaultVariant is <code>off</code>, therefore the value <code>false</code> would be returned.</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"flags"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"welcome-message"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"variants"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+        <span class="hljs-attr">"on"</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">"off"</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span>
+      <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"state"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"ENABLED"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"defaultVariant"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"off"</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<blockquote>
+<p>NOTE: This configuration is specific for flagd and varies across providers.</p>
+</blockquote>
+<p>With the flagd configuration in place, start flagd service with the following docker command.</p>
+<blockquote>
+<p>NOTE: On Windows WSL is required both for running docker and to store the file. This is a limitation of Docker (<a href="https://github.com/docker/for-win/issues/8479">https://github.com/docker/for-win/issues/8479</a>)</p>
+</blockquote>
+<pre><code class="hljs language-sh">docker run -p 8013:8013 -v $(<span class="hljs-built_in">pwd</span>)/:/etc/flagd/ -it ghcr.io/open-feature/flagd:latest start --uri file:/etc/flagd/flags.flagd.json
+</code></pre>

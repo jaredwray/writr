@@ -1,0 +1,441 @@
+<blockquote>
+<p><strong>Availability:</strong> Registered in both the Node and browser builds.</p>
+</blockquote>
+<h2 id="string">string</h2>
+<p>Visit the: <a href="https://github.com/jaredwray/fumanchu/tree/main/src/helpers/string.ts">code</a> | <a href="https://github.com/jaredwray/fumanchu/tree/main/test/helpers/string.test.ts">unit tests</a></p>
+<h3 id="append">{{append}}</h3>
+<p>Append the specified <code>suffix</code> to the given string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>suffix</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- given that "item.stem" is "foo" --></span>
+{{append item.stem ".html"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'foo.html' --></span>
+</code></pre>
+<h3 id="camelcase">{{camelcase}}</h3>
+<p>camelCase the characters in the given <code>string</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong>: The string to camelcase.</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{camelcase "foo bar baz"}};
+<span class="hljs-comment">&#x3C;!-- results in:  'fooBarBaz' --></span>
+</code></pre>
+<h3 id="capitalize">{{capitalize}}</h3>
+<p>Capitalize the first word in a sentence.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{capitalize "foo bar baz"}}
+<span class="hljs-comment">&#x3C;!-- results in:  "Foo bar baz" --></span>
+</code></pre>
+<h3 id="capitalizeall">{{capitalizeAll}}</h3>
+<p>Capitalize all words in a string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{capitalizeAll "foo bar baz"}}
+<span class="hljs-comment">&#x3C;!-- results in:  "Foo Bar Baz" --></span>
+</code></pre>
+<h3 id="center">{{center}}</h3>
+<p>Center a string using non-breaking spaces</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>spaces</code> <strong>{Number}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{center "foo" 2}}
+<span class="hljs-comment">&#x3C;!-- results in:  '&#x26;nbsp;&#x26;nbsp;foo&#x26;nbsp;&#x26;nbsp;' --></span>
+</code></pre>
+<h3 id="chop">{{chop}}</h3>
+<p>Like trim, but removes both extraneous whitespace <strong>and non-word characters</strong> from the beginning and end of a string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong>: The string to chop.</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{chop "_ABC_"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'ABC' --></span>
+
+{{chop "-ABC-"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'ABC' --></span>
+
+{{chop " ABC "}}
+<span class="hljs-comment">&#x3C;!-- results in:  'ABC' --></span>
+</code></pre>
+<h3 id="dashcase">{{dashcase}}</h3>
+<p>dash-case the characters in <code>string</code>. Replaces non-word characters and periods with hyphens.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{dashcase "a-b-c d_e"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'a-b-c-d-e' --></span>
+</code></pre>
+<h3 id="dotcase">{{dotcase}}</h3>
+<p>dot.case the characters in <code>string</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{dotcase "a-b-c d_e"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'a.b.c.d.e' --></span>
+</code></pre>
+<h3 id="downcase">{{downcase}}</h3>
+<p>Lowercase all of the characters in the given string. Alias for <a href="#lowercase">lowercase</a>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{downcase "aBcDeF"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'abcdef' --></span>
+</code></pre>
+<h3 id="ellipsis">{{ellipsis}}</h3>
+<p>Truncates a string to the specified <code>length</code>, and appends it with an elipsis, <code>…</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>length</code> <strong>{Number}</strong>: The desired length of the returned string.</li>
+<li><code>returns</code> <strong>{String}</strong>: The truncated string.</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{ellipsis (sanitize "<span class="hljs-tag">&#x3C;<span class="hljs-name">span</span>></span>foo bar baz<span class="hljs-tag">&#x3C;/<span class="hljs-name">span</span>></span>"), 7}}
+<span class="hljs-comment">&#x3C;!-- results in:  'foo bar…' --></span>
+{{ellipsis "foo bar baz", 7}}
+<span class="hljs-comment">&#x3C;!-- results in:  'foo bar…' --></span>
+</code></pre>
+<h3 id="hyphenate">{{hyphenate}}</h3>
+<p>Replace spaces in a string with hyphens.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{hyphenate "foo bar baz qux"}}
+<span class="hljs-comment">&#x3C;!-- results in:  "foo-bar-baz-qux" --></span>
+</code></pre>
+<h3 id="isstring">{{isString}}</h3>
+<p>Return true if <code>value</code> is a string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>value</code> <strong>{Any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{isString "foo"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'true' --></span>
+</code></pre>
+<h3 id="lowercase">{{lowercase}}</h3>
+<p>Lowercase all characters in the given string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{lowercase "Foo BAR baZ"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'foo bar baz' --></span>
+</code></pre>
+<h3 id="occurrences">{{occurrences}}</h3>
+<p>Return the number of occurrences of <code>substring</code> within the given <code>string</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>substring</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{Number}</strong>: Number of occurrences</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{occurrences "foo bar foo bar baz" "foo"}}
+<span class="hljs-comment">&#x3C;!-- results in:  2 --></span>
+</code></pre>
+<h3 id="pascalcase">{{pascalcase}}</h3>
+<p>PascalCase the characters in <code>string</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{pascalcase "foo bar baz"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'FooBarBaz' --></span>
+</code></pre>
+<h3 id="pathcase">{{pathcase}}</h3>
+<p>path/case the characters in <code>string</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{pathcase "a-b-c d_e"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'a/b/c/d/e' --></span>
+</code></pre>
+<h3 id="plusify">{{plusify}}</h3>
+<p>Replace spaces in the given string with pluses.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong>: The input string</li>
+<li><code>ch</code> <strong>{String}</strong>: Optional character to replace (defaults to space)</li>
+<li><code>returns</code> <strong>{String}</strong>: Input string with spaces replaced by plus signs</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{plusify "foo bar baz"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'foo+bar+baz' --></span>
+</code></pre>
+<h3 id="prepend">{{prepend}}</h3>
+<p>Prepends the given <code>string</code> with the specified <code>prefix</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>prefix</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- given that "val" is "bar" --></span>
+{{prepend val "foo-"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'foo-bar' --></span>
+</code></pre>
+<h3 id="raw">{{raw}}</h3>
+<p>Render a block without processing mustache templates inside the block.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>options</code> <strong>{Object}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{{{#raw}}}}
+{{foo}}
+{{{{/raw}}}}
+<span class="hljs-comment">&#x3C;!-- results in:  '{{foo}}' --></span>
+</code></pre>
+<h3 id="remove">{{remove}}</h3>
+<p>Remove all occurrences of <code>substring</code> from the given <code>str</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>substring</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{remove "a b a b a b" "a "}}
+<span class="hljs-comment">&#x3C;!-- results in:  'b b b' --></span>
+</code></pre>
+<h3 id="removefirst">{{removeFirst}}</h3>
+<p>Remove the first occurrence of <code>substring</code> from the given <code>str</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>substring</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{removeFirst "a b a b a b" "a"}}
+<span class="hljs-comment">&#x3C;!-- results in:  ' b a b a b' --></span>
+</code></pre>
+<h3 id="replace">{{replace}}</h3>
+<p>Replace all occurrences of substring <code>a</code> with substring <code>b</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>a</code> <strong>{String}</strong></li>
+<li><code>b</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{replace "a b a b a b" "a" "z"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'z b z b z b' --></span>
+</code></pre>
+<h3 id="replacefirst">{{replaceFirst}}</h3>
+<p>Replace the first occurrence of substring <code>a</code> with substring <code>b</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>a</code> <strong>{String}</strong></li>
+<li><code>b</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{replaceFirst "a b a b a b" "a" "z"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'z b a b a b' --></span>
+</code></pre>
+<h3 id="reverse">{{reverse}}</h3>
+<p>Reverse a string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{reverse "abcde"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'edcba' --></span>
+</code></pre>
+<h3 id="sentence">{{sentence}}</h3>
+<p>Sentence case the given string</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{sentence "hello world. goodbye world."}}
+<span class="hljs-comment">&#x3C;!-- results in:  'Hello world. Goodbye world.' --></span>
+</code></pre>
+<h3 id="snakecase">{{snakecase}}</h3>
+<p>snake_case the characters in the given <code>string</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{snakecase "a-b-c d_e"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'a_b_c_d_e' --></span>
+</code></pre>
+<h3 id="split">{{split}}</h3>
+<p>Split <code>string</code> by the given <code>character</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong>: The string to split.</li>
+<li><code>character</code> <strong>{String}</strong>: The character to split by. Default is an empty string.</li>
+<li><code>returns</code> <strong>{Array}</strong>: Array of split strings.</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{split "a,b,c" ","}}
+<span class="hljs-comment">&#x3C;!-- results in:  ['a', 'b', 'c'] --></span>
+</code></pre>
+<h3 id="startswith">{{startsWith}}</h3>
+<p>Tests whether a string begins with the given prefix.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>prefix</code> <strong>{String}</strong>: The prefix to test for</li>
+<li><code>testString</code> <strong>{String}</strong>: The string to test</li>
+<li><code>returns</code> <strong>{Boolean}</strong>: True if testString starts with prefix, false otherwise</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{startsWith "Hello" "Hello, world!"}}
+<span class="hljs-comment">&#x3C;!-- results in:  true --></span>
+
+{{startsWith "Goodbye" "Hello, world!"}}
+<span class="hljs-comment">&#x3C;!-- results in:  false --></span>
+</code></pre>
+<h3 id="titleize">{{titleize}}</h3>
+<p>Title case the given string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{titleize "this is title case"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'This Is Title Case' --></span>
+</code></pre>
+<h3 id="trim">{{trim}}</h3>
+<p>Removes extraneous whitespace from the beginning and end of a string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong>: The string to trim.</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{trim " ABC "}}
+<span class="hljs-comment">&#x3C;!-- results in:  'ABC' --></span>
+</code></pre>
+<h3 id="trimleft">{{trimLeft}}</h3>
+<p>Removes extraneous whitespace from the beginning of a string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong>: The string to trim.</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{trimLeft " ABC "}}
+<span class="hljs-comment">&#x3C;!-- results in:  'ABC ' --></span>
+</code></pre>
+<h3 id="trimright">{{trimRight}}</h3>
+<p>Removes extraneous whitespace from the end of a string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong>: The string to trim.</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{trimRight " ABC "}}
+<span class="hljs-comment">&#x3C;!-- results in:  ' ABC' --></span>
+</code></pre>
+<h3 id="truncate">{{truncate}}</h3>
+<p>Truncate a string to the specified <code>length</code>. Also see <a href="#ellipsis">ellipsis</a>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>limit</code> <strong>{Number}</strong>: The desired length of the returned string.</li>
+<li><code>suffix</code> <strong>{String}</strong>: Optionally supply a string to use as a suffix to denote when the string has been truncated.</li>
+<li><code>returns</code> <strong>{String}</strong>: The truncated string.</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{truncate "foo bar baz" 7}}
+<span class="hljs-comment">&#x3C;!-- results in:  'foo bar' --></span>
+{{truncate "foo bar baz" 7 "..."}}
+<span class="hljs-comment">&#x3C;!-- results in:  'foo ...' --></span>
+</code></pre>
+<h3 id="truncatewords">{{truncateWords}}</h3>
+<p>Truncate a string to have the specified number of words. Also see <a href="#truncate">truncate</a>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>limit</code> <strong>{Number}</strong>: The number of words to keep.</li>
+<li><code>suffix</code> <strong>{String}</strong>: Optionally supply a string to use as a suffix. Default is '...'.</li>
+<li><code>returns</code> <strong>{String}</strong>: The truncated string.</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{truncateWords "foo bar baz" 1}}
+<span class="hljs-comment">&#x3C;!-- results in:  'foo...' --></span>
+{{truncateWords "foo bar baz" 2}}
+<span class="hljs-comment">&#x3C;!-- results in:  'foo bar...' --></span>
+{{truncateWords "foo bar baz" 3}}
+<span class="hljs-comment">&#x3C;!-- results in:  'foo bar baz...' --></span>
+</code></pre>
+<h3 id="upcase">{{upcase}}</h3>
+<p>Uppercase all of the characters in the given string. Alias for <a href="#uppercase">uppercase</a>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{upcase "aBcDeF"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'ABCDEF' --></span>
+</code></pre>
+<h3 id="uppercase">{{uppercase}}</h3>
+<p>Uppercase all of the characters in the given string. If used as a block helper it will uppercase the entire block. This helper does not support inverse blocks.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong>: The string to uppercase</li>
+<li><code>options</code> <strong>{Object}</strong>: Handlebars options object</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{uppercase "aBcDeF"}}
+<span class="hljs-comment">&#x3C;!-- results in:  'ABCDEF' --></span>
+</code></pre>

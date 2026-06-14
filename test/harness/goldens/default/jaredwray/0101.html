@@ -1,0 +1,396 @@
+<h1 id="configuration">Configuration</h1>
+<p>Docula supports three config formats: TypeScript (<code>docula.config.ts</code>), ESM JavaScript (<code>docula.config.mjs</code>), and JSON (<code>docula.config.json</code>). TypeScript gives you type safety; JSON is the only format the <a href="./binary-download">standalone binary</a> can read. When multiple are present in the same site, the priority is <code>.ts</code> → <code>.mjs</code> → <code>.json</code>.</p>
+<h2 id="initializing-with-typescript">Initializing with TypeScript</h2>
+<p>When you run <code>npx docula init</code>, docula automatically detects TypeScript projects by checking for a <code>tsconfig.json</code> in the current directory. If found, it generates a <code>docula.config.ts</code> file. Otherwise, it generates <code>docula.config.mjs</code>.</p>
+<p>You can also explicitly choose:</p>
+<pre><code class="hljs language-bash">npx docula init --typescript   <span class="hljs-comment"># Force TypeScript config</span>
+npx docula init --javascript   <span class="hljs-comment"># Force JavaScript config</span>
+</code></pre>
+<p>The TypeScript config provides full type support:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">DoculaOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'docula'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">Partial</span>&#x3C;<span class="hljs-title class_">DoculaOptions</span>> = {
+  <span class="hljs-attr">templatePath</span>: <span class="hljs-string">'./template'</span>,
+  <span class="hljs-attr">output</span>: <span class="hljs-string">'./site/dist'</span>,
+  <span class="hljs-attr">sitePath</span>: <span class="hljs-string">'./site'</span>,
+  <span class="hljs-attr">githubPath</span>: <span class="hljs-string">'your-username/your-repo'</span>,
+  <span class="hljs-attr">siteTitle</span>: <span class="hljs-string">'My Project'</span>,
+  <span class="hljs-attr">siteDescription</span>: <span class="hljs-string">'Project description'</span>,
+  <span class="hljs-attr">siteUrl</span>: <span class="hljs-string">'https://your-site.com'</span>,
+  <span class="hljs-attr">themeMode</span>: <span class="hljs-string">'light'</span>, <span class="hljs-comment">// or 'dark' — defaults to system preference if omitted</span>
+  <span class="hljs-attr">googleTagManager</span>: <span class="hljs-string">'GTM-XXXXXX'</span>, <span class="hljs-comment">// or 'G-XXXXXXXXXX' for GA4</span>
+  <span class="hljs-attr">homeUrl</span>: <span class="hljs-string">'/'</span>, <span class="hljs-comment">// logo links to this URL instead of baseUrl</span>
+  <span class="hljs-attr">baseUrl</span>: <span class="hljs-string">'/docs'</span>, <span class="hljs-comment">// host under a subpath</span>
+  <span class="hljs-attr">autoReadme</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// use project root README.md as the home page</span>
+  <span class="hljs-attr">docsPath</span>: <span class="hljs-string">''</span>, <span class="hljs-comment">// place docs at the output root</span>
+  <span class="hljs-attr">apiPath</span>: <span class="hljs-string">'api'</span>,
+  <span class="hljs-attr">changelogPath</span>: <span class="hljs-string">'changelog'</span>,
+};
+</code></pre>
+<h2 id="using-lifecycle-hooks-with-typescript">Using Lifecycle Hooks with TypeScript</h2>
+<p>You can add typed lifecycle hooks to your config:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">DoculaConsole</span>, <span class="hljs-title class_">DoculaOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'docula'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">Partial</span>&#x3C;<span class="hljs-title class_">DoculaOptions</span>> = {
+  <span class="hljs-attr">siteTitle</span>: <span class="hljs-string">'My Project'</span>,
+  <span class="hljs-comment">// ... other options</span>
+};
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> onPrepare = <span class="hljs-title function_">async</span> (<span class="hljs-attr">config</span>: <span class="hljs-title class_">DoculaOptions</span>, <span class="hljs-attr">console</span>: <span class="hljs-title class_">DoculaConsole</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">void</span>> => {
+  <span class="hljs-comment">// Runs before the build process</span>
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">info</span>(<span class="hljs-string">`Building <span class="hljs-subst">${config.siteTitle}</span>...`</span>);
+};
+</code></pre>
+<h2 id="manipulating-release-changelog-entries">Manipulating Release Changelog Entries</h2>
+<p>The <code>onReleaseChangelog</code> hook lets you modify, filter, or transform GitHub release entries before they are merged with file-based changelog entries and rendered. This is useful for cleaning up release notes, filtering out unwanted releases, or customizing tags.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">DoculaChangelogEntry</span>, <span class="hljs-title class_">DoculaConsole</span>, <span class="hljs-title class_">DoculaOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'docula'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">Partial</span>&#x3C;<span class="hljs-title class_">DoculaOptions</span>> = {
+  <span class="hljs-attr">githubPath</span>: <span class="hljs-string">'your-username/your-repo'</span>,
+  <span class="hljs-attr">enableReleaseChangelog</span>: <span class="hljs-literal">true</span>,
+};
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> onReleaseChangelog = (<span class="hljs-attr">entries</span>: <span class="hljs-title class_">DoculaChangelogEntry</span>[], <span class="hljs-attr">console</span>: <span class="hljs-title class_">DoculaConsole</span>): <span class="hljs-title class_">DoculaChangelogEntry</span>[] => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">info</span>(<span class="hljs-string">`Processing <span class="hljs-subst">${entries.length}</span> release entries...`</span>);
+  <span class="hljs-keyword">return</span> entries
+    <span class="hljs-comment">// Filter out pre-releases</span>
+    .<span class="hljs-title function_">filter</span>(<span class="hljs-function"><span class="hljs-params">entry</span> =></span> entry.<span class="hljs-property">tag</span> !== <span class="hljs-string">'Pre-release'</span>)
+    <span class="hljs-comment">// Customize titles</span>
+    .<span class="hljs-title function_">map</span>(<span class="hljs-function"><span class="hljs-params">entry</span> =></span> ({
+      ...entry,
+      <span class="hljs-attr">title</span>: entry.<span class="hljs-property">title</span>.<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/^v/</span>, <span class="hljs-string">'Version '</span>),
+    }));
+};
+</code></pre>
+<p>Each <code>DoculaChangelogEntry</code> has these fields you can read or modify:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>title</code></td>
+<td><code>string</code></td>
+<td>Entry title (from release name or tag)</td>
+</tr>
+<tr>
+<td><code>date</code></td>
+<td><code>string</code></td>
+<td>Date string (YYYY-MM-DD)</td>
+</tr>
+<tr>
+<td><code>formattedDate</code></td>
+<td><code>string</code></td>
+<td>Localized display date</td>
+</tr>
+<tr>
+<td><code>tag</code></td>
+<td><code>string?</code></td>
+<td>Badge label (e.g., "Release", "Pre-release")</td>
+</tr>
+<tr>
+<td><code>tagClass</code></td>
+<td><code>string?</code></td>
+<td>CSS class derived from tag</td>
+</tr>
+<tr>
+<td><code>slug</code></td>
+<td><code>string</code></td>
+<td>URL-friendly identifier</td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td><code>string</code></td>
+<td>Raw markdown content</td>
+</tr>
+<tr>
+<td><code>generatedHtml</code></td>
+<td><code>string</code></td>
+<td>Rendered HTML</td>
+</tr>
+<tr>
+<td><code>preview</code></td>
+<td><code>string</code></td>
+<td>Auto-generated preview HTML for the changelog index (300-500 chars, paragraph-aware, headings and images stripped)</td>
+</tr>
+<tr>
+<td><code>previewImage</code></td>
+<td><code>string?</code></td>
+<td>Image URL displayed above the preview on the changelog listing page (set via front matter)</td>
+</tr>
+<tr>
+<td><code>urlPath</code></td>
+<td><code>string</code></td>
+<td>Output file path</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string?</code></td>
+<td>SEO description for the entry page (set via front matter or AI enrichment)</td>
+</tr>
+<tr>
+<td><code>keywords</code></td>
+<td><code>string[]?</code></td>
+<td>SEO keywords for the entry page (set via front matter or AI enrichment)</td>
+</tr>
+<tr>
+<td><code>ogTitle</code></td>
+<td><code>string?</code></td>
+<td>OpenGraph title override (set via front matter or AI enrichment)</td>
+</tr>
+<tr>
+<td><code>ogDescription</code></td>
+<td><code>string?</code></td>
+<td>OpenGraph description override (set via front matter or AI enrichment)</td>
+</tr>
+</tbody>
+</table>
+<p>The hook can be synchronous or async. If the hook throws an error, it is logged and the unmodified entries are used.</p>
+<h2 id="cleaning-up-the-auto-readme">Cleaning Up the Auto README</h2>
+<p>When <code>autoReadme</code> is enabled and docula falls back to your project root <code>README.md</code> for the home page, the <code>onAutoReadme</code> hook lets you transform that markdown before it is rendered. This is useful for stripping a shields/badges banner, removing an "Install" section that doesn't belong on the home page, or rewriting relative links.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">DoculaConsole</span>, <span class="hljs-title class_">DoculaOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'docula'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">Partial</span>&#x3C;<span class="hljs-title class_">DoculaOptions</span>> = {
+  <span class="hljs-attr">autoReadme</span>: <span class="hljs-literal">true</span>,
+};
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> onAutoReadme = (<span class="hljs-attr">content</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">sourcePath</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">console</span>: <span class="hljs-title class_">DoculaConsole</span>): <span class="hljs-function"><span class="hljs-params">string</span> =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">info</span>(<span class="hljs-string">`Cleaning up README at <span class="hljs-subst">${sourcePath}</span>`</span>);
+  <span class="hljs-keyword">return</span> content
+    <span class="hljs-comment">// Drop everything from "## Install" up to the next H2</span>
+    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/^##\s+Install[\s\S]*?(?=^##\s)/m</span>, <span class="hljs-string">''</span>)
+    <span class="hljs-comment">// Rewrite relative links to absolute</span>
+    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/\]\(\.\//g</span>, <span class="hljs-string">'](https://github.com/your-username/your-repo/blob/main/'</span>);
+};
+</code></pre>
+<p>The hook receives:</p>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>content</code></td>
+<td><code>string</code></td>
+<td>The resolved README markdown (with a <code># name</code> title prepended if the README had none)</td>
+</tr>
+<tr>
+<td><code>sourcePath</code></td>
+<td><code>string</code></td>
+<td>Absolute path of the root <code>README.md</code></td>
+</tr>
+<tr>
+<td><code>console</code></td>
+<td><code>DoculaConsole</code></td>
+<td>Logger (see below)</td>
+</tr>
+</tbody>
+</table>
+<p>The hook can be synchronous or async and must return the new markdown. If the hook throws, the error is logged and the original content is used. The hook only runs when <code>autoReadme</code> is enabled and there is no <code>README.md</code> in the site directory.</p>
+<h2 id="doculaconsole-logger">DoculaConsole Logger</h2>
+<p>The <code>onPrepare</code>, <code>onReleaseChangelog</code>, and <code>onAutoReadme</code> hooks all receive a <code>DoculaConsole</code> instance as their last argument. This provides styled, consistent logging output:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>console.log(message)</code></td>
+<td>Plain text output</td>
+</tr>
+<tr>
+<td><code>console.info(message)</code></td>
+<td>Informational message with cyan prefix</td>
+</tr>
+<tr>
+<td><code>console.warn(message)</code></td>
+<td>Warning message with yellow prefix</td>
+</tr>
+<tr>
+<td><code>console.error(message)</code></td>
+<td>Error message with red prefix</td>
+</tr>
+<tr>
+<td><code>console.success(message)</code></td>
+<td>Success message with green prefix</td>
+</tr>
+<tr>
+<td><code>console.step(message)</code></td>
+<td>Step/progress message with blue prefix</td>
+</tr>
+</tbody>
+</table>
+<h2 id="config-file-priority">Config File Priority</h2>
+<p>When both config files exist, Docula loads them in this order (first found wins):</p>
+<ol>
+<li><code>docula.config.ts</code> (TypeScript - takes priority)</li>
+<li><code>docula.config.mjs</code> (JavaScript)</li>
+</ol>
+<h2 id="available-options">Available Options</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>templatePath</code></td>
+<td><code>string</code></td>
+<td><code>'./template'</code></td>
+<td>Path to custom template directory</td>
+</tr>
+<tr>
+<td><code>output</code></td>
+<td><code>string</code></td>
+<td><code>'{sitePath}/dist'</code></td>
+<td>Output directory for built site (defaults to <code>dist/</code> inside the site directory)</td>
+</tr>
+<tr>
+<td><code>sitePath</code></td>
+<td><code>string</code></td>
+<td><code>'./site'</code></td>
+<td>Directory containing site content</td>
+</tr>
+<tr>
+<td><code>githubPath</code></td>
+<td><code>string</code></td>
+<td><code>''</code></td>
+<td>GitHub repository path (e.g., <code>'user/repo'</code>). Optional — when empty, GitHub features are disabled. See <a href="/docs/github-integration">GitHub Integration</a>.</td>
+</tr>
+<tr>
+<td><code>siteTitle</code></td>
+<td><code>string</code></td>
+<td><code>'docula'</code></td>
+<td>Website title</td>
+</tr>
+<tr>
+<td><code>siteDescription</code></td>
+<td><code>string</code></td>
+<td>-</td>
+<td>Website description</td>
+</tr>
+<tr>
+<td><code>siteUrl</code></td>
+<td><code>string</code></td>
+<td>-</td>
+<td>Website URL</td>
+</tr>
+<tr>
+<td><code>port</code></td>
+<td><code>number</code></td>
+<td><code>3000</code></td>
+<td>Port for local development server</td>
+</tr>
+<tr>
+<td><code>sections</code></td>
+<td><code>DoculaSection[]</code></td>
+<td>-</td>
+<td>Documentation sections</td>
+</tr>
+<tr>
+<td><code>openApiUrl</code></td>
+<td><code>string | Array&#x3C;{ name: string; url: string; order?: number }></code></td>
+<td>-</td>
+<td>OpenAPI spec for API documentation. Pass a string for a single spec, or an array for multiple specs. Auto-detected if <code>api/swagger.json</code> exists. See <a href="/docs/api-reference">API Reference</a>.</td>
+</tr>
+<tr>
+<td><code>enableReleaseChangelog</code></td>
+<td><code>boolean</code></td>
+<td><code>true</code></td>
+<td>Convert GitHub releases to changelog entries</td>
+</tr>
+<tr>
+<td><code>changelogPerPage</code></td>
+<td><code>number</code></td>
+<td><code>20</code></td>
+<td>Number of changelog entries to display per page</td>
+</tr>
+<tr>
+<td><code>enableLlmsTxt</code></td>
+<td><code>boolean</code></td>
+<td><code>true</code></td>
+<td>Generate <code>llms.txt</code> and <code>llms-full.txt</code> in the build output</td>
+</tr>
+<tr>
+<td><code>themeMode</code></td>
+<td><code>'light'</code> | <code>'dark'</code></td>
+<td>-</td>
+<td>Override the default theme. By default the site follows the system preference. Set to <code>'light'</code> or <code>'dark'</code> to use that theme when no user preference is stored.</td>
+</tr>
+<tr>
+<td><code>cookieAuth</code></td>
+<td><code>{ loginUrl: string; logoutUrl?: string; authCheckUrl?: string; authCheckMethod?: string; authCheckUserPath?: string }</code></td>
+<td>-</td>
+<td>Enables cookie-based authentication, which displays a Login/Logout button in the header. See <a href="/docs/cookie-auth">Cookie Auth</a>.</td>
+</tr>
+<tr>
+<td><code>headerLinks</code></td>
+<td><code>Array&#x3C;{ label: string; url: string; icon?: string }></code></td>
+<td>-</td>
+<td>Additional links to display in the site header navigation. See <a href="/docs/header-links">Header Links</a>.</td>
+</tr>
+<tr>
+<td><code>homeUrl</code></td>
+<td><code>string</code></td>
+<td>-</td>
+<td>URL for the logo/home link in the header. When set, the logo links to this URL instead of <code>baseUrl</code>. Useful when hosting docs under a subpath and the logo should link to the parent site.</td>
+</tr>
+<tr>
+<td><code>baseUrl</code></td>
+<td><code>string</code></td>
+<td><code>''</code></td>
+<td>Base URL path prefix for all generated paths (e.g., <code>'/docs'</code>). When set, all asset and navigation URLs are prefixed with this path. Useful when hosting docs under a subpath of another site.</td>
+</tr>
+<tr>
+<td><code>docsPath</code></td>
+<td><code>string</code></td>
+<td><code>'docs'</code></td>
+<td>Output subdirectory and URL segment for documentation pages. Set to <code>''</code> to place docs at the output root — useful with <code>baseUrl</code> to avoid <code>/docs/docs/</code> nesting.</td>
+</tr>
+<tr>
+<td><code>apiPath</code></td>
+<td><code>string</code></td>
+<td><code>'api'</code></td>
+<td>Output subdirectory and URL segment for API reference pages.</td>
+</tr>
+<tr>
+<td><code>changelogPath</code></td>
+<td><code>string</code></td>
+<td><code>'changelog'</code></td>
+<td>Output subdirectory and URL segment for changelog pages.</td>
+</tr>
+<tr>
+<td><code>googleTagManager</code></td>
+<td><code>string</code></td>
+<td>-</td>
+<td>Google Tag Manager container ID (e.g., <code>'GTM-XXXXXX'</code>) or Google Analytics 4 measurement ID (e.g., <code>'G-XXXXXXXXXX'</code>). Injects the appropriate tracking script on every page.</td>
+</tr>
+<tr>
+<td><code>autoReadme</code></td>
+<td><code>boolean</code></td>
+<td><code>true</code></td>
+<td>Automatically use the project root <code>README.md</code> as the home page when no <code>README.md</code> exists in the site directory. The leading <code># Title</code> heading is stripped from the rendered page to avoid duplicating the site title. Set to <code>false</code> to disable this fallback.</td>
+</tr>
+<tr>
+<td><code>allowedAssets</code></td>
+<td><code>string[]</code></td>
+<td><em>(see <a href="/docs/assets">Assets &#x26; Public Folder</a>)</em></td>
+<td>File extensions to copy from <code>docs/</code> and <code>changelog/</code> to output</td>
+</tr>
+</tbody>
+</table>

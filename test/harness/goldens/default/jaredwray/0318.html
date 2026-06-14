@@ -1,0 +1,9 @@
+<h1 id="breaking-changes-from-v2-to-v3">Breaking Changes from v2 to v3</h1>
+<p>Because of the complexity in the legacy helpers library we have moved to exporting the libraries and a helper function to make it easier to use. Here are the exports:</p>
+<ul>
+<li><code>handlebars</code> - This is an instance of handlebars library without any helpers. It is the same as calling <code>Handlebars.create()</code></li>
+<li><code>helpers</code> - This is a function that takes an object with a <code>handlebars</code> key and adds all the helpers to the handlebars instance. This is the same as calling <code>helpers({ handlebars: handlebars }, { ..options })</code></li>
+<li><code>createHandlebars</code> - This is an async function that returns a handlebars instance with all the helpers added. This is the same as calling <code>helpers({ handlebars: handlebars }, { ..options })</code> but async.</li>
+<li><code>Handlebars</code> - This is the handlebars library itself. It is the same as calling <code>require('handlebars')</code></li>
+</ul>
+<p>Please see the examples below for how to use the library.</p>

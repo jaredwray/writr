@@ -1,0 +1,19 @@
+<p>{
+"event": "user.profile.updated",
+"timestamp": "&#x3C;%= new Date().toISOString() %>",
+"user": {
+"name": "&#x3C;%= name %>",
+"age": &#x3C;%= age %>,
+"preferences": {
+"favoriteVegetables": [
+&#x3C;% vegetables.forEach(function(veg, index) { %>
+"&#x3C;%= veg %>"&#x3C;% if (index &#x3C; vegetables.length - 1) { %>,&#x3C;% } %>
+&#x3C;% }); %>
+]
+}
+},
+"metadata": {
+"source": "profile-service",
+"version": "1.0.0"
+}
+}</p>

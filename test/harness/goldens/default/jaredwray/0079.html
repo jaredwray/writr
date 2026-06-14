@@ -1,0 +1,30 @@
+<blockquote>
+<p><strong>Availability:</strong> Registered in both the Node and browser builds.</p>
+</blockquote>
+<h2 id="regex">regex</h2>
+<h3 id="toregex">{{toRegex}}</h3>
+<p>Convert the given string to a regular expression.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{RegExp}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{toRegex "foo"}}
+<span class="hljs-comment">&#x3C;!-- results in: /foo/ --></span>
+</code></pre>
+<h3 id="test">{{test}}</h3>
+<p>Returns true if the given <code>str</code> matches the given regex. A regex can be passed on the context, or using the toRegex helper as a subexpression.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{RegExp}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{test "bar" (toRegex "foo")}}
+<span class="hljs-comment">&#x3C;!-- results in: false --></span>
+{{test "foobar" (toRegex "foo")}}
+<span class="hljs-comment">&#x3C;!-- results in: true --></span>
+{{test "foobar" (toRegex "^foo$")}}
+<span class="hljs-comment">&#x3C;!-- results in: false --></span>
+</code></pre>

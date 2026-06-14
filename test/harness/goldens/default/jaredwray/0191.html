@@ -1,0 +1,42 @@
+<h1 id="agentsmd">AGENTS.md</h1>
+<h2 id="overview">Overview</h2>
+<p>Airhorn is a cloud-native notifications library providing a unified API for SMS, Email, Mobile Push, and Webhook delivery. This is a pnpm monorepo with four packages under <code>packages/</code>.</p>
+<h2 id="packages">Packages</h2>
+<ul>
+<li><code>packages/airhorn</code> — Core library (<code>airhorn</code> on npm)</li>
+<li><code>packages/twilio</code> — Twilio provider (<code>@airhornjs/twilio</code>)</li>
+<li><code>packages/aws</code> — AWS provider (<code>@airhornjs/aws</code>)</li>
+<li><code>packages/azure</code> — Azure provider (<code>@airhornjs/azure</code>)</li>
+</ul>
+<h2 id="commands">Commands</h2>
+<p>All commands use <strong>pnpm</strong> (not npm or yarn).</p>
+<pre><code class="hljs language-bash">pnpm install          <span class="hljs-comment"># Install dependencies</span>
+pnpm build            <span class="hljs-comment"># Build all packages</span>
+pnpm <span class="hljs-built_in">test</span>             <span class="hljs-comment"># Lint, test, and coverage for all packages</span>
+</code></pre>
+<p>To run for a single package:</p>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">cd</span> packages/airhorn
+pnpm <span class="hljs-built_in">test</span>             <span class="hljs-comment"># Runs: biome lint + vitest with coverage</span>
+</code></pre>
+<h2 id="workflow">Workflow</h2>
+<ol>
+<li>Make your changes in <code>src/</code> and <code>test/</code> within the relevant package</li>
+<li>Run <code>pnpm test</code> from the repo root to lint, test, and check coverage across all packages</li>
+<li>Target <strong>100% code coverage</strong> — every new or changed line must be tested</li>
+<li>All tests must pass on Node.js 22, 24, and 26</li>
+</ol>
+<h2 id="testing">Testing</h2>
+<ul>
+<li><strong>Framework:</strong> Vitest</li>
+<li><strong>Coverage:</strong> @vitest/coverage-v8</li>
+<li><strong>Linting:</strong> Biome</li>
+<li>Each package's <code>pnpm test</code> runs linting first, then vitest with coverage</li>
+<li>Write tests in <code>packages/&#x3C;name>/test/</code> using the <code>*.test.ts</code> naming convention</li>
+</ul>
+<h2 id="code-style">Code Style</h2>
+<ul>
+<li>TypeScript only, ESM modules</li>
+<li>Biome handles formatting and linting (no ESLint/Prettier)</li>
+<li>Double quotes, tab indentation</li>
+<li>Run <code>biome check --write --error-on-warnings</code> to auto-fix lint issues</li>
+</ul>

@@ -1,0 +1,226 @@
+<p><img src="https://airhorn.org/logo.svg" alt="Airhorn" title="Airhorn"></p>
+<hr>
+<p><a href="https://github.com/jaredwray/airhorn/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/airhorn/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://codecov.io/gh/jaredwray/airhorn"><img src="https://codecov.io/gh/jaredwray/airhorn/branch/main/graph/badge.svg?token=4OJEEB67Q5" alt="codecov"></a>
+<a href="https://github.com/jaredwray/airhorn/blob/master/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/airhorn" alt="license"></a>
+<a href="https://npmjs.com/package/@airhornjs/azure"><img src="https://img.shields.io/npm/dm/@airhornjs/azure" alt="npm"></a>
+<a href="https://npmjs.com/package/@airhornjs/azure"><img src="https://img.shields.io/npm/v/@airhornjs/azure" alt="npm"></a></p>
+<h1 id="airhornjsazure">@airhornjs/azure</h1>
+<p>Azure Communication Services and Notification Hubs provider for Airhorn.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="hljs language-bash">npm install airhorn @airhornjs/azure
+</code></pre>
+<h2 id="features">Features</h2>
+<ul>
+<li>SMS sending via Azure Communication Services</li>
+<li>Email sending via Azure Communication Services</li>
+<li>Mobile push notifications to iOS and Android devices via Azure Notification Hubs</li>
+<li>Automatic error handling and retry support</li>
+<li>Integration with Airhorn's notification system</li>
+<li>Support for multiple connection strings</li>
+</ul>
+<h2 id="usage">Usage</h2>
+<h3 id="sms-with-azure-communication-services">SMS with Azure Communication Services</h3>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'airhorn'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">AirhornAzure</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@airhornjs/azure'</span>;
+
+<span class="hljs-comment">// Create Azure provider for SMS</span>
+<span class="hljs-keyword">const</span> azureProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornAzure</span>({
+  <span class="hljs-attr">connectionString</span>: <span class="hljs-string">'endpoint=https://your-service.communication.azure.com/;accesskey=your-key'</span>,
+});
+
+<span class="hljs-comment">// Create Airhorn instance with Azure provider</span>
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>({
+  <span class="hljs-attr">providers</span>: [azureProvider],
+});
+
+<span class="hljs-keyword">const</span> data = {
+  <span class="hljs-attr">orderId</span>: <span class="hljs-string">'12345'</span>,
+  <span class="hljs-attr">customerName</span>: <span class="hljs-string">'John'</span>,
+};
+
+<span class="hljs-comment">// Send SMS</span>
+<span class="hljs-keyword">const</span> template = {
+  <span class="hljs-attr">from</span>: <span class="hljs-string">'+1234567890'</span>, <span class="hljs-comment">// Your sender phone number (must be provisioned in Azure)</span>
+  <span class="hljs-attr">content</span>: <span class="hljs-string">'Hello &#x3C;%= customerName %>!, your order #&#x3C;%= orderId %> has been shipped!'</span>,
+  <span class="hljs-attr">type</span>: <span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">SMS</span>,
+};
+
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(
+  <span class="hljs-string">'+0987654321'</span>, <span class="hljs-comment">// to</span>
+  template,
+  data,
+  <span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">SMS</span>
+);
+</code></pre>
+<h3 id="email-with-azure-communication-services">Email with Azure Communication Services</h3>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'airhorn'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">AirhornAzure</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@airhornjs/azure'</span>;
+
+<span class="hljs-comment">// Create Azure provider with email support</span>
+<span class="hljs-keyword">const</span> azureProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornAzure</span>({
+  <span class="hljs-attr">connectionString</span>: <span class="hljs-string">'endpoint=https://your-service.communication.azure.com/;accesskey=your-key'</span>,
+});
+
+<span class="hljs-comment">// Create Airhorn instance</span>
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>({
+  <span class="hljs-attr">providers</span>: [azureProvider],
+});
+
+<span class="hljs-keyword">const</span> data = {
+  <span class="hljs-attr">orderId</span>: <span class="hljs-string">'656565'</span>,
+  <span class="hljs-attr">customerName</span>: <span class="hljs-string">'John'</span>,
+};
+
+<span class="hljs-comment">// Send Email</span>
+<span class="hljs-keyword">const</span> template = {
+  <span class="hljs-attr">from</span>: <span class="hljs-string">'DoNotReply@yourdomain.com'</span>, <span class="hljs-comment">// Must be verified domain in Azure</span>
+  <span class="hljs-attr">subject</span>: <span class="hljs-string">'Order Confirmation: &#x3C;%= orderId %>'</span>,
+  <span class="hljs-attr">content</span>: <span class="hljs-string">'Hi &#x3C;%= customerName %>, your order #&#x3C;%= orderId %> has been confirmed!'</span>,
+};
+
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(
+  <span class="hljs-string">'recipient@example.com'</span>, <span class="hljs-comment">// to</span>
+  template,
+  data,
+  <span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">Email</span>
+);
+</code></pre>
+<h3 id="mobile-push-notifications-with-azure-notification-hubs">Mobile Push Notifications with Azure Notification Hubs</h3>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'airhorn'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">AirhornAzure</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@airhornjs/azure'</span>;
+
+<span class="hljs-keyword">const</span> azureProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornAzure</span>({
+  <span class="hljs-attr">notificationHubConnectionString</span>: <span class="hljs-string">'Endpoint=sb://your-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=your-key'</span>,
+  <span class="hljs-attr">notificationHubName</span>: <span class="hljs-string">'your-hub-name'</span>,
+});
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>({
+  <span class="hljs-attr">providers</span>: [azureProvider],
+});
+
+<span class="hljs-keyword">const</span> data = {
+  <span class="hljs-attr">orderId</span>: <span class="hljs-string">'12345'</span>,
+  <span class="hljs-attr">customerName</span>: <span class="hljs-string">'John'</span>,
+};
+
+<span class="hljs-comment">// Send to iOS device via APNs</span>
+<span class="hljs-keyword">const</span> template = {
+  <span class="hljs-attr">from</span>: <span class="hljs-string">'YourApp'</span>,
+  <span class="hljs-attr">content</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>({
+    <span class="hljs-attr">aps</span>: {
+      <span class="hljs-attr">alert</span>: {
+        <span class="hljs-attr">title</span>: <span class="hljs-string">'New Order'</span>,
+        <span class="hljs-attr">body</span>: <span class="hljs-string">'Hi &#x3C;%= customerName %>You have a new order #&#x3C;%= orderId %>'</span>,
+      },
+      <span class="hljs-attr">badge</span>: <span class="hljs-number">1</span>,
+      <span class="hljs-attr">sound</span>: <span class="hljs-string">'default'</span>,
+    },
+    <span class="hljs-comment">// Custom data</span>
+    <span class="hljs-attr">orderId</span>: <span class="hljs-string">'12345'</span>,
+  }),
+};
+
+<span class="hljs-comment">// Send using tag expression</span>
+<span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(
+  <span class="hljs-string">'user:john-doe'</span>, <span class="hljs-comment">// Tag expression</span>
+  template,
+  data,
+  <span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">MobilePush</span>,
+  {
+    <span class="hljs-attr">platform</span>: <span class="hljs-string">'apple'</span>,
+    <span class="hljs-attr">tags</span>: <span class="hljs-string">'user:john-doe &#x26;&#x26; ios'</span>,
+  },
+);
+</code></pre>
+<h3 id="custom-capabilities">Custom Capabilities</h3>
+<p>You can specify which services to enable using the <code>capabilities</code> option:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// SMS only</span>
+<span class="hljs-keyword">const</span> smsProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornAzure</span>({
+  <span class="hljs-attr">connectionString</span>: <span class="hljs-string">'your-connection-string'</span>,
+  <span class="hljs-attr">capabilities</span>: [<span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">SMS</span>],
+});
+
+<span class="hljs-comment">// Email only</span>
+<span class="hljs-keyword">const</span> emailProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornAzure</span>({
+  <span class="hljs-attr">connectionString</span>: <span class="hljs-string">'your-connection-string'</span>,
+  <span class="hljs-attr">capabilities</span>: [<span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">Email</span>],
+});
+
+<span class="hljs-comment">// Mobile Push only</span>
+<span class="hljs-keyword">const</span> pushProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornAzure</span>({
+  <span class="hljs-attr">notificationHubConnectionString</span>: <span class="hljs-string">'your-hub-connection-string'</span>,
+  <span class="hljs-attr">notificationHubName</span>: <span class="hljs-string">'your-hub-name'</span>,
+  <span class="hljs-attr">capabilities</span>: [<span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">MobilePush</span>],
+});
+
+<span class="hljs-comment">// All capabilities (explicit)</span>
+<span class="hljs-keyword">const</span> allProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornAzure</span>({
+  <span class="hljs-attr">connectionString</span>: <span class="hljs-string">'your-communication-services-connection-string'</span>,
+  <span class="hljs-attr">notificationHubConnectionString</span>: <span class="hljs-string">'your-hub-connection-string'</span>,
+  <span class="hljs-attr">notificationHubName</span>: <span class="hljs-string">'your-hub-name'</span>,
+  <span class="hljs-attr">capabilities</span>: [<span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">SMS</span>, <span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">Email</span>, <span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">MobilePush</span>],
+});
+</code></pre>
+<h2 id="configuration">Configuration</h2>
+<h3 id="airhornazureoptions">AirhornAzureOptions</h3>
+<ul>
+<li><code>connectionString</code> (optional): Azure Communication Services connection string (used for both SMS and Email if specific strings not provided)</li>
+<li><code>emailConnectionString</code> (optional): Specific connection string for Email service</li>
+<li><code>smsConnectionString</code> (optional): Specific connection string for SMS service</li>
+<li><code>notificationHubConnectionString</code> (optional): Azure Notification Hub connection string</li>
+<li><code>notificationHubName</code> (optional): Azure Notification Hub name</li>
+<li><code>capabilities</code> (optional): Array of <code>AirhornSendType</code> values to specify which services to enable (defaults to SMS, MobilePush, and Email)</li>
+</ul>
+<h2 id="additional-options">Additional Options</h2>
+<h3 id="sms-options">SMS Options</h3>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(to, message, {
+  <span class="hljs-comment">// Additional SMS options from Azure Communication Services</span>
+  <span class="hljs-attr">deliveryReportTimeoutInSeconds</span>: <span class="hljs-number">300</span>,
+  <span class="hljs-attr">tag</span>: <span class="hljs-string">'custom-tag'</span>,
+});
+</code></pre>
+<h2 id="prerequisites">Prerequisites</h2>
+<h3 id="azure-communication-services">Azure Communication Services</h3>
+<ol>
+<li>Create an Azure Communication Services resource in Azure Portal</li>
+<li>Get your connection string from the resource</li>
+<li>For SMS: Provision a phone number through the Azure Portal</li>
+<li>For Email: Verify your sending domain</li>
+</ol>
+<h3 id="azure-notification-hubs">Azure Notification Hubs</h3>
+<ol>
+<li>Create a Notification Hub namespace and hub in Azure Portal</li>
+<li>Configure platform credentials (APNs for iOS, FCM for Android)</li>
+<li>Get your connection string and hub name</li>
+<li>Implement device registration in your mobile apps</li>
+</ol>
+<h2 id="azure-rbac-permissions">Azure RBAC Permissions</h2>
+<p>Minimum required permissions for the service principal or managed identity:</p>
+<h3 id="for-communication-services">For Communication Services:</h3>
+<ul>
+<li><code>Azure Communication Services Contributor</code> role</li>
+<li>Or specific permissions:
+<ul>
+<li><code>Microsoft.Communication/CommunicationServices/read</code></li>
+<li><code>Microsoft.Communication/CommunicationServices/write</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="for-notification-hubs">For Notification Hubs:</h3>
+<ul>
+<li><code>Azure Notification Hubs Contributor</code> role</li>
+<li>Or specific permissions:
+<ul>
+<li><code>Microsoft.NotificationHubs/Namespaces/NotificationHubs/read</code></li>
+<li><code>Microsoft.NotificationHubs/Namespaces/NotificationHubs/write</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="testing">Testing</h2>
+<pre><code class="hljs language-bash">pnpm <span class="hljs-built_in">test</span>
+</code></pre>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>Now that you've set up your workspace, you're ready to contribute changes to the <code>airhorn</code> repository you can refer to the <a href="CONTRIBUTING.md">CONTRIBUTING</a> guide. If you have any questions please feel free to ask by creating an issue and label it <code>question</code>.</p>
+<h1 id="licensing-and-copyright">Licensing and Copyright</h1>
+<p>This project is <a href="LICENSE">MIT License © Jared Wray</a></p>

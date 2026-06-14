@@ -1,0 +1,13 @@
+<h2 id="using-generics">Using Generics</h2>
+<p>Here is a generic function:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">function</span> identity&#x3C;T>(<span class="hljs-attr">arg</span>: T): T {
+  <span class="hljs-keyword">return</span> arg;
+}
+</code></pre>
+<p>And a more complex example:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">number</span>>();
+<span class="hljs-keyword">const</span> <span class="hljs-attr">list</span>: <span class="hljs-title class_">Array</span>&#x3C;<span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">Response</span>>> = [];
+</code></pre>
+<h2 id="non-ascii-characters">Non-ASCII Characters</h2>
+<p>This section has non-ASCII characters: café, naïve, résumé.</p>
+<p>Unicode: über, straße, © 2025.</p>

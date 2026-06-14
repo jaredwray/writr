@@ -1,0 +1,140 @@
+<h1 id="evaluation-context">Evaluation Context</h1>
+<p>import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';</p>
+<p>The <a href="/specification/glossary#evaluation-context"><em>evaluation context</em></a> is a container for arbitrary contextual data that can be used as a basis for dynamic evaluation.
+Static data such as the host or an identifier for the application can be configured globally.
+Dynamic evaluation context, such as the IP address of the client in a web application, can be implicitly propagated or explicitly passed to during flag evaluation, and can be merged with static values.</p>
+<pre><code class="hljs language-mdx-code-block">import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+
+&#x3C;div className="video-container">
+  &#x3C;LiteYouTubeEmbed
+    id="L4iSvkxVnFI"
+    title="YouTube video player"
+    poster="maxresdefault"
+    webp
+  />
+&#x3C;/div>
+</code></pre>
+<h2 id="providing-evaluation-context">Providing Evaluation Context</h2>
+<h3 id="dynamic-context-implementations-server-side-sdks">Dynamic Context Implementations (Server-side SDKs)</h3>
+<p>In <a href="/docs/reference/concepts/sdk-paradigms#dynamic-context-paradigm-server-side-sdks">server-side SDKs</a>, values relevant for flag evaluation can be included in the evaluation context at multiple points: globally (on the top level API), on the client, and at the point of flag evaluation (invocation).</p>
+<pre><code class="hljs language-ts"><span class="hljs-comment">// add a value to the global context</span>
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setContext</span>({ <span class="hljs-attr">myGlobalKey</span>: <span class="hljs-string">'myGlobalValue'</span> });
+
+<span class="hljs-comment">// add a value to the client context</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+client.<span class="hljs-title function_">setContext</span>({ <span class="hljs-attr">myClientKey</span>: <span class="hljs-string">'myClientValue'</span> });
+
+<span class="hljs-comment">// add a value to the invocation context</span>
+<span class="hljs-keyword">const</span> <span class="hljs-attr">context</span>: <span class="hljs-title class_">EvaluationContext</span> = {
+  <span class="hljs-attr">myInvocationKey</span>: <span class="hljs-string">'myInvocationValue'</span>,
+};
+<span class="hljs-keyword">const</span> boolValue = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">'boolFlag'</span>, <span class="hljs-literal">false</span>, context);
+</code></pre>
+<pre><code class="hljs language-java"><span class="hljs-comment">// add a value to the global context</span>
+<span class="hljs-type">OpenFeatureAPI</span> <span class="hljs-variable">api</span> <span class="hljs-operator">=</span> OpenFeatureAPI.getInstance();
+api.setEvaluationContext(<span class="hljs-keyword">new</span> <span class="hljs-title class_">MutableContext</span>().add(<span class="hljs-string">"myGlobalKey"</span>, <span class="hljs-string">"myGlobalValue"</span>));
+
+<span class="hljs-comment">// add a value to the client context</span>
+<span class="hljs-type">Client</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> api.getClient();
+client.setEvaluationContext(<span class="hljs-keyword">new</span> <span class="hljs-title class_">MutableContext</span>().add(<span class="hljs-string">"myClientKey"</span>, <span class="hljs-string">"myClientValue"</span>));
+
+<span class="hljs-comment">// add a value to the invocation context</span>
+<span class="hljs-type">EvaluationContext</span> <span class="hljs-variable">context</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">MutableContext</span>();
+context.addStringAttribute(<span class="hljs-string">"myInvocationKey"</span>, <span class="hljs-string">"myInvocationValue"</span>)
+<span class="hljs-type">Boolean</span> <span class="hljs-variable">boolValue</span> <span class="hljs-operator">=</span> client.getBooleanValue(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>, context);
+</code></pre>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// add a value to the global context</span>
+Api api = Api.Instance;
+api.SetContext(<span class="hljs-keyword">new</span> EvaluationContextBuilder().Set(<span class="hljs-string">"myGlobalKey"</span>, <span class="hljs-string">"myGlobalValue"</span>).Build());
+
+<span class="hljs-comment">// add a value to the client context</span>
+FeatureClient client = api.GetClient();
+client.SetContext(<span class="hljs-keyword">new</span> EvaluationContextBuilder().Set(<span class="hljs-string">"myClientKey"</span>, <span class="hljs-string">"myClientValue"</span>).Build());
+
+<span class="hljs-comment">// add a value to the invocation context</span>
+<span class="hljs-keyword">var</span> context = <span class="hljs-keyword">new</span> EvaluationContext()
+    .Set(<span class="hljs-string">"myInvocationKey"</span>, <span class="hljs-string">"myInvocationValue"</span>)
+    .Build();
+
+<span class="hljs-keyword">var</span> boolValue = <span class="hljs-keyword">await</span> client.GetBooleanValue(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>, context);
+</code></pre>
+<pre><code class="hljs language-go">
+<span class="hljs-comment">// add a value to the global context</span>
+openfeature.SetEvaluationContext(openfeature.NewEvaluationContext(
+    <span class="hljs-string">""</span>,
+    <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-keyword">interface</span>{}{
+        <span class="hljs-string">"myGlobalKey"</span>:  <span class="hljs-string">"myGlobalValue"</span>,
+    },
+))
+
+<span class="hljs-comment">// add a value to the client context</span>
+client := openfeature.NewClient(<span class="hljs-string">"my-app"</span>)
+client.SetEvaluationContext(openfeature.NewEvaluationContext(
+    <span class="hljs-string">""</span>,
+    <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-keyword">interface</span>{}{
+        <span class="hljs-string">"myGlobalKey"</span>:  <span class="hljs-string">"myGlobalValue"</span>,
+    },
+))
+
+<span class="hljs-comment">// add a value to the invocation context</span>
+evalCtx := openfeature.NewEvaluationContext(
+    <span class="hljs-string">""</span>,
+    <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-keyword">interface</span>{}{
+        <span class="hljs-string">"myInvocationKey"</span>: <span class="hljs-string">"myInvocationValue"</span>,
+    },
+)
+boolValue, err := client.BooleanValue(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>, evalCtx)
+</code></pre>
+<pre><code class="hljs language-php"><span class="hljs-comment">// add a value to the global context</span>
+<span class="hljs-variable">$api</span> = OpenFeatureAPI.<span class="hljs-title function_ invoke__">getInstance</span>();
+<span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">setEvaluationContext</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">EvaluationContext</span>(<span class="hljs-string">"targetingKey"</span>, [<span class="hljs-string">"myGlobalKey"</span> => <span class="hljs-string">"myGlobalValue"</span>]));
+
+<span class="hljs-comment">// add a value to the client context</span>
+<span class="hljs-variable">$client</span> = <span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">getClient</span>();
+<span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">setEvaluationContext</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">EvaluationContext</span>(<span class="hljs-string">"targetingKey"</span>, [<span class="hljs-string">"myClientKey"</span> => <span class="hljs-string">"myClientValue"</span>]));
+
+<span class="hljs-comment">// add a value to the invocation context</span>
+<span class="hljs-variable">$context</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">EvaluationContext</span>(<span class="hljs-string">"targetingKey"</span>, [<span class="hljs-string">"myInvocationKey"</span> => <span class="hljs-string">"myInvocationValue"</span>]);
+
+<span class="hljs-variable">$boolValue</span> = <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getBooleanValue</span>(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>, <span class="hljs-variable">$context</span>);
+</code></pre>
+<pre><code class="hljs language-python"><span class="hljs-comment"># add a value to the global context</span>
+<span class="hljs-keyword">import</span> openfeature.api
+context = EvaluationContext(<span class="hljs-string">"targetingKey"</span>, {<span class="hljs-string">"myGlobalKey"</span>: <span class="hljs-string">"myGlobalValue"</span>})
+openfeature.api.set_evaluation_context(context)
+
+<span class="hljs-comment"># add a value to the client context</span>
+client = api.get_client()
+context = EvaluationContext(<span class="hljs-string">"targetingKey"</span>, {<span class="hljs-string">"myClientKey"</span>: <span class="hljs-string">"myClientValue"</span>})
+client.set_evaluation_context(context)
+
+<span class="hljs-comment"># add a value to the invocation context</span>
+context = EvaluationContext(<span class="hljs-string">"targetingKey"</span>, {<span class="hljs-string">"myInvocationKey"</span>: <span class="hljs-string">"myInvocationValue"</span>})
+bool_value = client.get_boolean_value(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">False</span>, context)
+</code></pre>
+<h4 id="context-merging">Context merging</h4>
+<p>At the point of flag evaluation, the evaluation context is merged, and duplicate values are overwritten as defined in the <a href="/specification/sections/evaluation-context#32-context-levels-and-merging">specification</a>.</p>
+<h3 id="static-context-implementations-client-side-sdks">Static Context Implementations (Client-side SDKs)</h3>
+<p>In <a href="/docs/reference/concepts/sdk-paradigms#static-context-paradigms-client-side-sdks">client-side SDKs</a>, values relevant for flag evaluation are set on the OpenFeature API object.
+In these implementations, this is an asynchronous operation associated with <a href="/docs/reference/concepts/sdk-paradigms#static-context-paradigms-client-side-sdks">provider reconciliation</a>.</p>
+<pre><code class="hljs language-ts"><span class="hljs-comment">// add a value to the context</span>
+<span class="hljs-keyword">await</span> <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setContext</span>({ <span class="hljs-attr">myUserData</span>: <span class="hljs-string">'myUserValue'</span> });
+
+<span class="hljs-comment">// the context is used for all feature flag evaluations automatically.</span>
+<span class="hljs-keyword">const</span> boolValue = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">'boolFlag'</span>, <span class="hljs-literal">false</span>);
+</code></pre>
+<h2 id="circular-structures-in-evaluation-context">Circular structures in Evaluation Context</h2>
+<p>Many providers serialize the evaluation context as part of their operation.
+Be careful not to include circular structures in the evaluation context to avoid serialization issues.</p>
+<h2 id="targeting-key">Targeting Key</h2>
+<p>Many feature flag management systems require an identifier for the subject of flag evaluation.
+For many feature flag systems this is required in order to perform fractional evaluation or percentage-based rollouts deterministically.
+In the case of web applications or mobile apps, the subject is frequently an end user, but in other cases it could be a service or client application.
+The <code>evaluation context</code> includes an optional <code>targeting key</code> field for this purpose.
+The targeting key should contain a string uniquely identifying the subject (i.e.: a UUID, a hash of some user attribute such as an email, or the hostname of an application or service).
+Some <a href="/docs/reference/concepts/provider">providers</a> may require this field to be set to function correctly.</p>
+<h2 id="personally-identifiable-information-pii-considerations">Personally Identifiable Information (PII) Considerations</h2>
+<p>Be thoughtful in your inclusion of personal data in the <code>evaluation context</code>.
+Such data is useful for targeting and dynamic evaluation, but you should consider how the <a href="/docs/reference/concepts/provider">provider</a> in use may handle or persist this data.
+Hooks (specifically hooks implementing the <em>before</em> stage) can be useful to restrict, filter or anonymize data in the <code>evaluation context</code>.</p>

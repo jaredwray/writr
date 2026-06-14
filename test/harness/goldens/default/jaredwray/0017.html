@@ -1,0 +1,66 @@
+<h1 id="keyvserialize-superjson-">@keyv/serialize-superjson <a href="https://github.com/jaredwray/keyv"></a></h1>
+<blockquote>
+<p>SuperJSON-based serializer for <a href="https://github.com/jaredwray/keyv">Keyv</a> with support for Date, Map, Set, BigInt, RegExp, and more</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://github.com/jaredwray/keyv/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/keyv" alt="GitHub license"></a>
+<a href="https://npmjs.com/package/@keyv/serialize-superjson"><img src="https://img.shields.io/npm/dm/@keyv/serialize-superjson" alt="npm"></a></p>
+<p><code>@keyv/serialize-superjson</code> is a serialization adapter for <a href="https://github.com/jaredwray/keyv/tree/main/core/keyv">Keyv</a> powered by <a href="https://github.com/flightcontrolhq/superjson">SuperJSON</a>. It preserves JavaScript types that standard JSON does not support.</p>
+<h2 id="supported-types">Supported Types</h2>
+<p>In addition to all standard JSON types, SuperJSON supports:</p>
+<ul>
+<li><code>Date</code></li>
+<li><code>RegExp</code></li>
+<li><code>Map</code></li>
+<li><code>Set</code></li>
+<li><code>BigInt</code></li>
+<li><code>undefined</code></li>
+<li><code>Error</code></li>
+<li><code>URL</code></li>
+</ul>
+<h2 id="installation">Installation</h2>
+<pre><code class="hljs language-bash">npm install @keyv/serialize-superjson
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> <code>keyv</code> is a peer dependency and must be installed alongside this package.</p>
+</blockquote>
+<h2 id="usage">Usage</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> { superJsonSerializer } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/serialize-superjson'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">serialization</span>: superJsonSerializer });
+
+<span class="hljs-comment">// Store a Date — it comes back as a Date, not a string</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'date'</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>(<span class="hljs-string">'2024-01-15'</span>));
+<span class="hljs-keyword">const</span> date = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'date'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(date <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">Date</span>); <span class="hljs-comment">// true</span>
+
+<span class="hljs-comment">// Store a Map</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'map'</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>([[<span class="hljs-string">'a'</span>, <span class="hljs-number">1</span>], [<span class="hljs-string">'b'</span>, <span class="hljs-number">2</span>]]));
+<span class="hljs-keyword">const</span> map = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'map'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(map <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">Map</span>); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(map.<span class="hljs-title function_">get</span>(<span class="hljs-string">'a'</span>)); <span class="hljs-comment">// 1</span>
+
+<span class="hljs-comment">// Store a Set</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'set'</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Set</span>([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>]));
+<span class="hljs-keyword">const</span> set = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'set'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(set <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">Set</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<h2 id="api">API</h2>
+<h3 id="keyvsuperjsonserializer"><code>KeyvSuperJsonSerializer</code></h3>
+<p>A class that implements the <code>KeyvSerializationAdapter</code> interface from <code>keyv</code>.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">KeyvSuperJsonSerializer</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/serialize-superjson'</span>;
+
+<span class="hljs-keyword">const</span> serializer = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvSuperJsonSerializer</span>();
+</code></pre>
+<h4 id="stringifyobject-unknown-string"><code>stringify(object: unknown): string</code></h4>
+<p>Serializes a value to a JSON string using SuperJSON, preserving type information.</p>
+<h4 id="parsetdata-string-t"><code>parse&#x3C;T>(data: string): T</code></h4>
+<p>Deserializes a SuperJSON string back to its original value with all types restored.</p>
+<h3 id="superjsonserializer"><code>superJsonSerializer</code></h3>
+<p>A default <code>KeyvSuperJsonSerializer</code> instance, ready to use.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { superJsonSerializer } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/serialize-superjson'</span>;
+</code></pre>
+<h2 id="license">License</h2>
+<p><a href="LICENSE">MIT © Jared Wray</a></p>

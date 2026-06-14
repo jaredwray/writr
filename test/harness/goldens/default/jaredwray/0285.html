@@ -1,0 +1,124 @@
+<h1 id="keyvmemcache">@keyv/memcache</h1>
+<blockquote>
+<p>Memcache storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a></p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://github.com/jaredwray/keyv/blob/master/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/keyv" alt="GitHub license"></a>
+<a href="https://npmjs.com/package/@keyv/memcache"><img src="https://img.shields.io/npm/dm/@keyv/memcache" alt="npm"></a></p>
+<h2 id="install">Install</h2>
+<pre><code class="hljs language-shell">npm install --save @keyv/memcache
+</code></pre>
+<p>or</p>
+<pre><code>yarn add @keyv/memcache
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'keyv'</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">KeyvMemcache</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'@keyv/memcache'</span>);
+
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'user:pass@localhost:11211'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache });
+
+<span class="hljs-comment">//set</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">"foo"</span>,<span class="hljs-string">"bar"</span>, <span class="hljs-number">6000</span>) <span class="hljs-comment">//Expiring time is optional</span>
+
+<span class="hljs-comment">//get</span>
+<span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">"foo"</span>);
+
+<span class="hljs-comment">//delete</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">delete</span>(<span class="hljs-string">"foo"</span>);
+
+<span class="hljs-comment">//clear</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">clear</span>();
+
+</code></pre>
+<h2 id="usage-with-namespaces">Usage with Namespaces</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'keyv'</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">KeyvMemcache</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'@keyv/memcache'</span>);
+
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">'user:pass@localhost:11211'</span>);
+<span class="hljs-keyword">const</span> keyv1 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache, <span class="hljs-attr">namespace</span>: <span class="hljs-string">"namespace1"</span> });
+<span class="hljs-keyword">const</span> keyv2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache, <span class="hljs-attr">namespace</span>: <span class="hljs-string">"namespace2"</span> });
+
+<span class="hljs-comment">//set</span>
+<span class="hljs-keyword">await</span> keyv1.<span class="hljs-title function_">set</span>(<span class="hljs-string">"foo"</span>,<span class="hljs-string">"bar1"</span>, <span class="hljs-number">6000</span>) <span class="hljs-comment">//Expiring time is optional</span>
+<span class="hljs-keyword">await</span> keyv2.<span class="hljs-title function_">set</span>(<span class="hljs-string">"foo"</span>,<span class="hljs-string">"bar2"</span>, <span class="hljs-number">6000</span>) <span class="hljs-comment">//Expiring time is optional</span>
+
+<span class="hljs-comment">//get</span>
+<span class="hljs-keyword">const</span> obj1 = <span class="hljs-keyword">await</span> keyv1.<span class="hljs-title function_">get</span>(<span class="hljs-string">"foo"</span>); <span class="hljs-comment">//will return bar1</span>
+<span class="hljs-keyword">const</span> obj2 = <span class="hljs-keyword">await</span> keyv2.<span class="hljs-title function_">get</span>(<span class="hljs-string">"foo"</span>); <span class="hljs-comment">//will return bar2</span>
+
+</code></pre>
+<h1 id="works-with-memcached-memcachier-redislabs-and-google-cloud">Works with Memcached, Memcachier, Redislabs, and Google Cloud</h1>
+<h2 id="using-memcached">Using Memcached</h2>
+<ol>
+<li>Install Memcached and start an instance</li>
+</ol>
+<pre><code class="hljs language-js">
+<span class="hljs-comment">//set the server to the correct address and port</span>
+<span class="hljs-keyword">const</span> server = <span class="hljs-string">"localhost:11211"</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"keyv"</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">KeyvMemcache</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"@keyv/memcache"</span>);
+
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(server);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache});
+</code></pre>
+<h2 id="using-memcachier">Using Memcachier</h2>
+<ol>
+<li>Go to <a href="https://www.memcachier.com">https://www.memcachier.com</a> and signup</li>
+<li>Create a cache and setup where.</li>
+<li>In the screen take the username, password, and url and place it into your code:</li>
+</ol>
+<pre><code class="hljs language-js">
+<span class="hljs-comment">//best practice is to not hard code your config in code.</span>
+<span class="hljs-keyword">const</span> user = <span class="hljs-string">""</span>;
+<span class="hljs-keyword">const</span> pass = <span class="hljs-string">""</span>;
+<span class="hljs-keyword">const</span> server = <span class="hljs-string">"XXX.XXX.XXX.memcachier.com:11211"</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"keyv"</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">KeyvMemcache</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"@keyv/memcache"</span>);
+
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(user +<span class="hljs-string">":"</span>+ pass +<span class="hljs-string">"@"</span>+ server);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache});
+
+</code></pre>
+<h2 id="using-redislabs-memcache-protocol">Using Redislabs Memcache Protocol</h2>
+<ol>
+<li>Go to <a href="https://www.redislabs.com">https://www.redislabs.com</a> and signup</li>
+<li>Create a database and make sure to set the <code>Protocol</code> to memcached</li>
+<li>In the screen take the username, password, and <code>endpoint</code> (the server) and place it into your code:</li>
+</ol>
+<pre><code class="hljs language-js">
+<span class="hljs-comment">//best practice is to not hard code your config in code.</span>
+<span class="hljs-keyword">const</span> user = <span class="hljs-string">""</span>;
+<span class="hljs-keyword">const</span> pass = <span class="hljs-string">""</span>;
+<span class="hljs-keyword">const</span> server = <span class="hljs-string">"XXX.XXX.XXX.XXX.cloud.redislabs.com:XXX"</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"keyv"</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">KeyvMemcache</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"@keyv/memcache"</span>);
+
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(user +<span class="hljs-string">":"</span>+ pass +<span class="hljs-string">"@"</span>+ server);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache});
+
+</code></pre>
+<h2 id="using-google-cloud">Using Google Cloud</h2>
+<ol>
+<li>Go to <a href="https://cloud.google.com/">https://cloud.google.com/</a> and sign up.</li>
+<li>Go to the memcached configuration page in the google cloud console by navigating to Memorystore > Memcached.</li>
+<li>On the memcached page (Eg. <a href="https://console.cloud.google.com/memorystore/memcached/instances?project=example">https://console.cloud.google.com/memorystore/memcached/instances?project=example</a>), Click Create Instance</li>
+<li>Fill in all mandatory fields as needed. You will need to set up a private service connection.</li>
+<li>To set up a private service connection, click the Set Up Connection button.</li>
+<li>Once required fields are complete, click the Create button to create the instance.</li>
+<li>Google provides further documentation for connecting to and managing your Memecached instance <a href="https://cloud.google.com/memorystore/docs/memcached">here</a>.</li>
+</ol>
+<pre><code class="hljs language-js">
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"keyv"</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">KeyvMemcache</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"@keyv/memcache"</span>);
+
+<span class="hljs-keyword">const</span> memcache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMemcache</span>(<span class="hljs-string">"insert the internal google memcached discovery endpoint"</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: memcache});
+
+</code></pre>
+<h2 id="license">License</h2>
+<p>MIT © Jared Wray</p>

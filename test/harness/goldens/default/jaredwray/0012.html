@@ -1,0 +1,156 @@
+<p>import FlagdContent from '@site/src/components/custom/tutorial/flagd-content.mdx';
+import FlagdChangeContent from '@site/src/components/custom/tutorial/flagd-change-content.mdx';
+import WhyDefaultContent from '@site/src/components/custom/tutorial/why-default-content.mdx';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';</p>
+<h1 id="getting-started-with-the-openfeature-javascript-sdk-on-express">Getting Started with the OpenFeature JavaScript SDK on Express</h1>
+<h2 id="introduction">Introduction</h2>
+<p>This walk-through teaches you the basics of using OpenFeature with JavaScript using Express.
+You'll learn how to:</p>
+<ul>
+<li>Install the JavaScript SDK</li>
+<li>Install and configure a provider</li>
+<li>Perform basic feature flagging</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<p>This walk-through assumes that:</p>
+<ul>
+<li>You have a basic understanding of JavaScript, Node.js and Express.
+If not, please review the <a href="https://nodejs.dev/en/learn/">Introduction to Node.js</a> and the <a href="https://expressjs.com/">Express documentation</a>.</li>
+<li>You have Node 16 or later.
+The latest version of Node can be found <a href="https://nodejs.org/en/download/">here</a>.</li>
+<li>You have Docker installed and running on the host system.
+The latest version of Docker can be found <a href="https://docs.docker.com/engine/install/">here</a>.</li>
+</ul>
+<h2 id="walk-through">Walk-through</h2>
+<h3 id="step-1-create-a-new-nodejs-project">Step 1: Create a new Node.js project</h3>
+<p>To get started, create a new folder, bootstrap the project, and install the dependencies.
+This can be done by running the following commands.</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> openfeature-js-intro
+<span class="hljs-built_in">cd</span> openfeature-js-intro
+npm init -y
+npm install express
+</code></pre>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> openfeature-ts-intro
+<span class="hljs-built_in">cd</span> openfeature-ts-intro
+npm init -y
+npm install express
+npm i -D typescript @types/express @types/node ts-node
+npx tsc --init
+</code></pre>
+<h3 id="step-2-create-an-express-app">Step 2: Create an Express app</h3>
+<p>Create a new file named <code>index.js</code> and include the following code.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>);
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">express</span>();
+<span class="hljs-keyword">const</span> port = <span class="hljs-number">8080</span>;
+
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">'/'</span>, <span class="hljs-function">(<span class="hljs-params">_, res</span>) =></span> {
+  res.<span class="hljs-title function_">send</span>(<span class="hljs-string">'Express + TypeScript Server'</span>);
+});
+
+app.<span class="hljs-title function_">listen</span>(port, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`⚡️[server]: Server is running at http://localhost:<span class="hljs-subst">${port}</span>`</span>);
+});
+</code></pre>
+<p>Create a new file named <code>index.ts</code> and include the following code.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> express <span class="hljs-keyword">from</span> <span class="hljs-string">'express'</span>;
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">express</span>();
+<span class="hljs-keyword">const</span> port = <span class="hljs-number">8080</span>;
+
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">'/'</span>, <span class="hljs-function">(<span class="hljs-params">_, res</span>) =></span> {
+  res.<span class="hljs-title function_">send</span>(<span class="hljs-string">'Express + TypeScript Server'</span>);
+});
+
+app.<span class="hljs-title function_">listen</span>(port, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`⚡️[server]: Server is running at http://localhost:<span class="hljs-subst">${port}</span>`</span>);
+});
+</code></pre>
+<h3 id="step-3-add-the-openfeature-sdk">Step 3: Add the OpenFeature SDK</h3>
+<p>Let's install the OpenFeature SDK using the following command.</p>
+<pre><code class="hljs language-sh">npm install @openfeature/server-sdk
+</code></pre>
+<p>Update <code>index.js</code> to import the SDK.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>);
+<span class="hljs-comment">// diff-add</span>
+<span class="hljs-keyword">const</span> { <span class="hljs-title class_">OpenFeature</span> } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'@openfeature/server-sdk'</span>);
+</code></pre>
+<p>Update <code>index.ts</code> to import the SDK.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> express <span class="hljs-keyword">from</span> <span class="hljs-string">"express"</span>;
+<span class="hljs-comment">// diff-add</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@openfeature/server-sdk"</span>;
+</code></pre>
+<p>Once you've imported <code>OpenFeature</code>, a new client can be created.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> port = <span class="hljs-number">8080</span>;
+<span class="hljs-comment">// diff-add</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+</code></pre>
+<p>The client can now be used to get a feature flag value.
+In this case, we'll get a <code>boolean</code> value using the <code>welcome-message</code> <a href="/specification/glossary#flag-key">flag key</a>.</p>
+<p>The second argument is the fallback value, which is returned if there's abnormal behavior.</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// diff-remove</span>
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">"/"</span>, <span class="hljs-function">(<span class="hljs-params">_, res</span>) =></span> {
+<span class="hljs-comment">// diff-add-block-start</span>
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">"/"</span>, <span class="hljs-title function_">async</span> (_, res) => {
+  <span class="hljs-keyword">const</span> showWelcomeMessage = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">"welcome-message"</span>, <span class="hljs-literal">false</span>);
+  <span class="hljs-keyword">if</span> (showWelcomeMessage) {
+    res.<span class="hljs-title function_">send</span>(<span class="hljs-string">"Express + TypeScript + OpenFeature Server"</span>);
+  } <span class="hljs-keyword">else</span> {
+<span class="hljs-comment">// diff-add-block-end</span>
+<span class="hljs-comment">// diff-remove</span>
+  res.<span class="hljs-title function_">send</span>(<span class="hljs-string">"Express + TypeScript Server"</span>);
+<span class="hljs-comment">// diff-add-block-start</span>
+    res.<span class="hljs-title function_">send</span>(<span class="hljs-string">"Express + TypeScript Server"</span>);
+  }
+<span class="hljs-comment">// diff-add-block-end</span>
+});
+</code></pre>
+<h3 id="step-4-run-the-application">Step 4: Run the application</h3>
+<p>Let's start the app and see it in action.
+Run the following command to start the server.</p>
+<pre><code class="hljs language-sh">node index.js
+</code></pre>
+<pre><code class="hljs language-sh">npx ts-node index.ts
+</code></pre>
+<p>Open your favorite browser and navigate to <a href="http://localhost:8080">http://localhost:8080</a>.
+If all goes as planned, you should see "Express + TypeScript Server" in glorious monochrome.</p>
+<blockquote>
+<p>NOTE: You should stop the app by using the keyboard short <code>ctrl + c</code> before moving on to the next step.</p>
+</blockquote>
+<h3 id="step-5-configure-a-provider-flagd">Step 5: Configure a provider (flagd)</h3>
+<p>Now let's make the required code changes in our application.</p>
+<p>Using NPM, install the <code>flagd provider</code> with the following command:</p>
+<pre><code class="hljs language-sh">npm install @openfeature/flagd-provider
+</code></pre>
+<p>Now, update <code>index.js</code> to import the <code>flagd provider</code>.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { <span class="hljs-title class_">OpenFeature</span> } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'@openfeature/server-sdk'</span>);
+<span class="hljs-comment">// diff-add</span>
+<span class="hljs-keyword">const</span> { <span class="hljs-title class_">FlagdProvider</span> } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'@openfeature/flagd-provider'</span>);
+</code></pre>
+<p>Now, update <code>index.ts</code> to import the <code>flagd provider</code>.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@openfeature/server-sdk"</span>;
+<span class="hljs-comment">// diff-add</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">FlagdProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@openfeature/flagd-provider"</span>;
+</code></pre>
+<p>Finally, we need to register the provider with OpenFeature.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> port = <span class="hljs-number">8080</span>;
+
+<span class="hljs-comment">// diff-add</span>
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProvider</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">FlagdProvider</span>());
+<span class="hljs-keyword">const</span> client = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+</code></pre>
+<h3 id="step-6-rerun-the-application">Step 6: Rerun the application</h3>
+<p>Now that everything is in place, let's start the app again.</p>
+<pre><code class="hljs language-sh">node index.js
+</code></pre>
+<pre><code class="hljs language-sh">npx ts-node index.ts
+</code></pre>
+<p>Open your favorite browser and navigate to <a href="http://localhost:8080">http://localhost:8080</a> should show the same value as before.
+This difference is now the feature flag value can be changed at runtime!</p>
+<p>Save the changes to <code>flag.json</code> and refresh the browser tab.
+You should now be greeted with <code>Express + TypeScript + OpenFeature Server</code>.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>This walk-through introduced you to the OpenFeature JS SDK.
+It covered how a provider can be configured to perform the flag evaluation and introduced basic feature flagging concepts.
+It also showcased how feature flags can be updated at runtime, without requiring a redeployment.</p>

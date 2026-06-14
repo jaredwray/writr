@@ -1,0 +1,31 @@
+<h1 id="how-to-implement-caching-with-express">How to Implement Caching with Express</h1>
+<h2 id="what-is-express">What is Express?</h2>
+<p>Express is a minimal Node.js web application framework. Its APIs provide web and mobile application functionality. Its simplicity enables users to quickly create a robust API in a familiar environment with enhanced features, including Robust routing, high performance, HTTP helpers, support for 14+ view template engines, content negotiation, and an executable for generating applications quickly.</p>
+<h2 id="what-is-a-cache">What is a Cache?</h2>
+<p>A cache is a short-term, high-speed data storage layer that stores a subset of data, enabling it to be retrieved faster than accessing it from its primary storage location. Caching allows you to reuse previously retrieved data efficiently.</p>
+<h2 id="caching-support-in-keyv-via-cacheable">Caching Support in Keyv via Cacheable</h2>
+<p>We can use Keyv to implement caching using <a href="https://npmjs.org/package/cacheable">Cacheable</a> which is a high performance layer 1 / layer 2 caching framework built on Keyv. It supports multiple storage backends and provides a simple, consistent API for caching.</p>
+<h3 id="example---add-cache-support-for-express">Example - Add Cache Support for Express</h3>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> express <span class="hljs-keyword">from</span> <span class="hljs-string">'express'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> secondary = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({ secondary, <span class="hljs-attr">ttl</span>: <span class="hljs-string">'4h'</span> });
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">express</span>();
+
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">'/test-cache/:id'</span>, <span class="hljs-title function_">async</span> (req, res) => {
+    <span class="hljs-keyword">if</span>(!req.<span class="hljs-property">params</span>.<span class="hljs-property">id</span>) <span class="hljs-keyword">return</span> res.<span class="hljs-title function_">status</span>(<span class="hljs-number">400</span>).<span class="hljs-title function_">send</span>(<span class="hljs-string">'Missing id param'</span>);
+    <span class="hljs-keyword">const</span> id = req.<span class="hljs-property">params</span>.<span class="hljs-property">id</span>;
+    <span class="hljs-keyword">const</span> cached = <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(id);
+    <span class="hljs-keyword">if</span>(cached) {
+        <span class="hljs-keyword">return</span> res.<span class="hljs-title function_">send</span>(cached);
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">const</span> data = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getData</span>(id);
+        <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(id, data);
+        <span class="hljs-keyword">return</span> res.<span class="hljs-title function_">send</span>(data);
+    }
+});
+
+</code></pre>

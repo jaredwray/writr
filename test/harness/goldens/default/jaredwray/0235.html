@@ -1,0 +1,317 @@
+<h1 id="styling-your-site">Styling Your Site</h1>
+<p>Docula gives you full control over the look and feel of your site through CSS variables and a custom stylesheet. The built-in templates define a set of CSS variables that you can override in your <code>site/variables.css</code> file.</p>
+<h2 id="custom-stylesheet">Custom Stylesheet</h2>
+<p>Each template ships with a default <code>variables.css</code> that defines its CSS variables. To customize your site's appearance, create a <code>variables.css</code> file in your site directory. This file replaces the template's defaults during the build, so any values you set here take priority.</p>
+<p>The quickest way to get started is to run:</p>
+<pre><code class="hljs language-bash">npx docula download variables
+</code></pre>
+<p>This copies the current template's <code>variables.css</code> into your site directory with all default values in place, ready for you to edit. If the file already exists, pass <code>--overwrite</code> to replace it.</p>
+<pre><code>site/
+  variables.css   &#x3C;-- your overrides go here
+  logo.png
+  favicon.ico
+  docula.config.ts
+</code></pre>
+<h2 id="css-variables-modern-template">CSS Variables (Modern Template)</h2>
+<p>The Modern template uses the following CSS variables. Override any of these in <code>variables.css</code> to customize your site.</p>
+<h3 id="colors">Colors</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Dark Default</th>
+<th>Light Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--bg</code></td>
+<td><code>#121212</code></td>
+<td><code>#ffffff</code></td>
+<td>Page background</td>
+</tr>
+<tr>
+<td><code>--fg</code></td>
+<td><code>#ffffff</code></td>
+<td><code>#1a1a1a</code></td>
+<td>Primary text color</td>
+</tr>
+<tr>
+<td><code>--border</code></td>
+<td><code>rgba(255,255,255,0.1)</code></td>
+<td><code>rgba(0,0,0,0.1)</code></td>
+<td>Border color</td>
+</tr>
+<tr>
+<td><code>--border-strong</code></td>
+<td><code>rgba(255,255,255,0.2)</code></td>
+<td><code>rgba(0,0,0,0.15)</code></td>
+<td>Stronger border for emphasis</td>
+</tr>
+<tr>
+<td><code>--border-hover</code></td>
+<td><code>rgba(255,255,255,0.4)</code></td>
+<td><code>rgba(0,0,0,0.3)</code></td>
+<td>Border color on hover</td>
+</tr>
+<tr>
+<td><code>--surface</code></td>
+<td><code>#262626</code></td>
+<td><code>#f0f0f0</code></td>
+<td>Card and surface backgrounds</td>
+</tr>
+<tr>
+<td><code>--surface-hover</code></td>
+<td><code>rgba(255,255,255,0.1)</code></td>
+<td><code>rgba(0,0,0,0.06)</code></td>
+<td>Surface hover state</td>
+</tr>
+<tr>
+<td><code>--muted</code></td>
+<td><code>#c5cdd3</code></td>
+<td><code>#6b7280</code></td>
+<td>Muted/secondary text</td>
+</tr>
+<tr>
+<td><code>--muted-fg</code></td>
+<td><code>rgba(255,255,255,0.65)</code></td>
+<td><code>rgba(0,0,0,0.5)</code></td>
+<td>Muted foreground</td>
+</tr>
+<tr>
+<td><code>--code-bg</code></td>
+<td><code>rgba(255,255,255,0.075)</code></td>
+<td><code>rgba(0,0,0,0.05)</code></td>
+<td>Inline code background</td>
+</tr>
+<tr>
+<td><code>--pre-bg</code></td>
+<td><code>rgba(255,255,255,0.05)</code></td>
+<td><code>rgba(0,0,0,0.03)</code></td>
+<td>Code block background</td>
+</tr>
+<tr>
+<td><code>--link</code></td>
+<td><code>#6ea8fe</code></td>
+<td><code>#0969da</code></td>
+<td>Link color</td>
+</tr>
+<tr>
+<td><code>--scrollbar</code></td>
+<td><code>rgba(255,255,255,0.2)</code></td>
+<td><code>rgba(0,0,0,0.2)</code></td>
+<td>Scrollbar thumb color</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-override">Example Override</h3>
+<pre><code class="hljs language-css"><span class="hljs-selector-pseudo">:root</span> {
+  <span class="hljs-attr">--bg</span>: <span class="hljs-number">#0d1117</span>;
+  <span class="hljs-attr">--fg</span>: <span class="hljs-number">#e6edf3</span>;
+  <span class="hljs-attr">--link</span>: <span class="hljs-number">#58a6ff</span>;
+  <span class="hljs-attr">--surface</span>: <span class="hljs-number">#161b22</span>;
+  <span class="hljs-attr">--border</span>: <span class="hljs-built_in">rgba</span>(<span class="hljs-number">240</span>, <span class="hljs-number">246</span>, <span class="hljs-number">252</span>, <span class="hljs-number">0.1</span>);
+}
+
+<span class="hljs-selector-attr">[data-theme=<span class="hljs-string">"light"</span>]</span> {
+  <span class="hljs-attr">--bg</span>: <span class="hljs-number">#f6f8fa</span>;
+  <span class="hljs-attr">--fg</span>: <span class="hljs-number">#24292f</span>;
+  <span class="hljs-attr">--link</span>: <span class="hljs-number">#0550ae</span>;
+  <span class="hljs-attr">--surface</span>: <span class="hljs-number">#ffffff</span>;
+  <span class="hljs-attr">--border</span>: <span class="hljs-built_in">rgba</span>(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0.1</span>);
+}
+</code></pre>
+<h2 id="css-variables-classic-template">CSS Variables (Classic Template)</h2>
+<p>The Classic template uses a different set of variables focused on named semantic colors.</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--font-family</code></td>
+<td><code>'Open Sans', sans-serif</code></td>
+<td>Base font family</td>
+</tr>
+<tr>
+<td><code>--color-primary</code></td>
+<td><code>#322d3c</code></td>
+<td>Primary brand color</td>
+</tr>
+<tr>
+<td><code>--color-secondary</code></td>
+<td><code>#8cdc00</code></td>
+<td>Accent/highlight color</td>
+</tr>
+<tr>
+<td><code>--color-text</code></td>
+<td><code>#322d3c</code></td>
+<td>Body text color</td>
+</tr>
+<tr>
+<td><code>--background</code></td>
+<td><code>#ffffff</code></td>
+<td>Page background</td>
+</tr>
+<tr>
+<td><code>--home-background</code></td>
+<td><code>#ffffff</code></td>
+<td>Home page background</td>
+</tr>
+<tr>
+<td><code>--header-background</code></td>
+<td><code>#ffffff</code></td>
+<td>Header background</td>
+</tr>
+<tr>
+<td><code>--sidebar-background</code></td>
+<td><code>#ffffff</code></td>
+<td>Sidebar background</td>
+</tr>
+<tr>
+<td><code>--sidebar-text</code></td>
+<td><code>#322d3c</code></td>
+<td>Sidebar link color</td>
+</tr>
+<tr>
+<td><code>--sidebar-text-active</code></td>
+<td><code>var(--color-secondary)</code></td>
+<td>Active sidebar link color</td>
+</tr>
+<tr>
+<td><code>--border</code></td>
+<td><code>rgba(238,238,245,1)</code></td>
+<td>Border color</td>
+</tr>
+<tr>
+<td><code>--code</code></td>
+<td><code>rgba(238,238,245,1)</code></td>
+<td>Code block background</td>
+</tr>
+</tbody>
+</table>
+<h2 id="blockquote-alerts">Blockquote Alerts</h2>
+<p>Docula supports GitHub-style blockquote alerts via Writr's markdown plugins. Use the following syntax in any markdown file:</p>
+<pre><code class="hljs language-md"><span class="hljs-quote">> [!NOTE]</span>
+<span class="hljs-quote">> Useful information that users should know.</span>
+
+<span class="hljs-quote">> [!WARNING]</span>
+<span class="hljs-quote">> Important information that could cause issues.</span>
+
+<span class="hljs-quote">> [!CAUTION]</span>
+<span class="hljs-quote">> Critical information about risks or destructive actions.</span>
+</code></pre>
+<p>To style these alerts, add CSS rules targeting the <code>.markdown-alert</code> classes in your <code>variables.css</code>:</p>
+<pre><code class="hljs language-css"><span class="hljs-selector-class">.markdown-alert</span> {
+  <span class="hljs-attribute">border-left</span>: <span class="hljs-number">4px</span> solid <span class="hljs-built_in">var</span>(--border);
+  <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8px</span>;
+  <span class="hljs-attribute">margin</span>: <span class="hljs-number">1rem</span> <span class="hljs-number">0</span>;
+  <span class="hljs-attribute">padding</span>: <span class="hljs-number">0.75rem</span> <span class="hljs-number">1rem</span>;
+  <span class="hljs-attribute">background</span>: <span class="hljs-built_in">var</span>(--surface);
+}
+
+<span class="hljs-selector-class">.markdown-alert-note</span> {
+  <span class="hljs-attribute">border-left-color</span>: <span class="hljs-number">#4c8ef7</span>;
+}
+
+<span class="hljs-selector-class">.markdown-alert-warning</span> {
+  <span class="hljs-attribute">border-left-color</span>: <span class="hljs-number">#f2b90c</span>;
+}
+
+<span class="hljs-selector-class">.markdown-alert-caution</span> {
+  <span class="hljs-attribute">border-left-color</span>: <span class="hljs-number">#e5534b</span>;
+}
+</code></pre>
+<h2 id="copy-code-button">Copy Code Button</h2>
+<p>The Modern template adds a copy-to-clipboard button to every code block. The button appears in the top-right corner on hover and shows a checkmark after copying. Because <code>variables.css</code> loads before the template stylesheet, these class overrides require a <a href="/docs/partial-templates">partial template override</a> of <code>css/styles.css</code> to take effect:</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.copy-code-btn</code></td>
+<td>The button element (positioned absolute inside <code>pre</code>)</td>
+</tr>
+<tr>
+<td><code>pre:hover .copy-code-btn</code></td>
+<td>Controls visibility — the button fades in on hover</td>
+</tr>
+<tr>
+<td><code>.copy-code-btn:hover</code></td>
+<td>Hover state for the button itself</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="hljs language-css"><span class="hljs-selector-class">.copy-code-btn</span> {
+  <span class="hljs-attribute">background</span>: <span class="hljs-built_in">var</span>(--surface);
+  <span class="hljs-attribute">color</span>: <span class="hljs-built_in">var</span>(--muted);
+  <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">6px</span>;
+  <span class="hljs-attribute">opacity</span>: <span class="hljs-number">0</span>;
+}
+
+pre<span class="hljs-selector-pseudo">:hover</span> <span class="hljs-selector-class">.copy-code-btn</span> {
+  <span class="hljs-attribute">opacity</span>: <span class="hljs-number">1</span>;
+}
+
+<span class="hljs-selector-class">.copy-code-btn</span><span class="hljs-selector-pseudo">:hover</span> {
+  <span class="hljs-attribute">color</span>: <span class="hljs-built_in">var</span>(--fg);
+}
+</code></pre>
+<h2 id="image-lightbox">Image Lightbox</h2>
+<p>Clicking an image in docs or changelog opens a fullscreen lightbox overlay. Like the copy code button, these overrides require a <a href="/docs/partial-templates">partial template override</a> of <code>css/styles.css</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.lightbox-overlay</code></td>
+<td>The fullscreen backdrop (default <code>rgba(0,0,0,0.8)</code>)</td>
+</tr>
+<tr>
+<td><code>.lightbox-overlay img</code></td>
+<td>The zoomed image (max 90vw × 90vh, rounded corners, shadow)</td>
+</tr>
+<tr>
+<td><code>.lightbox-close</code></td>
+<td>The close button in the top-right corner</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="hljs language-css"><span class="hljs-selector-class">.lightbox-overlay</span> {
+  <span class="hljs-attribute">background</span>: <span class="hljs-built_in">rgba</span>(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0.9</span>);
+}
+
+<span class="hljs-selector-class">.lightbox-overlay</span> <span class="hljs-selector-tag">img</span> {
+  <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">12px</span>;
+  <span class="hljs-attribute">box-shadow</span>: <span class="hljs-number">0</span> <span class="hljs-number">8px</span> <span class="hljs-number">32px</span> <span class="hljs-built_in">rgba</span>(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0.6</span>);
+}
+
+<span class="hljs-selector-class">.lightbox-close</span> {
+  <span class="hljs-attribute">color</span>: <span class="hljs-built_in">rgba</span>(<span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">0.8</span>);
+}
+
+<span class="hljs-selector-class">.lightbox-close</span><span class="hljs-selector-pseudo">:hover</span> {
+  <span class="hljs-attribute">color</span>: <span class="hljs-number">#fff</span>;
+}
+</code></pre>
+<h2 id="logo-and-favicon">Logo and Favicon</h2>
+<p>Replace the default files in your site directory to use your own branding:</p>
+<ul>
+<li><code>site/logo.png</code> (or <code>logo.svg</code>) -- displayed in the header and home page hero</li>
+<li><code>site/favicon.ico</code> -- browser tab icon</li>
+</ul>
+<p>If <code>site/favicon.ico</code> is not present, Docula automatically uses <code>site/logo.svg</code>
+or <code>site/logo.png</code> (in that order) as the favicon.</p>

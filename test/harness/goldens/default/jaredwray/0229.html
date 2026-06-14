@@ -1,0 +1,44 @@
+<h1 id="realtime--webhooks">Realtime &#x26; Webhooks</h1>
+<p><code>http-cache</code> is event-driven. Every cache change can be pushed to connected clients in
+real time and fanned out to other systems through webhooks and a centralized queue.</p>
+<h2 id="socketio-is-enabled-by-default">socket.io is enabled by default</h2>
+<p>Real-time updates are not an add-on — <strong>socket.io is on by default</strong>. Clients subscribe
+and receive cache events the instant they happen:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { io } <span class="hljs-keyword">from</span> <span class="hljs-string">"socket.io-client"</span>;
+
+<span class="hljs-keyword">const</span> socket = <span class="hljs-title function_">io</span>(<span class="hljs-string">"https://cache.example.com"</span>, { <span class="hljs-attr">auth</span>: { <span class="hljs-attr">token</span>: <span class="hljs-variable constant_">TOKEN</span> } });
+
+socket.<span class="hljs-title function_">on</span>(<span class="hljs-string">"cache:set"</span>, <span class="hljs-function">(<span class="hljs-params">{ key, ttl }</span>) =></span> <span class="hljs-title function_">refresh</span>(key));
+socket.<span class="hljs-title function_">on</span>(<span class="hljs-string">"cache:delete"</span>, <span class="hljs-function">(<span class="hljs-params">{ key }</span>) =></span> <span class="hljs-title function_">invalidate</span>(key));
+</code></pre>
+<p>This is what lets a React/SPA app keep its UI perfectly in sync with the cache — when
+data changes anywhere, every subscribed client knows immediately.</p>
+<h2 id="webhooks-for-other-systems">Webhooks for other systems</h2>
+<p>For server-to-server integration, <code>http-cache</code> delivers <strong>webhooks</strong> via
+<a href="https://github.com/jaredwray/airhorn">airhorn</a>. Register an endpoint and receive a
+signed callback on the events you care about:</p>
+<pre><code class="hljs language-bash">curl -X POST https://cache.example.com/webhooks \
+  -H <span class="hljs-string">"Authorization: Bearer <span class="hljs-variable">$TOKEN</span>"</span> \
+  -d <span class="hljs-string">'{"url":"https://my-service/cache-events","events":["cache:delete"]}'</span>
+</code></pre>
+<p>airhorn's unified <code>send()</code> model means the same event pipeline can also drive email,
+SMS, and push notifications when you need them.</p>
+<h2 id="centralized-queue-management">Centralized queue management</h2>
+<p>All of this fan-out is coordinated through <strong>centralized queue management</strong> powered by
+<a href="https://github.com/jaredwray/qified">qified</a>. qified provides task and message queues
+across multiple providers — <strong>Redis, RabbitMQ, NATS, ZeroMQ</strong>, or an in-memory queue
+for development — behind a single interface.</p>
+<p>The queue is the backbone for:</p>
+<ul>
+<li><strong>CacheSync</strong> — broadcasting set/delete events so every gateway's
+<a href="/docs/caching-layers">L1/L2 memory</a> stays coherent.</li>
+<li><strong>Reliable webhook delivery</strong> — retries and back-pressure without losing events.</li>
+<li><strong>Decoupling</strong> — gateways stay stateless; the queue carries the cross-cutting work.</li>
+</ul>
+<pre><code class="hljs language-bash">HTTP_CACHE_QUEUE=redis://redis:6379     <span class="hljs-comment"># or rabbitmq://, nats://, …</span>
+</code></pre>
+<h2 id="related">Related</h2>
+<ul>
+<li><strong><a href="/docs/gateway-and-api">Gateway &#x26; API</a></strong> — the REST surface that emits these events.</li>
+<li><strong><a href="/docs/statistics">Statistics</a></strong> — recording every event for observability.</li>
+</ul>

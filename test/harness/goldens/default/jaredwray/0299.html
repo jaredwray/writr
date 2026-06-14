@@ -1,0 +1,309 @@
+<p>We’re going to add feature flagging to a Node service in under five minutes using OpenFeature, the open, vendor-agnostic feature flagging SDK.</p>
+<p>This tutorial uses a simple <a href="https://expressjs.com/">express</a> server, but if you're familiar with JavaScript and Node you should be able to follow along.</p>
+<blockquote>
+<p>Prefer the zero-install, in-browser option? <a href="https://killercoda.com/open-feature/scenario/five-minutes-to-feature-flags">Run this tutorial in-browser using Killercoda</a>.</p>
+</blockquote>
+<h2 id="setup">Setup</h2>
+<p>Before we jump into the tutorial, let's quickly get everything setup.
+You'll need <a href="https://git-scm.com/">Git</a> and <a href="https://nodejs.org/">NodeJS</a> version 16 or newer.
+After that, run the following command from your favorite terminal.</p>
+<pre><code class="hljs language-bash">git <span class="hljs-built_in">clone</span> https://github.com/open-feature/five-minutes-to-feature-flags.git &#x26;&#x26; \
+  <span class="hljs-built_in">cd</span> five-minutes-to-feature-flags &#x26;&#x26; \
+  npm install
+</code></pre>
+<h2 id="hello-world">Hello, world</h2>
+<p>Here’s the service we’ll be working on:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> express <span class="hljs-keyword">from</span> <span class="hljs-string">'express'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Router</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'express-promise-router'</span>;
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">express</span>();
+<span class="hljs-keyword">const</span> routes = <span class="hljs-title class_">Router</span>();
+app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<span class="hljs-params">_, res, next</span>) =></span> {
+  res.<span class="hljs-title function_">setHeader</span>(<span class="hljs-string">'content-type'</span>, <span class="hljs-string">'text/plain'</span>);
+  <span class="hljs-title function_">next</span>();
+}, routes);
+
+routes.<span class="hljs-title function_">get</span>(<span class="hljs-string">'/'</span>, <span class="hljs-title function_">async</span> (_, res) => {
+  res.<span class="hljs-title function_">send</span>(<span class="hljs-string">'Hello, world!'</span>);
+});
+
+app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">3333</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Server running at http://localhost:3333'</span>);
+});
+</code></pre>
+<p>Pretty much the most basic express server you can imagine - a single endpoint at <code>/</code> that returns a plaintext “Hello, world!” response.</p>
+<p>Let's start the service by running:</p>
+<pre><code class="hljs language-bash">node 01_vanilla.js
+</code></pre>
+<p>Now you can test to make sure it works by entering the following command into a second terminal:</p>
+<pre><code class="hljs language-bash">curl http://localhost:3333
+</code></pre>
+<p>The output should look like this:</p>
+<pre><code class="hljs language-disable-copy-button">Hello, world!
+</code></pre>
+<p>Looks good!
+Go ahead and stop the server using <code>Ctrl</code> + <code>C</code>.</p>
+<h2 id="with-cows-please">With cows, please</h2>
+<p>Let’s imagine that we’re adding a new, experimental feature to this hello world service.
+We’re going to upgrade the format of the server’s response, using <a href="https://www.npmjs.com/package/cowsay">cowsay</a>!</p>
+<p>We are, however, not 100% sure that this cowsay formatting is going to work out, so for now we’ll protect it behind a conditional:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> express <span class="hljs-keyword">from</span> <span class="hljs-string">'express'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Router</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'express-promise-router'</span>;
+<span class="hljs-keyword">import</span> cowsay <span class="hljs-keyword">from</span> <span class="hljs-string">'cowsay'</span>;
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">express</span>();
+<span class="hljs-keyword">const</span> routes = <span class="hljs-title class_">Router</span>();
+app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<span class="hljs-params">_, res, next</span>) =></span> {
+  res.<span class="hljs-title function_">setHeader</span>(<span class="hljs-string">'content-type'</span>, <span class="hljs-string">'text/plain'</span>);
+  <span class="hljs-title function_">next</span>();
+}, routes);
+
+routes.<span class="hljs-title function_">get</span>(<span class="hljs-string">'/'</span>, <span class="hljs-title function_">async</span> (_, res) => {
+  <span class="hljs-comment">// set this to true to test our new</span>
+  <span class="hljs-comment">// cow-based greeting system</span>
+  <span class="hljs-keyword">const</span> withCow = <span class="hljs-literal">false</span>;
+  <span class="hljs-keyword">if</span> (withCow) {
+    res.<span class="hljs-title function_">send</span>(cowsay.<span class="hljs-title function_">say</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">'Hello, world!'</span> }));
+  } <span class="hljs-keyword">else</span> {
+    res.<span class="hljs-title function_">send</span>(<span class="hljs-string">'Hello, world!'</span>);
+  }
+});
+
+app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">3333</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Server running at http://localhost:3333'</span>);
+});
+</code></pre>
+<p>Now let's start the server with our basic flag configuration by running:</p>
+<pre><code class="hljs language-bash">node 02_basic_flags.js
+</code></pre>
+<p>By default, the service continues to work exactly as it did before.</p>
+<p>Next change <code>withCow</code> to <code>true</code> using your favorite text editor and restart the node server.
+Now the response comes in an exciting new format.
+To try it out, enter the following command into the terminal:</p>
+<pre><code class="hljs language-bash">curl http://localhost:3333
+</code></pre>
+<p>The output should look like this:</p>
+<pre><code class="hljs language-disable-copy-button">_______________
+&#x3C; Hello, world! >
+ ---------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+</code></pre>
+<p>:::tip</p>
+<p>A server restart is required for any changes to be applied.</p>
+<p>:::</p>
+<h2 id="the-crudest-flag">The crudest flag</h2>
+<p>That <code>withCow</code> boolean and its accompanying conditional check are a very basic feature flag - they let us hide an experimental or unfinished feature, but also easily switch the feature on while we’re building and testing it.</p>
+<h2 id="introducing-openfeature">Introducing OpenFeature</h2>
+<p>Managing these flags by changing hardcoded constants gets old fast though.
+A team that uses feature flags in any significant way soon reaches for a feature flagging framework.
+Let’s move in that direction by updating the service to use OpenFeature.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> express <span class="hljs-keyword">from</span> <span class="hljs-string">'express'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Router</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'express-promise-router'</span>;
+<span class="hljs-keyword">import</span> cowsay <span class="hljs-keyword">from</span> <span class="hljs-string">'cowsay'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/server-sdk'</span>;
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">express</span>();
+<span class="hljs-keyword">const</span> routes = <span class="hljs-title class_">Router</span>();
+app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<span class="hljs-params">_, res, next</span>) =></span> {
+  res.<span class="hljs-title function_">setHeader</span>(<span class="hljs-string">'content-type'</span>, <span class="hljs-string">'text/plain'</span>);
+  <span class="hljs-title function_">next</span>();
+}, routes);
+
+<span class="hljs-keyword">const</span> featureFlags = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+
+routes.<span class="hljs-title function_">get</span>(<span class="hljs-string">'/'</span>, <span class="hljs-title function_">async</span> (_, res) => {
+  <span class="hljs-keyword">const</span> withCows = <span class="hljs-keyword">await</span> featureFlags.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">'with-cows'</span>, <span class="hljs-literal">false</span>);
+  <span class="hljs-keyword">if</span> (withCows) {
+    res.<span class="hljs-title function_">send</span>(cowsay.<span class="hljs-title function_">say</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">'Hello, world!'</span> }));
+  } <span class="hljs-keyword">else</span> {
+    res.<span class="hljs-title function_">send</span>(<span class="hljs-string">'Hello, world!'</span>);
+  }
+});
+
+app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">3333</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Server running at http://localhost:3333'</span>);
+});
+</code></pre>
+<p>We’ve imported the <code>@openfeature/server-sdk</code> NPM module, and used it to create an OpenFeature client called <code>featureFlags</code>.
+We then call <code>getBooleanValue</code> on that client to find out if the <code>with-cows</code> feature flag is true or false.
+Depending on what we get back we either show the new cow-based output, or the traditional plaintext format.</p>
+<p>Start the server with:</p>
+<pre><code class="hljs language-bash">node 03_openfeature.js
+</code></pre>
+<p>Enter the following command into the terminal:</p>
+<pre><code class="hljs language-bash">curl http://localhost:3333
+</code></pre>
+<p>The output should look like this:</p>
+<pre><code class="hljs language-disable-copy-button">Hello, world!
+</code></pre>
+<p>:::note</p>
+<p>When we call <code>getBooleanValue</code> we also provide a default value of false.
+Since we haven’t configured the OpenFeature SDK with a <em>feature flag provider</em> yet, it will always return that default value.</p>
+<p>:::</p>
+<h2 id="configuring-an-openfeature-provider">Configuring an OpenFeature Provider</h2>
+<p>OpenFeature becomes useful when we connect our OpenFeature SDK to a full-fledged feature flagging system - a commercial product, an open-source offering, or perhaps a custom internal tool - so that it can provide flagging decisions from that system.</p>
+<p>Connecting OpenFeature to one of these backends is very straightforward, but it does require that we have an actual flagging framework set up.
+For now, let’s just configure a really, really simple provider that doesn’t need a backend:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> express <span class="hljs-keyword">from</span> <span class="hljs-string">"express"</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Router</span> <span class="hljs-keyword">from</span> <span class="hljs-string">"express-promise-router"</span>;
+<span class="hljs-keyword">import</span> cowsay <span class="hljs-keyword">from</span> <span class="hljs-string">"cowsay"</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span>, <span class="hljs-title class_">InMemoryProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@openfeature/server-sdk"</span>;
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">express</span>();
+<span class="hljs-keyword">const</span> routes = <span class="hljs-title class_">Router</span>();
+app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<span class="hljs-params">_, res, next</span>) =></span> {
+  res.<span class="hljs-title function_">setHeader</span>(<span class="hljs-string">"content-type"</span>, <span class="hljs-string">"text/plain"</span>);
+  <span class="hljs-title function_">next</span>();
+}, routes);
+
+<span class="hljs-keyword">const</span> featureFlags = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+
+<span class="hljs-keyword">const</span> <span class="hljs-variable constant_">FLAG_CONFIGURATION</span> = {
+  <span class="hljs-string">'with-cows'</span>: {
+    <span class="hljs-attr">variants</span>: {
+      <span class="hljs-attr">on</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-attr">off</span>: <span class="hljs-literal">false</span>
+    },
+    <span class="hljs-attr">disabled</span>: <span class="hljs-literal">false</span>,
+    <span class="hljs-attr">defaultVariant</span>: <span class="hljs-string">"on"</span>
+  }
+};
+
+<span class="hljs-keyword">const</span> featureFlagProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">InMemoryProvider</span>(<span class="hljs-variable constant_">FLAG_CONFIGURATION</span>);
+
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProvider</span>(featureFlagProvider);
+
+routes.<span class="hljs-title function_">get</span>(<span class="hljs-string">"/"</span>, <span class="hljs-title function_">async</span> (_, res) => {
+  <span class="hljs-keyword">const</span> withCows = <span class="hljs-keyword">await</span> featureFlags.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">"with-cows"</span>, <span class="hljs-literal">false</span>);
+  <span class="hljs-keyword">if</span> (withCows) {
+    res.<span class="hljs-title function_">send</span>(cowsay.<span class="hljs-title function_">say</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello, world!"</span> }));
+  } <span class="hljs-keyword">else</span> {
+    res.<span class="hljs-title function_">send</span>(<span class="hljs-string">"Hello, world!"</span>);
+  }
+});
+
+app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">3333</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"Server running at http://localhost:3333"</span>);
+});
+</code></pre>
+<p>This minimalist provider is exactly that; you give it a hard-coded set of feature flag values, and it provides those values via the OpenFeature SDK.</p>
+<p>In our <code>FLAG_CONFIGURATION</code> above we’ve hard-coded that <code>with-cows</code> feature flag to true, which means that conditional predicate in our express app will now evaluate to true, which means that our service will now start providing bovine output.</p>
+<p>Start the server with:</p>
+<pre><code class="hljs language-bash">node 04_openfeature_with_provider.js
+</code></pre>
+<p>Test it out by entering the following command into the terminal:</p>
+<pre><code class="hljs language-bash">curl http://localhost:3333
+</code></pre>
+<p>The output should look like this:</p>
+<pre><code class="hljs language-disable-copy-button"> _______________
+&#x3C; Hello, world! >
+ ---------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+</code></pre>
+<p>Next change the <code>with-cows</code> value to false and restart the node server.
+We will now see the more boring response when entering the following command into the terminal:</p>
+<pre><code class="hljs language-bash">curl http://localhost:3333
+</code></pre>
+<p>The output should look like this:</p>
+<pre><code class="hljs language-disable-copy-button">Hello, world!
+</code></pre>
+<h2 id="configuring-targeting">Configuring targeting</h2>
+<p>Feature flags are at their most powerful when we can use contextual information to determine feature flag values.
+We call this targeting.
+We'll set the <code>defaultVariant</code> back to "off" to make sure our targeting works.
+Now, let's add some targeting by adding a <code>contextEvaluator</code> to the <code>"with-cows"</code> flag.
+We'll use some request data as the basis of or flag evaluation - let's check the <code>X-Cow</code> HTTP header.
+Then, when we evaluate the flag, will be sure to pass our additional contextual information.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> express <span class="hljs-keyword">from</span> <span class="hljs-string">"express"</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Router</span> <span class="hljs-keyword">from</span> <span class="hljs-string">"express-promise-router"</span>;
+<span class="hljs-keyword">import</span> cowsay <span class="hljs-keyword">from</span> <span class="hljs-string">"cowsay"</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span>, <span class="hljs-title class_">InMemoryProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@openfeature/server-sdk"</span>;
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">express</span>();
+<span class="hljs-keyword">const</span> routes = <span class="hljs-title class_">Router</span>();
+app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<span class="hljs-params">_, res, next</span>) =></span> {
+  res.<span class="hljs-title function_">setHeader</span>(<span class="hljs-string">"content-type"</span>, <span class="hljs-string">"text/plain"</span>);
+  <span class="hljs-title function_">next</span>();
+}, routes);
+
+<span class="hljs-keyword">const</span> featureFlags = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+
+<span class="hljs-keyword">const</span> <span class="hljs-variable constant_">FLAG_CONFIGURATION</span> = {
+  <span class="hljs-string">'with-cows'</span>: {
+    <span class="hljs-attr">variants</span>: {
+      <span class="hljs-attr">on</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-attr">off</span>: <span class="hljs-literal">false</span>
+    },
+    <span class="hljs-attr">disabled</span>: <span class="hljs-literal">false</span>,
+    <span class="hljs-attr">defaultVariant</span>: <span class="hljs-string">"off"</span>,
+    <span class="hljs-attr">contextEvaluator</span>: <span class="hljs-function">(<span class="hljs-params">context</span>) =></span> {
+      <span class="hljs-keyword">if</span> (context.<span class="hljs-property">cow</span> === <span class="hljs-string">"Bessie"</span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"on"</span>;
+      }
+      <span class="hljs-keyword">return</span> <span class="hljs-string">"off"</span>;
+    },
+  }
+};
+
+<span class="hljs-keyword">const</span> featureFlagProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">InMemoryProvider</span>(<span class="hljs-variable constant_">FLAG_CONFIGURATION</span>);
+
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProvider</span>(featureFlagProvider);
+
+routes.<span class="hljs-title function_">get</span>(<span class="hljs-string">"/"</span>, <span class="hljs-title function_">async</span> (req, res) => {
+  <span class="hljs-keyword">const</span> context = {
+    <span class="hljs-attr">cow</span>: req.<span class="hljs-title function_">get</span>(<span class="hljs-string">"x-cow"</span>)
+  };
+  <span class="hljs-keyword">const</span> withCows = <span class="hljs-keyword">await</span> featureFlags.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">"with-cows"</span>, <span class="hljs-literal">false</span>, context);
+  <span class="hljs-keyword">if</span> (withCows) {
+    res.<span class="hljs-title function_">send</span>(cowsay.<span class="hljs-title function_">say</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello, world!"</span> }));
+  } <span class="hljs-keyword">else</span> {
+    res.<span class="hljs-title function_">send</span>(<span class="hljs-string">"Hello, world!"</span>);
+  }
+});
+
+app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">3333</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"Server running at http://localhost:3333"</span>);
+});
+</code></pre>
+<p>Next restart the node server, and make a new request:</p>
+<pre><code class="hljs language-bash">curl http://localhost:3333
+</code></pre>
+<p>The output should look like this:</p>
+<pre><code class="hljs language-disable-copy-button">Hello, world!
+</code></pre>
+<p>Now, make a request with our specific cow of interest:</p>
+<pre><code class="hljs language-bash">curl http://localhost:3333 -H <span class="hljs-string">"X-Cow: Bessie"</span>
+</code></pre>
+<p>The output should once again look like this:</p>
+<pre><code class="hljs language-disable-copy-button"> _______________
+&#x3C; Hello, world! >
+ ---------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+</code></pre>
+<p>:::note</p>
+<p>This is a simple targeting mechanism used by our InMemory provider.
+Other systems provide more robust targeting capabilities.</p>
+<p>:::</p>
+<h2 id="moving-to-a-full-feature-flagging-system">Moving to a full feature-flagging system</h2>
+<p>We’ve gotten started with OpenFeature using a very simple but extremely limited provider.
+The beauty of OpenFeature is that we can transition to a real feature-flagging system when we’re ready, without any change to how we evaluate flags.
+It’s as simple as configuring a <a href="/ecosystem?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Provider">different provider</a>.</p>
+<p>We can get started with feature flags with low investment and low risk, and once we’re ready, it’s just a few lines of code to transition to a full-featured, scalable backend.</p>
+<h2 id="next-steps">Next steps</h2>
+<p>To learn more about OpenFeature, check out the documentation <a href="/docs/reference/intro">here</a>.
+Specifically, you can read more about how the <a href="/docs/reference/concepts/evaluation-api/">evaluation API works</a>, what <a href="/docs/reference/sdks/">tech stacks are supported</a>, or read <a href="/docs/category/getting-started/">more tutorials</a> about using OpenFeature in a variety of tech stacks.</p>
+<p>More hands-on tutorials are available on the <a href="https://killercoda.com/open-feature">OpenFeature Killercoda page</a>.</p>
+<p>We strive to provide a welcoming, open community.
+If you have any questions - or just want to nerd out about feature flags - the <code>#OpenFeature</code> channel in the <a href="https://slack.cncf.io/">CNCF Slack</a> is the place for you.</p>

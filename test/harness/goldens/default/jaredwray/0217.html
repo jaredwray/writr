@@ -1,0 +1,54 @@
+<p>Docula automatically generates a <code>robots.txt</code>, <code>sitemap.xml</code>, and <code>feed.xml</code> in your output directory during every build. No configuration is required.</p>
+<h2 id="robotstxt">robots.txt</h2>
+<p>The <code>robots.txt</code> file tells search engine crawlers which pages they are allowed to access. Docula generates a permissive default at <code>dist/robots.txt</code>:</p>
+<pre><code>User-agent: *
+Disallow:
+</code></pre>
+<p>This allows all crawlers to index every page on your site.</p>
+<h3 id="custom-override">Custom Override</h3>
+<p>To use your own <code>robots.txt</code>, place a file at <code>site/robots.txt</code>. Docula will copy it to the output directory as-is instead of generating the default.</p>
+<h2 id="sitemapxml">sitemap.xml</h2>
+<p>The <code>sitemap.xml</code> file provides search engines with a structured list of all pages on your site, making it easier for crawlers to discover and index your content. Docula generates it at <code>dist/sitemap.xml</code>.</p>
+<h3 id="what-gets-included">What Gets Included</h3>
+<p>The sitemap automatically includes URLs for:</p>
+<ul>
+<li><strong>Home page</strong> — your site root URL</li>
+<li><strong>RSS feed</strong> — the generated docs feed at <code>/feed.xml</code> when documentation pages exist</li>
+<li><strong>Changelog JSON feeds</strong> — <code>/changelog.json</code> and <code>/changelog-latest.json</code> when changelog entries exist</li>
+<li><strong>Documentation pages</strong> — every page in <code>docs/</code>, using the full resolved URL path</li>
+<li><strong>API Reference</strong> — included when <code>openApiUrl</code> is configured and the API template exists</li>
+<li><strong>Changelog</strong> — the changelog landing page plus individual entries for each release</li>
+</ul>
+<p>All URLs use the absolute <code>siteUrl</code> from your config (e.g., <code>https://your-site.com/docs/configuration</code>).</p>
+<h3 id="example-output">Example Output</h3>
+<pre><code class="hljs language-xml"><span class="hljs-meta">&#x3C;?xml version=<span class="hljs-string">"1.0"</span> encoding=<span class="hljs-string">"UTF-8"</span>?></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">urlset</span> <span class="hljs-attr">xmlns</span>=<span class="hljs-string">"http://www.sitemaps.org/schemas/sitemap/0.9"</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">url</span>></span><span class="hljs-tag">&#x3C;<span class="hljs-name">loc</span>></span>https://your-site.com<span class="hljs-tag">&#x3C;/<span class="hljs-name">loc</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">url</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">url</span>></span><span class="hljs-tag">&#x3C;<span class="hljs-name">loc</span>></span>https://your-site.com/feed.xml<span class="hljs-tag">&#x3C;/<span class="hljs-name">loc</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">url</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">url</span>></span><span class="hljs-tag">&#x3C;<span class="hljs-name">loc</span>></span>https://your-site.com/changelog.json<span class="hljs-tag">&#x3C;/<span class="hljs-name">loc</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">url</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">url</span>></span><span class="hljs-tag">&#x3C;<span class="hljs-name">loc</span>></span>https://your-site.com/changelog-latest.json<span class="hljs-tag">&#x3C;/<span class="hljs-name">loc</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">url</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">url</span>></span><span class="hljs-tag">&#x3C;<span class="hljs-name">loc</span>></span>https://your-site.com/docs/<span class="hljs-tag">&#x3C;/<span class="hljs-name">loc</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">url</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">url</span>></span><span class="hljs-tag">&#x3C;<span class="hljs-name">loc</span>></span>https://your-site.com/docs/configuration<span class="hljs-tag">&#x3C;/<span class="hljs-name">loc</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">url</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">url</span>></span><span class="hljs-tag">&#x3C;<span class="hljs-name">loc</span>></span>https://your-site.com/api<span class="hljs-tag">&#x3C;/<span class="hljs-name">loc</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">url</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">url</span>></span><span class="hljs-tag">&#x3C;<span class="hljs-name">loc</span>></span>https://your-site.com/changelog<span class="hljs-tag">&#x3C;/<span class="hljs-name">loc</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">url</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">url</span>></span><span class="hljs-tag">&#x3C;<span class="hljs-name">loc</span>></span>https://your-site.com/changelog/v1.0.0<span class="hljs-tag">&#x3C;/<span class="hljs-name">loc</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">url</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">urlset</span>></span>
+</code></pre>
+<h2 id="feedxml">feed.xml</h2>
+<p>When your site contains documentation pages, Docula also generates an RSS 2.0 feed at <code>dist/feed.xml</code>.</p>
+<h3 id="what-gets-included-1">What Gets Included</h3>
+<ul>
+<li>One feed item per generated documentation page</li>
+<li>The document title as the item title</li>
+<li>The canonical documentation URL as the item link and GUID</li>
+<li>A lightweight summary using the document description, or a short markdown excerpt when no description is set</li>
+</ul>
+<h2 id="output-location">Output Location</h2>
+<p>All files are written to the root of your output directory:</p>
+<pre><code>dist/
+  changelog.json
+  changelog-latest.json
+  feed.xml
+  robots.txt
+  sitemap.xml
+</code></pre>

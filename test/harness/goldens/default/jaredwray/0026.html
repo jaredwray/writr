@@ -1,0 +1,1148 @@
+<p><img src="site/logo.svg" alt="Writr"></p>
+<h1 id="markdown-rendering-simplified">Markdown Rendering Simplified</h1>
+<p><a href="https://github.com/jaredwray/writr/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/writr/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://github.com/jaredwray/writr/actions/workflows/ai-integration-tests.yml"><img src="https://github.com/jaredwray/writr/actions/workflows/ai-integration-tests.yml/badge.svg" alt="ai-integration-tests"></a>
+<a href="https://github.com/jaredwray/writr/blob/master/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/writr" alt="GitHub license"></a>
+<a href="https://codecov.io/gh/jaredwray/writr"><img src="https://codecov.io/gh/jaredwray/writr/branch/master/graph/badge.svg?token=1YdMesM07X" alt="codecov"></a>
+<a href="https://npmjs.com/package/writr"><img src="https://img.shields.io/npm/dm/writr" alt="npm"></a>
+<a href="https://npmjs.com/package/writr"><img src="https://img.shields.io/npm/v/writr" alt="npm"></a></p>
+<h1 id="features">Features</h1>
+<ul>
+<li>Removes the remark / unified complexity and easy to use.</li>
+<li>Powered by the <a href="https://github.com/unifiedjs/unified">unified processor</a> for an extensible plugin pipeline.</li>
+<li>Built in caching 💥 making it render very fast when there isn't a change</li>
+<li>Frontmatter support built in by default. 🎉</li>
+<li>Easily Render to <code>React</code> or <code>HTML</code>.</li>
+<li>Generates a Table of Contents for your markdown files (remark-toc).</li>
+<li>Slug generation for your markdown files (rehype-slug).</li>
+<li>Code Highlighting (rehype-highlight).</li>
+<li>Math Support (rehype-katex).</li>
+<li>Markdown to HTML (rehype-stringify).</li>
+<li>Github Flavor Markdown (remark-gfm).</li>
+<li>Emoji Support (remark-emoji).</li>
+<li>MDX Support (remark-mdx).</li>
+<li>Raw HTML Passthrough (rehype-raw).</li>
+<li>Built in Hooks for adding code to render pipeline.</li>
+<li>AI-powered metadata generation, SEO, and translation via the <a href="https://sdk.vercel.ai">Vercel AI SDK</a>.</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#api">API</a>
+<ul>
+<li><a href="#new-writrarg-string--writroptions-options-writroptions"><code>new Writr(arg?: string | WritrOptions, options?: WritrOptions)</code></a></li>
+<li><a href="#content"><code>.content</code></a></li>
+<li><a href="#body"><code>.body</code></a></li>
+<li><a href="#options"><code>.options</code></a></li>
+<li><a href="#frontmatter"><code>.frontmatter</code></a></li>
+<li><a href="#frontmatterraw"><code>.frontMatterRaw</code></a></li>
+<li><a href="#cache"><code>.cache</code></a></li>
+<li><a href="#engine"><code>.engine</code></a></li>
+<li><a href="#renderoptions-renderoptions"><code>.render(options?: RenderOptions)</code></a></li>
+<li><a href="#rendersyncoptions-renderoptions"><code>.renderSync(options?: RenderOptions)</code></a></li>
+<li><a href="#rendertofilefilepath-string-options-renderoptions"><code>.renderToFile(filePath: string, options?: RenderOptions)</code></a></li>
+<li><a href="#rendertofilesyncfilepath-string-options-renderoptions"><code>.renderToFileSync(filePath: string, options?: RenderOptions)</code></a></li>
+<li><a href="#renderreactoptions-renderoptions-reactoptions-htmlreactparseroptions"><code>.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions)</code></a></li>
+<li><a href="#renderreactsync-options-renderoptions-reactoptions-htmlreactparseroptions"><code>.renderReactSync( options?: RenderOptions, reactOptions?: HTMLReactParserOptions)</code></a></li>
+<li><a href="#validatecontent-string-options-renderoptions"><code>.validate(content?: string, options?: RenderOptions)</code></a></li>
+<li><a href="#validatesynccontent-string-options-renderoptions"><code>.validateSync(content?: string, options?: RenderOptions)</code></a></li>
+<li><a href="#loadfromfilefilepath-string"><code>.loadFromFile(filePath: string)</code></a></li>
+<li><a href="#loadfromfilesyncfilepath-string"><code>.loadFromFileSync(filePath: string)</code></a></li>
+<li><a href="#savetofilefilepath-string"><code>.saveToFile(filePath: string)</code></a></li>
+<li><a href="#savetofilesyncfilepath-string"><code>.saveToFileSync(filePath: string)</code></a></li>
+</ul>
+</li>
+<li><a href="#caching-on-render">Caching On Render</a></li>
+<li><a href="#github-flavored-markdown-gfm">GitHub Flavored Markdown (GFM)</a>
+<ul>
+<li><a href="#gfm-features">GFM Features</a>
+<ul>
+<li><a href="#tables">Tables</a></li>
+<li><a href="#strikethrough">Strikethrough</a></li>
+<li><a href="#task-lists">Task Lists</a></li>
+<li><a href="#autolinks">Autolinks</a></li>
+<li><a href="#github-blockquote-alerts">GitHub Blockquote Alerts</a></li>
+</ul>
+</li>
+<li><a href="#using-gfm">Using GFM</a></li>
+<li><a href="#disabling-gfm">Disabling GFM</a></li>
+</ul>
+</li>
+<li><a href="#hooks">Hooks</a></li>
+<li><a href="#emitters">Emitters</a>
+<ul>
+<li><a href="#error-events">Error Events</a>
+<ul>
+<li><a href="#listening-to-error-events">Listening to Error Events</a></li>
+<li><a href="#methods-that-emit-errors">Methods that Emit Errors</a></li>
+<li><a href="#error-event-examples">Error Event Examples</a></li>
+<li><a href="#event-emitter-methods">Event Emitter Methods</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#ai">AI</a>
+<ul>
+<li><a href="#ai-options">AI Options</a></li>
+<li><a href="#ai-provider-configuration">AI Provider Configuration</a></li>
+<li><a href="#metadata">Metadata</a>
+<ul>
+<li><a href="#generating-metadata">Generating Metadata</a></li>
+<li><a href="#constraining-generated-values">Constraining Generated Values</a></li>
+<li><a href="#applying-metadata-to-frontmatter">Applying Metadata to Frontmatter</a></li>
+<li><a href="#overwrite">Overwrite</a></li>
+<li><a href="#field-mapping">Field Mapping</a></li>
+</ul>
+</li>
+<li><a href="#seo">SEO</a></li>
+<li><a href="#translation">Translation</a></li>
+<li><a href="#using-writrai-directly">Using WritrAI Directly</a></li>
+</ul>
+</li>
+<li><a href="#migrating-to-v6">Migrating to v6</a>
+<ul>
+<li><a href="#breaking-changes">Breaking Changes</a>
+<ul>
+<li><a href="#throwerrors-removed"><code>throwErrors</code> removed</a></li>
+<li><a href="#error-handling-redesign">Error handling redesign</a></li>
+<li><a href="#hookified-v2">hookified v2</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#unified-processor-engine">Unified Processor Engine</a></li>
+<li><a href="#benchmarks">Benchmarks</a></li>
+<li><a href="#esm-and-node-version-support">ESM and Node Version Support</a></li>
+<li><a href="#code-of-conduct-and-contributing">Code of Conduct and Contributing</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h1 id="getting-started">Getting Started</h1>
+<pre><code class="hljs language-bash">> npm install writr
+</code></pre>
+<p>Then you can use it like this:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>);
+
+<span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>(); <span class="hljs-comment">// &#x3C;h1>Hello World 🙂&#x3C;/h1>&#x3C;p>This is a test.&#x3C;/p></span>
+</code></pre>
+<p>Its just that simple. Want to add some options? No problem.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>);
+<span class="hljs-keyword">const</span> options  = {
+	<span class="hljs-attr">emoji</span>: <span class="hljs-literal">false</span>
+}
+<span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>(options); <span class="hljs-comment">// &#x3C;h1>Hello World ::-):&#x3C;/h1>&#x3C;p>This is a test.&#x3C;/p></span>
+</code></pre>
+<p>An example passing in the options also via the constructor:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span>, <span class="hljs-title class_">WritrOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writrOptions = {
+  <span class="hljs-attr">renderOptions</span>: {
+    <span class="hljs-attr">emoji</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">toc</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">slug</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">highlight</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">gfm</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">math</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">mdx</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">rawHtml</span>: <span class="hljs-literal">false</span>,
+    <span class="hljs-attr">caching</span>: <span class="hljs-literal">true</span>,
+  }
+};
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>, writrOptions);
+<span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>(options); <span class="hljs-comment">// &#x3C;h1>Hello World ::-):&#x3C;/h1>&#x3C;p>This is a test.&#x3C;/p></span>
+</code></pre>
+<h1 id="api">API</h1>
+<h2 id="new-writrarg-string--writroptions-options-writroptions"><code>new Writr(arg?: string | WritrOptions, options?: WritrOptions)</code></h2>
+<p>By default the constructor takes in a markdown <code>string</code> or <code>WritrOptions</code> in the first parameter. You can also send in nothing and set the markdown via <code>.content</code> property. If you want to pass in your markdown and options you can easily do this with <code>new Writr('## Your Markdown Here', { ...options here})</code>. You can access the <code>WritrOptions</code> from the instance of Writr. Here is an example of WritrOptions.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span>, <span class="hljs-title class_">WritrOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writrOptions = {
+  <span class="hljs-attr">renderOptions</span>: {
+    <span class="hljs-attr">emoji</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">toc</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">slug</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">highlight</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">gfm</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">math</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">mdx</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">rawHtml</span>: <span class="hljs-literal">false</span>,
+    <span class="hljs-attr">caching</span>: <span class="hljs-literal">true</span>,
+  }
+};
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(writrOptions);
+</code></pre>
+<h2 id="content"><code>.content</code></h2>
+<p>Setting the markdown content for the instance of Writr. This can be set via the constructor or directly on the instance and can even handle <code>frontmatter</code>.</p>
+<pre><code class="hljs language-javascript">
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>();
+writr.<span class="hljs-property">content</span> = <span class="hljs-string">`---
+title: Hello World
+---
+# Hello World ::-):\n\n This is a test.`</span>;
+</code></pre>
+<h2 id="body"><code>.body</code></h2>
+<p>gets the body of the markdown content. This is the content without the frontmatter.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>();
+writr.<span class="hljs-property">content</span> = <span class="hljs-string">`---
+title: Hello World
+---
+# Hello World ::-):\n\n This is a test.`</span>;
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(writr.<span class="hljs-property">body</span>); <span class="hljs-comment">// '# Hello World ::-):\n\n This is a test.'</span>
+</code></pre>
+<h2 id="options"><code>.options</code></h2>
+<p>Accessing the default options for this instance of Writr. Here is the default settings for <code>WritrOptions</code>. These are the default settings for the <code>WritrOptions</code>:</p>
+<pre><code class="hljs language-javascript">{
+  <span class="hljs-attr">renderOptions</span>: {
+    <span class="hljs-attr">emoji</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">toc</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">slug</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">highlight</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">gfm</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">math</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">mdx</span>: <span class="hljs-literal">false</span>,
+    <span class="hljs-attr">rawHtml</span>: <span class="hljs-literal">false</span>,
+    <span class="hljs-attr">caching</span>: <span class="hljs-literal">true</span>,
+  }
+}
+</code></pre>
+<p>By default, raw HTML in markdown (such as <code>&#x26;lt;iframe&#x26;gt;</code>, <code>&#x26;lt;video&#x26;gt;</code>, or <code>&#x26;lt;div&#x26;gt;</code> tags) is stripped during rendering. Set <code>rawHtml: true</code> to preserve raw HTML elements and their attributes in the rendered output. This is useful for embedding videos, widgets, or custom HTML in your markdown content.</p>
+<p><strong>Note:</strong> Setting <code>mdx: true</code> also enables raw HTML passthrough as part of the MDX specification. The <code>rawHtml</code> option is for enabling raw HTML in standard markdown without using MDX.</p>
+<h2 id="frontmatter"><code>.frontmatter</code></h2>
+<p>Accessing the frontmatter for this instance of Writr. This is a <code>Record&#x26;lt;string, any&#x26;gt;</code> and can be set via the <code>.content</code> property.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>();
+writr.<span class="hljs-property">content</span> = <span class="hljs-string">`---
+title: Hello World
+---
+# Hello World ::-):\n\n This is a test.`</span>;
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(writr.<span class="hljs-property">frontmatter</span>); <span class="hljs-comment">// { title: 'Hello World' }</span>
+</code></pre>
+<p>you can also set the front matter directly like this:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>();
+writr.<span class="hljs-property">frontmatter</span> = { <span class="hljs-attr">title</span>: <span class="hljs-string">'Hello World'</span> };
+</code></pre>
+<h2 id="frontmatterraw"><code>.frontMatterRaw</code></h2>
+<p>Accessing the raw frontmatter for this instance of Writr. This is a <code>string</code> and can be set via the <code>.content</code> property.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>();
+writr.<span class="hljs-property">content</span> = <span class="hljs-string">`---
+title: Hello World
+---
+# Hello World ::-):\n\n This is a test.`</span>;
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(writr.<span class="hljs-property">frontMatterRaw</span>); <span class="hljs-comment">// '---\ntitle: Hello World\n---'</span>
+</code></pre>
+<h2 id="cache"><code>.cache</code></h2>
+<p>Accessing the cache for this instance of Writr. By default this is an in memory cache and is disabled (set to false) by default. You can enable this by setting <code>caching: true</code> in the <code>RenderOptions</code> of the <code>WritrOptions</code> or when calling render passing the <code>RenderOptions</code> like here:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>);
+<span class="hljs-keyword">const</span> options  = {
+  <span class="hljs-attr">caching</span>: <span class="hljs-literal">true</span>
+}
+<span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>(options); <span class="hljs-comment">// &#x3C;h1>Hello World ::-):&#x3C;/h1>&#x3C;p>This is a test.&#x3C;/p></span>
+</code></pre>
+<h2 id="engine"><code>.engine</code></h2>
+<p>Accessing the underlying engine for this instance of Writr. This is a <code>Processor&#x26;lt;Root, Root, Root, undefined, undefined&#x26;gt;</code> from the core <a href="https://github.com/unifiedjs/unified"><code>unified</code></a> project and uses the familiar <code>.use()</code> plugin pattern. You can chain additional unified plugins on this processor to customize the render pipeline. Learn more about the unified engine at <a href="https://unifiedjs.com/">unifiedjs.com</a> and check out the <a href="https://unifiedjs.com/learn/guide/using-unified/">getting started guide</a> for examples.</p>
+<h2 id="renderoptions-renderoptions"><code>.render(options?: RenderOptions)</code></h2>
+<p>Rendering markdown to HTML. the options are based on RenderOptions. Which you can access from the Writr instance.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>);
+<span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>(); <span class="hljs-comment">// &#x3C;h1>Hello World 🙂&#x3C;/h1>&#x3C;p>This is a test.&#x3C;/p></span>
+
+<span class="hljs-comment">//passing in with render options</span>
+<span class="hljs-keyword">const</span> options  = {
+  <span class="hljs-attr">emoji</span>: <span class="hljs-literal">false</span>
+}
+
+<span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>(options); <span class="hljs-comment">// &#x3C;h1>Hello World ::-):&#x3C;/h1>&#x3C;p>This is a test.&#x3C;/p></span>
+</code></pre>
+<h2 id="rendersyncoptions-renderoptions"><code>.renderSync(options?: RenderOptions)</code></h2>
+<p>Rendering markdown to HTML synchronously. the options are based on RenderOptions. Which you can access from the Writr instance. The parameters are the same as the <code>.render()</code> function.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>);
+<span class="hljs-keyword">const</span> html = writr.<span class="hljs-title function_">renderSync</span>(); <span class="hljs-comment">// &#x3C;h1>Hello World 🙂&#x3C;/h1>&#x3C;p>This is a test.&#x3C;/p></span>
+</code></pre>
+<h2 id="rendertofilefilepath-string-options-renderoptions"><code>.renderToFile(filePath: string, options?: RenderOptions)</code></h2>
+<p>Rendering markdown to a file. The options are based on RenderOptions.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>);
+<span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">renderToFile</span>(<span class="hljs-string">'path/to/file.html'</span>);
+</code></pre>
+<h2 id="rendertofilesyncfilepath-string-options-renderoptions"><code>.renderToFileSync(filePath: string, options?: RenderOptions)</code></h2>
+<p>Rendering markdown to a file synchronously. The options are based on RenderOptions.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>);
+writr.<span class="hljs-title function_">renderToFileSync</span>(<span class="hljs-string">'path/to/file.html'</span>);
+</code></pre>
+<h2 id="renderreactoptions-renderoptions-reactoptions-htmlreactparseroptions"><code>.renderReact(options?: RenderOptions, reactOptions?: HTMLReactParserOptions)</code></h2>
+<p>Rendering markdown to React. The options are based on RenderOptions and now HTMLReactParserOptions from <code>html-react-parser</code>.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>);
+<span class="hljs-keyword">const</span> reactElement = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">renderReact</span>(); <span class="hljs-comment">// Will return a React.JSX.Element</span>
+</code></pre>
+<h2 id="renderreactsync-options-renderoptions-reactoptions-htmlreactparseroptions"><code>.renderReactSync( options?: RenderOptions, reactOptions?: HTMLReactParserOptions)</code></h2>
+<p>Rendering markdown to React. The options are based on RenderOptions and now HTMLReactParserOptions from <code>html-react-parser</code>.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>);
+<span class="hljs-keyword">const</span> reactElement = writr.<span class="hljs-title function_">renderReactSync</span>(); <span class="hljs-comment">// Will return a React.JSX.Element</span>
+</code></pre>
+<h2 id="validatecontent-string-options-renderoptions"><code>.validate(content?: string, options?: RenderOptions)</code></h2>
+<p>Validate markdown content by attempting to render it. Returns a <code>WritrValidateResult</code> object with a <code>valid</code> boolean and optional <code>error</code> property. Note that this will disable caching on render to ensure accurate validation.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World\n\nThis is a test.`</span>);
+
+<span class="hljs-comment">// Validate current content</span>
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">validate</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result.<span class="hljs-property">valid</span>); <span class="hljs-comment">// true</span>
+
+<span class="hljs-comment">// Validate external content without changing the instance</span>
+<span class="hljs-keyword">const</span> externalResult = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">validate</span>(<span class="hljs-string">'## Different Content'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(externalResult.<span class="hljs-property">valid</span>); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(writr.<span class="hljs-property">content</span>); <span class="hljs-comment">// Still "# Hello World\n\nThis is a test."</span>
+
+<span class="hljs-comment">// Handle validation errors</span>
+<span class="hljs-keyword">const</span> invalidWritr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'Put invalid markdown here'</span>);
+<span class="hljs-keyword">const</span> errorResult = <span class="hljs-keyword">await</span> invalidWritr.<span class="hljs-title function_">validate</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(errorResult.<span class="hljs-property">valid</span>); <span class="hljs-comment">// false</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(errorResult.<span class="hljs-property">error</span>?.<span class="hljs-property">message</span>); <span class="hljs-comment">// "Invalid plugin"</span>
+</code></pre>
+<h2 id="validatesynccontent-string-options-renderoptions"><code>.validateSync(content?: string, options?: RenderOptions)</code></h2>
+<p>Synchronously validate markdown content by attempting to render it. Returns a <code>WritrValidateResult</code> object with a <code>valid</code> boolean and optional <code>error</code> property.</p>
+<p>This is the synchronous version of <code>.validate()</code> with the same parameters and behavior.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World\n\nThis is a test.`</span>);
+
+<span class="hljs-comment">// Validate current content synchronously</span>
+<span class="hljs-keyword">const</span> result = writr.<span class="hljs-title function_">validateSync</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result.<span class="hljs-property">valid</span>); <span class="hljs-comment">// true</span>
+
+<span class="hljs-comment">// Validate external content without changing the instance</span>
+<span class="hljs-keyword">const</span> externalResult = writr.<span class="hljs-title function_">validateSync</span>(<span class="hljs-string">'## Different Content'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(externalResult.<span class="hljs-property">valid</span>); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(writr.<span class="hljs-property">content</span>); <span class="hljs-comment">// Still "# Hello World\n\nThis is a test."</span>
+</code></pre>
+<h2 id="loadfromfilefilepath-string"><code>.loadFromFile(filePath: string)</code></h2>
+<p>Load your markdown content from a file path.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>();
+<span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">loadFromFile</span>(<span class="hljs-string">'path/to/file.md'</span>);
+</code></pre>
+<h2 id="loadfromfilesyncfilepath-string"><code>.loadFromFileSync(filePath: string)</code></h2>
+<p>Load your markdown content from a file path synchronously.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>();
+writr.<span class="hljs-title function_">loadFromFileSync</span>(<span class="hljs-string">'path/to/file.md'</span>);
+</code></pre>
+<h2 id="savetofilefilepath-string"><code>.saveToFile(filePath: string)</code></h2>
+<p>Save your markdown and frontmatter (if included) content to a file path.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>);
+<span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">saveToFile</span>(<span class="hljs-string">'path/to/file.md'</span>);
+</code></pre>
+<h2 id="savetofilesyncfilepath-string"><code>.saveToFileSync(filePath: string)</code></h2>
+<p>Save your markdown and frontmatter (if included) content to a file path synchronously.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>);
+writr.<span class="hljs-title function_">saveToFileSync</span>(<span class="hljs-string">'path/to/file.md'</span>);
+</code></pre>
+<h1 id="caching-on-render">Caching On Render</h1>
+<p>Caching is built into Writr and is an in-memory cache using <code>CacheableMemory</code> from <a href="https://cacheable.org">Cacheable</a>. It is turned off by default and can be enabled by setting <code>caching: true</code> in the <code>RenderOptions</code> of the <code>WritrOptions</code> or when calling render passing the <code>RenderOptions</code> like here:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>, { <span class="hljs-attr">renderOptions</span>: { <span class="hljs-attr">caching</span>: <span class="hljs-literal">true</span> } });
+</code></pre>
+<p>or via <code>RenderOptions</code> such as:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>);
+<span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>({ <span class="hljs-attr">caching</span>: <span class="hljs-literal">true</span>});
+</code></pre>
+<p>If you want to set the caching options for the instance of Writr you can do so like this:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// we will set the lruSize of the cache and the default ttl</span>
+<span class="hljs-keyword">import</span> {<span class="hljs-title class_">Writr</span>} <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>, { <span class="hljs-attr">renderOptions</span>: { <span class="hljs-attr">caching</span>: <span class="hljs-literal">true</span> } });
+writr.<span class="hljs-property">cache</span>.<span class="hljs-property">store</span>.<span class="hljs-property">lruSize</span> = <span class="hljs-number">100</span>;
+writr.<span class="hljs-property">cache</span>.<span class="hljs-property">store</span>.<span class="hljs-property">ttl</span> = <span class="hljs-string">'5m'</span>; <span class="hljs-comment">// setting it to 5 minutes</span>
+</code></pre>
+<h1 id="github-flavored-markdown-gfm">GitHub Flavored Markdown (GFM)</h1>
+<p>Writr includes full support for <a href="https://github.github.com/gfm/">GitHub Flavored Markdown</a> (GFM) through the <code>remark-gfm</code> and <code>remark-github-blockquote-alert</code> plugins. GFM is enabled by default and adds several powerful features to standard Markdown.</p>
+<h2 id="gfm-features">GFM Features</h2>
+<p>When GFM is enabled (which it is by default), you get access to the following features:</p>
+<h3 id="tables">Tables</h3>
+<p>Create tables using pipes and hyphens:</p>
+<pre><code class="hljs language-markdown">| Feature | Supported |
+|---------|-----------|
+| Tables  | Yes       |
+| Alerts  | Yes       |
+</code></pre>
+<h3 id="strikethrough">Strikethrough</h3>
+<p>Use <code>~~</code> to create strikethrough text:</p>
+<pre><code class="hljs language-markdown">~~This text is crossed out~~
+</code></pre>
+<h3 id="task-lists">Task Lists</h3>
+<p>Create interactive checkboxes:</p>
+<pre><code class="hljs language-markdown"><span class="hljs-bullet">-</span> [x] Completed task
+<span class="hljs-bullet">-</span> [ ] Incomplete task
+<span class="hljs-bullet">-</span> [ ] Another task
+</code></pre>
+<h3 id="autolinks">Autolinks</h3>
+<p>URLs are automatically converted to clickable links:</p>
+<pre><code class="hljs language-markdown">https://github.com
+</code></pre>
+<h3 id="github-blockquote-alerts">GitHub Blockquote Alerts</h3>
+<p>GitHub-style alerts are supported to emphasize critical information. These are blockquote-based admonitions that render with special styling:</p>
+<pre><code class="hljs language-markdown"><span class="hljs-quote">> [!NOTE]</span>
+<span class="hljs-quote">> Useful information that users should know, even when skimming content.</span>
+
+<span class="hljs-quote">> [!TIP]</span>
+<span class="hljs-quote">> Helpful advice for doing things better or more easily.</span>
+
+<span class="hljs-quote">> [!IMPORTANT]</span>
+<span class="hljs-quote">> Key information users need to know to achieve their goal.</span>
+
+<span class="hljs-quote">> [!WARNING]</span>
+<span class="hljs-quote">> Urgent info that needs immediate user attention to avoid problems.</span>
+
+<span class="hljs-quote">> [!CAUTION]</span>
+<span class="hljs-quote">> Advises about risks or negative outcomes of certain actions.</span>
+</code></pre>
+<h2 id="using-gfm">Using GFM</h2>
+<p>GFM is enabled by default. Here's an example:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+
+<span class="hljs-keyword">const</span> markdown = <span class="hljs-string">`
+# Task List Example
+
+- [x] Learn Writr basics
+- [ ] Master GFM features
+
+> [!NOTE]
+> GitHub Flavored Markdown is enabled by default!
+
+| Feature | Status |
+|---------|--------|
+| GFM     | ✓      |
+`</span>;
+
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(markdown);
+<span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>(); <span class="hljs-comment">// Renders with full GFM support</span>
+</code></pre>
+<h2 id="disabling-gfm">Disabling GFM</h2>
+<p>If you need to disable GFM features, you can set <code>gfm: false</code> in the render options:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'~~strikethrough~~ text'</span>);
+
+<span class="hljs-comment">// Disable GFM</span>
+<span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>({ <span class="hljs-attr">gfm</span>: <span class="hljs-literal">false</span> });
+<span class="hljs-comment">// Output: &#x3C;p>~~strikethrough~~ text&#x3C;/p></span>
+
+<span class="hljs-comment">// With GFM enabled (default)</span>
+<span class="hljs-keyword">const</span> htmlWithGfm = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>({ <span class="hljs-attr">gfm</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-comment">// Output: &#x3C;p>&#x3C;del>strikethrough&#x3C;/del> text&#x3C;/p></span>
+</code></pre>
+<p>Note: When GFM is disabled, GitHub blockquote alerts will not be processed and will render as regular blockquotes.</p>
+<h1 id="hooks">Hooks</h1>
+<p>Hooks are a way to add additional parsing to the render pipeline. You can add hooks to the the Writr instance. Here is an example of adding a hook to the instance of Writr:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span>, <span class="hljs-title class_">WritrHooks</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">`# Hello World ::-):\n\n This is a test.`</span>);
+writr.<span class="hljs-title function_">onHook</span>(<span class="hljs-title class_">WritrHooks</span>.<span class="hljs-property">beforeRender</span>, <span class="hljs-function"><span class="hljs-params">data</span> =></span> {
+  data.<span class="hljs-property">body</span> = <span class="hljs-string">'Hello, Universe!'</span>;
+});
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result); <span class="hljs-comment">// Hello, Universe!</span>
+</code></pre>
+<p>For <code>beforeRender</code> the data object is a <code>renderData</code> object. Here is the interface for <code>renderData</code>:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> renderData = {
+  <span class="hljs-attr">body</span>: <span class="hljs-built_in">string</span>
+  <span class="hljs-attr">options</span>: <span class="hljs-title class_">RenderOptions</span>;
+}
+</code></pre>
+<p>For <code>afterRender</code> the data object is a <code>resultData</code> object. Here is the interface for <code>resultData</code>:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> resultData = {
+  <span class="hljs-attr">result</span>: <span class="hljs-built_in">string</span>;
+}
+</code></pre>
+<p>For <code>saveToFile</code> the data object is an object with the <code>filePath</code> and <code>content</code>. Here is the interface for <code>saveToFileData</code>:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> saveToFileData = {
+  <span class="hljs-attr">filePath</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">content</span>: <span class="hljs-built_in">string</span>;
+}
+</code></pre>
+<p>This is called when you call <code>saveToFile</code>, <code>saveToFileSync</code>.</p>
+<p>For <code>renderToFile</code> the data object is an object with the <code>filePath</code> and <code>content</code>. Here is the interface for <code>renderToFileData</code>:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> renderToFileData = {
+  <span class="hljs-attr">filePath</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">content</span>: <span class="hljs-built_in">string</span>;
+}
+</code></pre>
+<p>This is called when you call <code>renderToFile</code>, <code>renderToFileSync</code>.</p>
+<p>For <code>loadFromFile</code> the data object is an object with <code>content</code> so you can change before it is set on <code>writr.content</code>. Here is the interface for <code>loadFromFileData</code>:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> loadFromFileData = {
+  <span class="hljs-attr">content</span>: <span class="hljs-built_in">string</span>;
+}
+</code></pre>
+<p>This is called when you call <code>loadFromFile</code>, <code>loadFromFileSync</code>.</p>
+<h1 id="emitters">Emitters</h1>
+<p>Writr extends the <a href="https://github.com/jaredwray/hookified">Hookified</a> class, which provides event emitter capabilities. This means you can listen to events emitted by Writr during its lifecycle, particularly error events.</p>
+<h2 id="error-events">Error Events</h2>
+<p>Writr emits an <code>error</code> event whenever an error occurs in any of its methods. This provides a centralized way to handle errors without wrapping every method call in a try/catch block.</p>
+<h3 id="listening-to-error-events">Listening to Error Events</h3>
+<p>You can listen to error events using the <code>.on()</code> method:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'# Hello World'</span>);
+
+<span class="hljs-comment">// Listen for any errors</span>
+writr.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">(<span class="hljs-params">error</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'An error occurred:'</span>, error.<span class="hljs-property">message</span>);
+  <span class="hljs-comment">// Handle the error appropriately</span>
+  <span class="hljs-comment">// Log to error tracking service, display to user, etc.</span>
+});
+
+<span class="hljs-comment">// With a listener registered, errors are emitted to the listener</span>
+<span class="hljs-comment">// and the method returns its fallback value (e.g. "" for render)</span>
+<span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>();
+</code></pre>
+<h3 id="methods-that-emit-errors">Methods that Emit Errors</h3>
+<p>All methods use an emit-only error pattern — they call <code>this.emit('error', error)</code> but never explicitly re-throw. If no error listener is registered and <code>throwOnEmptyListeners</code> is <code>true</code> (the default), the <code>emit('error')</code> call itself will throw, following standard Node.js EventEmitter behavior.</p>
+<p><strong>Rendering Methods</strong> — emit error, return <code>""</code>:</p>
+<ul>
+<li><code>render()</code> - Emits error when markdown rendering fails, returns empty string</li>
+<li><code>renderSync()</code> - Emits error when markdown rendering fails, returns empty string</li>
+<li><code>renderReact()</code> - Emits error when React rendering fails, returns empty string</li>
+<li><code>renderReactSync()</code> - Emits error when React rendering fails, returns empty string</li>
+</ul>
+<p><strong>Validation Methods:</strong></p>
+<ul>
+<li><code>validate()</code> - Does <strong>not</strong> emit errors. Returns <code>{ valid: false, error }</code> on failure</li>
+<li><code>validateSync()</code> - Emits error and returns <code>{ valid: false, error }</code> on failure</li>
+</ul>
+<p><strong>File Operations</strong> — emit error, return void:</p>
+<ul>
+<li><code>renderToFile()</code> - Emits error when rendering or file writing fails</li>
+<li><code>renderToFileSync()</code> - Emits error when rendering or file writing fails</li>
+<li><code>loadFromFile()</code> - Emits error when file reading fails</li>
+<li><code>loadFromFileSync()</code> - Emits error when file reading fails</li>
+<li><code>saveToFile()</code> - Emits error when file writing fails</li>
+<li><code>saveToFileSync()</code> - Emits error when file writing fails</li>
+</ul>
+<p><strong>Front Matter Operations</strong> — emit error, return fallback:</p>
+<ul>
+<li><code>frontMatter</code> getter - Emits error when YAML parsing fails, returns <code>{}</code></li>
+<li><code>frontMatter</code> setter - Emits error when YAML serialization fails</li>
+</ul>
+<h3 id="error-event-examples">Error Event Examples</h3>
+<p><strong>Example 1: Global Error Handler</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>();
+
+<span class="hljs-comment">// Set up a global error handler</span>
+writr.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">(<span class="hljs-params">error</span>) =></span> {
+  <span class="hljs-comment">// Log to your monitoring service</span>
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'Writr error:'</span>, error);
+
+  <span class="hljs-comment">// Send to error tracking (e.g., Sentry, Rollbar)</span>
+  <span class="hljs-comment">// errorTracker.captureException(error);</span>
+});
+
+<span class="hljs-comment">// All errors will be emitted to the listener above</span>
+<span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">loadFromFile</span>(<span class="hljs-string">'./content.md'</span>);
+<span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>();
+</code></pre>
+<p><strong>Example 2: Validation with Error Listening</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'# My Content'</span>);
+<span class="hljs-keyword">let</span> lastError = <span class="hljs-literal">null</span>;
+
+writr.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">(<span class="hljs-params">error</span>) =></span> {
+  lastError = error;
+});
+
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">validate</span>();
+
+<span class="hljs-keyword">if</span> (!result.<span class="hljs-property">valid</span>) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Validation failed'</span>);
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Error details:'</span>, lastError);
+  <span class="hljs-comment">// result.error is also available</span>
+}
+</code></pre>
+<p><strong>Example 3: File Operations Without Try/Catch</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'# Content'</span>);
+
+writr.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">(<span class="hljs-params">error</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'File operation failed:'</span>, error.<span class="hljs-property">message</span>);
+  <span class="hljs-comment">// Handle gracefully - maybe use default content</span>
+});
+
+<span class="hljs-comment">// With a listener registered, errors are emitted and the method returns normally</span>
+<span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">loadFromFile</span>(<span class="hljs-string">'./maybe-missing.md'</span>);
+<span class="hljs-comment">// Note: without a listener, this will throw by default (throwOnEmptyListeners is true)</span>
+</code></pre>
+<h3 id="event-emitter-methods">Event Emitter Methods</h3>
+<p>Since Writr extends Hookified, you have access to standard event emitter methods:</p>
+<ul>
+<li><code>writr.on(event, handler)</code> - Add an event listener</li>
+<li><code>writr.once(event, handler)</code> - Add a one-time event listener</li>
+<li><code>writr.off(event, handler)</code> - Remove an event listener</li>
+<li><code>writr.emit(event, data)</code> - Emit an event (used internally)</li>
+</ul>
+<p>For more information about event handling capabilities, see the <a href="https://github.com/jaredwray/hookified">Hookified documentation</a>.</p>
+<h1 id="ai">AI</h1>
+<p>Writr includes built-in AI capabilities for metadata generation, SEO, and translation powered by the <a href="https://sdk.vercel.ai">Vercel AI SDK</a>. Plug in any supported model provider (OpenAI, Anthropic, Google, etc.) via the <code>ai</code> option.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">import</span> { openai } <span class="hljs-keyword">from</span> <span class="hljs-string">'@ai-sdk/openai'</span>;
+
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'# My Document\n\nSome markdown content here.'</span>, {
+  <span class="hljs-attr">ai</span>: { <span class="hljs-attr">model</span>: <span class="hljs-title function_">openai</span>(<span class="hljs-string">'gpt-4.1-mini'</span>) },
+});
+
+<span class="hljs-comment">// Generate metadata</span>
+<span class="hljs-keyword">const</span> metadata = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">getMetadata</span>();
+
+<span class="hljs-comment">// Generate only specific fields</span>
+<span class="hljs-keyword">const</span> metadata = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">getMetadata</span>({ <span class="hljs-attr">title</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">description</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-comment">// Generate SEO metadata</span>
+<span class="hljs-keyword">const</span> seo = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">getSEO</span>();
+
+<span class="hljs-comment">// Translate to Spanish</span>
+<span class="hljs-keyword">const</span> translated = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">getTranslation</span>({ <span class="hljs-attr">to</span>: <span class="hljs-string">'es'</span> });
+
+<span class="hljs-comment">// Apply generated metadata to frontmatter</span>
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">applyMetadata</span>({
+  <span class="hljs-attr">generate</span>: { <span class="hljs-attr">description</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">category</span>: <span class="hljs-literal">true</span> },
+  <span class="hljs-attr">overwrite</span>: <span class="hljs-literal">true</span>,
+});
+</code></pre>
+<h2 id="ai-options">AI Options</h2>
+<p>Pass <code>ai</code> in the <code>WritrOptions</code> to enable AI features:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model</code></td>
+<td><code>LanguageModel</code></td>
+<td>Yes</td>
+<td>The AI SDK model instance (e.g. <code>openai("gpt-4.1-mini")</code>).</td>
+</tr>
+<tr>
+<td><code>cache</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>Enables in-memory caching of AI results.</td>
+</tr>
+<tr>
+<td><code>prompts</code></td>
+<td><code>WritrAIPrompts</code></td>
+<td>No</td>
+<td>Custom prompt overrides for metadata, SEO, and translation.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'# My Document'</span>, {
+  <span class="hljs-attr">ai</span>: {
+    <span class="hljs-attr">model</span>: <span class="hljs-title function_">openai</span>(<span class="hljs-string">'gpt-4.1-mini'</span>),
+    <span class="hljs-attr">cache</span>: <span class="hljs-literal">true</span>,
+  },
+});
+</code></pre>
+<h2 id="ai-provider-configuration">AI Provider Configuration</h2>
+<p>By default, the provider imports read API keys from environment variables:</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Import</th>
+<th>Environment Variable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenAI</td>
+<td><code>openai</code> from <code>@ai-sdk/openai</code></td>
+<td><code>OPENAI_API_KEY</code></td>
+</tr>
+<tr>
+<td>Anthropic</td>
+<td><code>anthropic</code> from <code>@ai-sdk/anthropic</code></td>
+<td><code>ANTHROPIC_API_KEY</code></td>
+</tr>
+<tr>
+<td>Google</td>
+<td><code>google</code> from <code>@ai-sdk/google</code></td>
+<td><code>GOOGLE_GENERATIVE_AI_API_KEY</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// Uses OPENAI_API_KEY from environment</span>
+<span class="hljs-keyword">import</span> { openai } <span class="hljs-keyword">from</span> <span class="hljs-string">'@ai-sdk/openai'</span>;
+
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'# Hello'</span>, { <span class="hljs-attr">ai</span>: { <span class="hljs-attr">model</span>: <span class="hljs-title function_">openai</span>(<span class="hljs-string">'gpt-4.1-mini'</span>) } });
+</code></pre>
+<p>To set API keys programmatically, use the provider factory functions instead:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">import</span> { createOpenAI } <span class="hljs-keyword">from</span> <span class="hljs-string">'@ai-sdk/openai'</span>;
+<span class="hljs-keyword">import</span> { createAnthropic } <span class="hljs-keyword">from</span> <span class="hljs-string">'@ai-sdk/anthropic'</span>;
+<span class="hljs-keyword">import</span> { createGoogleGenerativeAI } <span class="hljs-keyword">from</span> <span class="hljs-string">'@ai-sdk/google'</span>;
+
+<span class="hljs-comment">// OpenAI</span>
+<span class="hljs-keyword">const</span> openai = <span class="hljs-title function_">createOpenAI</span>({ <span class="hljs-attr">apiKey</span>: <span class="hljs-string">'your-openai-key'</span> });
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'# Hello'</span>, { <span class="hljs-attr">ai</span>: { <span class="hljs-attr">model</span>: <span class="hljs-title function_">openai</span>(<span class="hljs-string">'gpt-4.1-mini'</span>) } });
+
+<span class="hljs-comment">// Anthropic</span>
+<span class="hljs-keyword">const</span> anthropic = <span class="hljs-title function_">createAnthropic</span>({ <span class="hljs-attr">apiKey</span>: <span class="hljs-string">'your-anthropic-key'</span> });
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'# Hello'</span>, { <span class="hljs-attr">ai</span>: { <span class="hljs-attr">model</span>: <span class="hljs-title function_">anthropic</span>(<span class="hljs-string">'claude-sonnet-4-20250514'</span>) } });
+
+<span class="hljs-comment">// Google</span>
+<span class="hljs-keyword">const</span> google = <span class="hljs-title function_">createGoogleGenerativeAI</span>({ <span class="hljs-attr">apiKey</span>: <span class="hljs-string">'your-google-key'</span> });
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'# Hello'</span>, { <span class="hljs-attr">ai</span>: { <span class="hljs-attr">model</span>: <span class="hljs-title function_">google</span>(<span class="hljs-string">'gemini-2.0-flash'</span>) } });
+</code></pre>
+<h2 id="metadata">Metadata</h2>
+<p>Generate metadata from your document content using <code>writr.ai.getMetadata()</code>, or generate and apply it directly to frontmatter with <code>writr.ai.applyMetadata()</code>.</p>
+<h3 id="generating-metadata">Generating Metadata</h3>
+<p><code>getMetadata()</code> analyzes the document and returns a <code>WritrMetadata</code> object. By default all fields are generated. Pass options to select specific fields.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// Generate all metadata fields</span>
+<span class="hljs-keyword">const</span> metadata = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">getMetadata</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(metadata.<span class="hljs-property">title</span>);       <span class="hljs-comment">// "Getting Started with Writr"</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(metadata.<span class="hljs-property">tags</span>);        <span class="hljs-comment">// ["markdown", "rendering", "typescript"]</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(metadata.<span class="hljs-property">description</span>); <span class="hljs-comment">// "A guide to using Writr for markdown processing."</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(metadata.<span class="hljs-property">readingTime</span>); <span class="hljs-comment">// 3 (minutes)</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(metadata.<span class="hljs-property">wordCount</span>);   <span class="hljs-comment">// 450</span>
+
+<span class="hljs-comment">// Generate only specific fields</span>
+<span class="hljs-keyword">const</span> partial = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">getMetadata</span>({
+  <span class="hljs-attr">title</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">description</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">tags</span>: <span class="hljs-literal">true</span>,
+});
+</code></pre>
+<p><strong>Generated fields:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>title</code></td>
+<td><code>string</code></td>
+<td>The best-fit title for the document.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>A concise meta-style description of the document.</td>
+</tr>
+<tr>
+<td><code>tags</code></td>
+<td><code>string[]</code></td>
+<td>Human-friendly labels for organizing the document.</td>
+</tr>
+<tr>
+<td><code>keywords</code></td>
+<td><code>string[]</code></td>
+<td>Search-oriented terms related to the document content.</td>
+</tr>
+<tr>
+<td><code>preview</code></td>
+<td><code>string</code></td>
+<td>A short teaser or preview snippet of the content.</td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td><code>string</code></td>
+<td>A slightly longer overview of the document.</td>
+</tr>
+<tr>
+<td><code>category</code></td>
+<td><code>string</code></td>
+<td>A broad grouping such as "docs", "guide", or "blog".</td>
+</tr>
+<tr>
+<td><code>topic</code></td>
+<td><code>string</code></td>
+<td>The primary subject the document is about.</td>
+</tr>
+<tr>
+<td><code>audience</code></td>
+<td><code>string</code></td>
+<td>The intended audience for the document.</td>
+</tr>
+<tr>
+<td><code>difficulty</code></td>
+<td><code>"beginner" | "intermediate" | "advanced"</code></td>
+<td>The estimated skill level required.</td>
+</tr>
+<tr>
+<td><code>readingTime</code></td>
+<td><code>number</code></td>
+<td>Estimated reading time in minutes (computed, not AI-generated).</td>
+</tr>
+<tr>
+<td><code>wordCount</code></td>
+<td><code>number</code></td>
+<td>Total word count of the document (computed, not AI-generated).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="constraining-generated-values">Constraining Generated Values</h3>
+<p>When you have a controlled vocabulary — for example a CMS taxonomy, a fixed set of categories, or an SEO keyword list — pass <code>allowedTags</code>, <code>allowedKeywords</code>, or <code>allowedCategories</code> and the AI will pick only from that list. When omitted, the AI generates freely.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> metadata = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">getMetadata</span>({
+  <span class="hljs-attr">allowedTags</span>: [<span class="hljs-string">'javascript'</span>, <span class="hljs-string">'typescript'</span>, <span class="hljs-string">'python'</span>, <span class="hljs-string">'rust'</span>],
+  <span class="hljs-attr">allowedKeywords</span>: [<span class="hljs-string">'async'</span>, <span class="hljs-string">'promises'</span>, <span class="hljs-string">'callbacks'</span>],
+  <span class="hljs-attr">allowedCategories</span>: [<span class="hljs-string">'tutorial'</span>, <span class="hljs-string">'guide'</span>, <span class="hljs-string">'reference'</span>, <span class="hljs-string">'blog'</span>],
+});
+
+<span class="hljs-comment">// metadata.tags is guaranteed to be a subset of allowedTags</span>
+<span class="hljs-comment">// metadata.category is guaranteed to be one of allowedCategories</span>
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>allowedTags</code></td>
+<td><code>string[]</code></td>
+<td>Constrains AI-generated tags to this list. A non-empty array implicitly enables <code>tags</code>.</td>
+</tr>
+<tr>
+<td><code>allowedKeywords</code></td>
+<td><code>string[]</code></td>
+<td>Constrains AI-generated keywords to this list. A non-empty array implicitly enables <code>keywords</code>.</td>
+</tr>
+<tr>
+<td><code>allowedCategories</code></td>
+<td><code>string[]</code></td>
+<td>Constrains AI-generated category to one of these values. A non-empty array implicitly enables <code>category</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>How the constraint is enforced</strong></p>
+<p>The constraint is applied on three reinforcing layers, so the model both <em>knows about</em> and is <em>prevented from violating</em> the list:</p>
+<ol>
+<li><strong>Schema enforcement (the hard guarantee).</strong> The Zod response schema uses <code>z.array(z.enum(allowedTags))</code> for tags, <code>z.array(z.enum(allowedKeywords))</code> for keywords, and <code>z.enum(allowedCategories)</code> for category. The AI SDK's structured-output mode forces the model to return values from the enum — it literally cannot produce anything outside the list.</li>
+<li><strong>Prompt instruction.</strong> A <code>Constraints:</code> block is appended to the prompt with lines like <code>Tags must be selected from: foo, bar, baz</code> and <code>Category must be one of: tutorial, guide, reference</code>, so the model also sees the list in natural language.</li>
+<li><strong>Schema field description.</strong> The Zod field description is rewritten to inline the allowed values (e.g. <code>Human-friendly labels selected from: foo, bar, baz</code>), which most providers surface to the model alongside the schema.</li>
+</ol>
+<p><strong>Behavior notes</strong></p>
+<ul>
+<li>Providing a <strong>non-empty</strong> <code>allowed*</code> array implicitly enables the corresponding field — you don't also need <code>tags: true</code>.</li>
+<li>Setting the field explicitly to <code>false</code> disables it even when an <code>allowed*</code> list is provided.</li>
+<li>An <strong>empty</strong> array (<code>allowedTags: []</code>) does <strong>not</strong> implicitly enable the field. If you want unconstrained generation, either omit the option or pair the empty array with the explicit flag (e.g. <code>{ tags: true, allowedTags: [] }</code>) — <code>z.enum</code> requires at least one value, so the empty-array path uses <code>z.string()</code> and drops the prompt constraint.</li>
+<li>These also work via <code>applyMetadata({ generate: { allowedTags: [...] } })</code>.</li>
+</ul>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// Implicit enablement: tags is generated, even without `tags: true`</span>
+<span class="hljs-keyword">const</span> metadata = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">getMetadata</span>({
+  <span class="hljs-attr">allowedTags</span>: [<span class="hljs-string">'docs'</span>, <span class="hljs-string">'guide'</span>, <span class="hljs-string">'blog'</span>],
+});
+
+<span class="hljs-comment">// Explicit `false` wins: tags is not generated</span>
+<span class="hljs-keyword">const</span> metadata = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">getMetadata</span>({
+  <span class="hljs-attr">tags</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">allowedTags</span>: [<span class="hljs-string">'docs'</span>, <span class="hljs-string">'guide'</span>, <span class="hljs-string">'blog'</span>],
+});
+</code></pre>
+<h3 id="applying-metadata-to-frontmatter">Applying Metadata to Frontmatter</h3>
+<p><code>applyMetadata()</code> generates metadata and writes it into the document's frontmatter. The result tells you exactly what happened:</p>
+<ul>
+<li><strong><code>applied</code></strong> — fields that were newly written because they were missing from frontmatter.</li>
+<li><strong><code>skipped</code></strong> — fields that already existed and were not overwritten.</li>
+<li><strong><code>overwritten</code></strong> — fields that replaced existing frontmatter values.</li>
+</ul>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">applyMetadata</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result.<span class="hljs-property">applied</span>);     <span class="hljs-comment">// ["description", "tags", "category"]</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result.<span class="hljs-property">skipped</span>);     <span class="hljs-comment">// ["title"] (already existed)</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result.<span class="hljs-property">overwritten</span>); <span class="hljs-comment">// []</span>
+</code></pre>
+<h3 id="overwrite">Overwrite</h3>
+<p>By default, <code>applyMetadata()</code> only fills in missing fields — existing frontmatter values are never touched. The <code>overwrite</code> option changes this behavior:</p>
+<ul>
+<li><strong>Default (no overwrite):</strong> Only missing fields are written. Existing values are preserved.</li>
+<li><strong><code>overwrite: true</code>:</strong> All generated fields replace existing frontmatter values.</li>
+<li><strong><code>overwrite: ['field1', 'field2']</code>:</strong> Only the listed fields are overwritten. Other existing values are preserved.</li>
+</ul>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// Overwrite all generated fields, even if they already exist</span>
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">applyMetadata</span>({
+  <span class="hljs-attr">generate</span>: { <span class="hljs-attr">title</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">description</span>: <span class="hljs-literal">true</span> },
+  <span class="hljs-attr">overwrite</span>: <span class="hljs-literal">true</span>,
+});
+
+<span class="hljs-comment">// Only overwrite title, leave description alone if it already exists</span>
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">applyMetadata</span>({
+  <span class="hljs-attr">generate</span>: { <span class="hljs-attr">title</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">description</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">category</span>: <span class="hljs-literal">true</span> },
+  <span class="hljs-attr">overwrite</span>: [<span class="hljs-string">'title'</span>],
+});
+</code></pre>
+<h3 id="field-mapping">Field Mapping</h3>
+<p>The <code>fieldMap</code> option maps generated metadata keys to different frontmatter field names. This is useful when your frontmatter schema uses different naming conventions than the default metadata keys.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">applyMetadata</span>({
+  <span class="hljs-attr">generate</span>: { <span class="hljs-attr">description</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">tags</span>: <span class="hljs-literal">true</span> },
+  <span class="hljs-attr">fieldMap</span>: {
+    <span class="hljs-attr">description</span>: <span class="hljs-string">'meta_description'</span>,
+    <span class="hljs-attr">tags</span>: <span class="hljs-string">'labels'</span>,
+  },
+});
+<span class="hljs-comment">// writr.frontMatter.meta_description === "A guide to..."</span>
+<span class="hljs-comment">// writr.frontMatter.labels === ["markdown", "rendering"]</span>
+</code></pre>
+<p>The mapping applies to all behaviors — field existence checks, overwrites, and skips all use the mapped key when checking frontmatter.</p>
+<h2 id="seo">SEO</h2>
+<p>Generate SEO metadata using <code>writr.ai.getSEO()</code>. By default all fields are generated. Pass options to select specific fields.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> seo = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">getSEO</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(seo.<span class="hljs-property">slug</span>);              <span class="hljs-comment">// "getting-started-with-writr"</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(seo.<span class="hljs-property">openGraph</span>?.<span class="hljs-property">title</span>);  <span class="hljs-comment">// "Getting Started with Writr"</span>
+
+<span class="hljs-comment">// Generate only a slug</span>
+<span class="hljs-keyword">const</span> seo = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">getSEO</span>({ <span class="hljs-attr">slug</span>: <span class="hljs-literal">true</span> });
+</code></pre>
+<p><strong>Available fields:</strong> <code>slug</code>, <code>openGraph</code> (includes <code>title</code>, <code>description</code>, <code>image</code>).</p>
+<h2 id="translation">Translation</h2>
+<p>Translate the document into another language using <code>writr.ai.getTranslation()</code>. Returns a new <code>Writr</code> instance with the translated content.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> spanish = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">getTranslation</span>({ <span class="hljs-attr">to</span>: <span class="hljs-string">'es'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(spanish.<span class="hljs-property">body</span>); <span class="hljs-comment">// Spanish markdown</span>
+
+<span class="hljs-comment">// With source language and frontmatter translation</span>
+<span class="hljs-keyword">const</span> french = <span class="hljs-keyword">await</span> writr.<span class="hljs-property">ai</span>.<span class="hljs-title function_">getTranslation</span>({
+  <span class="hljs-attr">to</span>: <span class="hljs-string">'fr'</span>,
+  <span class="hljs-attr">from</span>: <span class="hljs-string">'en'</span>,
+  <span class="hljs-attr">translateFrontMatter</span>: <span class="hljs-literal">true</span>,
+});
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>to</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>Target language or locale.</td>
+</tr>
+<tr>
+<td><code>from</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Source language or locale.</td>
+</tr>
+<tr>
+<td><code>translateFrontMatter</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>Also translate frontmatter string values.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="using-writrai-directly">Using WritrAI Directly</h2>
+<p><code>WritrAI</code> is exported as a named export and can be instantiated independently from the <code>Writr</code> constructor. This is useful when you want to configure the AI instance separately or swap models on the fly.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span>, <span class="hljs-title class_">WritrAI</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'writr'</span>;
+<span class="hljs-keyword">import</span> { openai } <span class="hljs-keyword">from</span> <span class="hljs-string">'@ai-sdk/openai'</span>;
+
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'# My Document\n\nSome markdown content here.'</span>);
+<span class="hljs-keyword">const</span> ai = <span class="hljs-keyword">new</span> <span class="hljs-title class_">WritrAI</span>(writr, {
+  <span class="hljs-attr">model</span>: <span class="hljs-title function_">openai</span>(<span class="hljs-string">'gpt-4.1-mini'</span>),
+  <span class="hljs-attr">cache</span>: <span class="hljs-literal">true</span>,
+});
+
+<span class="hljs-comment">// Generate metadata</span>
+<span class="hljs-keyword">const</span> metadata = <span class="hljs-keyword">await</span> ai.<span class="hljs-title function_">getMetadata</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(metadata.<span class="hljs-property">title</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(metadata.<span class="hljs-property">tags</span>);
+
+<span class="hljs-comment">// Generate SEO data</span>
+<span class="hljs-keyword">const</span> seo = <span class="hljs-keyword">await</span> ai.<span class="hljs-title function_">getSEO</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(seo.<span class="hljs-property">slug</span>);
+
+<span class="hljs-comment">// Translate</span>
+<span class="hljs-keyword">const</span> translated = <span class="hljs-keyword">await</span> ai.<span class="hljs-title function_">getTranslation</span>({ <span class="hljs-attr">to</span>: <span class="hljs-string">'es'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(translated.<span class="hljs-property">body</span>);
+
+<span class="hljs-comment">// Apply metadata to frontmatter</span>
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> ai.<span class="hljs-title function_">applyMetadata</span>({
+  <span class="hljs-attr">generate</span>: { <span class="hljs-attr">title</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">description</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">tags</span>: <span class="hljs-literal">true</span> },
+  <span class="hljs-attr">overwrite</span>: <span class="hljs-literal">true</span>,
+});
+</code></pre>
+<h1 id="migrating-to-v6">Migrating to v6</h1>
+<p>Writr v6 upgrades <a href="https://github.com/jaredwray/hookified">hookified</a> from v1 to v2 and removes <code>throwErrors</code> in favor of hookified's built-in error handling options.</p>
+<h2 id="breaking-changes">Breaking Changes</h2>
+<h3 id="throwerrors-removed"><code>throwErrors</code> removed</h3>
+<p>The <code>throwErrors</code> option has been removed from <code>WritrOptions</code>. Use <code>throwOnEmitError</code> instead, which is provided by hookified's <code>HookifiedOptions</code> (now spread into <code>WritrOptions</code>).</p>
+<p><strong>Before (v5):</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'# Hello'</span>, { <span class="hljs-attr">throwErrors</span>: <span class="hljs-literal">true</span> });
+</code></pre>
+<p><strong>After (v6):</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'# Hello'</span>, { <span class="hljs-attr">throwOnEmitError</span>: <span class="hljs-literal">true</span> });
+</code></pre>
+<h3 id="error-handling-redesign">Error handling redesign</h3>
+<p>All methods now use an <strong>emit-only</strong> pattern — errors are emitted via <code>emit('error', error)</code> but never explicitly re-thrown. Methods return fallback values on error (<code>""</code> for render methods, <code>{}</code> for frontMatter getter, <code>{ valid: false, error }</code> for validate).</p>
+<p><strong>How errors propagate:</strong></p>
+<ul>
+<li><strong>With a listener registered:</strong> Errors are passed to the listener. The method returns its fallback value without throwing.</li>
+<li><strong>Without a listener (default behavior):</strong> Since <code>throwOnEmptyListeners</code> defaults to <code>true</code>, the <code>emit('error')</code> call itself throws, following standard Node.js EventEmitter behavior. This means unhandled errors will still surface as exceptions.</li>
+<li><strong>With <code>throwOnEmitError: true</code>:</strong> Every <code>emit('error')</code> call throws, even when listeners are registered. This affects all methods that emit errors.</li>
+</ul>
+<p><strong>Other changes:</strong></p>
+<ul>
+<li><code>render()</code> and <code>renderSync()</code> no longer throw wrapped <code>"Failed to render markdown: ..."</code> errors. They emit the original error and return <code>""</code>.</li>
+<li><code>validate()</code> (async) no longer emits errors — it only returns <code>{ valid: false, error }</code>. <code>validateSync()</code> still emits.</li>
+</ul>
+<h3 id="hookified-v2">hookified v2</h3>
+<p>Writr now uses hookified v2 which introduces several new options available through <code>WritrOptions</code>:</p>
+<ul>
+<li><code>throwOnEmitError</code> — Throw when <code>emit("error")</code> is called, even with listeners (default: <code>false</code>)</li>
+<li><code>throwOnHookError</code> — Throw when a hook handler throws (default: <code>false</code>)</li>
+<li><code>throwOnEmptyListeners</code> — Throw when emitting <code>error</code> with no listeners (default: <code>true</code>)</li>
+<li><code>eventLogger</code> — Logger instance for event logging</li>
+</ul>
+<p>See the <a href="https://github.com/jaredwray/hookified">hookified documentation</a> for full details.</p>
+<h1 id="unified-processor-engine">Unified Processor Engine</h1>
+<p>Writr builds on top of the open source <a href="https://github.com/unifiedjs/unified">unified</a> processor – the core project that powers
+<a href="https://github.com/remarkjs/remark">remark</a>, <a href="https://github.com/rehypejs/rehype">rehype</a>, and many other content tools. Unified
+provides a pluggable pipeline where each plugin transforms a syntax tree. Writr configures a default set of plugins to turn
+Markdown into HTML, but you can access the processor through the <code>.engine</code> property to add your own behavior with
+<code>writr.engine.use(myPlugin)</code>. The <a href="https://unifiedjs.com/">unified documentation</a> has more details and guides for building
+plugins and working with the processor directly.</p>
+<h1 id="benchmarks">Benchmarks</h1>
+<p>This is a comparison with minimal configuration where we have disabled all rendering pipeline and just did straight caching + rendering to compare it against the fastest:</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Writr (Sync) (Caching)</td>
+<td align="center">🥇</td>
+<td align="right">83K</td>
+<td align="right">14µs</td>
+<td align="center">±0.27%</td>
+<td align="right">74K</td>
+</tr>
+<tr>
+<td>Writr (Async) (Caching)</td>
+<td align="center">-3%</td>
+<td align="right">80K</td>
+<td align="right">14µs</td>
+<td align="center">±0.27%</td>
+<td align="right">71K</td>
+</tr>
+<tr>
+<td>markdown-it</td>
+<td align="center">-30%</td>
+<td align="right">58K</td>
+<td align="right">20µs</td>
+<td align="center">±0.37%</td>
+<td align="right">50K</td>
+</tr>
+<tr>
+<td>marked</td>
+<td align="center">-33%</td>
+<td align="right">56K</td>
+<td align="right">25µs</td>
+<td align="center">±0.50%</td>
+<td align="right">40K</td>
+</tr>
+<tr>
+<td>Writr (Sync)</td>
+<td align="center">-94%</td>
+<td align="right">5K</td>
+<td align="right">225µs</td>
+<td align="center">±0.88%</td>
+<td align="right">10K</td>
+</tr>
+<tr>
+<td>Writr (Async)</td>
+<td align="center">-94%</td>
+<td align="right">5K</td>
+<td align="right">229µs</td>
+<td align="center">±0.89%</td>
+<td align="right">10K</td>
+</tr>
+</tbody>
+</table>
+<p>As you can see this module is performant with <code>caching</code> enabled but was built to be performant enough but with all the features added in. If you are just wanting performance and not features then <code>markdown-it</code> or <code>marked</code> is the solution unless you use <code>Writr</code> with caching.</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Writr (Async) (Caching)</td>
+<td align="center">🥇</td>
+<td align="right">26K</td>
+<td align="right">39µs</td>
+<td align="center">±0.12%</td>
+<td align="right">25K</td>
+</tr>
+<tr>
+<td>Writr (Sync) (Caching)</td>
+<td align="center">-0.92%</td>
+<td align="right">26K</td>
+<td align="right">40µs</td>
+<td align="center">±0.15%</td>
+<td align="right">25K</td>
+</tr>
+<tr>
+<td>Writr (Sync)</td>
+<td align="center">-93%</td>
+<td align="right">2K</td>
+<td align="right">630µs</td>
+<td align="center">±0.97%</td>
+<td align="right">10K</td>
+</tr>
+<tr>
+<td>Writr (Async)</td>
+<td align="center">-93%</td>
+<td align="right">2K</td>
+<td align="right">649µs</td>
+<td align="center">±0.96%</td>
+<td align="right">10K</td>
+</tr>
+</tbody>
+</table>
+<p>The benchmark shows rendering performance via Sync and Async methods with caching enabled and disabled and all features.</p>
+<h1 id="esm-and-node-version-support">ESM and Node Version Support</h1>
+<p>This package is ESM only and tested on the current lts version and its previous. Please don't open issues for questions regarding CommonJS / ESM or previous Nodejs versions.</p>
+<h1 id="code-of-conduct-and-contributing">Code of Conduct and Contributing</h1>
+<p>Please use our <a href="CODE_OF_CONDUCT.md">Code of Conduct</a> and <a href="CONTRIBUTING.md">Contributing</a> guidelines for development and testing. We appreciate your contributions!</p>
+<h1 id="license">License</h1>
+<p><a href="LICENSE">MIT</a> &#x26; © <a href="https://jaredwray.com">Jared Wray</a></p>

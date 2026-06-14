@@ -1,0 +1,44 @@
+<h1 id="markdown-for-the-component-era">Markdown for the component era</h1>
+<p><a href="https://github.com/mdx-js/mdx/actions"><img src="https://github.com/mdx-js/mdx/workflows/main/badge.svg" alt="Build"></a>
+<a href="https://codecov.io/github/mdx-js/mdx"><img src="https://img.shields.io/codecov/c/github/mdx-js/mdx/main.svg" alt="Coverage"></a>
+<a href="https://opencollective.com/unified"><img src="https://opencollective.com/unified/sponsors/badge.svg" alt="Sponsors"></a>
+<a href="https://opencollective.com/unified"><img src="https://opencollective.com/unified/backers/badge.svg" alt="Backers"></a>
+<a href="https://github.com/mdx-js/mdx/discussions"><img src="https://img.shields.io/badge/chat-discussions-success.svg" alt="Chat"></a></p>
+<p><a href="https://mdxjs.com">MDX</a> is an authorable format that lets you seamlessly write JSX in
+your markdown documents.
+You can import components, such as interactive charts or alerts, and embed them
+within your content.
+This makes writing long-form content with components a blast.
+🚀</p>
+<pre><code class="hljs language-mdx">import {Chart} from './snowfall.js'
+export const year = 2013
+
+# Last year’s snowfall
+
+In {year}, the snowfall was above average.
+It was followed by a warm spring which caused
+flood conditions in many of the nearby rivers.
+
+&#x3C;Chart year={year} color="#fcb32c" />
+</code></pre>
+<p>See <a href="https://mdxjs.com/docs/what-is-mdx/">§ What is MDX</a> for more info on the
+format.
+See <a href="https://mdxjs.com/playground/">§ Playground</a> to try it out.</p>
+<h2 id="what-is-this">What is this?</h2>
+<p>This GitHub repository contains several packages for compiling the MDX format to
+JavaScript, integrating with bundlers such as webpack and Rollup, and for using
+it with frameworks such as React, Preact, and Vue.</p>
+<p>See <a href="https://mdxjs.com/getting-started/">§ Getting started</a> for how to
+integrate MDX into your project.</p>
+<h2 id="security">Security</h2>
+<p>See <a href="https://mdxjs.com/getting-started/#security">§ Security</a> on our site for information.</p>
+<h2 id="contribute">Contribute</h2>
+<p>See <a href="https://mdxjs.com/community/contribute/">§ Contribute</a> on our site for ways to get started.
+See <a href="https://mdxjs.com/community/support/">§ Support</a> for ways to get help.</p>
+<p>This project has a <a href="https://github.com/mdx-js/.github/blob/main/code-of-conduct.md">code of conduct</a>.
+By interacting with this repository, organization, or community you agree to
+abide by its terms.</p>
+<h2 id="sponsor">Sponsor</h2>
+<p>See <a href="https://mdxjs.com/community/sponsor/">§ Sponsor</a> on our site for how to help financially.</p>
+<h2 id="license">License</h2>
+<p><a href="license">MIT</a> © Compositor and <a href="https://vercel.com">Vercel</a></p>

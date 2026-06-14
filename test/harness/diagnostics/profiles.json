@@ -1,0 +1,16 @@
+{
+  "commonmark": ["commonmark", "default"],
+  "gfm-tables": ["gfm-only", "default"],
+  "gfm-strikethrough": ["gfm-only", "default"],
+  "gfm-tasklist": ["gfm-only", "default"],
+  "gfm-autolink": ["gfm-only", "default"],
+  "gfm-alerts": ["gfm-only", "default"],
+  "emoji": ["default"],
+  "toc": ["default"],
+  "slug": ["default"],
+  "highlight": ["default", "no-highlight"],
+  "math": ["default", "no-math"],
+  "mdx": ["mdx"],
+  "rawhtml": ["rawhtml"],
+  "frontmatter": ["default"]
+}

@@ -1,0 +1,193 @@
+<p>We are excited to announce the release of the OpenFeature “Multi-Provider” for JavaScript and NodeJS. This new provider allows developers to access multiple OpenFeature providers through a unified interface, with customizable strategies that reconcile inconsistencies between providers. The Multi-Provider supports use cases including provider migrations and long-term support for multiple feature flag sources. It is currently available for the Javascript OpenFeature SDKs <a href="https://www.npmjs.com/package/@openfeature/server-sdk">@openfeature/server-sdk</a> and <a href="https://www.npmjs.com/package/@openfeature/web-sdk">@openfeature/web-sdk</a>.</p>
+<h2 id="how-it-works">How It Works</h2>
+<pre><code class="hljs language-jsx"><span class="hljs-keyword">const</span> multiProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MultiProvider</span>([
+  {
+    <span class="hljs-attr">provider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">ProviderA</span>(),
+  },
+  {
+    <span class="hljs-attr">provider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">ProviderB</span>(),
+  },
+]);
+
+<span class="hljs-keyword">await</span> <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProviderAndWait</span>(multiProvider);
+
+openFeatureClient = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> openFeatureClient.<span class="hljs-title function_">getStringValue</span>(<span class="hljs-string">'flag-key'</span>, <span class="hljs-string">'default value'</span>, someUser);
+</code></pre>
+<p>The Multi-Provider behaves like any other provider, but under the hood it combines results from any number of providers. It takes a list of providers as its only required parameter, then evaluates flags by progressing through the list of providers in order. By default, it will only evaluate the next provider if the current one indicates the flag was not found. Once there is a flag match, the Multi-Provider will return that result and not evaluate with the remaining providers.</p>
+<h2 id="strategies">Strategies</h2>
+<p>In order to support diverse use cases, the Multi-Provider also accepts a Strategy parameter, which can be customized to control which providers are evaluated and how the final result is determined.</p>
+<pre><code class="hljs language-jsx"><span class="hljs-keyword">const</span> multiProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MultiProvider</span>(
+  [
+    {
+      <span class="hljs-attr">provider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">ProviderA</span>(),
+    },
+    {
+      <span class="hljs-attr">provider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">ProviderB</span>(),
+    },
+  ],
+  <span class="hljs-keyword">new</span> <span class="hljs-title class_">SomeStrategy</span>(),
+);
+</code></pre>
+<h3 id="first-match-strategy">First Match Strategy</h3>
+<p>The default Strategy is the <code>FirstMatchStrategy</code>. This will evaluate providers in order, moving on to the next provider only if the current provider returns a <code>FLAG_NOT_FOUND</code> result. If an error is thrown by any provider, the Multi-Provider will throw that error. The OpenFeature SDK will then catch the error and return the default value.</p>
+<p>This strategy is useful for migrating from one provider to another, when some flags have been ported to the new system while others remain in the old one. By putting the new provider first in the provider's list, the Multi-Provider will prefer results from the new system but keep the old as a fallback.</p>
+<p><code>FirstMatchStrategy</code> can also be used to pull feature flags from multiple sources, and return as soon as the flag is found.</p>
+<h3 id="first-successful-strategy">First Successful Strategy</h3>
+<p><code>FirstSuccessfulStrategy</code> is similar to <code>FirstMatchStrategy</code>, except that errors from evaluated providers do not halt execution. Instead, it will return the first successful result from a provider. If no provider successfully responds, it will throw an error result.</p>
+<p>One use case for this strategy is if you want the Multi-Provider to fallback to another provider in the case of an error, rather than throwing an error itself. For example, if an external vendor provider goes down, you may want to automatically fall back to a config file.</p>
+<h3 id="comparison-strategy">Comparison Strategy</h3>
+<p>The <code>ComparisonStrategy</code> requires that all providers agree on a value. If the providers return the same value, the result of the evaluation will be that value. Otherwise, the evaluation result will contain an error in the <code>errors</code> field to indicate a mismatch, and the result value will be the value returned by the first provider. The <code>ComparisonStrategy</code> also evaluates all providers in parallel, as it is not intended to exit as soon as it finds a match.</p>
+<p>One use case for this strategy is validating the success of a provider migration. If the configuration in one provider has been recreated in another, this strategy confirms the flags and user targeting are consistent between those sources.</p>
+<h3 id="custom-strategies">Custom Strategies</h3>
+<p>In order to support complex provider behaviour and diverse use cases, users can write custom strategies that extend the abstract <code>BaseEvaluationStrategy</code> class. Some key methods to control the Multi-Provider’s behaviour include:</p>
+<ul>
+<li><strong>runMode:</strong> This property determines whether providers are evaluated sequentially or in parallel.</li>
+<li><strong>shouldEvaluateThisProvider:</strong> This function is called before a provider is evaluated. If it returns false, the provider is skipped. This is useful for conditional evaluations based on the flag key or the provider's state.
+<ul>
+<li>For example, if you know that all flag keys containing the substring <code>provider_a_</code> should only be evaluated using ProviderA, you can skip evaluating with any other providers when that prefix is used.</li>
+</ul>
+</li>
+</ul>
+<pre><code class="hljs language-tsx"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyCustomStrategy</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">BaseEvaluationStrategy</span> {
+  <span class="hljs-comment">// In this example, we know keys containing 'provider_a_' will only exist in ProviderA</span>
+  <span class="hljs-keyword">override</span> <span class="hljs-title function_">shouldEvaluateThisProvider</span>(
+    <span class="hljs-attr">strategyContext</span>: <span class="hljs-title class_">StrategyPerProviderContext</span>,
+    <span class="hljs-attr">evalContext</span>: <span class="hljs-title class_">EvaluationContext</span>,
+  ): <span class="hljs-built_in">boolean</span> {
+    <span class="hljs-keyword">if</span> (strategyContext.<span class="hljs-property">flagKey</span>.<span class="hljs-title function_">includes</span>(<span class="hljs-string">'provider_a_'</span>) &#x26;&#x26; strategyContext.<span class="hljs-property">providerName</span> !== <span class="hljs-string">'ProviderA'</span>) {
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+    }
+
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  }
+}
+</code></pre>
+<ul>
+<li><strong>shouldEvaluateNextProvider:</strong> After a provider is evaluated, this function determines whether to proceed with evaluating the next provider. It takes into account the result or any errors encountered. If it returns true, the next provider is evaluated; otherwise, the evaluation stops and the results are passed to <code>determineFinalResult</code>. In parallel execution mode, this function is not called.
+<ul>
+<li>If your provider indicates that a result should not be used in a non-standard way, you can customize <code>shouldEvaluateNextProvider</code> to continue to the next provider if that condition is met. For example, if your provider result should be skipped when <code>flagMetadata.unusableResult</code> is <code>true</code>, you can check for that property here.</li>
+</ul>
+</li>
+</ul>
+<pre><code class="hljs language-tsx"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyCustomStrategy</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">BaseEvaluationStrategy</span> {
+  <span class="hljs-keyword">override</span> shouldEvaluateNextProvider&#x3C;T <span class="hljs-keyword">extends</span> <span class="hljs-title class_">FlagValue</span>>(
+    <span class="hljs-attr">strategyContext</span>: <span class="hljs-title class_">StrategyPerProviderContext</span>,
+    <span class="hljs-attr">context</span>: <span class="hljs-title class_">EvaluationContext</span>,
+    <span class="hljs-attr">details</span>?: <span class="hljs-title class_">ResolutionDetails</span>&#x3C;T>,
+    <span class="hljs-attr">thrownError</span>?: <span class="hljs-built_in">unknown</span>,
+  ): <span class="hljs-built_in">boolean</span> {
+    <span class="hljs-comment">// if the provider indicates the result should not be used, continue to next provider</span>
+    <span class="hljs-keyword">if</span> (details?.<span class="hljs-property">flagMetadata</span>.<span class="hljs-property">unusableResult</span> === <span class="hljs-literal">true</span>) {
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+    }
+    <span class="hljs-comment">// otherwise, return this result</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+  }
+}
+</code></pre>
+<ul>
+<li><strong>determineFinalResult:</strong> This function is invoked after all evaluations are completed (or when no further evaluations are needed). It consolidates the results and determines the final outcome. The function must return a <code>FinalResult</code> object, which includes the final resolution details and the corresponding provider, or an array of errors if the result was unsuccessful.
+<ul>
+<li>For example, if you are evaluating several providers in parallel and want to control which result is used in the case of a mismatch, rather than using the built-in <code>ComparisonStrategy</code>, you could override this function.</li>
+</ul>
+</li>
+</ul>
+<pre><code class="hljs language-tsx"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyCustomStrategy</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">BaseEvaluationStrategy</span> {
+  <span class="hljs-keyword">override</span> runMode = <span class="hljs-string">'parallel'</span>;
+
+  <span class="hljs-keyword">override</span> determineFinalResult&#x3C;T <span class="hljs-keyword">extends</span> <span class="hljs-title class_">FlagValue</span>>(
+    <span class="hljs-attr">strategyContext</span>: <span class="hljs-title class_">StrategyPerProviderContext</span>,
+    <span class="hljs-attr">context</span>: <span class="hljs-title class_">EvaluationContext</span>,
+    <span class="hljs-attr">resolutions</span>: <span class="hljs-title class_">ProviderResolutionResult</span>&#x3C;T>[],
+  ): <span class="hljs-title class_">FinalResult</span>&#x3C;T> {
+    <span class="hljs-keyword">let</span> <span class="hljs-attr">value</span>: T | <span class="hljs-literal">undefined</span>;
+
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> resolution <span class="hljs-keyword">of</span> resolutions) {
+      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> value !== <span class="hljs-string">'undefined'</span> &#x26;&#x26; value !== resolution.<span class="hljs-property">details</span>.<span class="hljs-property">value</span>) {
+        logger.<span class="hljs-title function_">warn</span>(<span class="hljs-string">'Mismatch between provider results: '</span>, value, resolution.<span class="hljs-property">details</span>.<span class="hljs-property">value</span>);
+      } <span class="hljs-keyword">else</span> {
+        value = resolution.<span class="hljs-property">details</span>.<span class="hljs-property">value</span>;
+      }
+    }
+
+    <span class="hljs-comment">// we want to always use the first provider's resolution</span>
+    <span class="hljs-keyword">const</span> finalResolution = resolutions[<span class="hljs-number">0</span>];
+    <span class="hljs-keyword">return</span> <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">resolutionToFinalResult</span>(finalResolution);
+  }
+}
+</code></pre>
+<h2 id="use-cases">Use Cases</h2>
+<p>Some key use cases supported by the Multi-Provider include:</p>
+<h3 id="migrating-from-one-provider-to-another">Migrating from one provider to another</h3>
+<p>Let’s say you were using one provider, <code>OldProvider</code>, but have decided to switch to <code>NewProvider</code> moving forward. You have been creating all new flags in <code>NewProvider</code>, while slowly copying over your existing flags. This means your newest flags only exist in <code>NewProvider</code> , some of your older flags only exist in <code>OldProvider</code>, and an increasing number of flags exist in both. Previously, you would have to instantiate an OpenFeature client for each of your providers, or register the providers under different domains and manage switching between them manually. The Multi-Provider allows you to wrap both providers and prioritize the new one automatically:</p>
+<pre><code class="hljs language-jsx"><span class="hljs-keyword">const</span> multiProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MultiProvider</span>([
+  {
+    <span class="hljs-attr">provider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">NewProvider</span>(),
+  },
+  {
+    <span class="hljs-attr">provider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">OldProvider</span>(),
+  },
+]);
+</code></pre>
+<p>The <code>NewProvider</code> now takes precedence and will always be used, unless a flag does not exist in its configuration. In that case, the Multi-Provider will fall back to <code>OldProvider</code> automatically.</p>
+<h3 id="validating-the-success-of-a-migration">Validating the success of a migration</h3>
+<p>You can also use the Multi-Provider to confirm that two or more providers always agree on all evaluation results. For example, once you are finished migrating all of your feature flags from <code>OldProvider</code> to <code>NewProvider</code>, you may want to run concurrently for some time and track any instances where the evaluation results differ, to catch errors in the configuration of <code>NewProvider</code>.</p>
+<p>By using the <a href="https://www.notion.so/OpenFeature-Multi-Provider-OF-Blog-Post-4cd7d2e9d7f5473093a5a37b4c3ed89b?pvs=21">ComparisonStrategy</a>, you can configure the Multi-Provider to run all providers and return an error result if the results don’t match.</p>
+<pre><code class="hljs language-jsx"><span class="hljs-keyword">const</span> newProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NewProvider</span>();
+<span class="hljs-keyword">const</span> oldProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">OldProvider</span>();
+
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">onMismatch</span> = (<span class="hljs-params">_resolutions: ProviderResolutionResult&#x3C;FlagValue>[]</span>) => {
+	logger.<span class="hljs-title function_">warn</span>(<span class="hljs-string">'Provider mismatch!'</span>)
+}
+
+<span class="hljs-keyword">const</span> multiProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MultiProvider</span>(
+    [
+      {
+        <span class="hljs-attr">provider</span>: newProvider,
+      },
+      {
+        <span class="hljs-attr">provider</span>: oldProvider,
+      }
+    ],
+    <span class="hljs-keyword">new</span> <span class="hljs-title class_">ComparisonStrategy</span>(
+      oldProvider, <span class="hljs-comment">// the fallback provider to trust in the case of a mismatch</span>
+      onMismatch, <span class="hljs-comment">// callback method called when provider resolutions don't match</span>
+    )
+)
+</code></pre>
+<h3 id="aggregating-flags-from-multiple-sources">Aggregating flags from multiple sources</h3>
+<p>The Multi-Provider can be used to combine feature flags from sources such as environment variables, database entries, and vendor feature flags, without having to instantiate multiple SDK clients. The order of the providers list establishes the precedence order of providers to control which should be trusted if keys exist in both systems. For example, if you want to use environment variables to override flag values from a vendor provider, you could pass the environment variable provider as the first in the providers list.</p>
+<pre><code class="hljs language-jsx"><span class="hljs-keyword">const</span> multiProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MultiProvider</span>([
+  {
+    <span class="hljs-attr">provider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">EnvVarProvider</span>(),
+  },
+  {
+    <span class="hljs-attr">provider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">VendorProvider</span>(),
+  },
+]);
+<span class="hljs-keyword">await</span> <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProviderAndWait</span>(multiProvider);
+
+openFeatureClient = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> openFeatureClient.<span class="hljs-title function_">getStringValue</span>(<span class="hljs-string">'flag-key'</span>, <span class="hljs-string">'default value'</span>, someUser);
+</code></pre>
+<p>If the flag with the key ‘flag-key’ exists in both providers, it will only be evaluated with the <code>EnvVarProvider</code>.</p>
+<h3 id="setting-a-fallback-for-cloud-providers">Setting a fallback for cloud providers</h3>
+<p>You can use the Multi-Provider to automatically fall back to a local configuration if an external vendor provider goes down, rather than using the default values. By using the <code>FirstSuccessfulStrategy</code>, the Multi-Provider will move on to the next provider in the list if an error is thrown.</p>
+<pre><code class="hljs language-jsx"><span class="hljs-keyword">const</span> multiProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MultiProvider</span>(
+  [
+    {
+      <span class="hljs-attr">provider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">VendorProvider</span>(),
+    },
+    {
+      <span class="hljs-attr">provider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">EnvVarProvider</span>(),
+    },
+  ],
+  <span class="hljs-keyword">new</span> <span class="hljs-title class_">FirstSuccessfulStrategy</span>(),
+);
+</code></pre>
+<p>In this example, if <code>VendorProvider</code> is unavailable for any reason, <code>EnvVarProvider</code> will be evaluated instead.</p>
+<h2 id="compatibility">Compatibility</h2>
+<p>The Multi-Provider offers developers more flexibility and control when managing complex feature flag setups. As a first step, we have implemented it in the <a href="https://www.npmjs.com/package/@openfeature/server-sdk">@openfeature/server-sdk</a> and <a href="https://www.npmjs.com/package/@openfeature/web-sdk">@openfeature/web-sdk</a>.</p>
+<h2 id="future-plans">Future Plans</h2>
+<p>We’re excited to get feedback about the current strategies and hear about other possible use cases. As we validate the Multi-Provider on the initial supported implementations we will gradually expand to support other languages and further strategies. We welcome contributors to bring this functionality to other languages.</p>

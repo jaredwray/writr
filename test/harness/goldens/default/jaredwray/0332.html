@@ -1,0 +1,361 @@
+<h1 id="keyvmysql-">@keyv/mysql <a href="https://github.com/jaredwray/keyv"></a></h1>
+<blockquote>
+<p>MySQL/MariaDB storage adapter for Keyv</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://www.npmjs.com/package/@keyv/mysql"><img src="https://img.shields.io/npm/v/@keyv/mysql.svg" alt="npm"></a>
+<a href="https://npmjs.com/package/@keyv/mysql"><img src="https://img.shields.io/npm/dm/@keyv/mysql" alt="npm"></a></p>
+<p>MySQL/MariaDB storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a>.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#install">Install</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#migrating-to-v6">Migrating to v6</a>
+<ul>
+<li><a href="#breaking-changes">Breaking changes</a>
+<ul>
+<li><a href="#native-namespace-support">Native namespace support</a></li>
+<li><a href="#keysize-renamed-to-keylength"><code>keySize</code> renamed to <code>keyLength</code></a></li>
+</ul>
+</li>
+<li><a href="#new-features">New features</a>
+<ul>
+<li><a href="#native-ttl-support-with-expires-column">Native TTL support with <code>expires</code> column</a></li>
+<li><a href="#clearexpired-method"><code>clearExpired()</code> method</a></li>
+<li><a href="#bulk-operations">Bulk operations</a></li>
+</ul>
+</li>
+<li><a href="#running-the-migration-script">Running the migration script</a></li>
+</ul>
+</li>
+<li><a href="#constructor-options">Constructor Options</a></li>
+<li><a href="#properties">Properties</a>
+<ul>
+<li><a href="#uri">uri</a></li>
+<li><a href="#table">table</a></li>
+<li><a href="#keylength">keyLength</a></li>
+<li><a href="#namespacelength">namespaceLength</a></li>
+<li><a href="#iterationlimit">iterationLimit</a></li>
+<li><a href="#intervalexpiration">intervalExpiration</a></li>
+<li><a href="#namespace">namespace</a></li>
+</ul>
+</li>
+<li><a href="#namespace-support">Namespace Support</a></li>
+<li><a href="#methods">Methods</a>
+<ul>
+<li><a href="#getkey">.get(key)</a></li>
+<li><a href="#getmanykeys">.getMany(keys)</a></li>
+<li><a href="#setkey-value-ttl">.set(key, value, ttl?)</a></li>
+<li><a href="#setmanyentries">.setMany(entries)</a></li>
+<li><a href="#deletekey">.delete(key)</a></li>
+<li><a href="#deletemanykeys">.deleteMany(keys)</a></li>
+<li><a href="#clear">.clear()</a></li>
+<li><a href="#haskey">.has(key)</a></li>
+<li><a href="#hasmanykeys">.hasMany(keys)</a></li>
+<li><a href="#clearexpired">.clearExpired()</a></li>
+<li><a href="#iterator">.iterator()</a></li>
+<li><a href="#disconnect">.disconnect()</a></li>
+</ul>
+</li>
+<li><a href="#ssl">SSL</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h2 id="install">Install</h2>
+<pre><code class="hljs language-shell">npm install --save keyv @keyv/mysql
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvMysql</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/mysql'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMysql</span>(<span class="hljs-string">'mysql://user:pass@localhost:3306/dbname'</span>));
+keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, handleConnectionError);
+</code></pre>
+<p>You can also use the <code>createKeyv</code> helper function to create a <code>Keyv</code> instance with <code>KeyvMysql</code> as the store:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/mysql'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'mysql://user:pass@localhost:3306/dbname'</span>);
+</code></pre>
+<p>Or with an options object:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/mysql'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'mysql://user:pass@localhost:3306/dbname'</span>, <span class="hljs-attr">table</span>: <span class="hljs-string">'cache'</span>, <span class="hljs-attr">keyLength</span>: <span class="hljs-number">512</span> });
+</code></pre>
+<p>You can specify a custom table with the <code>table</code> option and the primary key length with <code>keyLength</code>.
+If you want to use native MySQL scheduler to delete expired keys, you can specify <code>intervalExpiration</code> in seconds.</p>
+<p>e.g:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvMysql</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/mysql'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMysql</span>({
+  <span class="hljs-attr">uri</span>: <span class="hljs-string">'mysql://user:pass@localhost:3306/dbname'</span>,
+  <span class="hljs-attr">table</span>: <span class="hljs-string">'cache'</span>,
+  <span class="hljs-attr">keyLength</span>: <span class="hljs-number">255</span>,
+  <span class="hljs-attr">intervalExpiration</span>: <span class="hljs-number">60</span>
+}));
+</code></pre>
+<h2 id="migrating-to-v6">Migrating to v6</h2>
+<h3 id="breaking-changes">Breaking changes</h3>
+<h4 id="native-namespace-support">Native namespace support</h4>
+<p>In v5, namespaces were stored as key prefixes in the <code>id</code> column (e.g. <code>id="myns:mykey"</code> with <code>namespace=''</code>). In v6, the namespace is stored in a dedicated <code>namespace</code> column (e.g. <code>id="mykey"</code>, <code>namespace="myns"</code>). This enables more efficient queries and proper namespace isolation.</p>
+<p>The adapter automatically adds the <code>namespace</code> column and creates the appropriate index when it connects, so no manual schema changes are needed for new installations.</p>
+<h4 id="keysize-renamed-to-keylength"><code>keySize</code> renamed to <code>keyLength</code></h4>
+<p>The <code>keySize</code> option and property has been renamed to <code>keyLength</code> for consistency with the migration script and to better reflect that it controls VARCHAR column length.</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// v5</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMysql</span>({ uri, <span class="hljs-attr">keySize</span>: <span class="hljs-number">512</span> });
+store.<span class="hljs-property">keySize</span>; <span class="hljs-comment">// 512</span>
+
+<span class="hljs-comment">// v6</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMysql</span>({ uri, <span class="hljs-attr">keyLength</span>: <span class="hljs-number">512</span> });
+store.<span class="hljs-property">keyLength</span>; <span class="hljs-comment">// 512</span>
+</code></pre>
+<p>The <code>opts</code> getter still exists for backward compatibility but should not be used for new code.</p>
+<h3 id="new-features">New features</h3>
+<h4 id="native-ttl-support-with-expires-column">Native TTL support with <code>expires</code> column</h4>
+<p>v6 adds an <code>expires BIGINT</code> column to the table. When values are stored with a TTL via Keyv core, the adapter automatically extracts the <code>expires</code> timestamp from the serialized value and stores it in the column. The <code>intervalExpiration</code> event scheduler now queries this column directly instead of extracting from JSON, which is significantly more efficient.</p>
+<p>The schema migration is automatic on connect — existing tables get the column and index added automatically.</p>
+<h4 id="clearexpired-method"><code>clearExpired()</code> method</h4>
+<p>A new utility method that deletes all rows where the <code>expires</code> column is set and the timestamp is in the past:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">clearExpired</span>();
+</code></pre>
+<h4 id="bulk-operations">Bulk operations</h4>
+<p>v6 adds new methods for efficient multi-key operations:</p>
+<ul>
+<li><code>.setMany(entries)</code> — bulk upsert using <code>ON DUPLICATE KEY UPDATE</code></li>
+<li><code>.hasMany(keys)</code> — bulk existence check</li>
+</ul>
+<h3 id="running-the-migration-script">Running the migration script</h3>
+<p>If you have existing data from v5, you need to run the migration script to move namespace prefixes from keys into the new <code>namespace</code> column. The script is located at <code>scripts/migrate-v6.ts</code> in the <code>@keyv/mysql</code> package.</p>
+<p>Preview the changes first with <code>--dry-run</code>:</p>
+<pre><code class="hljs language-shell">npx tsx scripts/migrate-v6.ts --uri mysql://user:pass@localhost:3306/dbname --dry-run
+</code></pre>
+<p>Run the migration:</p>
+<pre><code class="hljs language-shell">npx tsx scripts/migrate-v6.ts --uri mysql://user:pass@localhost:3306/dbname
+</code></pre>
+<p>You can also specify a custom table and column lengths:</p>
+<pre><code class="hljs language-shell">npx tsx scripts/migrate-v6.ts --uri mysql://user:pass@localhost:3306/dbname --table cache
+npx tsx scripts/migrate-v6.ts --uri mysql://user:pass@localhost:3306/dbname --keyLength 512 --namespaceLength 512
+</code></pre>
+<p>The migration runs inside a transaction and will roll back automatically if anything fails.</p>
+<p>The migration script also populates the new <code>expires</code> column from existing JSON values in the <code>value</code> column.</p>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>The script only migrates namespace rows where <code>namespace = ''</code> (the default). Rows that already have a namespace value (e.g. from a partial earlier migration) are skipped.</li>
+<li>Keys are split on the first colon — the part before becomes the namespace, the rest becomes the key. Namespaces containing colons are not supported.</li>
+<li>The <code>expires</code> column is populated by extracting <code>value->'$.expires'</code> from existing JSON values.</li>
+</ul>
+<h2 id="constructor-options">Constructor Options</h2>
+<p><code>KeyvMysql</code> accepts a connection URI string or an options object. The options object accepts the following properties along with any <a href="https://sidorares.github.io/node-mysql2/docs/documentation/connections"><code>ConnectionOptions</code></a> from the <code>mysql2</code> library (e.g. <code>host</code>, <code>port</code>, <code>user</code>, <code>password</code>, <code>database</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uri</code></td>
+<td><code>string</code></td>
+<td><code>'mysql://localhost'</code></td>
+<td>MySQL connection URI</td>
+</tr>
+<tr>
+<td><code>table</code></td>
+<td><code>string</code></td>
+<td><code>'keyv'</code></td>
+<td>Table name for key-value storage</td>
+</tr>
+<tr>
+<td><code>keyLength</code></td>
+<td><code>number</code></td>
+<td><code>255</code></td>
+<td>Maximum key length (VARCHAR length)</td>
+</tr>
+<tr>
+<td><code>namespaceLength</code></td>
+<td><code>number</code></td>
+<td><code>255</code></td>
+<td>Maximum namespace column length (VARCHAR length)</td>
+</tr>
+<tr>
+<td><code>iterationLimit</code></td>
+<td><code>number</code></td>
+<td><code>10</code></td>
+<td>Number of rows fetched per batch during iteration</td>
+</tr>
+<tr>
+<td><code>intervalExpiration</code></td>
+<td><code>number</code></td>
+<td><code>undefined</code></td>
+<td>Interval in seconds for automatic expiration cleanup via MySQL event scheduler</td>
+</tr>
+</tbody>
+</table>
+<h2 id="properties">Properties</h2>
+<p>All configuration options are exposed as properties with getters and setters on the <code>KeyvMysql</code> instance. You can read or update them after construction.</p>
+<h3 id="uri">uri</h3>
+<p>Get or set the MySQL connection URI.</p>
+<ul>
+<li>Type: <code>string</code></li>
+<li>Default: <code>'mysql://localhost'</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMysql</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'mysql://user:pass@localhost:3306/dbname'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">uri</span>); <span class="hljs-comment">// 'mysql://user:pass@localhost:3306/dbname'</span>
+</code></pre>
+<h3 id="table">table</h3>
+<p>Get or set the table name used for storage.</p>
+<ul>
+<li>Type: <code>string</code></li>
+<li>Default: <code>'keyv'</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMysql</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'mysql://user:pass@localhost:3306/dbname'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">table</span>); <span class="hljs-comment">// 'keyv'</span>
+store.<span class="hljs-property">table</span> = <span class="hljs-string">'cache'</span>;
+</code></pre>
+<h3 id="keylength">keyLength</h3>
+<p>Get or set the maximum key length (VARCHAR length) for the key column.</p>
+<ul>
+<li>Type: <code>number</code></li>
+<li>Default: <code>255</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMysql</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'mysql://user:pass@localhost:3306/dbname'</span>, <span class="hljs-attr">keyLength</span>: <span class="hljs-number">512</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">keyLength</span>); <span class="hljs-comment">// 512</span>
+</code></pre>
+<h3 id="namespacelength">namespaceLength</h3>
+<p>Get or set the maximum namespace length (VARCHAR length) for the namespace column.</p>
+<ul>
+<li>Type: <code>number</code></li>
+<li>Default: <code>255</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMysql</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'mysql://user:pass@localhost:3306/dbname'</span>, <span class="hljs-attr">namespaceLength</span>: <span class="hljs-number">512</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">namespaceLength</span>); <span class="hljs-comment">// 512</span>
+</code></pre>
+<h3 id="iterationlimit">iterationLimit</h3>
+<p>Get or set the number of rows to fetch per iteration batch.</p>
+<ul>
+<li>Type: <code>number</code></li>
+<li>Default: <code>10</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMysql</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'mysql://user:pass@localhost:3306/dbname'</span>, <span class="hljs-attr">iterationLimit</span>: <span class="hljs-number">50</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">iterationLimit</span>); <span class="hljs-comment">// 50</span>
+</code></pre>
+<h3 id="intervalexpiration">intervalExpiration</h3>
+<p>Get or set the interval in seconds for automatic expiration cleanup via the MySQL event scheduler. When set to a value greater than 0, the adapter creates a MySQL scheduled event that periodically deletes expired entries.</p>
+<ul>
+<li>Type: <code>number | undefined</code></li>
+<li>Default: <code>undefined</code> (disabled)</li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMysql</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'mysql://user:pass@localhost:3306/dbname'</span>, <span class="hljs-attr">intervalExpiration</span>: <span class="hljs-number">60</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">intervalExpiration</span>); <span class="hljs-comment">// 60</span>
+</code></pre>
+<h3 id="namespace">namespace</h3>
+<p>Get or set the namespace for the adapter. Used for key prefixing and scoping operations like <code>clear()</code>.</p>
+<ul>
+<li>Type: <code>string | undefined</code></li>
+<li>Default: <code>undefined</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMysql</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'mysql://user:pass@localhost:3306/dbname'</span> });
+store.<span class="hljs-property">namespace</span> = <span class="hljs-string">'my-namespace'</span>;
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">namespace</span>); <span class="hljs-comment">// 'my-namespace'</span>
+</code></pre>
+<h2 id="namespace-support">Namespace Support</h2>
+<p>The MySQL adapter supports native namespace scoping. When a namespace is set, keys are stored in a dedicated <code>namespace</code> column rather than being embedded in the key name. This provides efficient filtering and proper isolation between namespaces.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvMysql</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/mysql'</span>;
+
+<span class="hljs-keyword">const</span> keyvA = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMysql</span>(uri), <span class="hljs-attr">namespace</span>: <span class="hljs-string">'cache-a'</span> });
+<span class="hljs-keyword">const</span> keyvB = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMysql</span>(uri), <span class="hljs-attr">namespace</span>: <span class="hljs-string">'cache-b'</span> });
+
+<span class="hljs-comment">// These don't conflict despite having the same key name</span>
+<span class="hljs-keyword">await</span> keyvA.<span class="hljs-title function_">set</span>(<span class="hljs-string">'user:1'</span>, <span class="hljs-string">'Alice'</span>);
+<span class="hljs-keyword">await</span> keyvB.<span class="hljs-title function_">set</span>(<span class="hljs-string">'user:1'</span>, <span class="hljs-string">'Bob'</span>);
+
+<span class="hljs-comment">// clear() only affects the namespace it belongs to</span>
+<span class="hljs-keyword">await</span> keyvA.<span class="hljs-title function_">clear</span>(); <span class="hljs-comment">// Only clears 'cache-a' entries</span>
+</code></pre>
+<h2 id="methods">Methods</h2>
+<h3 id="getkey">.get(key)</h3>
+<p>Returns the value for the given key. Returns <code>undefined</code> if the key does not exist.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>);
+</code></pre>
+<h3 id="getmanykeys">.getMany(keys)</h3>
+<p>Returns an array of values for the given keys. Returns <code>undefined</code> for any key that does not exist.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> values = <span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">getMany</span>([<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>]);
+</code></pre>
+<h3 id="setkey-value-ttl">.set(key, value, ttl?)</h3>
+<p>Sets a value for the given key. If the key already exists, it will be updated. Returns <code>true</code> on success, <code>false</code> on failure.</p>
+<ul>
+<li><code>key</code> <em>(string)</em> - The key to set.</li>
+<li><code>value</code> <em>(any)</em> - The value to store.</li>
+<li><code>ttl</code> <em>(number, optional)</em> - Time to live in milliseconds.</li>
+<li>Returns: <code>Promise&#x3C;boolean></code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">5000</span>); <span class="hljs-comment">// expires in 5 seconds</span>
+</code></pre>
+<h3 id="setmanyentries">.setMany(entries)</h3>
+<p>Set multiple key-value pairs at once using a single atomic <code>INSERT ... ON DUPLICATE KEY UPDATE</code> statement. Each entry is a <code>KeyvEntry&#x3C;Value></code> object (<code>{ key: string, value: Value, ttl?: number }</code>), where <code>Value</code> is inferred from the entries provided. Returns a <code>boolean[]</code> indicating whether each entry was set successfully. Since the SQL statement is atomic, all entries either succeed (<code>true</code>) or all fail (<code>false</code>) together. On failure, an <code>error</code> event is emitted.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">setMany</span>([
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'foo'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'bar'</span> },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'baz'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'qux'</span> },
+]); <span class="hljs-comment">// [true, true]</span>
+</code></pre>
+<h3 id="deletekey">.delete(key)</h3>
+<p>Deletes a key-value pair from the store. Returns <code>true</code> if the key existed and was deleted, <code>false</code> otherwise.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> deleted = <span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'foo'</span>);
+</code></pre>
+<h3 id="deletemanykeys">.deleteMany(keys)</h3>
+<p>Deletes multiple key-value pairs from the store. Returns a <code>boolean[]</code> indicating whether each key was deleted.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">deleteMany</span>([<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>]); <span class="hljs-comment">// [true, true]</span>
+</code></pre>
+<h3 id="clear">.clear()</h3>
+<p>Clears all entries from the store. If a namespace is set, only entries within that namespace are cleared.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">clear</span>();
+</code></pre>
+<h3 id="haskey">.has(key)</h3>
+<p>Returns <code>true</code> if the key exists in the store, <code>false</code> otherwise.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> exists = <span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">has</span>(<span class="hljs-string">'foo'</span>);
+</code></pre>
+<h3 id="hasmanykeys">.hasMany(keys)</h3>
+<p>Check if multiple keys exist. Returns an array of booleans in the same order as the input keys.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">set</span>(<span class="hljs-string">'baz'</span>, <span class="hljs-string">'qux'</span>);
+
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">hasMany</span>([<span class="hljs-string">'foo'</span>, <span class="hljs-string">'baz'</span>, <span class="hljs-string">'unknown'</span>]); <span class="hljs-comment">// [true, true, false]</span>
+</code></pre>
+<h3 id="clearexpired">.clearExpired()</h3>
+<p>Deletes all entries where the <code>expires</code> column is set and the timestamp is in the past. Useful for periodic cleanup of expired entries.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">clearExpired</span>();
+</code></pre>
+<h3 id="iterator">.iterator()</h3>
+<p>Returns an async iterator for iterating over all key-value pairs in the store. The iterator uses the namespace configured on the instance. Uses keyset pagination to efficiently handle large datasets.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">for</span> <span class="hljs-title function_">await</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> keyvMysql.<span class="hljs-title function_">iterator</span>()) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key, value);
+}
+</code></pre>
+<h3 id="disconnect">.disconnect()</h3>
+<p>Disconnects from the MySQL database and closes the connection pool.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> keyvMysql.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h2 id="ssl">SSL</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvMysql</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/mysql'</span>;
+<span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">'fs'</span>;
+
+<span class="hljs-keyword">const</span> options = {
+	<span class="hljs-attr">ssl</span>: {
+		<span class="hljs-attr">rejectUnauthorized</span>: <span class="hljs-literal">false</span>,
+		<span class="hljs-attr">ca</span>: fs.<span class="hljs-title function_">readFileSync</span>(path.<span class="hljs-title function_">join</span>(__dirname, <span class="hljs-string">'/certs/ca.pem'</span>)).<span class="hljs-title function_">toString</span>(),
+		<span class="hljs-attr">key</span>: fs.<span class="hljs-title function_">readFileSync</span>(path.<span class="hljs-title function_">join</span>(__dirname, <span class="hljs-string">'/certs/client-key.pem'</span>)).<span class="hljs-title function_">toString</span>(),
+		<span class="hljs-attr">cert</span>: fs.<span class="hljs-title function_">readFileSync</span>(path.<span class="hljs-title function_">join</span>(__dirname, <span class="hljs-string">'/certs/client-cert.pem'</span>)).<span class="hljs-title function_">toString</span>(),
+	},
+};
+
+<span class="hljs-keyword">const</span> keyvMysql = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMysql</span>(<span class="hljs-string">'mysql://user:pass@localhost:3306/dbname'</span>, options);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: keyvMysql });
+</code></pre>
+<h2 id="license">License</h2>
+<p><a href="LISCENCE">MIT © Jared Wray</a></p>

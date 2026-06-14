@@ -1,0 +1,1 @@
+The sum is {1 + 2} in an MDX expression.
