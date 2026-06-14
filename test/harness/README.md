@@ -21,6 +21,30 @@ corpus inputs ──render(profile)──▶ goldens/<profile>/<id>.html
         new engine ──render(profile)──────┘  (must match, or be allowlisted)
 ```
 
+## What's committed
+
+Both the corpus **inputs** and their **golden outputs** are checked into the
+repo, so a fresh clone can run `pnpm test:harness` immediately — no network and
+no generation step required. Goldens are regenerable artifacts (`pnpm
+golden:generate`); they are committed so the migration target has a fixed
+contract to diff against and so drift in the current engine is caught in review.
+
+Current snapshot:
+
+| source | docs | what it is |
+|---|---:|---|
+| commonmark | 443 | CommonMark spec example blocks |
+| jaredwray | 339 | every public `jaredwray/*` repo's markdown (writr consumers) |
+| markdown-it | 163 | markdown-it self-test fixtures |
+| gfm | 41 | GitHub GFM spec example blocks (GFM-specific survivors after dedupe) |
+| docs | 14 | permissively-licensed real-world READMEs |
+| **total** | **1000** | unique documents (deduped by content hash) |
+
+Rendered under their assigned [profiles](./profiles.ts) this yields **2041**
+golden files (1968 corpus + 73 diagnostics). Exact per-document provenance
+(source, license, attribution, sha256, profiles) lives in
+[`corpus/manifest.json`](./corpus/manifest.json).
+
 ## Commands
 
 ```bash
