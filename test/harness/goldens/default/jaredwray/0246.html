@@ -1,0 +1,649 @@
+<h1 id="keyvredis-">@keyv/redis <a href="https://github.com/jaredwray/keyv"></a></h1>
+<blockquote>
+<p>Redis storage adapter for Keyv</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://www.npmjs.com/package/@keyv/redis"><img src="https://img.shields.io/npm/v/@keyv/redis.svg" alt="npm"></a>
+<a href="https://npmjs.com/package/@keyv/redis"><img src="https://img.shields.io/npm/dm/@keyv/redis" alt="npm"></a></p>
+<p>Redis storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a>.</p>
+<h1 id="features">Features</h1>
+<ul>
+<li>Built on top of <a href="https://npmjs.com/package/@redis/client">@redis/client</a>.</li>
+<li>TTL is handled directly by Redis.</li>
+<li>Supports Redis Clusters.</li>
+<li>Url connection string support or pass in your Redis Options</li>
+<li>Easily add in your own Redis client.</li>
+<li>Namespace support for key management.</li>
+<li>Unlink as default delete method for performance.</li>
+<li>Access to the Redis client for advanced use cases.</li>
+<li>Keyv and Redis Libraries are exported for advanced use cases.</li>
+<li><code>createKeyv</code> function for easy creation of Keyv instances.</li>
+<li>jsDoc comments for easy documentation.</li>
+<li>CJS / ESM and TypeScript supported out of the box.</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#migrating-from-v4-to-v5">Migrating from v4 to v5</a></li>
+<li><a href="#keyv-redis-options">Keyv Redis Options</a></li>
+<li><a href="#using-the-createkeyv-function">Using the <code>createKeyv</code> function</a></li>
+<li><a href="#using-the-createkeyvnonblocking-function">Using the <code>createKeyvNonBlocking</code> function</a></li>
+<li><a href="#namespaces">Namespaces</a>
+<ul>
+<li><a href="#how-to-use-namespaces">How to use Namespaces</a></li>
+</ul>
+</li>
+<li><a href="#fixing-double-prefixing-of-keys">Fixing Double Prefixing of Keys</a>
+<ul>
+<li><a href="#using-generic-types">Using Generic Types</a></li>
+</ul>
+</li>
+<li><a href="#performance-considerations">Performance Considerations</a></li>
+<li><a href="#high-memory-usage-on-redis-server">High Memory Usage on Redis Server</a></li>
+<li><a href="#gracefully-handling-errors-and-timeouts">Gracefully Handling Errors and Timeouts</a></li>
+<li><a href="#using-cacheable-with-redis">Using Cacheable with Redis</a></li>
+<li><a href="#clustering">Clustering</a></li>
+<li><a href="#sentinel">Sentinel</a></li>
+<li><a href="#tls-support">TLS Support</a></li>
+<li><a href="#keyv-redis-options-1">Keyv Redis Options</a></li>
+<li><a href="#api">API</a></li>
+<li><a href="#using-custom-redis-client-events">Using Custom Redis Client Events</a></li>
+<li><a href="#migrating-from-v3-to-v4">Migrating from v3 to v4</a></li>
+<li><a href="#about-redis-sets-and-its-support-in-v4">About Redis Sets and its Support in v4</a></li>
+<li><a href="#using-with-nestjs">Using with NestJS</a>
+<ul>
+<li>
+<ul>
+<li><a href="#1-install-dependencies">1. Install Dependencies</a></li>
+<li><a href="#2-create-a-cache-module">2. Create a Cache Module</a></li>
+<li><a href="#3-import-the-cache-module-in-appmodule">3. Import the Cache Module in AppModule</a></li>
+<li><a href="#4-create-the-cache-service">4. Create the Cache Service</a></li>
+<li><a href="#5-register-cacheservice-in-cachemodule">5. Register CacheService in CacheModule</a></li>
+<li><a href="#6-import-cachemodule-in-the-target-module-eg-taskmodule">6. Import CacheModule in the Target Module (e.g. TaskModule)</a></li>
+<li><a href="#7-using-the-cache-in-a-service">7. Using the Cache in a Service</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#license">License</a></li>
+</ul>
+<h1 id="installation">Installation</h1>
+<pre><code class="hljs language-bash">npm install --save keyv @keyv/redis
+</code></pre>
+<h1 id="usage">Usage</h1>
+<p>Here is a standard use case where we implement <code>Keyv</code> and <code>@keyv/redis</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>));
+keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, handleConnectionError);
+</code></pre>
+<p>Here is the same example but with the <code>Keyv</code> instance created with the <code>createKeyv</code> function:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+</code></pre>
+<p>You only have to import the <code>@keyv/redis</code> library if you are using the <code>createKeyv</code> function. 🎉 Otherwise, you can import <code>Keyv</code> and <code>@keyv/redis</code> independently.</p>
+<p>Here you can pass in the Redis options directly:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> uri = <span class="hljs-string">"redis://localhost:6379"</span>;
+
+<span class="hljs-comment">// <span class="hljs-doctag">NOTE:</span> please use the settings that you need to configure. Check out Keyv Redis Options section</span>
+<span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">namespace</span>: <span class="hljs-string">"test"</span>,
+  <span class="hljs-attr">keyPrefixSeparator</span>: <span class="hljs-string">"->"</span>,
+  <span class="hljs-attr">clearBatchSize</span>: <span class="hljs-number">100</span>,
+  <span class="hljs-attr">useUnlink</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">noNamespaceAffectsAll</span>: <span class="hljs-literal">true</span>,
+};
+
+<span class="hljs-keyword">const</span> keyvRedis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(uri, options);
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(keyvRedis);
+</code></pre>
+<p>Or you can create a new Redis instance and pass it in with <code>KeyvOptions</code> such as setting the <code>store</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span>, { createClient } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> redis = <span class="hljs-title function_">createClient</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> keyvRedis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(redis);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: keyvRedis});
+</code></pre>
+<h1 id="migrating-from-v4-to-v5">Migrating from v4 to v5</h1>
+<p>The major change from v4 to v5 is that we are now using v5 of the <code>@redis/client</code> library which has a new API. This means that some methods have changed but it should be a drop-in replacement for most use cases.</p>
+<h1 id="keyv-redis-options">Keyv Redis Options</h1>
+<p>You can pass in options to the <code>KeyvRedis</code> constructor. Here are the available options:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">KeyvRedisOptions</span> = {
+	<span class="hljs-comment">/**
+	 * Namespace for the current instance.
+	 */</span>
+	<span class="hljs-attr">namespace</span>?: <span class="hljs-built_in">string</span>;
+	<span class="hljs-comment">/**
+	 * Separator to use between namespace and key.
+	 */</span>
+	<span class="hljs-attr">keyPrefixSeparator</span>?: <span class="hljs-built_in">string</span>;
+	<span class="hljs-comment">/**
+	 * Number of keys to delete in a single batch.
+	 */</span>
+	<span class="hljs-attr">clearBatchSize</span>?: <span class="hljs-built_in">number</span>;
+	<span class="hljs-comment">/**
+	 * Enable Unlink instead of using Del for clearing keys. This is more performant but may not be supported by all Redis versions.
+	 */</span>
+	<span class="hljs-attr">useUnlink</span>?: <span class="hljs-built_in">boolean</span>;
+
+	<span class="hljs-comment">/**
+	 * Whether to allow clearing all keys when no namespace is set.
+	 * If set to true and no namespace is set, iterate() will return all keys.
+	 * Defaults to `false`.
+	 */</span>
+	<span class="hljs-attr">noNamespaceAffectsAll</span>?: <span class="hljs-built_in">boolean</span>;
+
+	<span class="hljs-comment">/**
+	 * This is used to throw an error if the client is not connected when trying to connect. By default, this is
+	 * set to true so that it throws an error when trying to connect to the Redis server fails.
+	 */</span>
+	<span class="hljs-attr">throwOnConnectError</span>?: <span class="hljs-built_in">boolean</span>;
+
+	<span class="hljs-comment">/**
+	 * This is used to throw an error if at any point there is a failure. Use this if you want to
+	 * ensure that all operations are successful and you want to handle errors. By default, this is
+	 * set to false so that it does not throw an error on every operation and instead emits an error event
+	 * and returns no-op responses.
+	 * <span class="hljs-doctag">@default</span> <span class="hljs-variable">false</span>
+	 */</span>
+	<span class="hljs-attr">throwOnErrors</span>?: <span class="hljs-built_in">boolean</span>;
+
+	<span class="hljs-comment">/**
+	 * Timeout in milliseconds for the connection. Default is undefined, which uses the default timeout of the Redis client.
+	 * If set, it will throw an error if the connection does not succeed within the specified time.
+   * <span class="hljs-doctag">@default</span> <span class="hljs-variable">undefined</span>
+	 */</span>
+	<span class="hljs-attr">connectionTimeout</span>?: <span class="hljs-built_in">number</span>;
+};
+</code></pre>
+<p>You can pass these options when creating a new <code>KeyvRedis</code> instance:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> keyvRedis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>, {
+  <span class="hljs-attr">namespace</span>: <span class="hljs-string">'my-namespace'</span>,
+  <span class="hljs-attr">keyPrefixSeparator</span>: <span class="hljs-string">':'</span>,
+  <span class="hljs-attr">clearBatchSize</span>: <span class="hljs-number">1000</span>,
+  <span class="hljs-attr">useUnlink</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">noNamespaceAffectsAll</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">connectionTimeout</span>: <span class="hljs-number">200</span>
+});
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: keyvRedis });
+</code></pre>
+<p>You can also set these options after the fact by using the <code>KeyvRedis</code> instance properties:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> {createKeyv} <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+keyv.<span class="hljs-property">store</span>.<span class="hljs-property">namespace</span> = <span class="hljs-string">'my-namespace'</span>;
+</code></pre>
+<h1 id="using-the-createkeyv-function">Using the <code>createKeyv</code> function</h1>
+<p>The <code>createKeyv</code> function is a convenience function that creates a new <code>Keyv</code> instance with the <code>@keyv/redis</code> store. It automatically sets the <code>useKeyPrefix</code> option to <code>false</code>. Here is an example of how to use it:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+</code></pre>
+<p>To use a namespace you can do it here and this will set Keyv up correctly to avoid the double namespace issue:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>, {<span class="hljs-attr">namespace</span>: <span class="hljs-string">'my-namespace'</span>});
+</code></pre>
+<h1 id="using-the-createkeyvnonblocking-function">Using the <code>createKeyvNonBlocking</code> function</h1>
+<p>The <code>createKeyvNonBlocking</code> function is a convenience function that creates a new <code>Keyv</code> instance with the <code>@keyv/redis</code> store does what <code>createKeyv</code> does but also disables throwing errors, removes the offline queue redis functionality, and reconnect strategy so that when used as a secondary cache in libraries such as <a href="https://npmjs.org/package/cacheable">cacheable</a> it does not block the primary cache. This is useful when you want to use Redis as a secondary cache and do not want to block the primary cache on connection errors or timeouts when using <code>nonBlocking</code>. Here is an example of how to use it:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyvNonBlocking } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyvNonBlocking</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+</code></pre>
+<h1 id="namespaces">Namespaces</h1>
+<p>By default namespacing is turned off, this is done because it causes much more memory / performance usage for Redis.</p>
+<p>Redis does <strong>not</strong> treat colons (<code>:</code>) or namespaces as special—there are no hierarchical keys or namespace mechanics internally. The dramatic memory savings you see when removing prefixes like <code>namespace:</code> come from one thing: <strong>key length</strong>. Redis stores every key as a full string in memory, wrapped in an SDS structure and allocated by jemalloc. Longer keys (e.g., <code>namespace:key123</code>) fall into larger jemalloc size classes, require more bytes for the SDS header, and cause more fragmentation. Shorter keys (e.g., <code>key123</code>) fit into much smaller slabs, pack tightly, and result in far more stable and predictable memory usage.</p>
+<p>This means the colon is not the issue—<strong>the extra characters are.</strong> A key that goes from ~18 bytes to ~6 bytes can use <em>half the memory per key</em> once overhead, allocator classes, and fragmentation are considered. Multiply that by hundreds of thousands or millions of keys, and memory usage becomes significantly smaller and much more stable simply because the keys are shorter.</p>
+<h2 id="how-to-use-namespaces">How to use Namespaces</h2>
+<p>You can set a namespace for your keys. This is useful if you want to manage your keys in a more organized way. Here is an example of how to set a <code>namespace</code> with the <code>store</code> option:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span>, { createClient } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> redis = <span class="hljs-title function_">createClient</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> keyvRedis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(redis);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: keyvRedis, <span class="hljs-attr">namespace</span>: <span class="hljs-string">'my-namespace'</span>, <span class="hljs-attr">useKeyPrefix</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<p>To make this easier, you can use the <code>createKeyv</code> function which will automatically set the <code>namespace</code> option to the <code>KeyvRedis</code> instance:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>, { <span class="hljs-attr">namespace</span>: <span class="hljs-string">'my-namespace'</span> });
+</code></pre>
+<p>This will prefix all keys with <code>my-namespace:</code> and will also set <code>useKeyPrefix</code> to <code>false</code>. This is done to avoid double prefixing of keys as we transition out of the legacy behavior in Keyv. You can also set the namespace after the fact:</p>
+<pre><code class="hljs language-js">keyv.<span class="hljs-property">namespace</span> = <span class="hljs-string">'my-namespace'</span>;
+</code></pre>
+<p>NOTE: If you plan to do many clears or deletes, it is recommended to read the <a href="#performance-considerations">Performance Considerations</a> section.</p>
+<h1 id="fixing-double-prefixing-of-keys">Fixing Double Prefixing of Keys</h1>
+<p>If you are using <code>Keyv</code> with <code>@keyv/redis</code> as the storage adapter, you may notice that keys are being prefixed twice. This is because <code>Keyv</code> has a default prefixing behavior that is applied to all keys. To fix this, you can set the <code>useKeyPrefix</code> option to <code>false</code> when creating the <code>Keyv</code> instance:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>), { <span class="hljs-attr">useKeyPrefix</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<p>To make this easier, you can use the <code>createKeyv</code> function which will automatically set the <code>useKeyPrefix</code> option to <code>false</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+</code></pre>
+<h2 id="using-generic-types">Using Generic Types</h2>
+<p>When initializing <code>KeyvRedis</code>, you can specify the type of the values you are storing and you can also specify types when calling methods:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span>, { createClient } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+
+<span class="hljs-keyword">type</span> <span class="hljs-title class_">User</span> {
+  <span class="hljs-attr">id</span>: <span class="hljs-built_in">number</span>
+  <span class="hljs-attr">name</span>: <span class="hljs-built_in">string</span>
+}
+
+<span class="hljs-keyword">const</span> redis = <span class="hljs-title function_">createClient</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+
+<span class="hljs-keyword">const</span> keyvRedis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>&#x3C;<span class="hljs-title class_">User</span>>(redis);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: keyvRedis });
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">"user:1"</span>, { <span class="hljs-attr">id</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">"Alice"</span> })
+<span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">"user:1"</span>)
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user.<span class="hljs-property">name</span>) <span class="hljs-comment">// 'Alice'</span>
+
+<span class="hljs-comment">// specify types when calling methods</span>
+<span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> keyv.<span class="hljs-property">get</span>&#x3C;<span class="hljs-title class_">User</span>>(<span class="hljs-string">"user:1"</span>)
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user.<span class="hljs-property">name</span>) <span class="hljs-comment">// 'Alice'</span>
+</code></pre>
+<h1 id="performance-considerations">Performance Considerations</h1>
+<p>With namespaces being prefix based it is critical to understand some of the performance considerations we have made:</p>
+<ul>
+<li>
+<p><code>clear()</code> - We use the <code>SCAN</code> command to iterate over keys. This is a non-blocking command that is more efficient than <code>KEYS</code>. In addition we are using <code>UNLINK</code> by default instead of <code>DEL</code>. Even with that if you are iterating over a large dataset it can still be slow. It is highly recommended to use the <code>namespace</code> option to limit the keys that are being cleared and if possible to not use the <code>clear()</code> method in high performance environments. If you don't set namespaces, you can enable <code>noNamespaceAffectsAll</code> to clear all keys using the <code>FLUSHDB</code> command which is faster and can be used in production environments.</p>
+</li>
+<li>
+<p><code>delete()</code> - By default we are now using <code>UNLINK</code> instead of <code>DEL</code> for deleting keys. This is a non-blocking command that is more efficient than <code>DEL</code>. If you are deleting a large number of keys it is recommended to use the <code>deleteMany()</code> method instead of <code>delete()</code>.</p>
+</li>
+<li>
+<p><code>clearBatchSize</code> - The <code>clearBatchSize</code> option is set to <code>1000</code> by default. This is because Redis has a limit of 1000 keys that can be deleted in a single batch. If no namespace is defined and noNamespaceAffectsAll is set to <code>true</code> this option will be ignored and the <code>FLUSHDB</code> command will be used instead.</p>
+</li>
+<li>
+<p><code>useUnlink</code> - This option is set to <code>true</code> by default. This is because <code>UNLINK</code> is a non-blocking command that is more efficient than <code>DEL</code>. If you are not using <code>UNLINK</code> and are doing a lot of deletes it is recommended to set this option to <code>true</code>.</p>
+</li>
+<li>
+<p><code>setMany</code>, <code>getMany</code>, <code>deleteMany</code> - These methods are more efficient than their singular counterparts. These will be used by default in the <code>Keyv</code> library such as when using <code>keyv.delete(string[])</code> it will use <code>deleteMany()</code>.</p>
+</li>
+</ul>
+<p>If you want to see even better performance please see the <a href="#using-cacheable-with-redis">Using Cacheable with Redis</a> section as it has non-blocking and in-memory primary caching that goes along well with this library and Keyv.</p>
+<h1 id="high-memory-usage-on-redis-server">High Memory Usage on Redis Server</h1>
+<p>This is because we are using <code>UNLINK</code> by default instead of <code>DEL</code>. This is a non-blocking command that is more efficient than <code>DEL</code> but will slowly remove the memory allocation.</p>
+<p>If you are deleting or clearing a large number of keys you can disable this by setting the <code>useUnlink</code> option to <code>false</code>. This will use <code>DEL</code> instead of <code>UNLINK</code> and should reduce the memory usage.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>, { <span class="hljs-attr">useUnlink</span>: <span class="hljs-literal">false</span> }));
+<span class="hljs-comment">// Or</span>
+keyv.<span class="hljs-property">useUnlink</span> = <span class="hljs-literal">false</span>;
+</code></pre>
+<h1 id="gracefully-handling-errors-and-timeouts">Gracefully Handling Errors and Timeouts</h1>
+<p>When using <code>@keyv/redis</code>, it is important to handle connection errors gracefully. You can do this by listening to the <code>error</code> event on the <code>KeyvRedis</code> instance. Here is an example of how to do that:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>));
+keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">(<span class="hljs-params">error</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'error'</span>, error);
+});
+</code></pre>
+<p>By default, the <code>KeyvRedis</code> instance will <code>throw an error</code> if the connection fails to connect. You can disable this behavior by setting the <code>throwOnConnectError</code> option to <code>false</code> when creating the <code>KeyvRedis</code> instance. If you want this to throw you will need to also set the Keyv instance to <code>throwOnErrors: true</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://bad-uri:1111'</span>, { <span class="hljs-attr">throwOnConnectError</span>: <span class="hljs-literal">false</span> }));
+keyv.<span class="hljs-property">throwOnErrors</span> = <span class="hljs-literal">true</span>; <span class="hljs-comment">// This will throw an error if the connection fails</span>
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>); <span class="hljs-comment">// this will throw the connection error only.</span>
+</code></pre>
+<p>On <code>get</code>, <code>getMany</code>, <code>set</code>, <code>setMany</code>, <code>delete</code>, and <code>deleteMany</code>, if the connection is lost, it will emit an error and return a no-op value. You can catch this error and handle it accordingly. This is important to ensure that your application does not crash due to a lost connection to Redis.</p>
+<p>If you want to handle connection errors, retries, and timeouts more gracefully, you can use the <code>throwOnErrors</code> option. This will throw an error if any operation fails, allowing you to catch it and handle it accordingly:</p>
+<p>There is a default <code>Reconnect Strategy</code> if you pass in just a <code>uri</code> connection string we will automatically create a Redis client for you with the following reconnect strategy:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> defaultReconnectStrategy = (<span class="hljs-attr">attempts</span>: <span class="hljs-built_in">number</span>): <span class="hljs-built_in">number</span> | <span class="hljs-function"><span class="hljs-params">Error</span> =></span> {
+	<span class="hljs-comment">// Exponential backoff base: double each time, capped at 2s.</span>
+	<span class="hljs-comment">// Parentheses make it clear we do (2 ** attempts) first, then * 100</span>
+	<span class="hljs-keyword">const</span> backoff = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">min</span>((<span class="hljs-number">2</span> ** attempts) * <span class="hljs-number">100</span>, <span class="hljs-number">2000</span>);
+
+	<span class="hljs-comment">// Add random jitter of up to ±50ms to avoid thundering herds:</span>
+	<span class="hljs-keyword">const</span> jitter = (<span class="hljs-title class_">Math</span>.<span class="hljs-title function_">random</span>() - <span class="hljs-number">0.5</span>) * <span class="hljs-number">100</span>;
+
+	<span class="hljs-keyword">return</span> backoff + jitter;
+};
+</code></pre>
+<h1 id="using-cacheable-with-redis">Using Cacheable with Redis</h1>
+<p>If you are wanting to see even better performance with Redis, you can use <a href="https://npmjs.org/package/cacheable">Cacheable</a> which is a multi-layered cache library that has in-memory primary caching and non-blocking secondary caching. Here is an example of how to use it with Redis:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Cacheable</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-keyword">const</span> secondary = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>( { secondary } );
+</code></pre>
+<p>For even higher performance you can set the <code>nonBlocking</code> option to <code>true</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>( { secondary, <span class="hljs-attr">nonBlocking</span>: <span class="hljs-literal">true</span> } );
+</code></pre>
+<p>This will make it so that the secondary does not block the primary cache and will be very fast. 🚀</p>
+<h1 id="clustering">Clustering</h1>
+<p>If you are using a Redis Cluster, you can pass in the <code>redisOptions</code> directly. Here is an example of how to do that:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span>, { createCluster } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> cluster = <span class="hljs-title function_">createCluster</span>({
+    <span class="hljs-attr">rootNodes</span>: [
+      {
+        <span class="hljs-attr">url</span>: <span class="hljs-string">'redis://127.0.0.1:7000'</span>,
+      },
+      {
+        <span class="hljs-attr">url</span>: <span class="hljs-string">'redis://127.0.0.1:7001'</span>,
+      },
+      {
+        <span class="hljs-attr">url</span>: <span class="hljs-string">'redis://127.0.0.1:7002'</span>,
+      },
+    ],
+});
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(cluster) });
+</code></pre>
+<p>You can learn more about the <code>createCluster</code> function in the <a href="https://github.com/redis/node-redis/blob/master/docs/clustering.md">documentation</a> at <a href="https://github.com/redis/node-redis/tree/master/docs">https://github.com/redis/node-redis/tree/master/docs</a>.</p>
+<h1 id="sentinel">Sentinel</h1>
+<p>If you are using Sentinel to provide high availability for your Redis instances, you can pass in the sentinel options directly to the <code>KeyvRedis</code> constructor:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({
+  <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>({
+    <span class="hljs-attr">name</span>: <span class="hljs-string">'mymaster'</span>,
+    <span class="hljs-attr">sentinelRootNodes</span>: [
+      { <span class="hljs-attr">host</span>: <span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">26379</span> },
+      { <span class="hljs-attr">host</span>: <span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">26380</span> },
+      { <span class="hljs-attr">host</span>: <span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">26381</span> },
+    ],
+  }),
+});
+</code></pre>
+<p>For TypeScript users, the <code>RedisSentinelOptions</code> type is exported from the package:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span>, { <span class="hljs-keyword">type</span> <span class="hljs-title class_">RedisSentinelOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> <span class="hljs-attr">sentinelOptions</span>: <span class="hljs-title class_">RedisSentinelOptions</span> = {
+  <span class="hljs-attr">name</span>: <span class="hljs-string">'mymaster'</span>,
+  <span class="hljs-attr">sentinelRootNodes</span>: [
+    { <span class="hljs-attr">host</span>: <span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">26379</span> },
+    { <span class="hljs-attr">host</span>: <span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">26380</span> },
+    { <span class="hljs-attr">host</span>: <span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">26381</span> },
+  ],
+};
+
+<span class="hljs-keyword">const</span> keyvRedis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(sentinelOptions);
+</code></pre>
+<p>You can learn more about Sentinel configuration in the <a href="https://github.com/redis/node-redis/blob/master/docs/sentinel.md">documentation</a> at <a href="https://github.com/redis/node-redis/tree/master/docs">https://github.com/redis/node-redis/tree/master/docs</a>.</p>
+<h1 id="tls-support">TLS Support</h1>
+<p>Here is an example of how to use TLS using the <code>redisOptions</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> tlsOptions = {
+    <span class="hljs-attr">socket</span>: {
+      <span class="hljs-attr">host</span>: <span class="hljs-string">'localhost'</span>,
+      <span class="hljs-attr">port</span>: <span class="hljs-number">6379</span>,
+      <span class="hljs-attr">tls</span>: <span class="hljs-literal">true</span>,  <span class="hljs-comment">// Enable TLS connection</span>
+      <span class="hljs-attr">rejectUnauthorized</span>: <span class="hljs-literal">false</span>,  <span class="hljs-comment">// Ignore self-signed certificate errors (for testing)</span>
+
+      <span class="hljs-comment">// Alternatively, provide CA, key, and cert for mutual authentication</span>
+      <span class="hljs-attr">ca</span>: fs.<span class="hljs-title function_">readFileSync</span>(<span class="hljs-string">'/path/to/ca-cert.pem'</span>),
+      <span class="hljs-attr">cert</span>: fs.<span class="hljs-title function_">readFileSync</span>(<span class="hljs-string">'/path/to/client-cert.pem'</span>),  <span class="hljs-comment">// Optional for client auth</span>
+      <span class="hljs-attr">key</span>: fs.<span class="hljs-title function_">readFileSync</span>(<span class="hljs-string">'/path/to/client-key.pem'</span>),    <span class="hljs-comment">// Optional for client auth</span>
+    }
+};
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(tlsOptions) });
+</code></pre>
+<h1 id="keyv-redis-options-1">Keyv Redis Options</h1>
+<p>Here are all the options that you can set on the constructor</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">KeyvRedisOptions</span> = {
+	<span class="hljs-comment">/**
+	 * Namespace for the current instance.
+	 */</span>
+	<span class="hljs-attr">namespace</span>?: <span class="hljs-built_in">string</span>;
+	<span class="hljs-comment">/**
+	 * Separator to use between namespace and key.
+	 */</span>
+	<span class="hljs-attr">keyPrefixSeparator</span>?: <span class="hljs-built_in">string</span>;
+	<span class="hljs-comment">/**
+	 * Number of keys to delete in a single batch.
+	 */</span>
+	<span class="hljs-attr">clearBatchSize</span>?: <span class="hljs-built_in">number</span>;
+	<span class="hljs-comment">/**
+	 * Enable Unlink instead of using Del for clearing keys. This is more performant but may not be supported by all Redis versions.
+	 */</span>
+	<span class="hljs-attr">useUnlink</span>?: <span class="hljs-built_in">boolean</span>;
+
+	<span class="hljs-comment">/**
+	 * Whether to allow clearing all keys when no namespace is set.
+	 * If set to true and no namespace is set, iterate() will return all keys.
+	 * Defaults to `false`.
+	 */</span>
+	<span class="hljs-attr">noNamespaceAffectsAll</span>?: <span class="hljs-built_in">boolean</span>;
+
+	<span class="hljs-comment">/**
+	 * This is used to throw an error if the client is not connected when trying to connect. By default, this is
+	 * set to true so that it throws an error when trying to connect to the Redis server fails.
+	 */</span>
+	<span class="hljs-attr">throwOnConnectError</span>?: <span class="hljs-built_in">boolean</span>;
+
+	<span class="hljs-comment">/**
+	 * This is used to throw an error if at any point there is a failure. Use this if you want to
+	 * ensure that all operations are successful and you want to handle errors. By default, this is
+	 * set to false so that it does not throw an error on every operation and instead emits an error event
+	 * and returns no-op responses.
+	 * <span class="hljs-doctag">@default</span> <span class="hljs-variable">false</span>
+	 */</span>
+	<span class="hljs-attr">throwOnErrors</span>?: <span class="hljs-built_in">boolean</span>;
+
+	<span class="hljs-comment">/**
+	 * Timeout in milliseconds for the connection. Default is undefined, which uses the default timeout of the Redis client.
+	 * If set, it will throw an error if the connection does not succeed within the specified time.
+	 * <span class="hljs-doctag">@default</span> <span class="hljs-variable">undefined</span>
+	 */</span>
+	<span class="hljs-attr">connectionTimeout</span>?: <span class="hljs-built_in">number</span>;
+};
+</code></pre>
+<h1 id="api">API</h1>
+<ul>
+<li><strong>constructor([connection], [options])</strong></li>
+<li><strong>namespace</strong> - The namespace to use for the keys.</li>
+<li><strong>client</strong> - The Redis client instance.</li>
+<li><strong>keyPrefixSeparator</strong> - The separator to use between the namespace and key. It can be set to a blank string.</li>
+<li><strong>clearBatchSize</strong> - The number of keys to delete in a single batch. Has to be greater than 0. Default is <code>1000</code>.</li>
+<li><strong>useUnlink</strong> - Use the <code>UNLINK</code> command for deleting keys isntead of <code>DEL</code>.</li>
+<li><strong>noNamespaceAffectsAll</strong>: Whether to allow clearing all keys when no namespace is set (default is <code>false</code>).</li>
+<li><strong>set</strong> - Set a key.</li>
+<li><strong>setMany</strong> - Set multiple keys using <code>KeyvEntry&#x3C;Value></code> objects (<code>{ key: string, value: Value, ttl?: number }</code>) via <code>MULTI/EXEC</code> transactions. Returns <code>boolean[]</code> with per-entry success tracking by inspecting each command's result. In cluster mode, entries are grouped by hash slot with results mapped back to the original order.</li>
+<li><strong>get</strong> - Get a key.</li>
+<li><strong>getMany</strong> - Get multiple keys.</li>
+<li><strong>has</strong> - Check if a key exists.</li>
+<li><strong>hasMany</strong> - Check if multiple keys exist.</li>
+<li><strong>delete</strong> - Delete a key.</li>
+<li><strong>deleteMany</strong> - Delete multiple keys. Returns <code>boolean[]</code>.</li>
+<li><strong>clear</strong> - Clear all keys in the namespace. If the namespace is not set it will clear all keys that are not prefixed with a namespace unless <code>noNamespaceAffectsAll</code> is set to <code>true</code>.</li>
+<li><strong>disconnect</strong> - Disconnect from the Redis server using <code>Quit</code> command. If you set <code>force</code> to <code>true</code> it will force the disconnect.</li>
+<li><strong>iterator</strong> - Create a new iterator for the keys. The iterator uses the namespace configured on the instance. If no namespace is set it will iterate over all keys that are not prefixed with a namespace unless <code>noNamespaceAffectsAll</code> is set to <code>true</code>.</li>
+</ul>
+<h1 id="using-custom-redis-client-events">Using Custom Redis Client Events</h1>
+<p>Keyv by default supports the <code>error</code> event across all storage adapters. If you want to listen to other events you can do so by accessing the <code>client</code> property of the <code>KeyvRedis</code> instance. Here is an example of how to do that:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> {createKeyv} <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> redisClient = keyv.<span class="hljs-property">store</span>.<span class="hljs-property">client</span>;
+
+redisClient.<span class="hljs-title function_">on</span>(<span class="hljs-string">'connect'</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Redis client connected'</span>);
+});
+
+redisClient.<span class="hljs-title function_">on</span>(<span class="hljs-string">'reconnecting'</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Redis client reconnecting'</span>);
+});
+
+redisClient.<span class="hljs-title function_">on</span>(<span class="hljs-string">'end'</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Redis client disconnected'</span>);
+});
+</code></pre>
+<p>Here are some of the events you can listen to: <a href="https://www.npmjs.com/package/redis#events">https://www.npmjs.com/package/redis#events</a></p>
+<h1 id="migrating-from-v3-to-v4">Migrating from v3 to v4</h1>
+<p>Overall the API is the same as v3 with additional options and performance improvements. Here are the main changes:</p>
+<ul>
+<li>The <code>ioredis</code> library has been removed in favor of the <code>redis</code> aka <code>node-redis</code> library. If you want to use ioredis you can use <code>@keyv/valkey</code></li>
+<li>The <code>useUnlink</code> option has been added to use <code>UNLINK</code> instead of <code>DEL</code> and set to true by default.</li>
+<li>The <code>clearBatchSize</code> option has been added to set the number of keys to delete in a single batch.</li>
+<li>The <code>clear()</code> and <code>delete()</code> methods now use <code>UNLINK</code> instead of <code>DEL</code>. If you want to use <code>DEL</code> you can set the <code>useUnlink</code> option to <code>false</code>.</li>
+<li>BREAKING: We no longer support redis sets. This is due to the fact that it caused significant performance issues and was not a good fit for the library.</li>
+<li>BREAKING: YOUR PREVIOUS KEYS WILL NOT BE VALID. This is because of the fixe of the namespace support and how it is handled. Now, when using <code>keyv</code> with <code>@keyv/redis</code> as the storage adapter you can do the following:</li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> redis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: redis, <span class="hljs-attr">namespace</span>: <span class="hljs-string">'my-namespace'</span>, <span class="hljs-attr">useKeyPrefix</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<p>This will make it so the storage adapter <code>@keyv/redis</code> will handle the namespace and not the <code>keyv</code> instance. If you leave it on it will just look duplicated like <code>my-namespace:my-namespace:key</code>.</p>
+<h1 id="about-redis-sets-and-its-support-in-v4">About Redis Sets and its Support in v4</h1>
+<p>We no longer support redis sets. This is due to the fact that it caused significant performance issues and was not a good fit for the library.</p>
+<h1 id="using-with-nestjs">Using with NestJS</h1>
+<blockquote>
+<p>You can integrate <code>@keyv/redis</code> with NestJS by creating a custom <code>CacheModule</code>. This allows you to use Keyv as a cache store in your application.</p>
+</blockquote>
+<h3 id="1-install-dependencies">1. Install Dependencies</h3>
+<pre><code class="hljs language-bash">npm install @keyv/redis keyv @nestjs/cache-manager cache-manager cacheable
+</code></pre>
+<h3 id="2-create-a-cache-module">2. Create a Cache Module</h3>
+<p>Create a file <code>cache.module.ts</code>:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Module</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheModule</span> <span class="hljs-keyword">as</span> <span class="hljs-title class_">NestCacheModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/cache-manager'</span>;
+<span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-meta">@Module</span>({
+  <span class="hljs-attr">imports</span>: [
+    <span class="hljs-title class_">NestCacheModule</span>.<span class="hljs-title function_">registerAsync</span>({
+      <span class="hljs-attr">useFactory</span>: <span class="hljs-function">() =></span> ({
+        <span class="hljs-attr">stores</span>: [<span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'redis://localhost:6379'</span>)],
+      }),
+    }),
+  ],
+  <span class="hljs-attr">providers</span>: [],
+  <span class="hljs-attr">exports</span>: [],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CacheModule</span> {}
+</code></pre>
+<h3 id="3-import-the-cache-module-in-appmodule">3. Import the Cache Module in AppModule</h3>
+<p>Update <code>app.module.ts</code>:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Module</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'./modules/config/cache/cache.module'</span>;
+
+<span class="hljs-meta">@Module</span>({
+  <span class="hljs-attr">imports</span>: [
+    <span class="hljs-title class_">CacheModule</span>, <span class="hljs-comment">// Import your custom cache module</span>
+    <span class="hljs-comment">// other modules...</span>
+  ],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AppModule</span> {}
+</code></pre>
+<h3 id="4-create-the-cache-service">4. Create the Cache Service</h3>
+<p>Create a file <code>cache.service.ts</code>:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-variable constant_">CACHE_MANAGER</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/cache-manager'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Inject</span>, <span class="hljs-title class_">Injectable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cache-manager'</span>;
+
+<span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CacheService</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"><span class="hljs-meta">@Inject</span>(CACHE_MANAGER) <span class="hljs-keyword">private</span> <span class="hljs-attr">cacheManager</span>: <span class="hljs-title class_">Cache</span></span>) {}
+
+  <span class="hljs-keyword">async</span> get&#x3C;T>(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">Promise</span>&#x3C;T | <span class="hljs-literal">undefined</span>> {
+    <span class="hljs-keyword">return</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">cacheManager</span>.<span class="hljs-property">get</span>&#x3C;T>(key);
+  }
+
+  <span class="hljs-keyword">async</span> set&#x3C;T>(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">value</span>: T, <span class="hljs-attr">ttl</span>?: <span class="hljs-built_in">number</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">boolean</span>> {
+    <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">cacheManager</span>.<span class="hljs-title function_">set</span>(key, value, ttl);
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">delete</span>(<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">void</span>> {
+    <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">cacheManager</span>.<span class="hljs-title function_">del</span>(key);
+  }
+}
+</code></pre>
+<h3 id="5-register-cacheservice-in-cachemodule">5. Register CacheService in CacheModule</h3>
+<p>Update <code>cache.module.ts</code>:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Module</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheModule</span> <span class="hljs-keyword">as</span> <span class="hljs-title class_">NestCacheModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/cache-manager'</span>;
+<span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheService</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'./services/cache.service'</span>;
+
+<span class="hljs-meta">@Module</span>({
+  <span class="hljs-attr">imports</span>: [
+    <span class="hljs-title class_">NestCacheModule</span>.<span class="hljs-title function_">registerAsync</span>({
+      <span class="hljs-attr">useFactory</span>: <span class="hljs-function">() =></span> ({
+        <span class="hljs-attr">stores</span>: [<span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'redis://localhost:6379'</span>)],
+      }),
+    }),
+  ],
+  <span class="hljs-attr">providers</span>: [<span class="hljs-title class_">CacheService</span>],
+  <span class="hljs-attr">exports</span>: [<span class="hljs-title class_">CacheService</span>],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CacheModule</span> {}
+</code></pre>
+<h3 id="6-import-cachemodule-in-the-target-module-eg-taskmodule">6. Import CacheModule in the Target Module (e.g. TaskModule)</h3>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Module</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">TaskService</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'./task.service'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">TaskRepository</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'./repositories/task.repository'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'src/modules/config/cache/cache.module'</span>;
+
+<span class="hljs-meta">@Module</span>({
+  <span class="hljs-attr">imports</span>: [<span class="hljs-title class_">CacheModule</span>],
+  <span class="hljs-attr">providers</span>: [<span class="hljs-title class_">TaskService</span>, <span class="hljs-title class_">TaskRepository</span>],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">TaskModule</span> {}
+</code></pre>
+<h3 id="7-using-the-cache-in-a-service">7. Using the Cache in a Service</h3>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Injectable</span>, <span class="hljs-title class_">NotFoundException</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">TaskRepository</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'../repositories/task.repository'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">TaskDto</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'../dto/task.dto'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheService</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'src/modules/config/cache/services/cache.service'</span>;
+
+<span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">TaskService</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> <span class="hljs-attr">taskRepository</span>: <span class="hljs-title class_">TaskRepository</span>,
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> <span class="hljs-attr">cache</span>: <span class="hljs-title class_">CacheService</span>, <span class="hljs-comment">// Inject the CacheService</span>
+  </span>) {}
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">findById</span>(<span class="hljs-attr">id</span>: <span class="hljs-built_in">number</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">TaskDto</span>> {
+    <span class="hljs-keyword">const</span> cacheKey = <span class="hljs-string">`task:<span class="hljs-subst">${id}</span>`</span>;
+
+    <span class="hljs-comment">// 1. Try to get from cache</span>
+    <span class="hljs-keyword">const</span> cached = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">cache</span>.<span class="hljs-property">get</span>&#x3C;<span class="hljs-title class_">TaskDto</span>>(cacheKey);
+
+	<span class="hljs-keyword">if</span> (cached) {
+      <span class="hljs-keyword">return</span> cached;
+    }
+
+    <span class="hljs-comment">// 2. If not found in cache, fetch from database</span>
+    <span class="hljs-keyword">const</span> task = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">taskRepository</span>.<span class="hljs-title function_">findById</span>(id);
+
+    <span class="hljs-keyword">if</span> (!task) {
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">NotFoundException</span>(<span class="hljs-string">'Task not found'</span>);
+    }
+
+    <span class="hljs-comment">// 3. Set in cache for future requests</span>
+    <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">cache</span>.<span class="hljs-title function_">set</span>(cacheKey, task, <span class="hljs-number">300</span> * <span class="hljs-number">1000</span>); <span class="hljs-comment">// 5 minutes TTL</span>
+    <span class="hljs-keyword">return</span> task;
+  }
+}
+</code></pre>
+<p>You can learn more about caching in NestJS in the <a href="https://docs.nestjs.com/techniques/caching#in-memory-cache">official documentation</a>.</p>
+<hr>
+<h1 id="license">License</h1>
+<p><a href="LISCENCE">MIT © Jared Wray</a></p>

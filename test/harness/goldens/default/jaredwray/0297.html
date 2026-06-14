@@ -1,0 +1,34 @@
+<h1 id="agentsmd">AGENTS.md</h1>
+<p>Guidelines for AI coding agents (Claude, Gemini, Codex).</p>
+<h2 id="mandatory-with-all-changes">Mandatory with all changes</h2>
+<ul>
+<li><code>pnpm build</code> must be successful</li>
+<li><code>pnpm test</code> must be successful with 100% code coverage</li>
+</ul>
+<h2 id="commands">Commands</h2>
+<ul>
+<li><code>pnpm install</code> - Install dependencies</li>
+<li><code>pnpm build</code> - Build for production (ESM + CJS + type definitions)</li>
+<li><code>pnpm lint</code> - Run Biome linter with auto-fix</li>
+<li><code>pnpm test</code> - Run linter and Vitest with coverage</li>
+<li><code>pnpm test:ci</code> - CI-specific testing (strict linting + coverage)</li>
+<li><code>pnpm test:services:start</code> - Start Docker memcached (required for integration tests)</li>
+<li><code>pnpm test:services:stop</code> - Stop test services</li>
+<li><code>pnpm clean</code> - Remove node_modules, coverage, and dist directories</li>
+</ul>
+<p><strong>Use pnpm, not npm.</strong></p>
+<h2 id="development-rules">Development Rules</h2>
+<ol>
+<li><strong>Start test services first</strong> - Run <code>pnpm test:services:start</code> before running tests</li>
+<li><strong>Always run <code>pnpm build</code> before committing</strong> - Build must succeed</li>
+<li><strong>Always run <code>pnpm test</code> before committing</strong> - All tests must pass</li>
+<li><strong>Follow existing code style</strong> - Biome enforces formatting and linting</li>
+<li><strong>Mirror source structure in tests</strong> - Test files go in <code>test/</code> matching <code>src/</code> structure</li>
+</ol>
+<h2 id="structure">Structure</h2>
+<ul>
+<li><code>src/index.ts</code> - Main Memcache client class with all protocol operations</li>
+<li><code>src/node.ts</code> - MemcacheNode class for single server TCP connections</li>
+<li><code>src/ketama.ts</code> - Consistent hashing implementation (Ketama algorithm)</li>
+<li><code>test/</code> - Test files (Vitest)</li>
+</ul>

@@ -1,0 +1,312 @@
+<h2 id="quick-start">Quick start</h2>
+<h3 id="requirements">Requirements</h3>
+<p>This package was built with Rust version <code>1.70.0</code>. Earlier versions might work, but is not guaranteed.</p>
+<h3 id="install">Install</h3>
+<p>Add the following content to the <code>Cargo.toml</code> file:</p>
+<pre><code class="hljs language-toml"><span class="hljs-attr">open-feature</span> = <span class="hljs-string">"0.2.7"</span>
+</code></pre>
+<h3 id="usage">Usage</h3>
+<pre><code class="hljs language-rust"><span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">example</span>() <span class="hljs-punctuation">-></span> <span class="hljs-type">Result</span>&#x3C;(), Error> {
+    <span class="hljs-comment">// Acquire an OpenFeature API instance.</span>
+    <span class="hljs-comment">// Note the `await` call here because asynchronous lock is used to</span>
+    <span class="hljs-comment">// guarantee thread safety.</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">api</span> = OpenFeature::<span class="hljs-title function_ invoke__">singleton_mut</span>().<span class="hljs-keyword">await</span>;
+
+    <span class="hljs-comment">// Configure a provider.</span>
+    <span class="hljs-comment">// By default [`NoOpProvider`] is used.</span>
+    api.<span class="hljs-title function_ invoke__">set_provider</span>(NoOpProvider::<span class="hljs-title function_ invoke__">default</span>()).<span class="hljs-keyword">await</span>;
+
+    <span class="hljs-comment">// create a client</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">client</span> = api.<span class="hljs-title function_ invoke__">get_client</span>();
+
+    <span class="hljs-comment">// get a bool flag value</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">is_feature_enabled</span> = client
+        .<span class="hljs-title function_ invoke__">get_bool_value</span>(<span class="hljs-string">"v2_enabled"</span>, <span class="hljs-literal">None</span>, <span class="hljs-literal">None</span>)
+        .<span class="hljs-title function_ invoke__">unwrap_or</span>(<span class="hljs-literal">false</span>)
+        .<span class="hljs-keyword">await</span>;
+
+    <span class="hljs-title function_ invoke__">Ok</span>(())
+}
+</code></pre>
+<p>Note that the default <code>NoOpProvider</code> always returns <code>Err</code> for any given input.</p>
+<h4 id="extended-example">Extended Example</h4>
+<pre><code class="hljs language-rust"><span class="hljs-meta">#[tokio::test]</span>
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">extended_example</span>() {
+    <span class="hljs-comment">// Acquire an OpenFeature API instance.</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">api</span> = OpenFeature::<span class="hljs-title function_ invoke__">singleton_mut</span>().<span class="hljs-keyword">await</span>;
+
+    <span class="hljs-comment">// Set the default (unnamed) provider.</span>
+    api.<span class="hljs-title function_ invoke__">set_provider</span>(NoOpProvider::<span class="hljs-title function_ invoke__">default</span>()).<span class="hljs-keyword">await</span>;
+
+    <span class="hljs-comment">// Create an unnamed client.</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">client</span> = api.<span class="hljs-title function_ invoke__">create_client</span>();
+
+    <span class="hljs-comment">// Create an evaluation context.</span>
+    <span class="hljs-comment">// It supports types mentioned in the specification.</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">evaluation_context</span> = EvaluationContext::<span class="hljs-title function_ invoke__">default</span>()
+        .<span class="hljs-title function_ invoke__">with_targeting_key</span>(<span class="hljs-string">"Targeting"</span>)
+        .<span class="hljs-title function_ invoke__">with_custom_field</span>(<span class="hljs-string">"bool_key"</span>, <span class="hljs-literal">true</span>)
+        .<span class="hljs-title function_ invoke__">with_custom_field</span>(<span class="hljs-string">"int_key"</span>, <span class="hljs-number">100</span>)
+        .<span class="hljs-title function_ invoke__">with_custom_field</span>(<span class="hljs-string">"float_key"</span>, <span class="hljs-number">3.14</span>)
+        .<span class="hljs-title function_ invoke__">with_custom_field</span>(<span class="hljs-string">"string_key"</span>, <span class="hljs-string">"Hello"</span>.<span class="hljs-title function_ invoke__">to_string</span>())
+        .<span class="hljs-title function_ invoke__">with_custom_field</span>(<span class="hljs-string">"datetime_key"</span>, time::OffsetDateTime::<span class="hljs-title function_ invoke__">now_utc</span>())
+        .<span class="hljs-title function_ invoke__">with_custom_field</span>(
+            <span class="hljs-string">"struct_key"</span>,
+            EvaluationContextFieldValue::<span class="hljs-title function_ invoke__">Struct</span>(Arc::<span class="hljs-title function_ invoke__">new</span>(MyStruct::<span class="hljs-title function_ invoke__">default</span>())),
+        )
+        .<span class="hljs-title function_ invoke__">with_custom_field</span>(<span class="hljs-string">"another_struct_key"</span>, Arc::<span class="hljs-title function_ invoke__">new</span>(MyStruct::<span class="hljs-title function_ invoke__">default</span>()))
+        .<span class="hljs-title function_ invoke__">with_custom_field</span>(
+            <span class="hljs-string">"yet_another_struct_key"</span>,
+            EvaluationContextFieldValue::<span class="hljs-title function_ invoke__">new_struct</span>(MyStruct::<span class="hljs-title function_ invoke__">default</span>()),
+        );
+
+    <span class="hljs-comment">// This function returns a `Result`.</span>
+    <span class="hljs-comment">// You can process it with functions provided by std.</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">is_feature_enabled</span> = client
+        .<span class="hljs-title function_ invoke__">get_bool_value</span>(<span class="hljs-string">"SomeFlagEnabled"</span>, <span class="hljs-title function_ invoke__">Some</span>(&#x26;evaluation_context), <span class="hljs-literal">None</span>)
+        .<span class="hljs-keyword">await</span>
+        .<span class="hljs-title function_ invoke__">unwrap_or</span>(<span class="hljs-literal">false</span>);
+
+    <span class="hljs-keyword">if</span> is_feature_enabled {
+        <span class="hljs-comment">// Let's get evaluation details.</span>
+        <span class="hljs-keyword">let</span> <span class="hljs-variable">_result</span> = client
+            .<span class="hljs-title function_ invoke__">get_int_details</span>(<span class="hljs-string">"key"</span>, <span class="hljs-title function_ invoke__">Some</span>(&#x26;evaluation_context), <span class="hljs-literal">None</span>)
+            .<span class="hljs-keyword">await</span>;
+    }
+}
+</code></pre>
+<h4 id="getting-a-struct-from-a-provider">Getting a Struct from a Provider</h4>
+<p>It is possible to extract a struct from the provider. Internally, this SDK defines a type <code>StructValue</code> to store any structure value. The <code>client.get_struct_value()</code> functions takes a type parameter <code>T</code>. It will try to parse <code>StructValue</code> resolved by the provider to <code>T</code>, as long as <code>T</code> implements trait <code>TryFrom&#x3C;StructValue></code>.</p>
+<p>You can pass in a type that satisfies this trait bound. When the conversion fails, it returns an <code>Err</code> with <code>EvaluationReason::TypeMismatch</code>.</p>
+<h3 id="api-reference">API Reference</h3>
+<p>See <a href="https://docs.rs/open-feature/latest/open_feature/index.html">here</a> for the API docs.</p>
+<h2 id="features">Features</h2>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Features</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✅</td>
+<td><a href="#providers">Providers</a></td>
+<td>Integrate with a commercial, open source, or in-house feature management tool.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#targeting">Targeting</a></td>
+<td>Contextually-aware flag evaluation using <a href="/docs/reference/concepts/evaluation-context">evaluation context</a>.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#hooks">Hooks</a></td>
+<td>Add functionality to various stages of the flag evaluation life-cycle.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#logging">Logging</a></td>
+<td>Integrate with popular logging packages.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#named-clients">Named clients</a></td>
+<td>Utilize multiple providers in a single application.</td>
+</tr>
+<tr>
+<td>❌</td>
+<td><a href="#eventing">Eventing</a></td>
+<td>React to state changes in the provider or flag management system.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#shutdown">Shutdown</a></td>
+<td>Gracefully clean up a provider during application shutdown.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#extending">Extending</a></td>
+<td>Extend OpenFeature with custom providers and hooks.</td>
+</tr>
+</tbody>
+</table>
+<p>Implemented: ✅ | In-progress: ⚠️ | Not implemented yet: ❌</p>
+<h3 id="providers">Providers</h3>
+<p><a href="/docs/reference/concepts/provider">Providers</a> are an abstraction between a flag management system and the OpenFeature SDK.
+Look <a href="/ecosystem?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Provider&#x26;instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=Rust">here</a> for a complete list of available providers.
+If the provider you're looking for hasn't been created yet, see the <a href="#develop-a-provider">develop a provider</a> section to learn how to build it yourself.</p>
+<p>Once you've added a provider as a dependency, it can be registered with OpenFeature like this:</p>
+<pre><code class="hljs language-rust"><span class="hljs-comment">// Set the default feature provider. Please replace the `NoOpProvider` with the one you want.</span>
+<span class="hljs-comment">// If you do not do that, [`NoOpProvider`] will be used by default.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// [`NoOpProvider`] always returns `Err` despite any input. You can use functions like</span>
+<span class="hljs-comment">// `unwrap_or()` to specify default values.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// If you set a new provider after creating some clients, the existing clients will pick up</span>
+<span class="hljs-comment">// the new provider you just set.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// You must `await` it to let the provider's initialization to finish.</span>
+<span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">api</span> = OpenFeature::<span class="hljs-title function_ invoke__">singleton_mut</span>().<span class="hljs-keyword">await</span>;
+api.<span class="hljs-title function_ invoke__">set_provider</span>(NoOpProvider::<span class="hljs-title function_ invoke__">default</span>()).<span class="hljs-keyword">await</span>;
+</code></pre>
+<p>In some situations, it may be beneficial to register multiple providers in the same application.
+This is possible using <a href="#named-clients">named clients</a>, which is covered in more detail below.</p>
+<h3 id="targeting">Targeting</h3>
+<p>Sometimes, the value of a flag must consider some dynamic criteria about the application or user, such as the user's location, IP, email address, or the server's location.
+In OpenFeature, we refer to this as <a href="/specification/glossary#targeting">targeting</a>.
+If the flag management system you're using supports targeting, you can provide the input data using the <a href="/docs/reference/concepts/evaluation-context">evaluation context</a>.</p>
+<pre><code class="hljs language-rust"><span class="hljs-comment">// Create a global evaluation context and set it into the API.</span>
+<span class="hljs-comment">// Note that this is optional. By default it uses an empty one.</span>
+<span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">api</span> = OpenFeature::<span class="hljs-title function_ invoke__">singleton_mut</span>().<span class="hljs-keyword">await</span>;
+api.<span class="hljs-title function_ invoke__">set_evaluation_context</span>(global_evaluation_context).<span class="hljs-keyword">await</span>;
+
+<span class="hljs-comment">// Set client level evaluation context.</span>
+<span class="hljs-comment">// It will overwrite the global one for the existing keys.</span>
+<span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">client</span> = api.<span class="hljs-title function_ invoke__">create_client</span>();
+client.<span class="hljs-title function_ invoke__">set_evaluation_context</span>(client_evaluation_context);
+
+<span class="hljs-comment">// Pass evaluation context in evaluation functions.</span>
+<span class="hljs-comment">// This one will overwrite the global evaluation context and</span>
+<span class="hljs-comment">// the client level one.</span>
+client.<span class="hljs-title function_ invoke__">get_int_value</span>(<span class="hljs-string">"flag"</span>, <span class="hljs-title function_ invoke__">Some</span>(&#x26;evaluation_context), <span class="hljs-literal">None</span>);
+</code></pre>
+<h3 id="hooks">Hooks</h3>
+<p><a href="/docs/reference/concepts/hooks">Hooks</a> allow for custom logic to be added at well-defined points of the flag evaluation life-cycle.
+Look <a href="/ecosystem/?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Hook&#x26;instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=Rust">here</a> for a complete list of available hooks.
+If the hook you're looking for hasn't been created yet, see the <a href="#develop-a-hook">develop a hook</a> section to learn how to build it yourself.</p>
+<p>Once you've added a hook as a dependency, it can be registered at the global, client, or flag invocation level.</p>
+<pre><code class="hljs language-rust"><span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">api</span> = OpenFeature::<span class="hljs-title function_ invoke__">singleton_mut</span>().<span class="hljs-keyword">await</span>;
+
+<span class="hljs-comment">// Set a global hook.</span>
+api.<span class="hljs-title function_ invoke__">set_hook</span>(MyHook::<span class="hljs-title function_ invoke__">default</span>()).<span class="hljs-keyword">await</span>;
+
+<span class="hljs-comment">// Create a client and set a client level hook.</span>
+<span class="hljs-keyword">let</span> <span class="hljs-variable">client</span> = api.<span class="hljs-title function_ invoke__">create_client</span>();
+client.<span class="hljs-title function_ invoke__">set_hook</span>(MyHook::<span class="hljs-title function_ invoke__">default</span>());
+
+<span class="hljs-comment">// Get a flag value with a hook.</span>
+<span class="hljs-keyword">let</span> <span class="hljs-variable">eval</span> = EvaluationOptions::<span class="hljs-title function_ invoke__">default</span>().<span class="hljs-title function_ invoke__">with_hook</span>(MyHook::<span class="hljs-title function_ invoke__">default</span>());
+client.<span class="hljs-title function_ invoke__">get_int_value</span>(<span class="hljs-string">"key"</span>, <span class="hljs-literal">None</span>, <span class="hljs-title function_ invoke__">Some</span>(&#x26;eval)).<span class="hljs-keyword">await</span>;
+</code></pre>
+<p>Example of a hook implementation you can find in <a href="https://github.com/open-feature/rust-sdk/blob/main/examples/hooks.rs">examples/hooks.rs</a>.</p>
+<p>To run the example, execute the following command:</p>
+<pre><code class="hljs language-shell">cargo run --example hooks
+</code></pre>
+<h3 id="logging">Logging</h3>
+<p>Note that in accordance with the OpenFeature specification, the SDK doesn't generally log messages during flag evaluation.</p>
+<h4 id="logging-hook">Logging hook</h4>
+<p>The Rust SDK provides a logging hook that can be used to log messages during flag evaluation.
+This hook is not enabled by default and must be explicitly set.</p>
+<pre><code class="hljs language-rust"><span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">api</span> = OpenFeature::<span class="hljs-title function_ invoke__">singleton_mut</span>().<span class="hljs-keyword">await</span>;
+
+<span class="hljs-keyword">let</span> <span class="hljs-variable">client</span> = api.<span class="hljs-title function_ invoke__">create_client</span>().<span class="hljs-title function_ invoke__">with_logging_hook</span>(<span class="hljs-literal">false</span>);
+
+...
+
+<span class="hljs-comment">// Note: You can include evaluation context to log output.</span>
+<span class="hljs-keyword">let</span> <span class="hljs-variable">client</span> = api.<span class="hljs-title function_ invoke__">create_client</span>().<span class="hljs-title function_ invoke__">with_logging_hook</span>(<span class="hljs-literal">true</span>);
+</code></pre>
+<p>Both <strong>text</strong> and <strong>structured</strong> logging are supported.
+To enable <strong>structured</strong> logging, enable feature <code>structured-logging</code> in your <code>Cargo.toml</code>:</p>
+<pre><code class="hljs language-toml"><span class="hljs-attr">open-feature</span> = { version = <span class="hljs-string">"0.2.4"</span>, features = [<span class="hljs-string">"structured-logging"</span>] }
+</code></pre>
+<p>Example of a logging hook usage you can find in <a href="https://github.com/open-feature/rust-sdk/blob/main/examples/logging.rs">examples/logging.rs</a>.</p>
+<p>To run the example, execute the following command:</p>
+<pre><code class="hljs language-shell">cargo run --example logging
+</code></pre>
+<p><strong>Output</strong>:</p>
+<pre><code class="hljs language-text">[2025-01-10T18:53:11Z DEBUG open_feature::hooks::logging] Before stage: domain=, provider_name=Dummy Provider, flag_key=my_feature, default_value=Some(Bool(false)), evaluation_context=EvaluationContext { targeting_key: None, custom_fields: {} }
+[2025-01-10T18:53:11Z DEBUG open_feature::hooks::logging] After stage: domain=, provider_name=Dummy Provider, flag_key=my_feature, default_value=Some(Bool(false)), reason=None, variant=None, value=Bool(true), evaluation_context=EvaluationContext { targeting_key: None, custom_fields: {} }
+</code></pre>
+<p>or with structured logging:</p>
+<pre><code class="hljs language-shell">cargo run --example logging --features structured-logging
+</code></pre>
+<p><strong>Output</strong>:</p>
+<pre><code class="hljs language-jsonl">{"default_value":"Some(Bool(false))","domain":"","evaluation_context":"EvaluationContext { targeting_key: None, custom_fields: {} }","flag_key":"my_feature","level":"DEBUG","message":"Before stage","provider_name":"No-op Provider","target":"open_feature","timestamp":1736537120828}
+{"default_value":"Some(Bool(false))","domain":"","error_message":"Some(\"No-op provider is never ready\")","evaluation_context":"EvaluationContext { targeting_key: None, custom_fields: {} }","file":"src/hooks/logging.rs","flag_key":"my_feature","level":"ERROR","line":162,"message":"Error stage","module":"open_feature::hooks::logging::structured","provider_name":"No-op Provider","target":"open_feature","timestamp":1736537120828}
+</code></pre>
+<h3 id="named-clients">Named clients</h3>
+<p>Clients can be given a name.
+A name is a logical identifier that can be used to associate clients with a particular provider.
+If a name has no associated provider, the global provider is used.</p>
+<pre><code class="hljs language-rust"><span class="hljs-comment">// Create a named provider and bind it.</span>
+api.<span class="hljs-title function_ invoke__">set_named_provider</span>(<span class="hljs-string">"named"</span>, NoOpProvider::<span class="hljs-title function_ invoke__">default</span>()).<span class="hljs-keyword">await</span>;
+
+<span class="hljs-comment">// This named client will use the feature provider bound to this name.</span>
+<span class="hljs-keyword">let</span> <span class="hljs-variable">client</span> = api.<span class="hljs-title function_ invoke__">create_named_client</span>(<span class="hljs-string">"named"</span>);
+
+<span class="hljs-built_in">assert_eq!</span>(client.<span class="hljs-title function_ invoke__">get_int_value</span>(<span class="hljs-string">"key"</span>, <span class="hljs-literal">None</span>, <span class="hljs-literal">None</span>).<span class="hljs-keyword">await</span>.<span class="hljs-title function_ invoke__">unwrap</span>(), <span class="hljs-number">42</span>);
+</code></pre>
+<h3 id="eventing">Eventing</h3>
+<p>Events are not yet available in the Rust SDK.</p>
+<h3 id="shutdown">Shutdown</h3>
+<p>The OpenFeature API provides a close function to perform a cleanup of all registered providers.
+This should only be called when your application is in the process of shutting down.</p>
+<pre><code class="hljs language-rust"><span class="hljs-comment">// This will clean all the registered providers and invoke their `shutdown()` function.</span>
+<span class="hljs-keyword">let</span> <span class="hljs-variable">api</span> = OpenFeature::<span class="hljs-title function_ invoke__">singleton_mut</span>().<span class="hljs-keyword">await</span>;
+api.<span class="hljs-title function_ invoke__">shutdown</span>();
+</code></pre>
+<h2 id="extending">Extending</h2>
+<h3 id="develop-a-provider">Develop a provider</h3>
+<p>To develop a provider, you need to create a new project and include the OpenFeature SDK as a dependency.
+This can be a new repository or included in <a href="https://github.com/open-feature/rust-sdk-contrib">the existing contrib repository</a> available under the OpenFeature organization.
+You’ll then need to write the provider by implementing the <code>FeatureProvider</code> interface exported by the OpenFeature SDK.</p>
+<p>Check the source of <a href="https://github.com/open-feature/rust-sdk/blob/main/src/provider/no_op_provider.rs"><code>NoOpProvider</code></a> for an example.</p>
+<blockquote>
+<p>Built a new provider? <a href="https://github.com/open-feature/openfeature.dev/issues/new?assignees=&#x26;labels=provider&#x26;projects=&#x26;template=document-provider.yaml&#x26;title=%5BProvider%5D%3A+">Let us know</a> so we can add it to the docs!</p>
+</blockquote>
+<h3 id="develop-a-hook">Develop a hook</h3>
+<p>To develop a hook, you need to create a new project and include the OpenFeature SDK as a dependency.
+This can be a new repository or included in <a href="https://github.com/open-feature/rust-sdk-contrib">the existing contrib repository</a> available under the OpenFeature organization.
+Implement your own hook by conforming to the <code>Hook interface</code>.
+To satisfy the interface, all methods (<code>before</code>/<code>after</code>/<code>finally</code>/<code>error</code>) need to be defined.</p>
+<pre><code class="hljs language-rust"><span class="hljs-keyword">use</span> open_feature::{
+    EvaluationContext, EvaluationDetails, EvaluationError,
+    Hook, HookContext, HookHints, Value,
+};
+
+<span class="hljs-keyword">struct</span> <span class="hljs-title class_">MyHook</span>;
+
+<span class="hljs-meta">#[async_trait::async_trait]</span>
+<span class="hljs-keyword">impl</span> <span class="hljs-title class_">Hook</span> <span class="hljs-keyword">for</span> <span class="hljs-title class_">MyHook</span> {
+    <span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">before</span>&#x3C;<span class="hljs-symbol">'a</span>>(
+        &#x26;<span class="hljs-keyword">self</span>,
+        context: &#x26;HookContext&#x3C;<span class="hljs-symbol">'a</span>>,
+        hints: <span class="hljs-type">Option</span>&#x3C;&#x26;<span class="hljs-symbol">'a</span> HookHints>,
+    ) <span class="hljs-punctuation">-></span> <span class="hljs-type">Result</span>&#x3C;<span class="hljs-type">Option</span>&#x3C;EvaluationContext>, EvaluationError> {
+        todo!()
+    }
+
+    <span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">after</span>&#x3C;<span class="hljs-symbol">'a</span>>(
+        &#x26;<span class="hljs-keyword">self</span>,
+        context: &#x26;HookContext&#x3C;<span class="hljs-symbol">'a</span>>,
+        details: &#x26;EvaluationDetails&#x3C;Value>,
+        hints: <span class="hljs-type">Option</span>&#x3C;&#x26;<span class="hljs-symbol">'a</span> HookHints>,
+    ) <span class="hljs-punctuation">-></span> <span class="hljs-type">Result</span>&#x3C;(), EvaluationError> {
+        todo!()
+    }
+
+    <span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">error</span>&#x3C;<span class="hljs-symbol">'a</span>>(
+        &#x26;<span class="hljs-keyword">self</span>,
+        context: &#x26;HookContext&#x3C;<span class="hljs-symbol">'a</span>>,
+        error: &#x26;EvaluationError,
+        hints: <span class="hljs-type">Option</span>&#x3C;&#x26;<span class="hljs-symbol">'a</span> HookHints>,
+    ) {
+        todo!()
+    }
+
+    <span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">finally</span>&#x3C;<span class="hljs-symbol">'a</span>>(
+        &#x26;<span class="hljs-keyword">self</span>,
+        context: &#x26;HookContext&#x3C;<span class="hljs-symbol">'a</span>>,
+        detaild: &#x26;EvaluationDetails&#x3C;Value>,
+        hints: <span class="hljs-type">Option</span>&#x3C;&#x26;<span class="hljs-symbol">'a</span> HookHints>,
+    ) {
+        todo!()
+    }
+}
+</code></pre>
+<blockquote>
+<p>Built a new hook? <a href="https://github.com/open-feature/openfeature.dev/issues/new?assignees=&#x26;labels=hook&#x26;projects=&#x26;template=document-hook.yaml&#x26;title=%5BHook%5D%3A+">Let us know</a> so we can add it to the docs!</p>
+</blockquote>

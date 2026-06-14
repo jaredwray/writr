@@ -1,0 +1,65 @@
+<h1 id="tracking">Tracking</h1>
+<p>import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';</p>
+<p>Tracking in OpenFeature is the process of associating metrics or KPIs with feature flag evaluation contexts.
+This association helps measure the impact of feature changes on both business KPIs and system performance, making it particularly valuable for experimentation.</p>
+<h2 id="use-cases">Use Cases</h2>
+<p>Tracking events associated with flag evaluations serves two primary purposes:</p>
+<h3 id="performance-monitoring">Performance Monitoring</h3>
+<p>When changes are made to an application via feature flags, tracking helps measure their impact on performance.
+By associating events with flag evaluation contexts
+and sending this data to telemetry or analytics platforms, teams can determine whether specific flag configurations improve or degrade measured performance,
+whether business metrics or system performance.</p>
+<h3 id="experimentation">Experimentation</h3>
+<p>Tracking creates a crucial link between flag evaluations and business outcomes, enabling robust experimentation.
+Experimentation differs from generalized
+Performance Monitoring in its execution.
+The most common form of Experimentation being A/B testing which is when two variations of an application or feature
+are distributed randomly to similar groups and the differences in metrics is evaluated.
+For example, if a feature flag controls the order
+of items in a menu, tracking events can be emitted when users click on menu items.
+The feature flag provider can typically be set to distribute the different variations
+equally to your audience, making this an A/B test, helping to validate hypotheses about user behavior in a statistically relevant manner.</p>
+<h2 id="providers-hooks-and-integration">Providers, Hooks and Integration</h2>
+<p>In order to accomplish the use cases above, it's required that the flag provider in use reports events or metrics about the flag evaluations and <a href="/specification/sections/providers/#27-tracking-support">tracking calls</a> it facilitates.
+If your vendor or home-grown solution does not support these functionalities, the OpenFeature SDK offers various integration and extension points to help.
+You can implement your own provider <a href="/specification/sections/tracking#61-tracking-api">track</a> function (by extending or encapsulating your provider) and use custom <a href="04-hooks.mdx">hooks</a>, to collect and export the appropriate event data to your customer data or analytics platform.</p>
+<pre><code class="hljs language-mermaid">sequenceDiagram
+  Evaluation API->>+Tracking Hook: evaluate
+  Tracking Hook->>Analytics Platform: before
+  Tracking Hook->>Analytics Platform: after
+  Tracking Hook->>-Evaluation API: evaluate
+  Evaluation API->>Analytics Platform: track
+</code></pre>
+<h2 id="track-event-implementation">Track Event Implementation</h2>
+<p>The <code>track</code> function requires only a label parameter.
+You don’t need to pass an identifier or flag evaluation context since the OpenFeature provider already maintains this information.</p>
+<p>Optionally, you can associate additional metadata with each track event if your feature flagging tool supports it.</p>
+<pre><code class="hljs language-ts"><span class="hljs-comment">// example tracking event recording a conversion</span>
+client.<span class="hljs-title function_">track</span>(<span class="hljs-string">'conversion-tracked'</span>);
+
+<span class="hljs-comment">// optionally additional data can be associated with the event</span>
+client.<span class="hljs-title function_">track</span>(<span class="hljs-string">'conversion-tracked'</span>, {
+  <span class="hljs-attr">value</span>: <span class="hljs-number">99.77</span>,
+  <span class="hljs-attr">currencyCode</span>: <span class="hljs-string">'USD'</span>,
+});
+</code></pre>
+<pre><code class="hljs language-java"><span class="hljs-comment">// example tracking event recording a conversion</span>
+client.track(<span class="hljs-string">"conversion-tracked"</span>);
+
+<span class="hljs-comment">// optionally additional data can be associated with the event</span>
+client.track(<span class="hljs-string">"conversion-tracked"</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">TrackingEventDetails</span>(<span class="hljs-number">99.77</span>).add(<span class="hljs-string">"currencyCode"</span>, <span class="hljs-string">"USD"</span>));
+</code></pre>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// example tracking event recording a conversion</span>
+client.Track(<span class="hljs-string">"visited-promo-page"</span>);
+
+<span class="hljs-comment">// optionally additional data can be associated with the event</span>
+client.Track(<span class="hljs-string">"visited-promo-page"</span>, <span class="hljs-keyword">new</span> TrackingEventDetailsBuilder().SetValue(<span class="hljs-number">99.77</span>).Set(<span class="hljs-string">"currencyCode"</span>, <span class="hljs-string">"USD"</span>).Build());
+</code></pre>
+<pre><code class="hljs language-go">client.Track(
+  context.Background(),
+  <span class="hljs-string">"visited-promo-page"</span>,
+  openfeature.EvaluationContext{},
+  openfeature.NewTrackingEventDetails(<span class="hljs-number">99.77</span>).Add(<span class="hljs-string">"currencyCode"</span>, <span class="hljs-string">"USD"</span>),
+  )
+</code></pre>

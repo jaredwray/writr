@@ -1,0 +1,35 @@
+<p>Docula fetches contributor and release data from the GitHub API during builds. A token is optional but recommended to avoid rate limits and to support private repositories.</p>
+<h2 id="why-use-a-token">Why Use a Token</h2>
+<p>Without a token, GitHub's API limits requests to <strong>60 per hour</strong> per IP address. With a token, the limit increases to <strong>5,000 per hour</strong>. If you build frequently or your site has many releases and contributors, you will likely hit the unauthenticated limit.</p>
+<p>A token is also <strong>required</strong> to access private repositories.</p>
+<h2 id="setting-the-token">Setting the Token</h2>
+<p>Docula reads the <code>GITHUB_TOKEN</code> environment variable. You can set it in several ways:</p>
+<h3 id="inline-with-the-cli">Inline with the CLI</h3>
+<pre><code class="hljs language-bash">GITHUB_TOKEN=ghp_yourtoken npx docula build
+</code></pre>
+<h3 id="export-in-your-shell">Export in your shell</h3>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">export</span> GITHUB_TOKEN=ghp_yourtoken
+npx docula build
+</code></pre>
+<h3 id="using-a-env-file">Using a <code>.env</code> file</h3>
+<p>Add the token to a <code>.env</code> file in your project root and load it with a tool like <code>dotenv</code>:</p>
+<pre><code>GITHUB_TOKEN=ghp_yourtoken
+</code></pre>
+<p>Make sure <code>.env</code> is listed in your <code>.gitignore</code> so the token is never committed.</p>
+<h3 id="github-actions">GitHub Actions</h3>
+<p>In CI, use the built-in <code>GITHUB_TOKEN</code> secret or a personal access token:</p>
+<pre><code class="hljs language-yaml"><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Build</span> <span class="hljs-string">docs</span>
+  <span class="hljs-attr">run:</span> <span class="hljs-string">npx</span> <span class="hljs-string">docula</span> <span class="hljs-string">build</span>
+  <span class="hljs-attr">env:</span>
+    <span class="hljs-attr">GITHUB_TOKEN:</span> <span class="hljs-string">${{</span> <span class="hljs-string">secrets.GITHUB_TOKEN</span> <span class="hljs-string">}}</span>
+</code></pre>
+<h2 id="required-permissions">Required Permissions</h2>
+<p>Docula only reads public repository data (contributors and releases). A <strong>fine-grained personal access token</strong> with read-only access to the target repository is sufficient. No write permissions are needed.</p>
+<p>To create a token:</p>
+<ol>
+<li>Go to <a href="https://github.com/settings/tokens">GitHub Settings > Developer settings > Personal access tokens</a></li>
+<li>Generate a new token with <strong>read-only</strong> repository access</li>
+<li>Copy the token and set it as <code>GITHUB_TOKEN</code></li>
+</ol>
+<h2 id="what-happens-without-a-token">What Happens Without a Token</h2>
+<p>Docula still works without a token. Contributors and releases are fetched from the public API. If the rate limit is exceeded, these sections will be empty in the build output but the rest of the site builds normally.</p>

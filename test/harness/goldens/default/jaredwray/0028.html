@@ -1,20 +1,378 @@
-<h1 id="keyvoffline">@keyv/offline</h1>
-<blockquote>
-<p>Offline storage adapter for Keyv</p>
-</blockquote>
-<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
-<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
-<a href="https://www.npmjs.com/package/@keyv/offline"><img src="https://img.shields.io/npm/v/@keyv/offline.svg" alt="npm"></a>
-<a href="https://npmjs.com/package/@keyv/offline"><img src="https://img.shields.io/npm/dm/@keyv/offline" alt="npm"></a></p>
-<p>Offline storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a>.</p>
-<h2 id="install">Install</h2>
-<pre><code class="hljs language-shell">npm install --save keyv @keyv/offline
-</code></pre>
-<h2 id="usage">Usage</h2>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'keyv'</span>);
+<p>A <a href="/specification/sections/providers">Provider</a> is responsible for performing flag evaluation, they can be as simple as an interface for a key value store, or act as an abstraction layer for a more complex evaluation system. Only one <code>Provider</code> can be registered at a time, and OpenFeature will no-op if one has not been defined. Before writing your own <code>Provider</code>, it is strongly recommended to familiarize yourself with the <a href="/specification/">OpenFeature spec</a>.
+In this tutorial I will demonstrate the steps taken to create a new <code>Provider</code> whilst conforming to the OpenFeature spec using a simple flag implementation. The flag evaluation will be handled by a simple JSON evaluator and flag configurations will be stored as environment variables.</p>
+<p>The following section describes how the flag evaluator portion of this project has been constructed, to skip to the <code>Provider</code> specific implementations, <a href="/blog/creating-a-provider-for-the-go-sdk#creating-a-compliant-provider">click here</a>.</p>
+<h2 id="creating-the-flag-evaluator">Creating the flag evaluator</h2>
+<p>The core of any flag <code>Provider</code> is the evaluation logic used to provide the flag values from the provided metadata (referred to as the <a href="/specification/sections/evaluation-context">Evaluation Context</a>). For this example I have put together a very simple json evaluator.
+Flags are configured using the structs described below, and are stored as environment variables:</p>
+<pre><code class="hljs language-go"><span class="hljs-keyword">type</span> StoredFlag <span class="hljs-keyword">struct</span> {
+    DefaultVariant <span class="hljs-type">string</span>    <span class="hljs-string">`json:"defaultVariant"`</span>
+    Variants       []Variant <span class="hljs-string">`json:"variant"`</span>
+}
 
-<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-string">'offline://path/to/database.offline'</span>);
-keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, handleConnectionError);
+<span class="hljs-keyword">type</span> Variant <span class="hljs-keyword">struct</span> {
+    Criteria     []Criteria  <span class="hljs-string">`json:"criteria"`</span>
+    TargetingKey <span class="hljs-type">string</span>      <span class="hljs-string">`json:"targetingKey"`</span>
+    Value        <span class="hljs-keyword">interface</span>{} <span class="hljs-string">`json:"value"`</span>
+    Name         <span class="hljs-type">string</span>      <span class="hljs-string">`json:"name"`</span>
+}
+
+<span class="hljs-keyword">type</span> Criteria <span class="hljs-keyword">struct</span> {
+    Key   <span class="hljs-type">string</span>      <span class="hljs-string">`json:"key"`</span>
+    Value <span class="hljs-keyword">interface</span>{} <span class="hljs-string">`json:"value"`</span>
+}
 </code></pre>
-<h2 id="license">License</h2>
-<p>MIT © Jared Wray</p>
+<p>example JSON:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"defaultVariant"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"not-yellow"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"variants"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"name"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"yellow-with-key"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"targetingKey"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"user"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"criteria"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+        <span class="hljs-punctuation">{</span>
+          <span class="hljs-attr">"color"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"yellow"</span>
+        <span class="hljs-punctuation">}</span>
+      <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"value"</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span>
+    <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"name"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"yellow"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"targetingKey"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">""</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"criteria"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+        <span class="hljs-punctuation">{</span>
+          <span class="hljs-attr">"color"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"yellow"</span>
+        <span class="hljs-punctuation">}</span>
+      <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"value"</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span>
+    <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"name"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"not-yellow"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"targetingKey"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">""</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"criteria"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"value"</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>Each flag value contains an array of <a href="/specification/glossary#variant"><code>Variants</code></a>, each with their own array of <code>Criteria</code>. When a flag request needs to be evaluated, the <code>Variants</code> slice is iterated over, if the <code>FlattenedContext</code> matches all required <code>Criteria</code> for a specific <code>Variant</code>, the associated flag value will be returned from the evaluator. If a matching <code>Variant</code> is not found the <code>DefaultVariant</code> is returned in the response.
+The response also includes the the variant name, the reason for the resulting value (such as <code>ERROR</code>, <code>STATIC</code> or <code>TARGETING_MATCH</code>) and any associated error (such as <code>PARSE_ERROR</code>).
+These values form the type naive <code>ResolutionDetails</code> structure, which is then wrapped in a type specific parent for each response type, such as <code>BoolResolutionDetail</code>. This will be discussed in the <a href="#creating-a-compliant-provider">Creating a Compliant Provider</a> section.</p>
+<pre><code class="hljs language-go"><span class="hljs-keyword">import</span> (
+    <span class="hljs-string">"encoding/json"</span>
+    <span class="hljs-string">"errors"</span>
+    <span class="hljs-string">"github.com/open-feature/go-sdk/pkg/openfeature"</span>
+    <span class="hljs-string">"os"</span>
+)
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(f *StoredFlag)</span></span> Evaluate(evalCtx <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-keyword">interface</span>{}) (<span class="hljs-type">string</span>, openfeature.Reason, <span class="hljs-keyword">interface</span>{}, <span class="hljs-type">error</span>) {
+    <span class="hljs-keyword">var</span> defaultVariant *Variant
+    <span class="hljs-keyword">for</span> _, variant := <span class="hljs-keyword">range</span> f.Variants {
+        <span class="hljs-keyword">if</span> variant.Name == f.DefaultVariant {
+            defaultVariant = &#x26;variant
+        }
+        <span class="hljs-keyword">if</span> variant.TargetingKey != <span class="hljs-string">""</span> &#x26;&#x26; variant.TargetingKey != evalCtx[<span class="hljs-string">"targetingKey"</span>] {
+            <span class="hljs-keyword">continue</span>
+        }
+        match := <span class="hljs-literal">true</span>
+        <span class="hljs-keyword">for</span> _, criteria := <span class="hljs-keyword">range</span> variant.Criteria {
+            val, ok := evalCtx[criteria.Key]
+            <span class="hljs-keyword">if</span> !ok || val != criteria.Value {
+                match = <span class="hljs-literal">false</span>
+                <span class="hljs-keyword">break</span>
+            }
+        }
+        <span class="hljs-keyword">if</span> match {
+            <span class="hljs-keyword">return</span> variant.Name, openfeature.TargetingMatchReason, variant.Value, <span class="hljs-literal">nil</span>
+        }
+    }
+    <span class="hljs-keyword">if</span> defaultVariant == <span class="hljs-literal">nil</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">""</span>, openfeature.ErrorReason, <span class="hljs-literal">nil</span>, openfeature.NewParseErrorResolutionError(<span class="hljs-string">""</span>)
+    }
+    <span class="hljs-keyword">return</span> defaultVariant.Name, openfeature.DefaultReason, defaultVariant.Value, <span class="hljs-literal">nil</span>
+}
+</code></pre>
+<p>The above function demonstrates how this basic evaluator will work in this example, of course in other providers these can be far more complex, and the logic does not need to sit within the application.
+This JSON evaluator can then be paired with a simple function for reading and parsing the <code>StoredFlag</code> values from environment variables (as seen in the example below), leaving only the integration with the <code>go-sdk</code> to go. (and some testing!)</p>
+<pre><code class="hljs language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">FetchStoredFlag</span><span class="hljs-params">(key <span class="hljs-type">string</span>)</span></span> (StoredFlag, <span class="hljs-type">error</span>) {
+    v := StoredFlag{}
+    <span class="hljs-keyword">if</span> val := os.Getenv(key); val != <span class="hljs-string">""</span> {
+        <span class="hljs-keyword">if</span> err := json.Unmarshal([]<span class="hljs-type">byte</span>(val), &#x26;v); err != <span class="hljs-literal">nil</span> {
+            <span class="hljs-keyword">return</span> v, openfeature.NewParseErrorResolutionError(err.Error())
+        }
+        <span class="hljs-keyword">return</span> v, <span class="hljs-literal">nil</span>
+    }
+    <span class="hljs-keyword">return</span> v, openfeature.NewFlagNotFoundResolutionError(<span class="hljs-string">""</span>)
+}
+</code></pre>
+<h2 id="creating-a-compliant-provider">Creating a Compliant Provider</h2>
+<h3 id="repository-setup">Repository Setup</h3>
+<p><code>Providers</code> written for the <a href="https://github.com/open-feature/go-sdk"><code>go-sdk</code></a> are all maintained in the <a href="https://github.com/open-feature/go-sdk-contrib.git"><code>go-sdk-contrib</code></a> repository, containing both <code>hooks</code> and <code>providers</code>.
+The following commands can be used to setup the <code>go-sdk-contrib</code> repository, they will clone the repository and set up your provider specific go module under <code>/providers/MY-NEW-PROVIDER-NAME</code> adding a <code>go.mod</code> and <code>README.md</code> file. Your module will them be referenced in the top level <code>go.work</code> file.</p>
+<pre><code class="hljs language-bash">git <span class="hljs-built_in">clone</span> https://github.com/open-feature/go-sdk-contrib.git
+<span class="hljs-built_in">cd</span> go-sdk-contrib
+make PROVIDER=MY-NEW-PROVIDER-NAME new-provider
+make workspace-init
+</code></pre>
+<h3 id="creating-your-provider">Creating Your Provider</h3>
+<p>In order for your feature flag <code>Provider</code> to be compatible with the OpenFeature <code>go-sdk</code>, it will need to comply with the OpenFeature spec. For the <code>go-sdk</code> this means that it will need to fit to the following interface:</p>
+<pre><code class="hljs language-go"><span class="hljs-keyword">type</span> FeatureProvider <span class="hljs-keyword">interface</span> {
+    Metadata() Metadata
+    BooleanEvaluation(flagKey <span class="hljs-type">string</span>, defaultValue <span class="hljs-type">bool</span>, evalCtx FlattenedContext) BoolResolutionDetail
+    StringEvaluation(flagKey <span class="hljs-type">string</span>, defaultValue <span class="hljs-type">string</span>, evalCtx FlattenedContext) StringResolutionDetail
+    FloatEvaluation(flagKey <span class="hljs-type">string</span>, defaultValue <span class="hljs-type">float64</span>, evalCtx FlattenedContext) FloatResolutionDetail
+    IntEvaluation(flagKey <span class="hljs-type">string</span>, defaultValue <span class="hljs-type">int64</span>, evalCtx FlattenedContext) IntResolutionDetail
+    ObjectEvaluation(flagKey <span class="hljs-type">string</span>, defaultValue <span class="hljs-keyword">interface</span>{}, evalCtx FlattenedContext) InterfaceResolutionDetail
+    Hooks() []Hook
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>flagKey</code></td>
+<td>A string key representing the flag configuration used in this evaluation</td>
+</tr>
+<tr>
+<td><code>defaultValue</code></td>
+<td>The default response to be returned in the case of an error</td>
+</tr>
+<tr>
+<td><code>evalCtx</code></td>
+<td>The underlying type of <code>FlattenedContext</code> is <code>map[string]interface{}</code>, this provides ambient information for the purposes of flag evaluation. Effectively acting as <code>metadata</code> for a request</td>
+</tr>
+<tr>
+<td><code>ProviderResolutionDetail</code></td>
+<td>The provider response object from a flag evaluation, it contains the following fields: Variant (<code>string</code>), Reason (<code>openfeature.Reason</code>), ResolutionError (<code>openfeature.ResolutionError</code>)</td>
+</tr>
+<tr>
+<td><code>XxxResolutionDetail</code></td>
+<td>The type specific wrapper for the <code>ProviderResolutionDetail</code> struct. Contains two attributes: Value (type specific), ProviderResolutionDetail (<code>ProviderResolutionDetail</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>We can use our previously defined logic to build the <code>Evaluation</code> methods with ease, in the below example the core logic has been refactored into a separate function (<code>resolveFlag()</code>) to reduce code repetition, returning the <code>ResolutionDetail</code> structure directly. This means that the only type specific code required is a type cast the returned <code>interface{}</code> value, and for the type specific <code>ResolutionDetail</code> to be returned, e.g. <code>BoolResolutionDetail</code>.</p>
+<pre><code class="hljs language-go"><span class="hljs-keyword">type</span> Provider <span class="hljs-keyword">struct</span> {
+    EnvFetch <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(key <span class="hljs-type">string</span>)</span></span> (StoredFlag, <span class="hljs-type">error</span>)
+}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(p *Provider)</span></span> resolveFlag(flagKey <span class="hljs-type">string</span>, defaultValue <span class="hljs-keyword">interface</span>{}, evalCtx openfeature.FlattenedContext) openfeature.InterfaceResolutionDetail {
+    <span class="hljs-comment">// fetch the stored flag from environment variables</span>
+    res, err := p.EnvFetch(flagKey)
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        <span class="hljs-keyword">var</span> e openfeature.ResolutionError
+        <span class="hljs-keyword">if</span> !errors.As(err, &#x26;e) {
+            e = openfeature.NewGeneralResolutionError(err.Error())
+        }
+
+        <span class="hljs-keyword">return</span> openfeature.InterfaceResolutionDetail{
+            Value: defaultValue,
+            ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+                ResolutionError: e,
+                Reason:          openfeature.ErrorReason,
+            },
+        }
+    }
+    <span class="hljs-comment">// evaluate the stored flag to return the variant, reason, value and error</span>
+    variant, reason, value, err := res.Evaluate(evalCtx)
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        <span class="hljs-keyword">var</span> e openfeature.ResolutionError
+        <span class="hljs-keyword">if</span> !errors.As(err, &#x26;e) {
+            e = openfeature.NewGeneralResolutionError(err.Error())
+        }
+        <span class="hljs-keyword">return</span> openfeature.InterfaceResolutionDetail{
+            Value: defaultValue,
+            ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+                ResolutionError: e,
+                Reason:          openfeature.ErrorReason,
+            },
+        }
+    }
+
+    <span class="hljs-comment">// return the type naive ResolutionDetail structure</span>
+    <span class="hljs-keyword">return</span> openfeature.InterfaceResolutionDetail{
+        Value: value,
+        ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+            Variant: variant,
+            Reason:  reason,
+        },
+    }
+}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(p *Provider)</span></span> BooleanEvaluation(flagKey <span class="hljs-type">string</span>, defaultValue <span class="hljs-type">bool</span>, evalCtx openfeature.FlattenedContext) openfeature.BoolResolutionDetail {
+    res := p.resolveFlag(flagKey, defaultValue, evalCtx)
+    <span class="hljs-comment">// ensure the returned value is a bool</span>
+    v, ok := res.Value.(<span class="hljs-type">bool</span>)
+    <span class="hljs-keyword">if</span> !ok {
+        <span class="hljs-keyword">return</span> openfeature.BoolResolutionDetail{
+            Value: defaultValue,
+            ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+                ResolutionError: openfeature.NewTypeMismatchResolutionError(<span class="hljs-string">""</span>),
+                Reason:          openfeature.ErrorReason,
+            },
+        }
+    }
+    <span class="hljs-comment">// wrap the ResolutionDetail in a type specific parent</span>
+    <span class="hljs-keyword">return</span> openfeature.BoolResolutionDetail{
+        Value:                    v,
+        ProviderResolutionDetail: res.ProviderResolutionDetail,
+    }
+}
+</code></pre>
+<p>Based upon this <code>BooleanEvaluation</code> method, the remaining <code>Evaluation</code> methods are simple to populate, leaving only 2 more methods, <code>Metadata</code> and <code>Hooks</code>.</p>
+<p>the <code>Metadata()</code> method is very simple to implement, it simply needs to return a <a href="/specification/sections/providers#requirement-211"><code>Metadata</code> object</a>, currently this object only requires one field - <code>Name</code></p>
+<pre><code class="hljs language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(p *Provider)</span></span> Metadata() openfeature.Metadata {
+    <span class="hljs-keyword">return</span> openfeature.Metadata{
+        Name: <span class="hljs-string">"environment-flag-evaluator"</span>,
+    }
+}
+</code></pre>
+<p>The <code>Hooks()</code> method gives the <code>go-sdk</code> access to <code>Provider</code> hooks, this sits outside the scope of this tutorial, so for now we will just return an empty slice of hooks. <a href="/specification/sections/providers#23-provider-hooks">Link to spec.</a></p>
+<pre><code class="hljs language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(p *Provider)</span></span> Hooks() []openfeature.Hook {
+    <span class="hljs-keyword">return</span> []openfeature.Hook{}
+}
+</code></pre>
+<p>Now that the <code>Provider</code> conforms to the OpenFeature spec, it can be registered to the OpenFeature <code>go-sdk</code> and used for flag evaluation.</p>
+<h2 id="example-usage">Example usage</h2>
+<pre><code class="hljs language-go"><span class="hljs-keyword">package</span> main
+
+<span class="hljs-keyword">import</span> (
+    <span class="hljs-string">"context"</span>
+    <span class="hljs-string">"encoding/json"</span>
+    <span class="hljs-string">"fmt"</span>
+    <span class="hljs-string">"os"</span>
+
+    fromEnv <span class="hljs-string">"github.com/open-feature/go-sdk-contrib/providers/from-env/pkg"</span>
+    <span class="hljs-string">"github.com/open-feature/go-sdk/pkg/openfeature"</span>
+)
+
+<span class="hljs-comment">// init function sets a bool flag environment variable called AM_I_YELLOW</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">init</span><span class="hljs-params">()</span></span> {
+    flagDefinition := fromEnv.StoredFlag{
+        DefaultVariant: <span class="hljs-string">"not-yellow"</span>,
+        Variants: []fromEnv.Variant{
+            {
+                Name: <span class="hljs-string">"yellow-with-targeting"</span>,
+                TargetingKey: <span class="hljs-string">"user"</span>,
+                Value:        <span class="hljs-literal">true</span>,
+                Criteria: []fromEnv.Criteria{
+                    {
+                        Key:   <span class="hljs-string">"color"</span>,
+                        Value: <span class="hljs-string">"yellow"</span>,
+                    },
+                },
+            },
+            {
+                Name: <span class="hljs-string">"yellow"</span>,
+                TargetingKey: <span class="hljs-string">""</span>,
+                Value:        <span class="hljs-literal">true</span>,
+                Criteria: []fromEnv.Criteria{
+                    {
+                        Key:   <span class="hljs-string">"color"</span>,
+                        Value: <span class="hljs-string">"yellow"</span>,
+                    },
+                },
+            },
+            {
+                Name: <span class="hljs-string">"not-yellow"</span>,
+                TargetingKey: <span class="hljs-string">""</span>,
+                Value:        <span class="hljs-literal">false</span>,
+                Criteria: []fromEnv.Criteria{
+                    {
+                        Key:   <span class="hljs-string">"color"</span>,
+                        Value: <span class="hljs-string">"not yellow"</span>,
+                    },
+                },
+            },
+        },
+    }
+    flagM, _ := json.Marshal(flagDefinition)
+    os.Setenv(<span class="hljs-string">"AM_I_YELLOW"</span>, <span class="hljs-type">string</span>(flagM))
+}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
+    <span class="hljs-comment">// create instance of the new provider</span>
+    provider := fromEnv.FromEnvProvider{}
+    <span class="hljs-comment">// register the provider against the go-sdk</span>
+    openfeature.SetProvider(&#x26;provider)
+    <span class="hljs-comment">// create a client from via the go-sdk</span>
+    client := openfeature.NewClient(<span class="hljs-string">"am-i-yellow-client"</span>)
+
+    <span class="hljs-comment">// we are now able to evaluate our stored flags, providing different FlattenedContexts to manipulate the response</span>
+    fmt.Println(<span class="hljs-string">"I am yellow!"</span>)
+    boolRes, err := client.BooleanValueDetails(
+        context.Background(),
+        <span class="hljs-string">"AM_I_YELLOW"</span>,
+        <span class="hljs-literal">false</span>,
+        openfeature.NewEvaluationContext(
+            <span class="hljs-string">""</span>,
+            <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-keyword">interface</span>{}{
+                <span class="hljs-string">"color"</span>: <span class="hljs-string">"yellow"</span>,
+            },
+        ),
+    )
+    printResponse(boolRes.Value, boolRes.ResolutionDetail, err)
+
+    fmt.Println(<span class="hljs-string">"I am yellow with targeting!"</span>)
+    boolRes, err = client.BooleanValueDetails(
+        context.Background(),
+        <span class="hljs-string">"AM_I_YELLOW"</span>,
+        <span class="hljs-literal">false</span>,
+        openfeature.NewEvaluationContext(
+            <span class="hljs-string">"user"</span>,
+            <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-keyword">interface</span>{}{
+                <span class="hljs-string">"color"</span>: <span class="hljs-string">"yellow"</span>,
+            },
+        ),
+    )
+    printResponse(boolRes.Value, boolRes.ResolutionDetail, err)
+
+    fmt.Println(<span class="hljs-string">"I am asking for a string!"</span>)
+    strRes, err := client.StringValueDetails(
+        context.Background(),
+        <span class="hljs-string">"AM_I_YELLOW"</span>,
+        <span class="hljs-string">"i am a default value"</span>,
+        openfeature.NewEvaluationContext(
+            <span class="hljs-string">""</span>,
+            <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-keyword">interface</span>{}{
+                <span class="hljs-string">"color"</span>: <span class="hljs-string">"not yellow"</span>,
+            },
+        ),
+    )
+    printResponse(strRes.Value, strRes.ResolutionDetail, err)
+}
+
+<span class="hljs-comment">// simple response printing function</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">printResponse</span><span class="hljs-params">(value <span class="hljs-keyword">interface</span>{}, resDetail openfeature.ResolutionDetail, err <span class="hljs-type">error</span>)</span></span> {
+    fmt.Printf(<span class="hljs-string">"value: %v\n"</span>, value)
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        fmt.Printf(<span class="hljs-string">"error: %v\n"</span>, err)
+    } <span class="hljs-keyword">else</span> {
+        fmt.Printf(<span class="hljs-string">"variant: %v\n"</span>, resDetail.Variant)
+        fmt.Printf(<span class="hljs-string">"reason: %v\n"</span>, resDetail.Reason)
+    }
+    fmt.Println(<span class="hljs-string">"--------"</span>)
+}
+
+</code></pre>
+<p>Console output:</p>
+<pre><code class="hljs language-text">I am yellow!
+value: true
+variant: yellow
+reason: TARGETING_MATCH
+--------
+I am yellow with targeting!
+value: true
+variant: yellow-with-targeting
+reason: TARGETING_MATCH
+--------
+I am asking for a string!
+value: i am a default value
+error: evaluate the flag: TYPE_MISMATCH
+--------
+</code></pre>
+<p>The provider used in this example can be found <a href="https://github.com/open-feature/go-sdk-contrib/tree/main/providers/from-env">here</a></p>

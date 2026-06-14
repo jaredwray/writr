@@ -1,0 +1,36 @@
+<h1 id="github-integration">GitHub Integration</h1>
+<p>Docula can connect to a GitHub repository to display contributors and releases on your site. This integration is <strong>optional</strong> — if no <code>githubPath</code> is configured, the build skips all GitHub API calls and the GitHub-related UI elements are hidden.</p>
+<h2 id="enabling-github-integration">Enabling GitHub Integration</h2>
+<p>Set the <code>githubPath</code> option in your config file to your repository's <code>owner/repo</code> path:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">githubPath</span>: <span class="hljs-string">'your-username/your-repo'</span>,
+  <span class="hljs-comment">// ...other options</span>
+};
+</code></pre>
+<p>When <code>githubPath</code> is set, Docula fetches:</p>
+<ul>
+<li><strong>Contributors</strong> — displayed as an avatar facepile on the home page</li>
+<li><strong>Releases</strong> — shown as recent release cards on the home page</li>
+</ul>
+<p>A "View source on GitHub" corner link also appears on every page.</p>
+<h2 id="building-without-github">Building Without GitHub</h2>
+<p>If you omit <code>githubPath</code> or leave it as an empty string, the build works normally without any GitHub features:</p>
+<ul>
+<li>No GitHub API requests are made</li>
+<li>The contributor and release sections are not rendered</li>
+<li>The GitHub corner link is hidden</li>
+<li>Changelog pages still work with file-based entries from <code>site/changelog/</code></li>
+</ul>
+<p>This is useful for projects not hosted on GitHub, internal documentation, or when you want faster builds without network calls.</p>
+<h2 id="release-changelog">Release Changelog</h2>
+<p>When <code>githubPath</code> is configured, Docula can merge GitHub releases into your changelog. This is controlled by the <code>enableReleaseChangelog</code> option (enabled by default).</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">githubPath</span>: <span class="hljs-string">'your-username/your-repo'</span>,
+  <span class="hljs-attr">enableReleaseChangelog</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// default</span>
+};
+</code></pre>
+<p>Release entries appear alongside any file-based changelog entries in <code>site/changelog/</code>. To disable this, set <code>enableReleaseChangelog: false</code>.</p>
+<p>See <a href="/docs/changelog">Changelog</a> for more details on changelog configuration.</p>
+<h2 id="rate-limits">Rate Limits</h2>
+<p>GitHub's public API allows 60 requests per hour without authentication. For higher limits (5,000/hour), set a <code>GITHUB_TOKEN</code> environment variable.</p>
+<p>See <a href="/docs/github-token">GitHub Token</a> for setup instructions.</p>

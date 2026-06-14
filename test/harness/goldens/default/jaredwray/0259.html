@@ -1,0 +1,394 @@
+<blockquote>
+<p><strong>Availability:</strong> Registered in both the Node and browser builds.</p>
+</blockquote>
+<h2 id="comparison">comparison</h2>
+<h3 id="and">{{and}}</h3>
+<p>Helper that renders the block if <strong>all</strong> of the given values are truthy. If an inverse block is specified it will be rendered when falsy. Works as a block helper, inline helper or subexpression.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>values</code> <strong>{any}</strong>: Variable number of values to check</li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- {great: true, magnificent: true} -->
+{{#if (and great magnificent)}}A{{else}}B{{/if}}
+&#x3C;!-- results in: 'A' -->
+
+&#x3C;!-- {great: true, magnificent: false} -->
+{{#if (and great magnificent)}}A{{else}}B{{/if}}
+&#x3C;!-- results in: 'B' -->
+</code></pre>
+<h3 id="compare">{{compare}}</h3>
+<p>Render a block when a comparison of the first and third arguments returns true. The second argument is the operator to use.</p>
+<p><strong>Supported Operators</strong></p>
+<ul>
+<li><code>==</code> - loose equality</li>
+<li><code>===</code> - strict equality</li>
+<li><code>!=</code> - loose inequality</li>
+<li><code>!==</code> - strict inequality</li>
+<li><code>&#x3C;</code> - less than</li>
+<li><code>></code> - greater than</li>
+<li><code>&#x3C;=</code> - less than or equal</li>
+<li><code>>=</code> - greater than or equal</li>
+<li><code>typeof</code> - checks if typeof first argument equals second argument</li>
+</ul>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{any}</strong>: The first value to compare</li>
+<li><code>operator</code> <strong>{String}</strong>: The operator to use for comparison</li>
+<li><code>b</code> <strong>{any}</strong>: The second value to compare</li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (compare 10 ">" 5)}}A{{else}}B{{/if}}
+&#x3C;!-- results in: 'A' -->
+
+{{#if (compare "hello" "typeof" "string")}}A{{else}}B{{/if}}
+&#x3C;!-- results in: 'A' -->
+</code></pre>
+<h3 id="contains">{{contains}}</h3>
+<p>Block helper that renders the block if <code>collection</code> has the given <code>value</code>, otherwise the inverse block is rendered (if specified). If a <code>startIndex</code> is specified, the search begins at that index.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>collection</code> <strong>{Array|Object|String}</strong>: The collection to search.</li>
+<li><code>value</code> <strong>{any}</strong>: The value to check for.</li>
+<li><code>[startIndex=0]</code> <strong>{Number}</strong>: Optionally define the starting index.</li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- array = ['a', 'b', 'c'] -->
+{{#if (contains array "b")}}
+  This will be rendered.
+{{else}}
+  This will not be rendered.
+{{/if}}
+
+&#x3C;!-- Works with strings too -->
+{{#if (contains "hello world" "world")}}
+  Found it!
+{{/if}}
+
+&#x3C;!-- Works with objects (checks for key) -->
+{{#if (contains object "keyName")}}
+  Key exists!
+{{/if}}
+</code></pre>
+<h3 id="default">{{default}}</h3>
+<p>Returns the first value that is not null or undefined, otherwise returns an empty string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>values</code> <strong>{any}</strong>: Variable number of values to check</li>
+<li><code>returns</code> <strong>{any}</strong>: The first non-null/undefined value, or empty string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{default title "Untitled"}}
+&#x3C;!-- If title is undefined, returns "Untitled" -->
+
+{{default a b c "fallback"}}
+&#x3C;!-- Returns first non-null value, or "fallback" -->
+</code></pre>
+<h3 id="eq">{{eq}}</h3>
+<p>Block helper that renders a block if <code>a</code> is <strong>strictly equal to</strong> <code>b</code> (using <code>===</code>).
+If an inverse block is specified it will be rendered when falsy.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{any}</strong></li>
+<li><code>b</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (eq name "John")}}
+  Hello John!
+{{else}}
+  Hello stranger!
+{{/if}}
+</code></pre>
+<h3 id="gt">{{gt}}</h3>
+<p>Block helper that renders a block if <code>a</code> is <strong>greater than</strong> <code>b</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{any}</strong></li>
+<li><code>b</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (gt count 10)}}
+  More than 10 items
+{{else}}
+  10 or fewer items
+{{/if}}
+</code></pre>
+<h3 id="gte">{{gte}}</h3>
+<p>Block helper that renders a block if <code>a</code> is <strong>greater than or equal to</strong> <code>b</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{any}</strong></li>
+<li><code>b</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (gte age 18)}}
+  Adult
+{{else}}
+  Minor
+{{/if}}
+</code></pre>
+<h3 id="has">{{has}}</h3>
+<p>Block helper that renders a block if <code>value</code> has <code>pattern</code>.
+If an inverse block is specified it will be rendered when falsy.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>value</code> <strong>{any}</strong>: The value to check (array, string, or object).</li>
+<li><code>pattern</code> <strong>{any}</strong>: The pattern to check for.</li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- array = ['a', 'b', 'c'] -->
+{{#if (has array "b")}}
+  Found it!
+{{/if}}
+
+&#x3C;!-- string -->
+{{#if (has "hello world" "world")}}
+  Found it!
+{{/if}}
+
+&#x3C;!-- object (checks for key) -->
+{{#if (has user "email")}}
+  User has email
+{{/if}}
+</code></pre>
+<h3 id="isfalsey">{{isFalsey}}</h3>
+<p>Returns true if the given <code>value</code> is falsey. Recognizes common falsey keywords like "false", "no", "none", "null", "0", "nope", etc.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>val</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (isFalsey value)}}
+  Value is falsey
+{{/if}}
+
+&#x3C;!-- Recognizes falsey keywords -->
+{{#if (isFalsey "no")}}
+  This renders because "no" is falsey
+{{/if}}
+</code></pre>
+<h3 id="istruthy">{{isTruthy}}</h3>
+<p>Returns true if the given <code>value</code> is truthy (not falsey).</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>val</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (isTruthy value)}}
+  Value is truthy
+{{/if}}
+</code></pre>
+<h3 id="ifeven">{{ifEven}}</h3>
+<p>Returns true if the given value is an even number.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>number</code> <strong>{Number}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (ifEven value)}}
+  Value is even
+{{else}}
+  Value is odd
+{{/if}}
+</code></pre>
+<h3 id="ifnth">{{ifNth}}</h3>
+<p>Returns true if <code>b</code> is divisible by <code>a</code> (remainder is zero when <code>b</code> is divided by <code>a</code>).</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{Number}</strong>: The divisor</li>
+<li><code>b</code> <strong>{Number}</strong>: The number to check</li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (ifNth 3 index)}}
+  Index is divisible by 3
+{{/if}}
+</code></pre>
+<h3 id="ifodd">{{ifOdd}}</h3>
+<p>Block helper that renders a block if <code>value</code> is <strong>an odd number</strong>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>value</code> <strong>{Number}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (ifOdd value)}}
+  Value is odd
+{{else}}
+  Value is even
+{{/if}}
+</code></pre>
+<h3 id="is">{{is}}</h3>
+<p>Block helper that renders a block if <code>a</code> is <strong>equal to</strong> <code>b</code> using loose equality (<code>==</code>).
+Similar to <a href="#eq">eq</a> but does not use strict equality.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{any}</strong></li>
+<li><code>b</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (is 1 "1")}}
+  This renders because 1 == "1" is true
+{{/if}}
+</code></pre>
+<h3 id="isnt">{{isnt}}</h3>
+<p>Block helper that renders a block if <code>a</code> is <strong>not equal to</strong> <code>b</code> using loose inequality (<code>!=</code>).
+Similar to <a href="#unlesseq">unlessEq</a> but does not use strict equality.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{any}</strong></li>
+<li><code>b</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (isnt name "admin")}}
+  Not admin
+{{/if}}
+</code></pre>
+<h3 id="lt">{{lt}}</h3>
+<p>Block helper that renders a block if <code>a</code> is <strong>less than</strong> <code>b</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{any}</strong></li>
+<li><code>b</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (lt age 18)}}
+  Minor
+{{else}}
+  Adult
+{{/if}}
+</code></pre>
+<h3 id="lte">{{lte}}</h3>
+<p>Block helper that renders a block if <code>a</code> is <strong>less than or equal to</strong> <code>b</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{any}</strong></li>
+<li><code>b</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (lte count 10)}}
+  10 or fewer items
+{{else}}
+  More than 10 items
+{{/if}}
+</code></pre>
+<h3 id="neither">{{neither}}</h3>
+<p>Block helper that renders a block if <strong>neither of</strong> the given values are truthy.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{any}</strong></li>
+<li><code>b</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (neither isAdmin isModerator)}}
+  Regular user
+{{else}}
+  Has elevated privileges
+{{/if}}
+</code></pre>
+<h3 id="not">{{not}}</h3>
+<p>Returns true if <code>val</code> is falsey. Works as a block or inline helper.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>val</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (not isLoggedIn)}}
+  Please log in
+{{/if}}
+</code></pre>
+<h3 id="or">{{or}}</h3>
+<p>Block helper that renders a block if <strong>any of</strong> the given values is truthy.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>values</code> <strong>{any}</strong>: Variable number of values to check</li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (or isAdmin isModerator isOwner)}}
+  Has access
+{{else}}
+  Access denied
+{{/if}}
+</code></pre>
+<h3 id="unlesseq">{{unlessEq}}</h3>
+<p>Block helper that returns true <strong>unless <code>a</code> is strictly equal to <code>b</code></strong> (using <code>!==</code>).</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{any}</strong></li>
+<li><code>b</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (unlessEq status "active")}}
+  Status is not active
+{{/if}}
+</code></pre>
+<h3 id="unlessgt">{{unlessGt}}</h3>
+<p>Block helper that returns true <strong>unless <code>a</code> is greater than <code>b</code></strong> (equivalent to <code>a &#x3C;= b</code>).</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{any}</strong></li>
+<li><code>b</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (unlessGt count 100)}}
+  Count is 100 or less
+{{/if}}
+</code></pre>
+<h3 id="unlesslt">{{unlessLt}}</h3>
+<p>Block helper that returns true <strong>unless <code>a</code> is less than <code>b</code></strong> (equivalent to <code>a >= b</code>).</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{any}</strong></li>
+<li><code>b</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (unlessLt age 18)}}
+  18 or older
+{{/if}}
+</code></pre>
+<h3 id="unlessgteq">{{unlessGteq}}</h3>
+<p>Block helper that returns true <strong>unless <code>a</code> is greater than or equal to <code>b</code></strong> (equivalent to <code>a &#x3C; b</code>).</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{any}</strong></li>
+<li><code>b</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (unlessGteq age 21)}}
+  Under 21
+{{/if}}
+</code></pre>
+<h3 id="unlesslteq">{{unlessLteq}}</h3>
+<p>Block helper that returns true <strong>unless <code>a</code> is less than or equal to <code>b</code></strong> (equivalent to <code>a > b</code>).</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>a</code> <strong>{any}</strong></li>
+<li><code>b</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (unlessLteq count 0)}}
+  Count is greater than 0
+{{/if}}
+</code></pre>

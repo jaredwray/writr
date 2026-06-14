@@ -1,0 +1,1072 @@
+<h1 id="codebyte">codebyte</h1>
+<p>Modern Developer Hub.</p>
+<p>Codebyte is a plan for a modern GitHub-class developer platform built around an installable Hub, a Control Plane, namespace-level isolation, cloud object storage, AI-native API access, and cloud-portable action execution.</p>
+<h2 id="table-of-contents">Table Of Contents</h2>
+<ul>
+<li><a href="#why-build-this">Why Build This</a></li>
+<li><a href="#architecture-thesis">Architecture Thesis</a></li>
+<li><a href="#recommended-ux-stack">Recommended UX Stack</a></li>
+<li><a href="#high-level-topology">High-Level Topology</a></li>
+<li><a href="#architecture-diagrams">Architecture Diagrams</a></li>
+<li><a href="#main-services">Main Services</a></li>
+<li><a href="#rust-workspace">Rust Workspace</a></li>
+<li><a href="#api-surfaces">API Surfaces</a></li>
+<li><a href="#api-versioning-and-upgrades">API Versioning And Upgrades</a></li>
+<li><a href="#hub-and-namespace-model">Hub And Namespace Model</a></li>
+<li><a href="#user-roles-and-permissions">User Roles And Permissions</a></li>
+<li><a href="#shared-subscriptions">Shared Subscriptions</a></li>
+<li><a href="#provider-model">Provider Model</a></li>
+<li><a href="#git-service-and-storage-architecture">Git Service And Storage Architecture</a></li>
+<li><a href="#multiple-hub-instances">Multiple Hub Instances</a></li>
+<li><a href="#scaling-plan">Scaling Plan</a></li>
+<li><a href="#public-gateway">Public Gateway</a></li>
+<li><a href="#threat-model">Threat Model</a></li>
+<li><a href="#action-runner">Action Runner</a></li>
+<li><a href="#rust-cli">Rust CLI</a></li>
+<li><a href="#product-domains">Product Domains</a></li>
+<li><a href="#implementation-milestones">Implementation Milestones</a></li>
+<li><a href="#design-areas-still-needed">Design Areas Still Needed</a></li>
+<li><a href="#reference-docs">Reference Docs</a></li>
+</ul>
+<h2 id="why-build-this">Why Build This</h2>
+<p>Developer platforms are now core infrastructure, but the dominant model was designed before object storage, cloud-native isolation, event streams, containerized build execution, and AI-native workflows became normal. Code hosting should be simpler to operate, easier to isolate, more portable across clouds, and built around APIs that serve both people and agents.</p>
+<p>Codebyte starts from a different assumption: the Hub should be installable by anyone, own one namespace, and let the operator choose their cloud, object storage, runner platform, search backend, and event infrastructure. The Control Plane should provide the shared layer that makes those independent Hubs feel connected without taking ownership of their repository data or local execution policy.</p>
+<p>Codebyte exists to explore a cleaner architecture:</p>
+<ul>
+<li>Treat each user or organization as an isolated Hub namespace instead of forcing every customer through one large multi-tenant core.</li>
+<li>Store Git data on durable cloud object storage instead of depending on local filesystem assumptions.</li>
+<li>Make the API, CLI, web app, Git protocol, and MCP surface first-class clients of the same domain model.</li>
+<li>Use Control Plane services for auth, namespace registration, discovery, and cross-hub coordination.</li>
+<li>Move shared platform features into event subscriptions so Hubs can stay independent while still receiving common templates, cross-hub collaboration signals, advisories, and marketplace updates.</li>
+<li>Run actions on standard container infrastructure so execution can move across Kubernetes, AWS, Google Cloud, Azure, and smaller providers.</li>
+</ul>
+<h2 id="architecture-thesis">Architecture Thesis</h2>
+<p>Codebyte is split into independently operated Hubs and a shared Control Plane. A Hub is the installable product: one Hub serves one user or organization namespace and owns that namespace's repositories, metadata, secrets, policies, runners, storage configuration, and scaling profile. The Control Plane handles shared concerns like auth, namespace registration, discovery, subscriptions, and cross-hub activity so many independent Hubs can still behave like one connected platform.</p>
+<p>Primary goals:</p>
+<ul>
+<li>Hub API written in Rust for Git, runners, projects, pull requests, issues, members, permissions, and namespace-local operations.</li>
+<li>Control Plane API written in Rust for auth, namespace registration, action templates, collaboration feeds, marketplace data, and shared subscription management.</li>
+<li>CLI written in Rust.</li>
+<li>Hub UX built as a modern TypeScript application backed by the Hub API and Control Plane API.</li>
+<li>REST and MCP interfaces for Hub operations, both backed by the same internal services, permissions, and audit model.</li>
+<li>Full Git compatibility so standard Git clients and existing clone, fetch, pull, push, branch, tag, and remote workflows work unchanged.</li>
+<li>Git storage backed by AWS S3, Google Cloud Storage, Azure Blob Storage, or S3-compatible object storage.</li>
+<li>One-namespace-per-Hub deployment instead of core multi-tenancy.</li>
+<li>Shared components delivered from the Control Plane through Kafka-compatible subscriptions.</li>
+<li>GitHub Actions-compatible runner that works across Kubernetes and cloud container services.</li>
+<li>Pluggable providers for object storage, runners, event streams, search, and cloud runtime choices.</li>
+</ul>
+<h2 id="recommended-ux-stack">Recommended UX Stack</h2>
+<p>The best default UX stack for Codebyte is:</p>
+<ul>
+<li>TypeScript + React for the application shell and component model.</li>
+<li>Vite for development, builds, static asset generation, and optional SSR foundations.</li>
+<li>TanStack Router for typed routes, nested layouts, search params, and route loading.</li>
+<li>TanStack Query for server-state caching, mutations, invalidation, pagination, and background refresh.</li>
+<li>Tailwind CSS for systematized styling.</li>
+<li>Radix UI primitives plus shadcn/ui-owned components for accessible, customizable controls without locking the product into a black-box component library.</li>
+<li>OpenAPI-generated TypeScript client for REST contracts.</li>
+<li>Playwright for browser tests and Vitest for unit/component tests.</li>
+</ul>
+<p>This is a better default than starting with a full Node metaframework because the Rust APIs are the source of truth. Hub UX should be served by each Hub install as a static or CDN-served shell, using Hub API for namespace-local data and Control Plane API for auth, namespace registration, shared subscriptions, and cross-hub activity. Add SSR only for public pages that need crawlability, previews, or faster first paint.</p>
+<h2 id="high-level-topology">High-Level Topology</h2>
+<pre><code class="hljs language-text">Hub UX      -> REST/SSE/WebSocket -> Hub API
+Hub UX      -> REST               -> Control Plane API
+Rust CLI    -> REST/Git/MCP       -> Hub API
+Rust CLI    -> REST               -> Control Plane API
+AI clients  -> MCP                -> Hub API
+Git clients -> Smart HTTP/SSH     -> Hub API Git service
+
+Hub API     -> Hub metadata database
+Hub API     -> cloud object storage provider
+Hub API     -> Search provider
+Hub API     -> Runner provider
+Hub API     -> Control Plane subscription client
+
+Control Plane API -> Auth service
+Control Plane API -> Namespace registry
+Control Plane API -> Kafka-compatible event bus
+Control Plane API -> Action templates, collaboration feeds, marketplace data,
+               public repo metadata, universal search, audit subscriptions,
+               advisory data
+
+Public gateway -> codebyte.dev/&#x3C;namespace-hub> -> registered Hub instance
+
+Runner provider -> Kubernetes Jobs, ECS/Fargate, Cloud Run Jobs,
+                   Azure Container Apps, Nomad, or another container runtime
+</code></pre>
+<h2 id="architecture-diagrams">Architecture Diagrams</h2>
+<p>These diagrams show the intended product architecture, not final crate names or deployment manifests.</p>
+<p>Overall system:</p>
+<pre><code class="hljs language-mermaid">flowchart TB
+  subgraph Clients
+    Browser["Browser running Hub UX"]
+    CLI["Rust CLI"]
+    GitClient["Git clients"]
+    AIClient["AI and MCP clients"]
+  end
+
+  Gateway["Public gateway\ncodebyte.dev/&#x3C;namespace>"]
+  ControlPlane["Control Plane API\nAuth, namespace registry, subscriptions"]
+  EventBus[("Kafka-compatible event bus")]
+  PublicIndex[("Public repo metadata\nstatistics and universal search")]
+  SharedServices["Action templates\nmarketplace\nadvisories\ncollaboration feeds"]
+
+  subgraph Hub["One namespace Hub install"]
+    HubUX["Hub UX\nserved by Hub"]
+    HubAPI["Hub API\nRust"]
+    GitService["Git service\nSmart HTTP and SSH"]
+    HubMCP["Hosted MCP\n/mcp"]
+    RunnerScheduler["Runner scheduler"]
+    Authz["Namespace authorization\nroles, teams, policies"]
+  end
+
+  HubDB[("Hub database\nCockroachDB or MongoDB")]
+  ObjectStorage[("Cloud object storage\nS3, GCS, Azure Blob, compatible")]
+  LocalCache[("Local SSD/NVMe cache")]
+  RunnerProvider["Runner provider\nKubernetes, ECS/Fargate,\nCloud Run Jobs, Azure Container Apps, Nomad"]
+
+  Browser --> Gateway
+  CLI --> Gateway
+  GitClient --> Gateway
+  AIClient --> Gateway
+
+  Gateway --> HubUX
+  Gateway --> HubAPI
+  Gateway --> GitService
+  Gateway --> HubMCP
+
+  HubUX --> HubAPI
+  HubUX --> ControlPlane
+  CLI --> ControlPlane
+
+  HubAPI --> Authz
+  GitService --> Authz
+  HubMCP --> Authz
+  RunnerScheduler --> Authz
+
+  HubAPI &#x3C;--> HubDB
+  GitService &#x3C;--> HubDB
+  GitService &#x3C;--> ObjectStorage
+  GitService &#x3C;--> LocalCache
+  HubAPI &#x3C;--> ObjectStorage
+  RunnerScheduler --> RunnerProvider
+
+  HubAPI &#x3C;--> ControlPlane
+  ControlPlane --> EventBus
+  ControlPlane --> PublicIndex
+  ControlPlane --> SharedServices
+  EventBus --> HubAPI
+</code></pre>
+<p>Multi-region Hub runtime:</p>
+<pre><code class="hljs language-mermaid">flowchart LR
+  subgraph RegionA["Region A"]
+    HubA["Hub API instance"]
+    GitA["Git service"]
+    CacheA[("Local SSD/NVMe cache")]
+    RunnersA["Runner provider"]
+  end
+
+  subgraph RegionB["Region B"]
+    HubB["Hub API instance"]
+    GitB["Git service"]
+    CacheB[("Local SSD/NVMe cache")]
+    RunnersB["Runner provider"]
+  end
+
+  subgraph RegionC["Region C"]
+    HubC["Hub API instance"]
+    GitC["Git service"]
+    CacheC[("Local SSD/NVMe cache")]
+    RunnersC["Runner provider"]
+  end
+
+  Gateway["Public gateway\nroutes to nearest healthy region"]
+  HubDB[("Hub database\nstrong ref transactions")]
+  ObjectStorage[("Durable object storage\nprovider replication policy")]
+  HubEvents[("Hub-local event stream\ncache invalidation and maintenance")]
+
+  Gateway --> HubA
+  Gateway --> HubB
+  Gateway --> HubC
+  Gateway --> GitA
+  Gateway --> GitB
+  Gateway --> GitC
+
+  HubA &#x3C;--> HubDB
+  HubB &#x3C;--> HubDB
+  HubC &#x3C;--> HubDB
+  GitA &#x3C;--> HubDB
+  GitB &#x3C;--> HubDB
+  GitC &#x3C;--> HubDB
+
+  GitA &#x3C;--> ObjectStorage
+  GitB &#x3C;--> ObjectStorage
+  GitC &#x3C;--> ObjectStorage
+
+  GitA &#x3C;--> CacheA
+  GitB &#x3C;--> CacheB
+  GitC &#x3C;--> CacheC
+
+  HubA --> RunnersA
+  HubB --> RunnersB
+  HubC --> RunnersC
+
+  GitA --> HubEvents
+  GitB --> HubEvents
+  GitC --> HubEvents
+  HubEvents --> CacheA
+  HubEvents --> CacheB
+  HubEvents --> CacheC
+</code></pre>
+<p>Git fetch and clone path:</p>
+<pre><code class="hljs language-mermaid">sequenceDiagram
+  participant Client as Git client
+  participant Gateway as Public gateway
+  participant Git as Hub Git service
+  participant Authz as Authorization
+  participant DB as Hub database
+  participant Cache as Local cache
+  participant ObjectStore as Object storage
+
+  Client->>Gateway: clone or fetch
+  Gateway->>Git: route to nearest healthy Hub
+  Git->>Authz: authenticate and authorize repository read
+  Git->>DB: load ref snapshot and repository policy
+  Git-->>Client: advertise visible refs and capabilities
+  Client->>Git: wants, haves, filters, shallow boundaries
+  Git->>Cache: check hot packs, indexes, bundles, bitmaps
+  alt acceleration hit
+    Cache-->>Git: prebuilt bundle or pack data
+  else cache miss
+    Git->>ObjectStore: range-read packs and generated artifacts
+    ObjectStore-->>Git: pack data
+    Git->>Cache: store hot reusable artifacts
+  end
+  Git-->>Client: stream pack response
+  Git->>DB: write metrics and audit event
+</code></pre>
+<p>Git push and active/active ref update path:</p>
+<pre><code class="hljs language-mermaid">sequenceDiagram
+  participant Client as Git client
+  participant Gateway as Public gateway
+  participant Git as Hub Git service
+  participant Authz as Authorization
+  participant Quarantine as Local quarantine
+  participant ObjectStore as Object storage
+  participant DB as Hub database
+  participant Events as Hub event stream
+
+  Client->>Gateway: push
+  Gateway->>Git: route to healthy Hub instance
+  Git->>Authz: authenticate and authorize write
+  Git->>DB: read current refs and expected old object ids
+  Client->>Git: upload pack
+  Git->>Quarantine: stage incoming pack
+  Git->>Git: validate objects, deltas, reachability, LFS pointers, and policy
+  Git->>ObjectStore: upload accepted pack under immutable key
+  Git->>DB: compare-and-swap ref transaction
+  alt transaction succeeds
+    DB-->>Git: refs committed
+    Git->>Events: publish ref, pack, cache invalidation, metadata events
+    Git-->>Client: push accepted
+  else transaction fails
+    DB-->>Git: expected ref changed
+    Git-->>Client: push rejected, client must refetch
+    Git->>Events: mark staged pack for cleanup
+  end
+</code></pre>
+<h2 id="main-services">Main Services</h2>
+<p>Codebyte starts with three main services: Hub API, Hub UX, and Control Plane API.</p>
+<p>Hub API:</p>
+<ul>
+<li>Written in Rust.</li>
+<li>Installed by anyone who wants to run a Codebyte Hub.</li>
+<li>Owns exactly one namespace.</li>
+<li>Controls Git, runners, projects, pull requests, issues, reviews, discussions, repository settings, namespace-local members, roles, permissions, secrets, policies, audit records, and artifacts.</li>
+<li>Uses Control Plane auth identities, but decides what those identities can do inside its namespace.</li>
+<li>Exposes REST, MCP, Smart HTTP Git, SSH Git, SSE/WebSocket streams, and action log streams.</li>
+</ul>
+<p>Hub UX:</p>
+<ul>
+<li>Built with the recommended TypeScript stack.</li>
+<li>Served by each Hub install.</li>
+<li>Talks to Hub API for namespace-local product data.</li>
+<li>Talks to Control Plane API for auth, session state, namespace registration, shared subscriptions, cross-hub activity, mentions, notifications, marketplace data, action templates, public repository discovery, and universal search.</li>
+<li>Should continue to show cached namespace data and cached shared data when the Control Plane is temporarily unavailable.</li>
+</ul>
+<p>Control Plane API:</p>
+<ul>
+<li>Written in Rust.</li>
+<li>Required at this stage for auth and namespace registration.</li>
+<li>Owns the auth system and namespace registry.</li>
+<li>Initially supports social login with GitHub and Google, plus passwordless email code login with 2FA enabled.</li>
+<li>Later adds passkeys, generic OIDC providers, and enterprise identity integrations.</li>
+<li>Publishes shared services: action templates, collaboration feeds, marketplace data, public repository metadata, universal search, advisory data, audit subscriptions, and cross-hub notifications.</li>
+<li>Makes many one-namespace Hub installs feel like one connected system.</li>
+<li>Does not own repository data, Git objects, issues, pull requests, runner execution, secrets, or namespace-local authorization.</li>
+</ul>
+<h2 id="rust-workspace">Rust Workspace</h2>
+<p>The Rust services should share a workspace with clear crates for domain logic, transport adapters, storage, events, and background workers.</p>
+<p>Recommended starting shape:</p>
+<ul>
+<li><code>hub-api</code>: Hub HTTP, MCP, Git, runner, and namespace-local service host using Axum, Tokio, Tower middleware, tracing, and OpenTelemetry.</li>
+<li><code>control-plane-api</code>: Control Plane auth, namespace registration, shared service, and subscription service host.</li>
+<li><code>domain</code>: repository, namespace, identity reference, collaboration, issue, pull request, action, and audit models.</li>
+<li><code>rest</code>: REST routes exposed under <code>/api/v1</code>.</li>
+<li><code>mcp</code>: Hub MCP server exposed over Streamable HTTP and usable by local bridges.</li>
+<li><code>git</code>: Codebyte-owned Rust Git protocol, object, pack, ref, and storage library.</li>
+<li><code>git-http</code>: Smart HTTP Git transport built on the Codebyte Git library.</li>
+<li><code>git-ssh</code>: SSH Git transport built on the Codebyte Git library.</li>
+<li><code>storage</code>: cloud object storage, metadata database, cache, and search adapters.</li>
+<li><code>events</code>: Kafka-compatible producer and consumer abstractions.</li>
+<li><code>runner</code>: action scheduling and provider integrations.</li>
+<li><code>providers</code>: interfaces and implementations for object storage, runner, event stream, search, database, and cloud runtime choices.</li>
+</ul>
+<p>REST should be described with OpenAPI from the first milestone. Hub MCP should expose the same permission model and domain operations as Hub REST, not a second business-logic layer.</p>
+<h2 id="api-surfaces">API Surfaces</h2>
+<p>Hub REST:</p>
+<ul>
+<li>Base path: <code>/api/v1</code>.</li>
+<li>OpenAPI contract checked in and used to generate SDKs.</li>
+<li>Stable resource model for the local namespace, repositories, refs, commits, trees, blobs, issues, pull requests, reviews, actions, artifacts, packages, members, teams, permissions, and audit events.</li>
+<li>SSE or WebSocket channel for live collaboration, action logs, notifications, and repository activity.</li>
+</ul>
+<p>Hub MCP:</p>
+<ul>
+<li>Base path: <code>/mcp</code>.</li>
+<li>Hosted directly by every Hub API instance.</li>
+<li>Also exposed through the local CLI bridge with <code>codebyte mcp serve</code>.</li>
+<li>Resources for repositories, files, diffs, issues, pull requests, action logs, and audit records.</li>
+<li>Tools for creating branches, opening pull requests, commenting, reviewing, merging, dispatching actions, searching code, and querying project state.</li>
+<li>Prompts for code review, release notes, migration planning, incident summaries, and issue triage.</li>
+<li>Same auth, authorization, rate limits, audit logging, and policy checks as REST.</li>
+</ul>
+<p>Control Plane REST:</p>
+<ul>
+<li>Base path: <code>/api/v1</code>.</li>
+<li>Auth, sessions, users, Control Plane identity, namespace registration, installation registration, shared subscriptions, marketplace data, public repository metadata, universal search, action templates, cross-hub notifications, mentions, collaboration feeds, advisories, and audit subscriptions.</li>
+<li>OpenAPI contract checked in separately from Hub REST.</li>
+</ul>
+<p>Git:</p>
+<ul>
+<li>Smart HTTP and SSH endpoints for normal Git clients.</li>
+<li>Compatibility with standard Git clone, fetch, pull, push, branch, tag, ref advertisement, pack negotiation, shallow clone, partial clone, and Git LFS workflows.</li>
+<li>Cloud object storage for packfiles, loose objects, generated bundles, LFS objects, and archival snapshots.</li>
+<li>Transactional metadata for refs, permissions, locks, repository settings, and upload sessions.</li>
+<li>Optional local cache tier near Git compute for hot packs, commit graphs, and pack indexes.</li>
+</ul>
+<h2 id="api-versioning-and-upgrades">API Versioning And Upgrades</h2>
+<p>Codebyte should treat compatibility as a product feature. Hubs are independently operated, so the Control Plane, CLI, Hub API, Hub UX, MCP clients, event consumers, and database schema cannot assume every Hub upgrades at the same time.</p>
+<p>Versioning rules:</p>
+<ul>
+<li>Every Hub release has an explicit semantic version.</li>
+<li>Every Hub registers its current version, supported API versions, database schema version, Git object layout version, and enabled provider versions with the Control Plane.</li>
+<li>REST APIs use stable major versions in the path, starting with <code>/api/v1</code>.</li>
+<li>REST additive changes are allowed within a major version. Breaking changes require a new major version.</li>
+<li>OpenAPI contracts are generated, checked in, and used for compatibility testing.</li>
+<li>MCP uses capability negotiation. Tools, resources, prompts, and protocol behavior must advertise names, versions, and required permissions.</li>
+<li>Event topics include schema versions. Consumers must tolerate unknown fields, and breaking event changes require a new schema version.</li>
+<li>CLI releases declare the Hub and Control Plane version ranges they support.</li>
+<li>Hub UX is served by each Hub, so the UX version should normally match the Hub API version it ships with.</li>
+</ul>
+<p>Hub pinning:</p>
+<ul>
+<li>A Hub can pin to a specific release version or release channel.</li>
+<li>Release channels should include stable, preview, and long-term support channels once the project needs them.</li>
+<li>The Control Plane must continue supporting pinned Hubs within a documented compatibility window.</li>
+<li>A pinned Hub keeps its Hub UX, API behavior, database schema, Git object layout, and provider contracts stable until the operator upgrades.</li>
+<li>Control Plane subscription events must remain backward-compatible for pinned Hubs or provide versioned event streams.</li>
+<li>Gateway routing should respect the registered Hub version and never assume latest Hub behavior.</li>
+<li>Critical security updates can be marked required, but the system should still give operators a clear upgrade path instead of silently mutating Hub behavior.</li>
+</ul>
+<p>Database upgrades:</p>
+<ul>
+<li>Each Hub owns its own database, so database upgrades happen per Hub, not globally.</li>
+<li>The Hub database stores a schema version and migration history.</li>
+<li>Migrations are provider-aware for CockroachDB and MongoDB.</li>
+<li>Migrations should be idempotent and safe to resume.</li>
+<li>Hub upgrade starts with a preflight check: database connectivity, current schema version, backup freshness, object storage access, provider compatibility, and available disk/cache space.</li>
+<li>Schema changes should prefer expand-and-contract migrations: add new fields/tables first, deploy compatible code, backfill data, then remove old fields in a later release.</li>
+<li>Destructive migrations require an explicit backup checkpoint and operator confirmation.</li>
+<li>Multi-instance Hubs coordinate migrations with a database lease so only one instance runs migrations.</li>
+<li>Hub instances that do not support the active schema version must refuse startup.</li>
+<li>Downgrade support must be explicit per release. If downgrade is not supported after a migration, the release notes must say so.</li>
+<li>Control Plane database upgrades follow the same migration discipline, but they are operated centrally and must preserve compatibility with pinned Hubs.</li>
+</ul>
+<p>Git object layout upgrades:</p>
+<ul>
+<li>Git object layout versions are separate from database schema versions.</li>
+<li>Layout changes should be additive first and keep old objects readable.</li>
+<li>Background workers can rewrite or add acceleration data such as pack indexes, commit graphs, and bitmaps without changing Git compatibility.</li>
+<li>A Hub should not require rewriting all repository objects during a normal API upgrade.</li>
+<li>Compatibility tests must validate old repositories against new Hub versions before release.</li>
+</ul>
+<p>Operator upgrade commands:</p>
+<ul>
+<li><code>codebyte hub version</code></li>
+<li><code>codebyte hub pin &#x3C;version-or-channel></code></li>
+<li><code>codebyte hub upgrade plan</code></li>
+<li><code>codebyte hub upgrade apply</code></li>
+<li><code>codebyte hub migrate status</code></li>
+<li><code>codebyte hub migrate apply</code></li>
+</ul>
+<h2 id="hub-and-namespace-model">Hub And Namespace Model</h2>
+<p>Each Hub install owns exactly one namespace. The Control Plane API registers namespaces and makes them discoverable, but it does not host namespace runtime data.</p>
+<p>A Hub namespace owns:</p>
+<ul>
+<li>Its own metadata database.</li>
+<li>Repository metadata and Git object storage prefixes or buckets.</li>
+<li>Members, teams, roles, policies, deploy keys, namespace-local tokens, and secrets for that namespace.</li>
+<li>Action runner policies, artifact storage, caches, and logs.</li>
+<li>Database-backed search indexes for code, issues, pull requests, symbols, and audit records.</li>
+<li>Event subscriptions to shared services.</li>
+</ul>
+<p>The Control Plane owns:</p>
+<ul>
+<li>Auth identities and sessions.</li>
+<li>Namespace registration.</li>
+<li>Hub installation registration.</li>
+<li>Cross-hub activity discovery, notifications, and mentions.</li>
+<li>Public repository metadata, statistics, and universal search indexes.</li>
+<li>Shared action templates, marketplace data, advisories, and subscription metadata.</li>
+</ul>
+<p>The Hub runtime should be deployable independently. A Hub can scale, migrate, pause, back up, or restore without coordinating with every other Hub. The Control Plane gives the user a unified system view across Hubs.</p>
+<h2 id="user-roles-and-permissions">User Roles And Permissions</h2>
+<p>Control Plane identity proves who a user is. Hub permissions decide what that user can do inside a namespace. The Hub authorization engine should be shared by REST, MCP, Git HTTP, Git SSH, runner dispatch, and background jobs.</p>
+<p>Namespace roles:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Scope</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Owner</td>
+<td>Entire namespace</td>
+<td>Manage namespace settings, transfer ownership, delete namespace, configure Hub providers, manage billing if added later, manage all members and teams, manage all repositories, configure public metadata publishing, configure audit retention, configure runners, manage secrets, configure policies, and perform all admin actions.</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td>Entire namespace</td>
+<td>Manage members and teams, create and archive repositories, manage namespace policies, manage runners, manage namespace-level secrets, configure public metadata publishing for repositories they administer, manage webhooks and integrations, and view audit logs. Cannot transfer or delete the namespace unless promoted to owner.</td>
+</tr>
+<tr>
+<td>Member</td>
+<td>Entire namespace</td>
+<td>Create repositories if allowed by policy, participate in issues and pull requests, view internal namespace resources granted by teams or repository permissions, and use namespace-level features granted by policy.</td>
+</tr>
+<tr>
+<td>Auditor</td>
+<td>Entire namespace</td>
+<td>Read audit logs, repository settings, membership, policy configuration, and security-relevant metadata. No write access to code, issues, pull requests, runners, or secrets.</td>
+</tr>
+<tr>
+<td>Billing</td>
+<td>Entire namespace</td>
+<td>Reserved for later if billing and plan enforcement are added. No billing role is needed in the initial architecture.</td>
+</tr>
+</tbody>
+</table>
+<p>Repository roles:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Scope</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Repo Admin</td>
+<td>One repository</td>
+<td>Manage repository settings, visibility, branch protection, deploy keys, webhooks, repo secrets, action settings, public metadata publishing, collaborators, and deletion or archive requests depending on namespace policy.</td>
+</tr>
+<tr>
+<td>Maintainer</td>
+<td>One repository</td>
+<td>Push branches, manage issues and pull requests, merge according to branch policy, manage labels and milestones, trigger actions, and publish releases. Cannot change security-sensitive repository settings unless granted by policy.</td>
+</tr>
+<tr>
+<td>Write</td>
+<td>One repository</td>
+<td>Clone, fetch, push non-protected branches, open issues and pull requests, comment, review, trigger allowed actions, and upload artifacts through workflows.</td>
+</tr>
+<tr>
+<td>Triage</td>
+<td>One repository</td>
+<td>Manage issues and pull requests without write access to code. Can label, assign, close, reopen, and manage project status.</td>
+</tr>
+<tr>
+<td>Read</td>
+<td>One repository</td>
+<td>Clone, fetch, view code, view issues and pull requests, view action logs allowed by policy, and use read-only MCP tools.</td>
+</tr>
+<tr>
+<td>Guest</td>
+<td>One public repository</td>
+<td>View public metadata and public README/search records through Hub or Control Plane discovery. No private data access.</td>
+</tr>
+</tbody>
+</table>
+<p>Team and token rules:</p>
+<ul>
+<li>Teams are namespace-local and can be assigned namespace roles, repository roles, or both.</li>
+<li>Deploy keys are repository-scoped by default and must be explicitly marked read/write.</li>
+<li>Namespace-local tokens inherit explicit scopes and should never imply owner access by default.</li>
+<li>Runner tokens are short-lived, job-scoped, and limited to the repository, commit, workflow, and permissions granted to that job.</li>
+<li>MCP sessions inherit the user's Hub permissions and require human approval for any state-changing tool call.</li>
+<li>Public repository metadata publishing can be enabled only by namespace owners and repository admins.</li>
+</ul>
+<p>Sensitive actions:</p>
+<ul>
+<li>Namespace transfer requires the current owner to complete full 2FA and email verification, then the receiving owner must accept.</li>
+<li>Namespace deletion requires owner approval, 2FA, email verification, and a delayed execution window.</li>
+<li>Repository deletion requires repo admin or namespace admin approval, plus any namespace policy checks.</li>
+<li>Secret reads should not expose raw values after creation. Secret writes, rotations, and deletions must be audited.</li>
+<li>Branch protection, force-push policy, required reviews, and action policy changes must be audited.</li>
+<li>Git pushes must apply the same authorization and policy checks whether they arrive through HTTP or SSH.</li>
+</ul>
+<h2 id="shared-subscriptions">Shared Subscriptions</h2>
+<p>Shared platform features should use a Kafka-compatible event backbone. Redpanda, Apache Kafka, or managed Kafka-compatible services are all valid implementations if the producer and consumer contract stays portable.</p>
+<p>Control Plane registration is required in the initial architecture for auth and namespace registration. Individual shared subscriptions should be selectable by each Hub install.</p>
+<p>Example topics:</p>
+<ul>
+<li><code>namespace.created</code></li>
+<li><code>namespace.updated</code></li>
+<li><code>namespace.deleted</code></li>
+<li><code>action_template.published</code></li>
+<li><code>action_template.deprecated</code></li>
+<li><code>collaboration.thread.updated</code></li>
+<li><code>marketplace.package.updated</code></li>
+<li><code>security.advisory.published</code></li>
+<li><code>public_repo.metadata.updated</code></li>
+<li><code>public_repo.stats.updated</code></li>
+<li><code>public_repo.search_index.updated</code></li>
+<li><code>audit.export.requested</code></li>
+</ul>
+<p>Hub installs subscribe only to the topics and partitions they need. Public Hubs can also publish sanitized public repository metadata, statistics, and search index records into the Control Plane so users can search and discover public repositories across Hubs. Shared data should be cached locally in the Hub and refreshed through events. Action templates should be cached without expiration, so existing workflows keep running if the Control Plane is down. If the shared bus is unavailable, existing Hub operations should continue wherever possible with the last known shared data.</p>
+<p>Public repository metadata should include only discovery-safe data such as repository name, namespace, description, topics, language summaries, stars or equivalent activity metrics, public refs, default branch, license, README content, and timestamps. Universal search should index README and metadata only at first, not full source code. The Control Plane should not become the source of truth for public repository Git objects, issues, pull requests, secrets, permissions, or Hub-local policy.</p>
+<h2 id="provider-model">Provider Model</h2>
+<p>Hub should be installable by anyone and configurable for their infrastructure choices.</p>
+<p>Initial provider interfaces:</p>
+<ul>
+<li><code>ObjectStorageProvider</code>: AWS S3, Google Cloud Storage, Azure Blob Storage, MinIO, Cloudflare R2, Backblaze B2, and other S3-compatible targets.</li>
+<li><code>RunnerProvider</code>: Kubernetes Jobs, ECS/Fargate, Cloud Run Jobs, Azure Container Apps, Nomad, and other container services.</li>
+<li><code>EventProvider</code>: Kafka-compatible brokers, managed Kafka-compatible services, or local development adapters.</li>
+<li><code>DatabaseProvider</code>: CockroachDB for PostgreSQL-compatible deployments and MongoDB for document-model deployments.</li>
+<li><code>SearchProvider</code>: database-backed search using the selected Hub database provider first, with room for a dedicated search engine later if scale requires it.</li>
+<li><code>LocalCacheProvider</code>: local NVMe, local SSD, attached SSD volume, RAM disk for small hot data, or development filesystem cache.</li>
+<li><code>CloudRuntimeProvider</code>: deployment glue for AWS, Google Cloud, Azure, local Kubernetes, and smaller providers.</li>
+</ul>
+<p>Each Hub gets its own database. Shared Control Plane services can register and discover Hubs, but they should not share one metadata database across Hub namespaces. Search should start inside that Hub database so metadata, issues, pull requests, code index records, symbols, and audit records stay namespace-local. Dedicated engines such as Tantivy or OpenSearch can be added later behind <code>SearchProvider</code> if database-backed search becomes a bottleneck.</p>
+<h2 id="git-service-and-storage-architecture">Git Service And Storage Architecture</h2>
+<p>The Git service is the hardest and most important part of Codebyte. It must be fully Git-compatible, active/active across Hub instances, backed by durable cloud object storage, and fast enough for large organizations, public repositories, CI systems, and large monorepos.</p>
+<p>Codebyte should own its Git implementation as a Rust library. This is a large undertaking, but it is critical for long-term correctness, supportability, performance tuning, security fixes, and object-storage-native behavior. Existing Rust Git projects can be used as references or temporary test aids, but shelling out to system Git should not be the core implementation path.</p>
+<p>Compatibility target:</p>
+<ul>
+<li>Smart HTTP and SSH Git transports.</li>
+<li>Git wire protocol v2 as the preferred protocol, with compatibility for normal Git clients.</li>
+<li>Pack protocol fetch and push behavior, including ref advertisement, negotiation, wants, haves, shallow boundaries, filters, sideband progress, and receive-pack status.</li>
+<li>Git pack, index, reverse index, multi-pack-index, commit-graph, reachability bitmap, bundle, and bundle URI formats where useful for compatibility and performance.</li>
+<li>Partial clone, shallow clone, sparse checkout compatibility, Git LFS, and large repository workflows.</li>
+<li>SHA-1 repositories first, with repository metadata designed for future SHA-256 object format support.</li>
+</ul>
+<p>Rust crates:</p>
+<ul>
+<li><code>git</code>: shared domain library for objects, object ids, refs, packs, deltas, commit graphs, reachability, validation, and repository layout.</li>
+<li><code>git-http</code>: Smart HTTP transport and upload-pack/receive-pack handling.</li>
+<li><code>git-ssh</code>: SSH transport and upload-pack/receive-pack handling.</li>
+<li><code>git-lfs</code>: Git LFS pointer parsing, batch API, upload/download authorization, and object storage integration.</li>
+<li><code>git-pack</code>: pack reader/writer, delta resolver, pack index writer, multi-pack-index support, bitmap support, and bundle writer.</li>
+<li><code>git-refs</code>: ref snapshots, compare-and-swap transactions, reflog/audit records, branch protection checks, and policy hooks.</li>
+<li><code>git-accelerator</code>: clone bundles, fetch bundles, commit graphs, reachability bitmaps, archive bundles, and hot-repository prewarming.</li>
+<li><code>git-maintenance</code>: repack, compaction, verification, garbage collection, quarantine cleanup, and acceleration artifact regeneration.</li>
+</ul>
+<p>Authoritative state:</p>
+<ul>
+<li>Hub database stores repositories, refs, ref versions, reflog/audit records, repository settings, branch protection, upload sessions, pack manifests, acceleration manifests, leases, and policy state.</li>
+<li>Cloud object storage stores immutable packfiles, loose objects if needed, LFS objects, bundles, archive bundles, commit graphs, indexes, bitmaps, and generated acceleration artifacts.</li>
+<li>Local SSD/NVMe stores disposable staging data, hydrated packs, indexes, commit graphs, bitmaps, temporary pack output, and hot repository caches.</li>
+<li>Hub-local event stream carries ref updates, pack commits, cache invalidations, acceleration artifact updates, maintenance leases, and replication state changes.</li>
+</ul>
+<p>Storage model:</p>
+<p>Git storage should be content-addressed and object-store-native, not a mounted filesystem pretending to be local disk. The storage layer must support AWS S3, Google Cloud Storage, Azure Blob Storage, and S3-compatible providers through native adapters. The storage architecture can be modern, but the external behavior must remain Git-compatible.</p>
+<p>The fast path should use cloud object storage as durable storage and local SSD/NVMe as disposable cache and staging. Object storage is authoritative for immutable data. Local disk is required for performance, but never required for correctness.</p>
+<p>Important design constraint: refs must be transactional even when object writes are eventually replicated. The object store can hold immutable data, but ref updates need compare-and-swap semantics.</p>
+<p>Initial storage strategy:</p>
+<ul>
+<li>Store immutable Git objects, packfiles, LFS objects, and bundles in cloud object storage.</li>
+<li>Store refs, repository settings, upload sessions, locks, and pack metadata in the Hub's database.</li>
+<li>Use multipart uploads, resumable uploads, or block uploads depending on the object storage provider.</li>
+<li>Maintain commit graphs, pack indexes, and reachability bitmaps as generated cache artifacts.</li>
+<li>Use lifecycle rules for old temporary uploads, expired artifacts, and cold archives.</li>
+<li>Support object-store adapters for AWS S3, Google Cloud Storage, Azure Blob Storage, MinIO, Cloudflare R2, Backblaze B2, and other S3-compatible targets.</li>
+<li>Validate behavior against real Git clients and protocol test cases before adding Codebyte-specific features.</li>
+</ul>
+<p>Fetch and clone path:</p>
+<ol>
+<li>Gateway routes the client to the nearest healthy Hub instance.</li>
+<li>Hub authenticates the request and resolves repository permissions through the shared authorization engine.</li>
+<li>Hub creates a ref snapshot from the Hub database and advertises only refs the caller can see.</li>
+<li>If the client and repository support acceleration, Hub advertises bundle URIs or serves a prebuilt clone/fetch bundle.</li>
+<li>Hub negotiates wants, haves, shallow boundaries, and partial clone filters.</li>
+<li>Pack planner chooses the fastest source: local cache, prebuilt acceleration artifact, object storage range reads, or a generated pack.</li>
+<li>Hub streams the response without loading large packs, trees, blobs, or diffs fully into memory.</li>
+<li>Metrics and audit records capture latency, bytes served, cache hits, authorization decisions, and protocol errors.</li>
+</ol>
+<p>Push path:</p>
+<ol>
+<li>Hub authenticates the pusher and checks repository write permissions.</li>
+<li>Hub creates a ref snapshot and records the expected old object ids for every ref update.</li>
+<li>Incoming pack data lands in local SSD/NVMe quarantine storage.</li>
+<li>Hub validates object format, object ids, pack checksums, delta bases, reachability, LFS pointers, size limits, and policy constraints.</li>
+<li>Hub runs branch protection, force-push policy, required review policy, and namespace/repository hooks.</li>
+<li>Accepted packfiles are uploaded to cloud object storage under immutable keys and recorded as staged pack manifests.</li>
+<li>Hub commits ref updates through Hub database compare-and-swap transactions using the expected old object ids.</li>
+<li>On transaction success, pack manifests are promoted, reflog/audit records are written, and cache invalidation events are published.</li>
+<li>On transaction failure, refs are unchanged and uploaded-but-unreferenced objects become garbage-collection candidates.</li>
+<li>Background workers regenerate commit graphs, multi-pack indexes, bitmaps, bundles, archive artifacts, and public metadata/search records.</li>
+</ol>
+<p>Active/active correctness:</p>
+<ul>
+<li>Any healthy Hub instance in any configured region can accept Git reads and writes.</li>
+<li>Ref updates are serialized by Hub database compare-and-swap transactions, not by a single regional writer.</li>
+<li>A ref update can commit only after the new objects are durably written and the pack manifest is recorded.</li>
+<li>Pack manifests should track object storage provider, key, checksum, size, object count, generation, state, and regional availability.</li>
+<li>If a region sees a ref before the corresponding objects are locally available, it must hydrate from object storage, wait for availability, or route the request to a healthy region that can serve the objects.</li>
+<li>All cache entries include content hashes or generation ids. Stale cache entries must be rejected by comparing against Hub database metadata.</li>
+<li>Events are at-least-once and handlers must be idempotent.</li>
+<li>Missing an event cannot break correctness; it can only cause cache misses or delayed acceleration.</li>
+</ul>
+<p>Performance model:</p>
+<ul>
+<li>Public repositories get prebuilt clone and fetch acceleration artifacts by default.</li>
+<li>Hot private repositories get the same acceleration based on activity.</li>
+<li>Acceleration artifacts include clone bundles, fetch bundles, pack indexes, multi-pack indexes, commit graphs, reachability bitmaps, archive bundles, and shallow or partial clone metadata.</li>
+<li>Local SSD/NVMe cache auto-sizes from available disk and stores hot packs, indexes, bitmaps, commit graphs, and temporary generated packs.</li>
+<li>Pushes land in local SSD/NVMe staging first, where Hub validates packs, permissions, hooks, and policies.</li>
+<li>Accepted packs are uploaded to object storage, then refs are updated transactionally in the Hub database.</li>
+<li>Fetches and clones read from local SSD/NVMe cache first. On cache miss, Hub hydrates packfiles, indexes, commit graphs, and bitmaps from object storage.</li>
+<li>Object storage reads use provider-native range reads, parallelism, and immutable key layouts.</li>
+<li>Object keys should be distributed to avoid provider hot spots at high request rates.</li>
+<li>Pack generation should reuse existing pack data where possible and avoid recompressing objects on hot paths.</li>
+<li>Background workers compact loose objects into packs, generate commit graphs and bitmaps, prewarm hot repositories, and evict cold cache data.</li>
+<li>Cache directories can be deleted at any time. Hub must rebuild them from object storage and metadata.</li>
+<li>Commit graphs and changed-path metadata should accelerate history walks, merge-base checks, pull request diffs, and code navigation.</li>
+<li>Large monorepo operations must be streaming and resumable wherever possible.</li>
+</ul>
+<p>Keeping instances in sync:</p>
+<ul>
+<li>Ref updates publish <code>git.ref.updated</code>.</li>
+<li>Pack promotions publish <code>git.pack.committed</code>.</li>
+<li>Acceleration changes publish <code>git.acceleration.updated</code>.</li>
+<li>Cache invalidations publish <code>git.cache.invalidate</code>.</li>
+<li>Public metadata updates publish <code>public_repo.metadata.updated</code> and <code>public_repo.search_index.updated</code>.</li>
+<li>Each Hub instance subscribes to Hub-local events and invalidates local cache by repository id, ref generation, pack generation, or acceleration artifact id.</li>
+<li>Workers use Hub database leases so repack, bitmap generation, bundle generation, indexing, and cleanup are not duplicated unsafely.</li>
+</ul>
+<p>Maintenance and verification:</p>
+<ul>
+<li>Quarantine cleanup removes failed or abandoned push data.</li>
+<li>Garbage collection removes unreachable object storage keys only after ref, reflog, retention, replication, and audit windows allow it.</li>
+<li>Repository verification checks pack checksums, object ids, indexes, reachability, LFS object availability, and ref integrity.</li>
+<li>Background maintenance should be incremental and pauseable so large repositories do not block normal Git traffic.</li>
+<li>Every generated artifact must be disposable and rebuildable from authoritative Hub database and object storage state.</li>
+</ul>
+<h2 id="multiple-hub-instances">Multiple Hub Instances</h2>
+<p>A Hub install can run multiple Hub API instances for the same namespace and should support multi-region active/active deployment from day one. Instances share authoritative state and keep only disposable state locally.</p>
+<p>Shared state:</p>
+<ul>
+<li>Hub database for refs, repository metadata, locks, upload sessions, action jobs, and scheduler leases.</li>
+<li>Cloud object storage for immutable Git data, LFS objects, artifacts, caches, and generated repository acceleration data.</li>
+<li>Hub-local event stream for cache invalidation, live updates, action logs, and background worker coordination.</li>
+</ul>
+<p>Replica behavior:</p>
+<ul>
+<li>Any Hub API instance can serve REST, MCP, Git fetch, and Git clone requests.</li>
+<li>Any healthy Hub API instance in any configured region can accept writes.</li>
+<li>A Git push is handled by one instance for the life of the connection, but correctness does not depend on sticky routing.</li>
+<li>Ref updates use compare-and-swap transactions so two instances cannot silently overwrite the same ref.</li>
+<li>Active/active writes must use the Hub database and Git storage engine as the consistency boundary, not regional assumptions.</li>
+<li>Long-running background work uses database leases so multiple workers do not compact, index, or schedule the same job twice.</li>
+<li>Each instance keeps its own local SSD/NVMe cache. Cache invalidation is event-driven, and cache misses hydrate from object storage.</li>
+<li>If an instance dies during a push, its uncommitted local staging data can be discarded because refs were not advanced.</li>
+<li>If an instance dies after uploading immutable objects but before advancing refs, cleanup workers can garbage-collect unreachable objects later.</li>
+</ul>
+<h2 id="scaling-plan">Scaling Plan</h2>
+<p>Codebyte should expect large organization Hubs with many repositories, users, workflows, and public traffic. The scaling model should stay simple at the namespace boundary: one Hub, one namespace, one Hub database, one cloud object storage configuration, and many active Hub instances across selected regions.</p>
+<p>Hub database scaling:</p>
+<ul>
+<li>One Hub namespace maps to one Hub database.</li>
+<li>A namespace cannot be split across multiple Hub databases.</li>
+<li>Scaling should come from the selected database provider, cloud object storage, local cache, background workers, and operational tuning.</li>
+<li>CockroachDB and MongoDB providers must support the selected multi-region topology for the Hub.</li>
+<li>The database should store refs, repo metadata, permissions, issues, pull requests, action state, leases, audit indexes, and search metadata.</li>
+<li>Heavy data stays out of the database: Git packs, LFS objects, artifacts, logs, caches, bundles, and generated acceleration data.</li>
+</ul>
+<p>Multi-region active/active:</p>
+<ul>
+<li>Multi-region Hub instances are the default.</li>
+<li>Hub operators select the regions where the Hub runs. Defaults should be based on the operator's current region or expected user region.</li>
+<li>The public gateway routes users to the nearest healthy Hub instance and fails over automatically.</li>
+<li>Git reads, REST, MCP, Hub UX, and eligible background work can run in any healthy region.</li>
+<li>Git writes and ref updates are active/active from day one, but they must go through strongly consistent compare-and-swap transactions.</li>
+<li>The Git/storage engine must be designed for active/active correctness across Hub instances, regions, local caches, and durable object storage.</li>
+<li>Object storage must use provider-native replication or an equivalent replication strategy across selected regions.</li>
+<li>Regional local caches are disposable and never determine correctness.</li>
+</ul>
+<p>Object storage key layout and hot repositories:</p>
+<ul>
+<li>Object keys should be immutable, content-addressed where possible, and distributed to avoid provider hot spots.</li>
+<li>Mutable state such as refs, locks, and upload sessions belongs in the Hub database.</li>
+<li>Public repositories should get prebuilt clone and fetch acceleration artifacts.</li>
+<li>Hot private repositories can also receive acceleration artifacts based on activity.</li>
+<li>Acceleration artifacts are derived cache, not source of truth, and must never bypass authorization.</li>
+<li>Useful artifacts include clone bundles, pack indexes, multi-pack indexes, commit graphs, reachability bitmaps, archive bundles, and shallow or partial clone acceleration metadata.</li>
+<li>Background workers regenerate acceleration artifacts after pushes and publish cache invalidation events.</li>
+</ul>
+<p>Cache warming and eviction:</p>
+<ul>
+<li>Hub cache should auto-size based on available local disk.</li>
+<li>Operators may add min/max cache bounds later, but the default should be automatic.</li>
+<li>Each Hub instance and region keeps its own local SSD/NVMe cache.</li>
+<li>Cache synchronization should use event-driven invalidation, generation ids, and content-addressed keys instead of trying to make every cache identical.</li>
+<li>If an instance misses an invalidation event, it must validate cache generation against Hub database metadata before serving cached data.</li>
+<li>Hot repositories should be prewarmed after pushes and frequent fetches.</li>
+<li>Cache misses are acceptable; stale cache reads are not.</li>
+</ul>
+<p>Large monorepo support:</p>
+<ul>
+<li>Large monorepo support is an MVP requirement.</li>
+<li>The Rust Git library must support streaming behavior and avoid loading whole repositories, large trees, or large diffs into memory.</li>
+<li>Required Git capabilities include partial clone, shallow clone, sparse checkout compatibility, Git LFS, commit graphs, reachability bitmaps, multi-pack indexes, and efficient pack negotiation.</li>
+<li>Code browsing must be path-based and progressive.</li>
+<li>Diffs and pull requests should support async generation, file count limits, diff size limits, generated-file detection, and progressive rendering.</li>
+<li>Actions checkout should support sparse and partial fetch behavior.</li>
+<li>Search indexing must resume after failure and handle large file counts.</li>
+</ul>
+<p>Scaling pressure points:</p>
+<ul>
+<li>The main risks are hot repositories, clone/fetch fanout, large pull requests, action log volume, search indexing backlog, and audit/event write volume.</li>
+<li>Observability should track cache hit rate, clone/fetch latency, push latency, ref conflicts, object storage latency, database latency, worker lag, action queue depth, and gateway failover events.</li>
+</ul>
+<h2 id="public-gateway">Public Gateway</h2>
+<p>Hub UX is served by each Hub install. The Control Plane registers each namespace and the reachable Hub endpoints, but it does not host the Hub UX.</p>
+<p>Later, Codebyte should add a public proxy or gateway in front of <code>codebyte.dev</code>. The gateway routes <code>codebyte.dev/&#x3C;namespace-hub></code> to the correct registered Hub instance.</p>
+<p>Gateway responsibilities:</p>
+<ul>
+<li>Resolve namespace-to-Hub routing through the Control Plane namespace registry.</li>
+<li>Route users to the nearest healthy Hub instance and fail over automatically.</li>
+<li>Forward browser, REST, Git Smart HTTP, and hosted MCP traffic to the correct Hub where appropriate.</li>
+<li>Preserve Hub ownership of runtime data, authorization policy, Git storage, runners, and local UX assets.</li>
+<li>Support custom domains and private/internal Hubs later.</li>
+<li>Cache nothing initially. The gateway should resolve and forward traffic without storing repository data, secrets, static assets, or routing metadata.</li>
+</ul>
+<h2 id="threat-model">Threat Model</h2>
+<p>The threat model should be designed before implementation begins. Codebyte has several high-risk boundaries: public internet traffic, Git protocol traffic, MCP tools, untrusted workflow execution, cloud object storage, the Hub database, the Control Plane registry, and the public gateway.</p>
+<p>Primary assets to protect:</p>
+<ul>
+<li>Git objects, refs, LFS objects, releases, packages, and artifacts.</li>
+<li>Hub database records for repositories, issues, pull requests, members, permissions, runner jobs, tokens, and audit events.</li>
+<li>Secrets used by actions, deploy keys, namespace-local tokens, session tokens, and short-lived OIDC credentials.</li>
+<li>Control Plane identities, sessions, namespace registration records, routing metadata, shared subscriptions, public repository metadata, and universal search indexes.</li>
+<li>MCP tools and resources that can read or mutate Hub state.</li>
+<li>Runner infrastructure, logs, caches, network access, and artifact upload credentials.</li>
+</ul>
+<p>Trust boundaries:</p>
+<ul>
+<li>Browser, CLI, Git client, AI/MCP client, webhook sender, and public gateway to Hub API.</li>
+<li>Hub API to Hub database, object storage, event stream, local cache, and runner provider.</li>
+<li>Hub API to Control Plane API for auth, registration, shared subscriptions, and public metadata publication.</li>
+<li>Control Plane API to identity providers, event bus, public metadata indexes, and gateway routing data.</li>
+<li>Runner job container to host runtime, cloud metadata service, secrets, network, caches, artifacts, and repository checkout.</li>
+<li>Public gateway to registered Hub endpoints.</li>
+</ul>
+<p>Hub API threats:</p>
+<ul>
+<li>Broken authorization between Control Plane identity and Hub-local permissions.</li>
+<li>Repository permission bypass through REST, MCP, Git Smart HTTP, or SSH.</li>
+<li>Ref update races, force-push policy bypass, and inconsistent hook enforcement.</li>
+<li>User-content attacks through markdown, diffs, rendered files, issue comments, releases, and artifacts.</li>
+<li>Webhook abuse, SSRF, request smuggling, path traversal, and cache poisoning.</li>
+<li>Token leakage through logs, errors, URLs, redirects, and artifacts.</li>
+</ul>
+<p>Control Plane threats:</p>
+<ul>
+<li>Account takeover through social login, passwordless email code abuse, 2FA bypass, or session theft.</li>
+<li>Namespace takeover through registration, ownership transfer, gateway routing, or stale DNS/custom-domain records.</li>
+<li>Subscription poisoning through malicious action templates, marketplace data, advisories, or collaboration feed events.</li>
+<li>Public repository metadata poisoning, spam, ranking abuse, stale search results, and removal-request failures.</li>
+<li>Over-collection of Hub-local data that should remain inside the Hub.</li>
+</ul>
+<p>Runner threats:</p>
+<ul>
+<li>Malicious workflow code exfiltrating secrets, tokens, source code, artifacts, caches, or cloud credentials.</li>
+<li>Container breakout, privilege escalation, host filesystem access, or reuse of dirty workspaces.</li>
+<li>Unsafe network egress to internal services, cloud metadata endpoints, or private dependencies.</li>
+<li>Untrusted remote <code>uses:</code> actions, mutable tags, dependency confusion, and compromised action templates.</li>
+<li>Log injection, secret masking failures, and artifact tampering.</li>
+</ul>
+<p>MCP threats:</p>
+<ul>
+<li>AI client invoking destructive tools without user intent or sufficient approval.</li>
+<li>Prompt injection through repository files, issues, pull requests, action logs, or public metadata.</li>
+<li>Tool permission confusion between read-only, write, admin, and runner-dispatch capabilities.</li>
+<li>Data exfiltration through broad resources, search, diffs, logs, or audit exports.</li>
+<li>Missing audit trail for MCP tool calls and resource reads.</li>
+</ul>
+<p>Git over SSH/HTTP threats:</p>
+<ul>
+<li>Auth bypass across clone, fetch, push, LFS, and ref advertisement.</li>
+<li>Protocol parser bugs, oversized packs, decompression bombs, and object corruption.</li>
+<li>Pack negotiation abuse, shallow or partial clone edge cases, and denial-of-service on hot repositories.</li>
+<li>SSH key misuse, deploy-key scope confusion, and credential replay.</li>
+<li>Inconsistent behavior between HTTP Git, SSH Git, REST, and MCP authorization.</li>
+</ul>
+<p>Public gateway threats:</p>
+<ul>
+<li>Incorrect namespace-to-Hub routing.</li>
+<li>Host header, path traversal, open redirect, cache poisoning, and request smuggling.</li>
+<li>Leakage of private Hub routes or private namespace existence.</li>
+<li>Stale routing after namespace transfer, suspension, deletion, or endpoint rotation.</li>
+<li>TLS, custom domain, and private/internal Hub exposure mistakes.</li>
+</ul>
+<p>Initial security requirements:</p>
+<ul>
+<li>One authorization engine shared by REST, MCP, Git HTTP, Git SSH, and action dispatch.</li>
+<li>Signed, short-lived tokens between Control Plane, Hub, gateway, CLI, and runners.</li>
+<li>Event signatures and schema versions for Control Plane subscription data.</li>
+<li>Deny-by-default runner filesystem and token permissions, isolated ephemeral workspaces, scoped secrets, and open network egress with logging.</li>
+<li>Mandatory audit records for auth events, permission changes, Git writes, MCP tool calls, runner dispatches, secret reads, and gateway routing changes.</li>
+<li>Hub audit logs should retain 12 months by default and be configurable at the Hub level.</li>
+<li>Control Plane audit logs should retain 12 months by default.</li>
+<li>Compatibility and fuzz testing for Git protocol parsing, pack handling, webhook parsing, and MCP inputs.</li>
+<li>Clear separation between authoritative Hub data and Control Plane public metadata indexes.</li>
+</ul>
+<p>Threat model decisions:</p>
+<ul>
+<li>Public repository metadata publishing can be enabled only by namespace owners and repository admins.</li>
+<li>Universal public search indexes README and repository metadata only at first.</li>
+<li>MCP tool calls that make any change require human approval before execution.</li>
+<li>Runner network egress is open with logging because runners execute in the operator's own cloud environment.</li>
+<li>Namespace ownership transfer must be initiated by the current namespace owner with full 2FA and email verification, then accepted by the receiving owner.</li>
+<li>Gateway caching is disabled initially.</li>
+<li>Hub audit log retention defaults to 12 months and is configurable per Hub.</li>
+<li>Control Plane audit log retention defaults to 12 months.</li>
+</ul>
+<p>Threat model decisions still needed:</p>
+<ul>
+<li>Remote action trust policy should prioritize developer experience while still helping users avoid unsafe mutable actions.</li>
+<li>Custom-domain verification details still need to be designed.</li>
+<li>Should private/internal Hubs be reachable through <code>codebyte.dev</code>, or only through direct/private routes?</li>
+</ul>
+<h2 id="action-runner">Action Runner</h2>
+<p>Actions should be compatible with GitHub Actions workflows while remaining portable across container platforms.</p>
+<p>Compatibility goals:</p>
+<ul>
+<li>Support <code>.codebyte/workflows/*.yml</code> and <code>.yaml</code> workflow files using GitHub Actions-compatible syntax.</li>
+<li>Support common GitHub Actions triggers, jobs, steps, expressions, matrix builds, contexts, environment variables, secrets, artifacts, caches, summaries, and logs.</li>
+<li>Support <code>uses:</code> for local actions, reusable workflows, and remote actions from GitHub-compatible sources.</li>
+<li>Match GitHub Actions behavior closely enough that most existing workflows run without modification.</li>
+<li>Clearly document intentional differences where exact compatibility is not possible or not desirable.</li>
+</ul>
+<p>Runner architecture:</p>
+<ul>
+<li>Hub API scheduler receives workflow jobs.</li>
+<li>Provider interface launches an ephemeral container job.</li>
+<li>Providers implement Kubernetes Jobs first, then ECS/Fargate, Cloud Run Jobs, Azure Container Apps, and Nomad.</li>
+<li>Hub operators select the regions where runners can execute; defaults should be based on the operator's current region or expected user region.</li>
+<li>Jobs receive short-lived OIDC identity, scoped repository token, secrets, cache mounts, and artifact upload credentials.</li>
+<li>Logs stream back through Hub API.</li>
+<li>Artifacts and caches use cloud object storage.</li>
+<li>Filesystem and token permissions are deny-by-default.</li>
+<li>Network egress is open with logging by default because jobs run in the operator's own cloud environment.</li>
+</ul>
+<p>Action templates should be shared through Control Plane subscriptions, mirrored into Hub, and retained indefinitely if the Control Plane is unavailable. Execution policy is Hub-local.</p>
+<h2 id="rust-cli">Rust CLI</h2>
+<p>The CLI should be a first-class Rust application, not a thin wrapper over shell commands.</p>
+<p>Recommended crates and responsibilities:</p>
+<ul>
+<li><code>clap</code> for command parsing.</li>
+<li><code>reqwest</code> or <code>hyper</code> for REST calls.</li>
+<li>Codebyte's Rust Git library for Git-aware local operations where direct Git behavior is needed.</li>
+<li><code>serde</code> for API models generated from the OpenAPI contract.</li>
+<li><code>keyring</code> or platform-native credential storage for auth tokens.</li>
+</ul>
+<p>Initial commands:</p>
+<ul>
+<li><code>codebyte auth login</code></li>
+<li><code>codebyte hub register</code></li>
+<li><code>codebyte hub status</code></li>
+<li><code>codebyte repo create</code></li>
+<li><code>codebyte repo clone</code></li>
+<li><code>codebyte pr create</code></li>
+<li><code>codebyte pr checkout</code></li>
+<li><code>codebyte pr review</code></li>
+<li><code>codebyte action run</code></li>
+<li><code>codebyte action logs</code></li>
+<li><code>codebyte mcp serve</code></li>
+</ul>
+<h2 id="product-domains">Product Domains</h2>
+<p>Hub-owned domains:</p>
+<ul>
+<li>Repositories, refs, commits, trees, blobs, and releases.</li>
+<li>Issues, pull requests, reviews, discussions, and notifications.</li>
+<li>Actions, runners, artifacts, caches, templates, and secrets.</li>
+<li>Packages and container registry.</li>
+<li>Webhooks, integrations, and MCP tools.</li>
+<li>Search, code navigation, symbols, and dependency intelligence.</li>
+<li>Namespace-local members, teams, roles, policies, audit, compliance exports, and enforcement.</li>
+</ul>
+<p>Control Plane-owned domains:</p>
+<ul>
+<li>Auth identities and sessions.</li>
+<li>Namespace and Hub installation registration.</li>
+<li>Cross-hub discovery, notifications, mentions, and collaboration feeds.</li>
+<li>Public repository metadata, statistics, and universal search.</li>
+<li>Shared action templates, marketplace data, advisory feeds, audit subscriptions, and subscription metadata.</li>
+</ul>
+<h2 id="implementation-milestones">Implementation Milestones</h2>
+<ol>
+<li>
+<p>Architecture records and contracts</p>
+<ul>
+<li>Rust workspace layout.</li>
+<li>Hub OpenAPI skeleton.</li>
+<li>Control Plane OpenAPI skeleton.</li>
+<li>Hub MCP resource/tool map.</li>
+<li>API, MCP, event, CLI, Hub pinning, and database migration versioning policy.</li>
+<li>Hub, namespace, and Control Plane registration data model.</li>
+<li>Namespace and repository role model.</li>
+<li>CockroachDB and MongoDB metadata provider contracts.</li>
+<li>Codebyte Rust Git library architecture.</li>
+<li>Git object-store design note.</li>
+<li>Multi-region active/active scaling and cache invalidation design.</li>
+</ul>
+</li>
+<li>
+<p>Control Plane and Hub registration MVP</p>
+<ul>
+<li>Control Plane auth with GitHub social login, Google social login, passwordless email code login, and 2FA.</li>
+<li>Register one Hub installation for one namespace.</li>
+<li>Provision or attach one database for the Hub.</li>
+<li>Provision or attach object storage for the Hub.</li>
+<li>Hub UX sign-in through the Control Plane.</li>
+<li>Hub API validates the Control Plane identity and applies Hub-local membership.</li>
+</ul>
+</li>
+<li>
+<p>Hub-local repository MVP</p>
+<ul>
+<li>Create repository.</li>
+<li>Implement first Codebyte Rust Git library slice for objects, refs, packs, and Smart HTTP.</li>
+<li>Support large monorepo primitives: partial clone, shallow clone, sparse checkout compatibility, LFS, commit graphs, bitmaps, and multi-pack indexes.</li>
+<li>Push and fetch through Git Smart HTTP.</li>
+<li>Store Git objects in AWS S3, Google Cloud Storage, Azure Blob Storage, or S3-compatible object storage.</li>
+<li>Read refs, commits, trees, and blobs through REST.</li>
+<li>Expose hosted Hub MCP at <code>/mcp</code> and local MCP through <code>codebyte mcp serve</code>.</li>
+<li>Generate prebuilt clone/fetch acceleration artifacts for public and hot repositories.</li>
+</ul>
+</li>
+<li>
+<p>UX and CLI MVP</p>
+<ul>
+<li>React/Vite app shell.</li>
+<li>Repository browser.</li>
+<li>Commit, tree, blob, and diff views.</li>
+<li>Rust CLI auth, Hub registration, repo, and PR basics.</li>
+</ul>
+</li>
+<li>
+<p>Collaboration MVP</p>
+<ul>
+<li>Issues.</li>
+<li>Pull requests.</li>
+<li>Review comments.</li>
+<li>Hub-local notifications.</li>
+<li>Control Plane cross-hub activity, mentions, and notifications.</li>
+<li>Live updates.</li>
+</ul>
+</li>
+<li>
+<p>Actions MVP</p>
+<ul>
+<li>GitHub Actions-compatible workflow parser.</li>
+<li>Core GitHub Actions contexts, expressions, triggers, jobs, steps, matrix, secrets, artifacts, caches, and logs.</li>
+<li>Kubernetes provider.</li>
+<li>Control Plane action template subscription flow.</li>
+<li>Non-expiring local action template cache.</li>
+</ul>
+</li>
+<li>
+<p>Shared services</p>
+<ul>
+<li>Namespace and Hub installation catalog.</li>
+<li>Kafka-compatible event bus.</li>
+<li>Shared action template publishing.</li>
+<li>Marketplace and advisory subscriptions.</li>
+<li>Public repository metadata, statistics, and universal search subscriptions.</li>
+</ul>
+</li>
+<li>
+<p>Public gateway</p>
+<ul>
+<li>Route <code>codebyte.dev/&#x3C;namespace-hub></code> to the correct registered Hub instance.</li>
+<li>Preserve Hub-served UX as the source of the application shell.</li>
+<li>Support browser, REST, Git Smart HTTP, and hosted MCP routing where appropriate.</li>
+</ul>
+</li>
+</ol>
+<h2 id="design-areas-still-needed">Design Areas Still Needed</h2>
+<p>Control Plane:</p>
+<ul>
+<li>Behavior when the Control Plane is unavailable.</li>
+<li>Hub registration lifecycle states such as pending, active, suspended, and deleted.</li>
+<li>Public repository metadata ingestion, freshness, ranking, abuse prevention, and removal requests.</li>
+<li>Gateway routing health checks and failover.</li>
+</ul>
+<p>Product surface:</p>
+<ul>
+<li>Webhooks and app integrations.</li>
+<li>Package and container registry scope.</li>
+<li>Fine-grained custom roles beyond the initial namespace and repository roles.</li>
+<li>Notification preferences and cross-hub mentions.</li>
+<li>Accessibility and keyboard-first UX.</li>
+</ul>
+<h2 id="reference-docs">Reference Docs</h2>
+<ul>
+<li>React: <a href="https://react.dev/learn/describing-the-ui">https://react.dev/learn/describing-the-ui</a></li>
+<li>Vite: <a href="https://vite.dev/guide/">https://vite.dev/guide/</a></li>
+<li>TanStack Router: <a href="https://tanstack.com/router/latest/docs/framework/react/guide/type-safety">https://tanstack.com/router/latest/docs/framework/react/guide/type-safety</a></li>
+<li>TanStack Query: <a href="https://tanstack.com/query/docs/docs">https://tanstack.com/query/docs/docs</a></li>
+<li>Radix UI: <a href="https://www.radix-ui.com/primitives/docs/overview/introduction">https://www.radix-ui.com/primitives/docs/overview/introduction</a></li>
+<li>shadcn/ui: <a href="https://ui.shadcn.com/docs">https://ui.shadcn.com/docs</a></li>
+<li>Axum: <a href="https://docs.rs/axum">https://docs.rs/axum</a></li>
+<li>OpenAPI: <a href="https://spec.openapis.org/oas/latest">https://spec.openapis.org/oas/latest</a></li>
+<li>MCP: <a href="https://modelcontextprotocol.io/specification/2025-11-25/server/resources">https://modelcontextprotocol.io/specification/2025-11-25/server/resources</a></li>
+<li>Git protocol v2: <a href="https://git-scm.com/docs/gitprotocol-v2">https://git-scm.com/docs/gitprotocol-v2</a></li>
+<li>Git pack protocol: <a href="https://git-scm.com/docs/gitprotocol-pack">https://git-scm.com/docs/gitprotocol-pack</a></li>
+<li>Git HTTP protocol: <a href="https://git-scm.com/docs/gitprotocol-http">https://git-scm.com/docs/gitprotocol-http</a></li>
+<li>Git pack format: <a href="https://git-scm.com/docs/gitformat-pack">https://git-scm.com/docs/gitformat-pack</a></li>
+<li>Git partial clone: <a href="https://git-scm.com/docs/partial-clone">https://git-scm.com/docs/partial-clone</a></li>
+<li>Git bundle URI: <a href="https://git-scm.com/docs/bundle-uri">https://git-scm.com/docs/bundle-uri</a></li>
+<li>Git bundle format: <a href="https://git-scm.com/docs/gitformat-bundle">https://git-scm.com/docs/gitformat-bundle</a></li>
+<li>Git commit graph format: <a href="https://git-scm.com/docs/commit-graph-format">https://git-scm.com/docs/commit-graph-format</a></li>
+<li>Git multi-pack index: <a href="https://git-scm.com/docs/multi-pack-index">https://git-scm.com/docs/multi-pack-index</a></li>
+<li>Git update-ref transactions: <a href="https://git-scm.com/docs/git-update-ref">https://git-scm.com/docs/git-update-ref</a></li>
+<li>Git SHA-256 transition: <a href="https://git-scm.com/docs/hash-function-transition">https://git-scm.com/docs/hash-function-transition</a></li>
+<li>Git LFS specification: <a href="https://github.com/git-lfs/git-lfs/blob/main/docs/spec.md">https://github.com/git-lfs/git-lfs/blob/main/docs/spec.md</a></li>
+<li>Apache Kafka: <a href="https://kafka.apache.org/intro/">https://kafka.apache.org/intro/</a></li>
+<li>Amazon S3: <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html">https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html</a></li>
+<li>Amazon S3 performance: <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance-guidelines.html">https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance-guidelines.html</a></li>
+<li>Google Cloud Storage consistency: <a href="https://cloud.google.com/storage/docs/consistency">https://cloud.google.com/storage/docs/consistency</a></li>
+<li>Google Cloud Storage request rates: <a href="https://cloud.google.com/storage/docs/request-rate">https://cloud.google.com/storage/docs/request-rate</a></li>
+<li>Azure Blob Storage performance targets: <a href="https://learn.microsoft.com/en-us/azure/storage/blobs/scalability-targets">https://learn.microsoft.com/en-us/azure/storage/blobs/scalability-targets</a></li>
+<li>Azure Blob Storage performance checklist: <a href="https://learn.microsoft.com/en-us/azure/storage/blobs/storage-performance-checklist">https://learn.microsoft.com/en-us/azure/storage/blobs/storage-performance-checklist</a></li>
+<li>Kubernetes Workloads: <a href="https://kubernetes.io/docs/concepts/workloads/">https://kubernetes.io/docs/concepts/workloads/</a></li>
+</ul>

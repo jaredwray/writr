@@ -1,0 +1,1024 @@
+<h1 id="qrbit">Qrbit</h1>
+<p><a href="https://codecov.io/gh/jaredwray/qrbit"><img src="https://codecov.io/gh/jaredwray/qrbit/graph/badge.svg?token=VEUXLsudSh" alt="codecov"></a>
+<a href="https://github.com/jaredwray/qrbit/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/qrbit/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://www.npmjs.com/package/qrbit"><img src="https://img.shields.io/npm/v/qrbit" alt="npm"></a>
+<a href="https://www.npmjs.com/package/qrbit"><img src="https://img.shields.io/npm/dm/qrbit" alt="npm"></a>
+<a href="https://github.com/jaredwray/qrbit/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/qrbit" alt="license"></a></p>
+<p>A fast QR code generator with logo embedding support, built with Rust and native node packages for best performance while avoiding additional modules (example: canvas).</p>
+<h1 id="features">Features</h1>
+<ul>
+<li><strong>Fast</strong>: Built with Rust (for logos) for maximum performance and caching 🚀</li>
+<li><strong>Fast SVG</strong>: High performance SVG support via <code>QrCode</code> when no logo is needed</li>
+<li><strong>Cross-platform</strong>: Works on iOS, Windows, Linux, and macOS</li>
+<li><strong>Logo embedding</strong>: Add custom logos to your QR codes with no need for node canvas!</li>
+<li><strong>Error correction</strong>: Configurable error correction levels (L, M, Q, H)</li>
+<li><strong>Customizable</strong>: Custom colors, sizes, and margins</li>
+<li><strong>Multiple formats</strong>: Generate SVG, PNG, JPEG, and WebP outputs</li>
+<li><strong>Scalable</strong>: With caching you can also use a secondary store for persistence</li>
+<li><strong>Well-tested</strong>: Comprehensive test coverage with Vitest</li>
+<li><strong>Maintained</strong>: Actively maintained with regular updates</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#migration-from-v1-to-v2">Migration from v1 to v2</a>
+<ul>
+<li><a href="#breaking-changes">Breaking Changes</a></li>
+<li><a href="#what-didnt-change">What Didn't Change</a></li>
+<li><a href="#migration-steps">Migration Steps</a></li>
+</ul>
+</li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#requirements">Requirements</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#api">API</a>
+<ul>
+<li><a href="#constructoroptions-qroptions">constructor(options: QrOptions)</a></li>
+<li><a href="#properties">Properties</a>
+<ul>
+<li><a href="#text">text</a></li>
+<li><a href="#size">size</a></li>
+<li><a href="#margin">margin</a></li>
+<li><a href="#logo">logo</a></li>
+<li><a href="#logosizeratio">logoSizeRatio</a></li>
+<li><a href="#logobackgroundcolor">logoBackgroundColor</a></li>
+<li><a href="#logopaddingratio">logoPaddingRatio</a></li>
+<li><a href="#backgroundcolor">backgroundColor</a></li>
+<li><a href="#foregroundcolor">foregroundColor</a></li>
+<li><a href="#errorcorrection">errorCorrection</a></li>
+<li><a href="#cache">cache</a></li>
+</ul>
+</li>
+<li><a href="#methods">Methods</a>
+<ul>
+<li><a href="#tosvgoptions-tooptions">.toSvg(options?: toOptions)</a></li>
+<li><a href="#tosvgnapi">.toSvgNapi()</a></li>
+<li><a href="#tosvgfilefilepath-string-options-tooptions">.toSvgFile(filePath: string, options?: toOptions)</a></li>
+<li><a href="#topngoptions-tooptions">.toPng(options?: toOptions)</a></li>
+<li><a href="#topngfilefilepath-string-options-tooptions">.toPngFile(filePath: string, options?: toOptions)</a></li>
+<li><a href="#tojpgoptions-tooptions">.toJpg(options?: toOptions)</a></li>
+<li><a href="#tojpgfilefilepath-string-options-tooptions">.toJpgFile(filePath: string, options?: toOptions)</a></li>
+<li><a href="#towebpoptions-tooptions">.toWebp(options?: toOptions)</a></li>
+<li><a href="#towebpfilefilepath-string-options-tooptions">.toWebpFile(filePath: string, options?: toOptions)</a></li>
+<li><a href="#utility-methods">Utility Methods</a>
+<ul>
+<li><a href="#generatecachekeyrenderkey-string">.generateCacheKey(renderKey: string)</a></li>
+<li><a href="#islogostring">.isLogoString()</a></li>
+<li><a href="#logofileexistsfilepath-string">.logoFileExists(filePath: string)</a></li>
+</ul>
+</li>
+<li><a href="#static-methods">Static Methods</a>
+<ul>
+<li><a href="#qrbitconvertsvgtopngsvgcontent-string-width-number-height-number">QrBit.convertSvgToPng(svgContent: string, width?: number, height?: number)</a></li>
+<li><a href="#qrbitconvertsvgtojpegsvgcontent-string-width-number-height-number-quality-number">QrBit.convertSvgToJpeg(svgContent: string, width?: number, height?: number, quality?: number)</a></li>
+<li><a href="#qrbitconvertsvgtowebpsvgcontent-string-width-number-height-number-quality-number">QrBit.convertSvgToWebp(svgContent: string, width?: number, height?: number, quality?: number)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#benchmarks">Benchmarks</a>
+<ul>
+<li><a href="#qr-codes-svg-no-logo">QR Codes SVG (No Logo)</a></li>
+<li><a href="#qr-codes-png-no-logo">QR Codes PNG (No Logo)</a></li>
+<li><a href="#qr-codes-jpg-no-logo">QR Codes JPG (No Logo)</a></li>
+<li><a href="#qr-codes-webp-no-logo">QR Codes WebP (No Logo)</a></li>
+<li><a href="#qr-codes-with-embedded-logos">QR Codes with Embedded Logos</a></li>
+</ul>
+</li>
+<li><a href="#examples">Examples</a>
+<ul>
+<li><a href="#1-basic-qr-code">1. Basic QR Code</a></li>
+<li><a href="#2-url-qr-code">2. URL QR Code</a></li>
+<li><a href="#3-large-size-qr-code">3. Large Size QR Code</a></li>
+<li><a href="#4-inverted-colors">4. Inverted Colors</a></li>
+<li><a href="#5-red-theme">5. Red Theme</a></li>
+<li><a href="#6-small-logo">6. Small Logo</a></li>
+<li><a href="#7-large-logo-with-custom-colors">7. Large Logo with Custom Colors</a></li>
+<li><a href="#8-wifi-qr-code">8. WiFi QR Code</a></li>
+<li><a href="#9-large-margin-with-blue-theme">9. Large Margin with Blue Theme</a></li>
+<li><a href="#10-buffer-logo">10. Buffer Logo</a></li>
+<li><a href="#11-high-quality-jpeg">11. High Quality JPEG</a></li>
+<li><a href="#12-jpeg-with-logo-and-blue-theme">12. JPEG with Logo and Blue Theme</a></li>
+<li><a href="#13-compressed-jpeg-with-green-theme">13. Compressed JPEG with Green Theme</a></li>
+<li><a href="#14-jpeg-with-buffer-logo-and-orange-theme">14. JPEG with Buffer Logo and Orange Theme</a></li>
+<li><a href="#15-basic-webp">15. Basic WebP</a></li>
+<li><a href="#16-webp-with-logo-and-blue-theme">16. WebP with Logo and Blue Theme</a></li>
+<li><a href="#17-large-webp-with-green-theme">17. Large WebP with Green Theme</a></li>
+<li><a href="#18-webp-with-buffer-logo-and-purple-theme">18. WebP with Buffer Logo and Purple Theme</a></li>
+<li><a href="#19-low-error-correction">19. Low Error Correction</a></li>
+<li><a href="#20-high-error-correction">20. High Error Correction</a></li>
+<li><a href="#contributing">Contributing</a></li>
+<li><a href="#license-and-copyright">License and Copyright</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="migration-from-v1-to-v2">Migration from v1 to v2</h1>
+<p>QrBit v2 upgrades the underlying <a href="https://github.com/jaredwray/hookified"><code>hookified</code></a> dependency from v1 to v2. This is a breaking change for consumers who use <code>HookifiedOptions</code> properties in their <code>QrOptions</code>.</p>
+<h2 id="breaking-changes">Breaking Changes</h2>
+<table>
+<thead>
+<tr>
+<th>v1 (qrbit 1.x)</th>
+<th>v2 (qrbit 2.x)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>logger</code> option</td>
+<td>Renamed to <code>eventLogger</code></td>
+</tr>
+<tr>
+<td><code>throwHookErrors</code> option</td>
+<td>Removed, use <code>throwOnHookError</code></td>
+</tr>
+<tr>
+<td><code>throwOnEmptyListeners</code> defaults to <code>false</code></td>
+<td>Now defaults to <code>true</code></td>
+</tr>
+<tr>
+<td><code>maxListeners</code> defaults to <code>100</code></td>
+<td>Now defaults to <code>0</code> (unlimited)</td>
+</tr>
+<tr>
+<td><code>HookEntry</code> type</td>
+<td>Replaced by <code>IHook</code> interface</td>
+</tr>
+<tr>
+<td><code>Hook</code> type (function alias)</td>
+<td>Renamed to <code>HookFn</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-didnt-change">What Didn't Change</h2>
+<ul>
+<li>All QR code generation methods (<code>.toSvg()</code>, <code>.toPng()</code>, <code>.toJpg()</code>, <code>.toWebp()</code>, and their file variants) work identically.</li>
+<li>Event emitting (<code>.on()</code>, <code>.emit()</code>, <code>.once()</code>, <code>.off()</code>) works identically.</li>
+<li>Constructor options for QR code configuration (<code>text</code>, <code>size</code>, <code>margin</code>, <code>logo</code>, <code>logoSizeRatio</code>, <code>backgroundColor</code>, <code>foregroundColor</code>, <code>errorCorrection</code>, <code>cache</code>) are unchanged.</li>
+<li>Caching behavior is unchanged.</li>
+<li>Logo embedding (path and buffer) works identically.</li>
+</ul>
+<h2 id="migration-steps">Migration Steps</h2>
+<ol>
+<li>
+<p>Update your <code>qrbit</code> dependency to v2:</p>
+<pre><code class="hljs language-bash">npm install qrbit@latest
+</code></pre>
+</li>
+<li>
+<p>If you pass a <code>logger</code> in your options, rename it to <code>eventLogger</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Before (v1)</span>
+<span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"hello"</span>, <span class="hljs-attr">logger</span>: myLogger });
+
+<span class="hljs-comment">// After (v2)</span>
+<span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"hello"</span>, <span class="hljs-attr">eventLogger</span>: myLogger });
+</code></pre>
+</li>
+<li>
+<p>If you reference <code>throwHookErrors</code>, use <code>throwOnHookError</code> instead:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Before (v1)</span>
+<span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"hello"</span>, <span class="hljs-attr">throwHookErrors</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-comment">// After (v2)</span>
+<span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"hello"</span>, <span class="hljs-attr">throwOnHookError</span>: <span class="hljs-literal">true</span> });
+</code></pre>
+</li>
+<li>
+<p>If you rely on <code>throwOnEmptyListeners</code> being <code>false</code>, explicitly set it:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"hello"</span>, <span class="hljs-attr">throwOnEmptyListeners</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+</li>
+</ol>
+<h1 id="installation">Installation</h1>
+<pre><code class="hljs language-bash">npm install qrbit
+</code></pre>
+<h1 id="requirements">Requirements</h1>
+<ul>
+<li>Node.js >= 18</li>
+<li>Supported platforms: Windows (x86, x64), macOS (Arm, Intel), Linux (x64)</li>
+</ul>
+<h1 id="usage">Usage</h1>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"https://github.com/jaredwray/qrbit"</span>, <span class="hljs-attr">size</span>: <span class="hljs-number">200</span> });
+<span class="hljs-keyword">const</span> svg = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toSvg</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(svg); <span class="hljs-comment">// here is the svg!</span>
+</code></pre>
+<p>Here is how you add a logo:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"https://github.com/jaredwray/qrbit"</span>,
+  <span class="hljs-attr">logo</span>: <span class="hljs-string">'/path/to/logo.png'</span>,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">200</span> });
+<span class="hljs-keyword">const</span> svg = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toSvg</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(svg); <span class="hljs-comment">// here is the svg with an embedded logo!</span>
+</code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"https://github.com/jaredwray/qrbit"</span>,
+  <span class="hljs-attr">logo</span>: <span class="hljs-string">'/path/to/logo.png'</span>,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">200</span> });
+<span class="hljs-keyword">const</span> png = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toPng</span>(); <span class="hljs-comment">// buffer of the png!</span>
+</code></pre>
+<h1 id="api">API</h1>
+<h2 id="constructoroptions-qroptions">constructor(options: QrOptions)</h2>
+<p>Creates a new QrBit instance with the specified options.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>options</code> (QrOptions): Configuration object for the QR code</li>
+</ul>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">QrOptions</span> {
+  <span class="hljs-attr">text</span>: <span class="hljs-built_in">string</span>;                    <span class="hljs-comment">// The text content to encode</span>
+  <span class="hljs-attr">size</span>?: <span class="hljs-built_in">number</span>;                   <span class="hljs-comment">// Size in pixels (default: 200)</span>
+  <span class="hljs-attr">margin</span>?: <span class="hljs-built_in">number</span>;                 <span class="hljs-comment">// Margin in pixels (default: undefined)</span>
+  <span class="hljs-attr">logo</span>?: <span class="hljs-built_in">string</span> | <span class="hljs-title class_">Buffer</span>;          <span class="hljs-comment">// Logo file path or buffer</span>
+  <span class="hljs-attr">logoSizeRatio</span>?: <span class="hljs-built_in">number</span>;          <span class="hljs-comment">// Logo size ratio (default: 0.2)</span>
+  <span class="hljs-attr">logoBackgroundColor</span>?: <span class="hljs-built_in">string</span> | <span class="hljs-literal">false</span>; <span class="hljs-comment">// Backing patch color behind the logo (default: backgroundColor; pass false to disable)</span>
+  <span class="hljs-attr">logoPaddingRatio</span>?: <span class="hljs-built_in">number</span>;       <span class="hljs-comment">// Patch padding per side, ratio of logo size (default: 0.1)</span>
+  <span class="hljs-attr">backgroundColor</span>?: <span class="hljs-built_in">string</span>;        <span class="hljs-comment">// Background color (default: "#FFFFFF")</span>
+  <span class="hljs-attr">foregroundColor</span>?: <span class="hljs-built_in">string</span>;        <span class="hljs-comment">// Foreground color (default: "#000000")</span>
+  <span class="hljs-attr">errorCorrection</span>?: <span class="hljs-title class_">ECLevel</span>;       <span class="hljs-comment">// "L"|"M"|"Q"|"H"|"Low"|"Medium"|"Quartile"|"High" (default: "M")</span>
+  <span class="hljs-attr">cache</span>?: <span class="hljs-title class_">Cacheable</span> | <span class="hljs-built_in">boolean</span>;     <span class="hljs-comment">// Caching configuration (default: true)</span>
+}
+
+<span class="hljs-keyword">interface</span> toOptions {
+  <span class="hljs-attr">cache</span>?: <span class="hljs-built_in">boolean</span>;                 <span class="hljs-comment">// Enable/disable caching (default: true)</span>
+  <span class="hljs-attr">quality</span>?: <span class="hljs-built_in">number</span>;                <span class="hljs-comment">// Quality 1-100 (default: 90) - for toJpg; reserved for toWebp</span>
+}
+</code></pre>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">QrBit</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'qrbit'</span>;
+
+<span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"https://github.com/jaredwray/qrbit"</span>,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">300</span>,
+  <span class="hljs-attr">margin</span>: <span class="hljs-number">20</span>,
+  <span class="hljs-attr">logo</span>: <span class="hljs-string">"./logo.png"</span>,
+  <span class="hljs-attr">logoSizeRatio</span>: <span class="hljs-number">0.25</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"#FFFFFF"</span>,
+  <span class="hljs-attr">foregroundColor</span>: <span class="hljs-string">"#000000"</span>,
+  <span class="hljs-attr">errorCorrection</span>: <span class="hljs-string">"H"</span>
+});
+</code></pre>
+<h2 id="properties">Properties</h2>
+<h3 id="text">text</h3>
+<p>Get or set the text content for the QR code.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(qr.<span class="hljs-property">text</span>); <span class="hljs-comment">// "Hello World"</span>
+qr.<span class="hljs-property">text</span> = <span class="hljs-string">"New content"</span>;
+</code></pre>
+<h3 id="size">size</h3>
+<p>Get or set the size of the QR code in pixels.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(qr.<span class="hljs-property">size</span>); <span class="hljs-comment">// 200 (default)</span>
+qr.<span class="hljs-property">size</span> = <span class="hljs-number">400</span>;
+</code></pre>
+<h3 id="margin">margin</h3>
+<p>Get or set the margin around the QR code in pixels.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(qr.<span class="hljs-property">margin</span>); <span class="hljs-comment">// undefined (default)</span>
+qr.<span class="hljs-property">margin</span> = <span class="hljs-number">20</span>;
+</code></pre>
+<h3 id="logo">logo</h3>
+<p>Get or set the logo as a file path or buffer.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+qr.<span class="hljs-property">logo</span> = <span class="hljs-string">"./path/to/logo.png"</span>;
+<span class="hljs-comment">// or</span>
+qr.<span class="hljs-property">logo</span> = fs.<span class="hljs-title function_">readFileSync</span>(<span class="hljs-string">"./logo.png"</span>);
+</code></pre>
+<h3 id="logosizeratio">logoSizeRatio</h3>
+<p>Get or set the logo size ratio relative to QR code size (0.0 to 1.0).</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+qr.<span class="hljs-property">logoSizeRatio</span> = <span class="hljs-number">0.3</span>; <span class="hljs-comment">// 30% of QR code size</span>
+</code></pre>
+<h3 id="logobackgroundcolor">logoBackgroundColor</h3>
+<p>Get or set the color rendered as a backing patch behind the logo. The patch prevents QR modules from showing through transparent areas of the logo. Defaults to <code>backgroundColor</code>. Pass <code>false</code> to disable the patch and overlay the logo directly on the QR.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span>,
+  <span class="hljs-attr">logo</span>: <span class="hljs-string">"./logo.png"</span>,
+});
+qr.<span class="hljs-property">logoBackgroundColor</span> = <span class="hljs-string">"#FFFFFF"</span>; <span class="hljs-comment">// explicit white patch</span>
+qr.<span class="hljs-property">logoBackgroundColor</span> = <span class="hljs-literal">false</span>;     <span class="hljs-comment">// no patch (legacy behavior)</span>
+</code></pre>
+<h3 id="logopaddingratio">logoPaddingRatio</h3>
+<p>Get or set the padding around the logo for the backing patch, expressed as a ratio of the logo size on each side. e.g. <code>0.1</code> makes the patch 1.2× the logo size. Defaults to <code>0.1</code>.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span>, <span class="hljs-attr">logo</span>: <span class="hljs-string">"./logo.png"</span> });
+qr.<span class="hljs-property">logoPaddingRatio</span> = <span class="hljs-number">0</span>;    <span class="hljs-comment">// patch matches logo size exactly</span>
+qr.<span class="hljs-property">logoPaddingRatio</span> = <span class="hljs-number">0.25</span>; <span class="hljs-comment">// patch is 1.5× logo size</span>
+</code></pre>
+<h3 id="backgroundcolor">backgroundColor</h3>
+<p>Get or set the background color in hex format.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+qr.<span class="hljs-property">backgroundColor</span> = <span class="hljs-string">"#FF0000"</span>; <span class="hljs-comment">// Red background</span>
+</code></pre>
+<h3 id="foregroundcolor">foregroundColor</h3>
+<p>Get or set the foreground color in hex format.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+qr.<span class="hljs-property">foregroundColor</span> = <span class="hljs-string">"#FFFFFF"</span>; <span class="hljs-comment">// White foreground</span>
+</code></pre>
+<h3 id="errorcorrection">errorCorrection</h3>
+<p>Get or set the error correction level. Higher levels recover more damage but produce denser codes.</p>
+<p>Accepts initials or full names:</p>
+<ul>
+<li><code>"L"</code> / <code>"Low"</code> — Low (~7% recovery)</li>
+<li><code>"M"</code> / <code>"Medium"</code> — Medium (~15% recovery, default)</li>
+<li><code>"Q"</code> / <code>"Quartile"</code> — Quartile (~25% recovery)</li>
+<li><code>"H"</code> / <code>"High"</code> — High (~30% recovery, recommended when using logos)</li>
+</ul>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+qr.<span class="hljs-property">errorCorrection</span> = <span class="hljs-string">"H"</span>;
+qr.<span class="hljs-property">errorCorrection</span> = <span class="hljs-string">"High"</span>; <span class="hljs-comment">// equivalent</span>
+</code></pre>
+<h3 id="cache">cache</h3>
+<p>Get or set the cache instance for performance optimization.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+qr.<span class="hljs-property">cache</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>(); <span class="hljs-comment">// Custom cache instance</span>
+qr.<span class="hljs-property">cache</span> = <span class="hljs-literal">false</span>; <span class="hljs-comment">// Disable caching</span>
+</code></pre>
+<h2 id="methods">Methods</h2>
+<h3 id="tosvgoptions-tooptions">.toSvg(options?: toOptions)</h3>
+<p>Generate SVG QR code with optional caching. Uses native QRCode library for simple cases, Rust implementation for logos.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>options.cache?: boolean</code> - Whether to use caching (default: true)</li>
+</ul>
+<p><strong>Returns:</strong> Promise - The SVG string</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+<span class="hljs-keyword">const</span> svg = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toSvg</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(svg); <span class="hljs-comment">// &#x3C;svg xmlns="http://www.w3.org/2000/svg"...</span>
+
+<span class="hljs-comment">// Without caching</span>
+<span class="hljs-keyword">const</span> svgNoCache = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toSvg</span>({ <span class="hljs-attr">cache</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<h3 id="tosvgnapi">.toSvgNapi()</h3>
+<p>Generate SVG QR code using the native Rust implementation directly. Automatically selects between file path and buffer logo functions. If a logo file path doesn't exist, a <code>QrBitEvents.error</code> event is emitted.</p>
+<blockquote>
+<p><strong>Note:</strong> By default (<code>throwOnEmitError = true</code>), emitting an error with no registered listener will <strong>throw</strong> rather than fall back to generating the SVG without a logo. To handle the error and still receive the SVG, register an error listener before calling this method.</p>
+</blockquote>
+<p><strong>Returns:</strong> Promise&#x3C;string> - The SVG string</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Default behavior – throws if logo file is missing and no error listener is registered</span>
+<span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span>, <span class="hljs-attr">logo</span>: <span class="hljs-string">"./logo.png"</span> });
+<span class="hljs-keyword">const</span> svg = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toSvgNapi</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(svg); <span class="hljs-comment">// &#x3C;svg xmlns="http://www.w3.org/2000/svg"...</span>
+
+<span class="hljs-comment">// To fall back gracefully, register an error listener first</span>
+qr.<span class="hljs-title function_">on</span>(<span class="hljs-string">"error"</span>, <span class="hljs-function">(<span class="hljs-params">err</span>) =></span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">warn</span>(<span class="hljs-string">"Logo not found:"</span>, err));
+<span class="hljs-keyword">const</span> svgFallback = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toSvgNapi</span>(); <span class="hljs-comment">// generates SVG without logo</span>
+</code></pre>
+<h3 id="tosvgfilefilepath-string-options-tooptions">.toSvgFile(filePath: string, options?: toOptions)</h3>
+<p>Generate SVG QR code and save it to a file. Creates directories if they don't exist.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>filePath: string</code> - The file path where to save the SVG</li>
+<li><code>options.cache?: boolean</code> - Whether to use caching (default: true)</li>
+</ul>
+<p><strong>Returns:</strong> Promise</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toSvgFile</span>(<span class="hljs-string">"./output/qr-code.svg"</span>);
+
+<span class="hljs-comment">// With options</span>
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toSvgFile</span>(<span class="hljs-string">"./output/qr-code.svg"</span>, { <span class="hljs-attr">cache</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<h3 id="topngoptions-tooptions">.toPng(options?: toOptions)</h3>
+<p>Generate PNG QR code with optional caching. Uses high-performance SVG to PNG conversion.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>options.cache?: boolean</code> - Whether to use caching (default: true)</li>
+</ul>
+<p><strong>Returns:</strong> Promise - The PNG buffer</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+<span class="hljs-keyword">const</span> pngBuffer = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toPng</span>();
+
+<span class="hljs-comment">// Save to file</span>
+fs.<span class="hljs-title function_">writeFileSync</span>(<span class="hljs-string">"qr-code.png"</span>, pngBuffer);
+
+<span class="hljs-comment">// Without caching</span>
+<span class="hljs-keyword">const</span> pngNoCache = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toPng</span>({ <span class="hljs-attr">cache</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<h3 id="topngfilefilepath-string-options-tooptions">.toPngFile(filePath: string, options?: toOptions)</h3>
+<p>Generate PNG QR code and save it to a file. Creates directories if they don't exist.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>filePath: string</code> - The file path where to save the PNG</li>
+<li><code>options.cache?: boolean</code> - Whether to use caching (default: true)</li>
+</ul>
+<p><strong>Returns:</strong> Promise</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toPngFile</span>(<span class="hljs-string">"./output/qr-code.png"</span>);
+
+<span class="hljs-comment">// With options</span>
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toPngFile</span>(<span class="hljs-string">"./output/qr-code.png"</span>, { <span class="hljs-attr">cache</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<h3 id="tojpgoptions-tooptions">.toJpg(options?: toOptions)</h3>
+<p>Generate JPEG QR code with optional caching and quality control. Uses high-performance SVG to JPEG conversion.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>options.cache?: boolean</code> - Whether to use caching (default: true)</li>
+<li><code>options.quality?: number</code> - JPEG quality from 1-100 (default: 90)</li>
+</ul>
+<p><strong>Returns:</strong> Promise - The JPEG buffer</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+<span class="hljs-keyword">const</span> jpgBuffer = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toJpg</span>();
+
+<span class="hljs-comment">// With high quality</span>
+<span class="hljs-keyword">const</span> jpgHigh = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toJpg</span>({ <span class="hljs-attr">quality</span>: <span class="hljs-number">95</span> });
+
+<span class="hljs-comment">// With compression for smaller file size</span>
+<span class="hljs-keyword">const</span> jpgCompressed = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toJpg</span>({ <span class="hljs-attr">quality</span>: <span class="hljs-number">70</span> });
+
+<span class="hljs-comment">// Save to file</span>
+fs.<span class="hljs-title function_">writeFileSync</span>(<span class="hljs-string">"qr-code.jpg"</span>, jpgBuffer);
+
+<span class="hljs-comment">// Without caching</span>
+<span class="hljs-keyword">const</span> jpgNoCache = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toJpg</span>({ <span class="hljs-attr">cache</span>: <span class="hljs-literal">false</span>, <span class="hljs-attr">quality</span>: <span class="hljs-number">85</span> });
+</code></pre>
+<h3 id="tojpgfilefilepath-string-options-tooptions">.toJpgFile(filePath: string, options?: toOptions)</h3>
+<p>Generate JPEG QR code and save it to a file. Creates directories if they don't exist.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>filePath: string</code> - The file path where to save the JPEG</li>
+<li><code>options.cache?: boolean</code> - Whether to use caching (default: true)</li>
+<li><code>options.quality?: number</code> - JPEG quality from 1-100 (default: 90)</li>
+</ul>
+<p><strong>Returns:</strong> Promise</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toJpgFile</span>(<span class="hljs-string">"./output/qr-code.jpg"</span>);
+
+<span class="hljs-comment">// With high quality</span>
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toJpgFile</span>(<span class="hljs-string">"./output/qr-code.jpg"</span>, { <span class="hljs-attr">quality</span>: <span class="hljs-number">95</span> });
+
+<span class="hljs-comment">// With compression</span>
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toJpgFile</span>(<span class="hljs-string">"./output/qr-code.jpg"</span>, { <span class="hljs-attr">quality</span>: <span class="hljs-number">70</span>, <span class="hljs-attr">cache</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<h3 id="towebpoptions-tooptions">.toWebp(options?: toOptions)</h3>
+<p>Generate WebP QR code with optional caching. Uses high-performance SVG to WebP conversion with lossless encoding.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>options.cache?: boolean</code> - Whether to use caching (default: true)</li>
+<li><code>options.quality?: number</code> - Reserved for future lossy WebP support</li>
+</ul>
+<p><strong>Returns:</strong> Promise - The WebP buffer</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+<span class="hljs-keyword">const</span> webpBuffer = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toWebp</span>();
+
+<span class="hljs-comment">// Save to file</span>
+fs.<span class="hljs-title function_">writeFileSync</span>(<span class="hljs-string">"qr-code.webp"</span>, webpBuffer);
+
+<span class="hljs-comment">// Without caching</span>
+<span class="hljs-keyword">const</span> webpNoCache = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toWebp</span>({ <span class="hljs-attr">cache</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<h3 id="towebpfilefilepath-string-options-tooptions">.toWebpFile(filePath: string, options?: toOptions)</h3>
+<p>Generate WebP QR code and save it to a file. Creates directories if they don't exist.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>filePath: string</code> - The file path where to save the WebP</li>
+<li><code>options.cache?: boolean</code> - Whether to use caching (default: true)</li>
+<li><code>options.quality?: number</code> - Reserved for future lossy WebP support</li>
+</ul>
+<p><strong>Returns:</strong> Promise</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toWebpFile</span>(<span class="hljs-string">"./output/qr-code.webp"</span>);
+
+<span class="hljs-comment">// With options</span>
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toWebpFile</span>(<span class="hljs-string">"./output/qr-code.webp"</span>, { <span class="hljs-attr">cache</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<h3 id="utility-methods">Utility Methods</h3>
+<h4 id="generatecachekeyrenderkey-string">.generateCacheKey(renderKey: string)</h4>
+<p>Generate a hash-based cache key from the current QR code options. Useful for custom caching strategies.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>renderKey: string</code> - Format identifier (e.g., <code>napi-png</code>, <code>native-svg</code>, <code>napi-svg</code>)</li>
+</ul>
+<p><strong>Returns:</strong> Promise&#x3C;string> - The hash string</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+<span class="hljs-keyword">const</span> key = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">generateCacheKey</span>(<span class="hljs-string">"napi-png"</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key); <span class="hljs-comment">// hash string based on current options</span>
+</code></pre>
+<h4 id="islogostring">.isLogoString()</h4>
+<p>Check if the logo property is a string (file path) rather than a Buffer.</p>
+<p><strong>Returns:</strong> boolean - <code>true</code> if logo is a string, <code>false</code> otherwise</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span>, <span class="hljs-attr">logo</span>: <span class="hljs-string">"./logo.png"</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(qr.<span class="hljs-title function_">isLogoString</span>()); <span class="hljs-comment">// true</span>
+
+qr.<span class="hljs-property">logo</span> = fs.<span class="hljs-title function_">readFileSync</span>(<span class="hljs-string">"./logo.png"</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(qr.<span class="hljs-title function_">isLogoString</span>()); <span class="hljs-comment">// false</span>
+</code></pre>
+<h4 id="logofileexistsfilepath-string">.logoFileExists(filePath: string)</h4>
+<p>Check if a file exists at the specified path.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>filePath: string</code> - The file path to check</li>
+</ul>
+<p><strong>Returns:</strong> Promise&#x3C;boolean> - <code>true</code> if file exists and is accessible, <code>false</code> otherwise</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World"</span> });
+<span class="hljs-keyword">const</span> exists = <span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">logoFileExists</span>(<span class="hljs-string">"./logo.png"</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(exists); <span class="hljs-comment">// true or false</span>
+</code></pre>
+<h3 id="static-methods">Static Methods</h3>
+<h4 id="qrbitconvertsvgtopngsvgcontent-string-width-number-height-number">QrBit.convertSvgToPng(svgContent: string, width?: number, height?: number)</h4>
+<p>Convert SVG content to PNG buffer using the native Rust implementation.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>svgContent: string</code> - The SVG content as a string</li>
+<li><code>width?: number</code> - Optional width for the PNG output</li>
+<li><code>height?: number</code> - Optional height for the PNG output</li>
+</ul>
+<p><strong>Returns:</strong> Buffer - The PNG buffer</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> svg = <span class="hljs-string">'&#x3C;svg>...&#x3C;/svg>'</span>;
+<span class="hljs-keyword">const</span> pngBuffer = <span class="hljs-title class_">QrBit</span>.<span class="hljs-title function_">convertSvgToPng</span>(svg, <span class="hljs-number">400</span>, <span class="hljs-number">400</span>);
+</code></pre>
+<h4 id="qrbitconvertsvgtojpegsvgcontent-string-width-number-height-number-quality-number">QrBit.convertSvgToJpeg(svgContent: string, width?: number, height?: number, quality?: number)</h4>
+<p>Convert SVG content to JPEG buffer using the native Rust implementation.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>svgContent: string</code> - The SVG content as a string</li>
+<li><code>width?: number</code> - Optional width for the JPEG output</li>
+<li><code>height?: number</code> - Optional height for the JPEG output</li>
+<li><code>quality?: number</code> - JPEG quality from 1-100 (default: 90)</li>
+</ul>
+<p><strong>Returns:</strong> Buffer - The JPEG buffer</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> svg = <span class="hljs-string">'&#x3C;svg>...&#x3C;/svg>'</span>;
+<span class="hljs-keyword">const</span> jpegBuffer = <span class="hljs-title class_">QrBit</span>.<span class="hljs-title function_">convertSvgToJpeg</span>(svg, <span class="hljs-number">400</span>, <span class="hljs-number">400</span>, <span class="hljs-number">85</span>);
+</code></pre>
+<h4 id="qrbitconvertsvgtowebpsvgcontent-string-width-number-height-number-quality-number">QrBit.convertSvgToWebp(svgContent: string, width?: number, height?: number, quality?: number)</h4>
+<p>Convert SVG content to WebP buffer using the native Rust implementation with lossless encoding.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>svgContent: string</code> - The SVG content as a string</li>
+<li><code>width?: number</code> - Optional width for the WebP output</li>
+<li><code>height?: number</code> - Optional height for the WebP output</li>
+<li><code>quality?: number</code> - Reserved for future lossy WebP support</li>
+</ul>
+<p><strong>Returns:</strong> Buffer - The WebP buffer</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> svg = <span class="hljs-string">'&#x3C;svg>...&#x3C;/svg>'</span>;
+<span class="hljs-keyword">const</span> webpBuffer = <span class="hljs-title class_">QrBit</span>.<span class="hljs-title function_">convertSvgToWebp</span>(svg, <span class="hljs-number">400</span>, <span class="hljs-number">400</span>);
+</code></pre>
+<h1 id="benchmarks">Benchmarks</h1>
+<blockquote>
+<p>Tables below are auto-generated by <code>pnpm benchmark</code>. Do not edit between the <code>&#x3C;!-- BENCHMARK:* --></code> markers.</p>
+</blockquote>
+<h2 id="qr-codes-svg-no-logo">QR Codes SVG (No Logo)</h2>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QRCode toString (v1.5.4)</td>
+<td align="center">🥇</td>
+<td align="right">5K</td>
+<td align="right">191µs</td>
+<td align="center">±0.43%</td>
+<td align="right">5K</td>
+</tr>
+<tr>
+<td>QrBit toSvg (Native) (v2.1.0)</td>
+<td align="center">-34%</td>
+<td align="right">4K</td>
+<td align="right">297µs</td>
+<td align="center">±0.43%</td>
+<td align="right">3K</td>
+</tr>
+<tr>
+<td>QrBit toSvg (Rust) (v2.1.0)</td>
+<td align="center">-89%</td>
+<td align="right">600</td>
+<td align="right">2ms</td>
+<td align="center">±0.99%</td>
+<td align="right">592</td>
+</tr>
+<tr>
+<td>styled-qr-code-node toBuffer (v2.0.0)</td>
+<td align="center">-90%</td>
+<td align="right">552</td>
+<td align="right">2ms</td>
+<td align="center">±0.92%</td>
+<td align="right">544</td>
+</tr>
+</tbody>
+</table>
+<p><code>Rust</code> is there for performance and when doing heavy image processing without needing node <code>canvas</code> installed. If you do not add a logo then the <code>Native</code> version is what you will get for SVG.</p>
+<h2 id="qr-codes-png-no-logo">QR Codes PNG (No Logo)</h2>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QrBit toPng (v2.1.0) Cached</td>
+<td align="center">🥇</td>
+<td align="right">3K</td>
+<td align="right">2ms</td>
+<td align="center">±21.51%</td>
+<td align="right">554</td>
+</tr>
+<tr>
+<td>QrBit toPng (v2.1.0)</td>
+<td align="center">-53%</td>
+<td align="right">1K</td>
+<td align="right">2ms</td>
+<td align="center">±25.73%</td>
+<td align="right">524</td>
+</tr>
+<tr>
+<td>QRCode toBuffer (v1.5.4)</td>
+<td align="center">-74%</td>
+<td align="right">712</td>
+<td align="right">1ms</td>
+<td align="center">±1.12%</td>
+<td align="right">690</td>
+</tr>
+<tr>
+<td>styled-qr-code-node toBuffer (v2.0.0)</td>
+<td align="center">-93%</td>
+<td align="right">198</td>
+<td align="right">5ms</td>
+<td align="center">±0.74%</td>
+<td align="right">198</td>
+</tr>
+</tbody>
+</table>
+<h2 id="qr-codes-jpg-no-logo">QR Codes JPG (No Logo)</h2>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QrBit toJpg (v2.1.0) Cached</td>
+<td align="center">🥇</td>
+<td align="right">2K</td>
+<td align="right">2ms</td>
+<td align="center">±24.98%</td>
+<td align="right">461</td>
+</tr>
+<tr>
+<td>QrBit toJpg (v2.1.0)</td>
+<td align="center">-54%</td>
+<td align="right">898</td>
+<td align="right">2ms</td>
+<td align="center">±26.96%</td>
+<td align="right">438</td>
+</tr>
+<tr>
+<td>styled-qr-code-node toBuffer (v2.0.0)</td>
+<td align="center">-86%</td>
+<td align="right">279</td>
+<td align="right">4ms</td>
+<td align="center">±0.89%</td>
+<td align="right">278</td>
+</tr>
+</tbody>
+</table>
+<h2 id="qr-codes-webp-no-logo">QR Codes WebP (No Logo)</h2>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QrBit toWebp Cached (v2.1.0)</td>
+<td align="center">🥇</td>
+<td align="right">7K</td>
+<td align="right">720µs</td>
+<td align="center">±9.04%</td>
+<td align="right">1K</td>
+</tr>
+<tr>
+<td>QrBit toWebp (v2.1.0)</td>
+<td align="center">-47%</td>
+<td align="right">4K</td>
+<td align="right">846µs</td>
+<td align="center">±12.71%</td>
+<td align="right">1K</td>
+</tr>
+</tbody>
+</table>
+<p><code>Rust</code> is used for <code>toPng()</code>, <code>toJpg()</code>, and <code>toWebp()</code> to optimize performance for image generation and heavy image processing without needing node <code>canvas</code> installed.</p>
+<h2 id="qr-codes-with-embedded-logos">QR Codes with Embedded Logos</h2>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QrBit SVG (Path) (v2.1.0)</td>
+<td align="center">🥇</td>
+<td align="right">579</td>
+<td align="right">2ms</td>
+<td align="center">±0.96%</td>
+<td align="right">571</td>
+</tr>
+<tr>
+<td>QrBit SVG (Buffer) (v2.1.0)</td>
+<td align="center">-5.7%</td>
+<td align="right">546</td>
+<td align="right">2ms</td>
+<td align="center">±0.97%</td>
+<td align="right">539</td>
+</tr>
+<tr>
+<td>QrBit WebP (Path) (v2.1.0)</td>
+<td align="center">-53%</td>
+<td align="right">274</td>
+<td align="right">4ms</td>
+<td align="center">±1.08%</td>
+<td align="right">272</td>
+</tr>
+<tr>
+<td>QrBit WebP (Buffer) (v2.1.0)</td>
+<td align="center">-56%</td>
+<td align="right">256</td>
+<td align="right">4ms</td>
+<td align="center">±1.01%</td>
+<td align="right">255</td>
+</tr>
+<tr>
+<td>styled-qr-code-node SVG (v2.0.0)</td>
+<td align="center">-61%</td>
+<td align="right">227</td>
+<td align="right">4ms</td>
+<td align="center">±0.71%</td>
+<td align="right">227</td>
+</tr>
+<tr>
+<td>QrBit PNG (Path) (v2.1.0)</td>
+<td align="center">-67%</td>
+<td align="right">194</td>
+<td align="right">5ms</td>
+<td align="center">±0.89%</td>
+<td align="right">193</td>
+</tr>
+<tr>
+<td>QrBit PNG (Buffer) (v2.1.0)</td>
+<td align="center">-69%</td>
+<td align="right">181</td>
+<td align="right">6ms</td>
+<td align="center">±1.08%</td>
+<td align="right">180</td>
+</tr>
+<tr>
+<td>styled-qr-code-node PNG (v2.0.0)</td>
+<td align="center">-70%</td>
+<td align="right">172</td>
+<td align="right">6ms</td>
+<td align="center">±1.02%</td>
+<td align="right">171</td>
+</tr>
+</tbody>
+</table>
+<p><code>Buffer</code> is much slower as we have to push the stream across to the rust module. For fastest performance provide the path of the image.</p>
+<h1 id="examples">Examples</h1>
+<p>The <code>examples/</code> directory contains various QR code examples showcasing different features and use cases. You can generate these examples by running:</p>
+<pre><code class="hljs language-bash">pnpm generate-examples
+</code></pre>
+<h2 id="1-basic-qr-code">1. Basic QR Code</h2>
+<p>Simple QR code with default settings.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Hello World!"</span> });
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toPngFile</span>(<span class="hljs-string">"01_basic.png"</span>);
+</code></pre>
+<p><img src="examples/01_basic.png" alt="Basic QR Code"></p>
+<h2 id="2-url-qr-code">2. URL QR Code</h2>
+<p>QR code encoding a GitHub URL.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"https://github.com/jaredwray/qrbit"</span>, <span class="hljs-attr">size</span>: <span class="hljs-number">200</span> });
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toSvgFile</span>(<span class="hljs-string">"02_url.svg"</span>);
+</code></pre>
+<p><img src="examples/02_url.svg" alt="URL QR Code"></p>
+<h2 id="3-large-size-qr-code">3. Large Size QR Code</h2>
+<p>QR code with increased size for better scanning.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({ <span class="hljs-attr">text</span>: <span class="hljs-string">"Large QR"</span>, <span class="hljs-attr">size</span>: <span class="hljs-number">400</span> });
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toPngFile</span>(<span class="hljs-string">"03_large_size.png"</span>);
+</code></pre>
+<p><img src="examples/03_large_size.png" alt="Large QR Code"></p>
+<h2 id="4-inverted-colors">4. Inverted Colors</h2>
+<p>Black background with white foreground.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"Inverted Colors"</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"#000000"</span>,
+  <span class="hljs-attr">foregroundColor</span>: <span class="hljs-string">"#FFFFFF"</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toSvgFile</span>(<span class="hljs-string">"04_inverted.svg"</span>);
+</code></pre>
+<p><img src="examples/04_inverted.svg" alt="Inverted QR Code"></p>
+<h2 id="5-red-theme">5. Red Theme</h2>
+<p>Custom red background theme.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"Red Theme"</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"#FF0000"</span>,
+  <span class="hljs-attr">foregroundColor</span>: <span class="hljs-string">"#FFFFFF"</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toPngFile</span>(<span class="hljs-string">"05_red_theme.png"</span>);
+</code></pre>
+<p><img src="examples/05_red_theme.png" alt="Red Theme QR Code"></p>
+<h2 id="6-small-logo">6. Small Logo</h2>
+<p>QR code with a small embedded logo.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"logo small"</span>,
+  <span class="hljs-attr">logo</span>: <span class="hljs-string">"./logo.png"</span>,
+  <span class="hljs-attr">logoSizeRatio</span>: <span class="hljs-number">0.2</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toPngFile</span>(<span class="hljs-string">"06_logo_small.png"</span>);
+</code></pre>
+<p><img src="examples/06_logo_small.png" alt="Small Logo QR Code"></p>
+<h2 id="7-large-logo-with-custom-colors">7. Large Logo with Custom Colors</h2>
+<p>Large logo with red background theme.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"logo large red"</span>,
+  <span class="hljs-attr">logo</span>: <span class="hljs-string">"./logo.png"</span>,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">400</span>,
+  <span class="hljs-attr">logoSizeRatio</span>: <span class="hljs-number">0.3</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"#FF0000"</span>,
+  <span class="hljs-attr">foregroundColor</span>: <span class="hljs-string">"#FFFFFF"</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toSvgFile</span>(<span class="hljs-string">"07_logo_large_red.svg"</span>);
+</code></pre>
+<p><img src="examples/07_logo_large_red.svg" alt="Large Logo QR Code"></p>
+<h2 id="8-wifi-qr-code">8. WiFi QR Code</h2>
+<p>QR code for WiFi network connection.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"WIFI:T:WPA;S:MyNetwork;P:MyPassword;;"</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toPngFile</span>(<span class="hljs-string">"08_wifi.png"</span>);
+</code></pre>
+<p><img src="examples/08_wifi.png" alt="WiFi QR Code"></p>
+<h2 id="9-large-margin-with-blue-theme">9. Large Margin with Blue Theme</h2>
+<p>Custom margin and blue color scheme.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"https://github.com/jaredwray/qrbit"</span>,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">300</span>,
+  <span class="hljs-attr">margin</span>: <span class="hljs-number">40</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"#0000FF"</span>,
+  <span class="hljs-attr">foregroundColor</span>: <span class="hljs-string">"#FFFFFF"</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toSvgFile</span>(<span class="hljs-string">"09_large_margin_blue.svg"</span>);
+</code></pre>
+<p><img src="examples/09_large_margin_blue.svg" alt="Large Margin Blue QR Code"></p>
+<h2 id="10-buffer-logo">10. Buffer Logo</h2>
+<p>Using a logo loaded from a Buffer instead of file path.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> logoBuffer = fs.<span class="hljs-title function_">readFileSync</span>(<span class="hljs-string">"./logo.png"</span>);
+<span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"Buffer Logo"</span>,
+  <span class="hljs-attr">logo</span>: logoBuffer,
+  <span class="hljs-attr">logoSizeRatio</span>: <span class="hljs-number">0.2</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"#F0F0F0"</span>,
+  <span class="hljs-attr">foregroundColor</span>: <span class="hljs-string">"#333333"</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toPngFile</span>(<span class="hljs-string">"10_buffer_logo.png"</span>);
+</code></pre>
+<p><img src="examples/10_buffer_logo.png" alt="Buffer Logo QR Code"></p>
+<h2 id="11-high-quality-jpeg">11. High Quality JPEG</h2>
+<p>JPEG format with high quality setting.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"High Quality JPEG"</span>,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">300</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toJpgFile</span>(<span class="hljs-string">"11_jpg_high_quality.jpg"</span>, { <span class="hljs-attr">quality</span>: <span class="hljs-number">95</span> });
+</code></pre>
+<p><img src="examples/11_jpg_high_quality.jpg" alt="High Quality JPEG QR Code"></p>
+<h2 id="12-jpeg-with-logo-and-blue-theme">12. JPEG with Logo and Blue Theme</h2>
+<p>JPEG with embedded logo and custom blue background.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"JPEG with Logo"</span>,
+  <span class="hljs-attr">logo</span>: <span class="hljs-string">"./logo.png"</span>,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">400</span>,
+  <span class="hljs-attr">logoSizeRatio</span>: <span class="hljs-number">0.25</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"#2196F3"</span>,
+  <span class="hljs-attr">foregroundColor</span>: <span class="hljs-string">"#FFFFFF"</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toJpgFile</span>(<span class="hljs-string">"12_jpg_logo_blue.jpg"</span>, { <span class="hljs-attr">quality</span>: <span class="hljs-number">90</span> });
+</code></pre>
+<p><img src="examples/12_jpg_logo_blue.jpg" alt="JPEG with Logo Blue QR Code"></p>
+<h2 id="13-compressed-jpeg-with-green-theme">13. Compressed JPEG with Green Theme</h2>
+<p>JPEG with lower quality for smaller file size.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"https://github.com/jaredwray/qrbit"</span>,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">300</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"#4CAF50"</span>,
+  <span class="hljs-attr">foregroundColor</span>: <span class="hljs-string">"#FFFFFF"</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toJpgFile</span>(<span class="hljs-string">"13_jpg_compressed_green.jpg"</span>, { <span class="hljs-attr">quality</span>: <span class="hljs-number">70</span> });
+</code></pre>
+<p><img src="examples/13_jpg_compressed_green.jpg" alt="Compressed JPEG Green QR Code"></p>
+<h2 id="14-jpeg-with-buffer-logo-and-orange-theme">14. JPEG with Buffer Logo and Orange Theme</h2>
+<p>JPEG using buffer-based logo with orange background.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> logoBuffer = fs.<span class="hljs-title function_">readFileSync</span>(<span class="hljs-string">"./logo.png"</span>);
+<span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"JPEG Buffer Logo"</span>,
+  <span class="hljs-attr">logo</span>: logoBuffer,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">350</span>,
+  <span class="hljs-attr">logoSizeRatio</span>: <span class="hljs-number">0.2</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"#FF9800"</span>,
+  <span class="hljs-attr">foregroundColor</span>: <span class="hljs-string">"#FFFFFF"</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toJpgFile</span>(<span class="hljs-string">"14_jpg_buffer_logo_orange.jpg"</span>, { <span class="hljs-attr">quality</span>: <span class="hljs-number">85</span> });
+</code></pre>
+<p><img src="examples/14_jpg_buffer_logo_orange.jpg" alt="JPEG Buffer Logo Orange QR Code"></p>
+<h2 id="15-basic-webp">15. Basic WebP</h2>
+<p>WebP format with lossless encoding.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"Basic WebP QR Code"</span>,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">300</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toWebpFile</span>(<span class="hljs-string">"15_webp_basic.webp"</span>);
+</code></pre>
+<p><img src="examples/15_webp_basic.webp" alt="Basic WebP QR Code"></p>
+<h2 id="16-webp-with-logo-and-blue-theme">16. WebP with Logo and Blue Theme</h2>
+<p>WebP with embedded logo and custom blue background.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"WebP with Logo"</span>,
+  <span class="hljs-attr">logo</span>: <span class="hljs-string">"./logo.png"</span>,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">400</span>,
+  <span class="hljs-attr">logoSizeRatio</span>: <span class="hljs-number">0.25</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"#1e3a5f"</span>,
+  <span class="hljs-attr">foregroundColor</span>: <span class="hljs-string">"#FFFFFF"</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toWebpFile</span>(<span class="hljs-string">"16_webp_logo_blue.webp"</span>);
+</code></pre>
+<p><img src="examples/16_webp_logo_blue.webp" alt="WebP with Logo Blue QR Code"></p>
+<h2 id="17-large-webp-with-green-theme">17. Large WebP with Green Theme</h2>
+<p>Large WebP QR code with green color scheme.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"https://github.com/jaredwray/qrbit"</span>,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">500</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"#4CAF50"</span>,
+  <span class="hljs-attr">foregroundColor</span>: <span class="hljs-string">"#FFFFFF"</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toWebpFile</span>(<span class="hljs-string">"17_webp_large_green.webp"</span>);
+</code></pre>
+<p><img src="examples/17_webp_large_green.webp" alt="Large WebP Green QR Code"></p>
+<h2 id="18-webp-with-buffer-logo-and-purple-theme">18. WebP with Buffer Logo and Purple Theme</h2>
+<p>WebP using buffer-based logo with purple background.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> logoBuffer = fs.<span class="hljs-title function_">readFileSync</span>(<span class="hljs-string">"./logo.png"</span>);
+<span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"WebP Buffer Logo"</span>,
+  <span class="hljs-attr">logo</span>: logoBuffer,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">350</span>,
+  <span class="hljs-attr">logoSizeRatio</span>: <span class="hljs-number">0.2</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"#9C27B0"</span>,
+  <span class="hljs-attr">foregroundColor</span>: <span class="hljs-string">"#FFFFFF"</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toWebpFile</span>(<span class="hljs-string">"18_webp_buffer_logo_purple.webp"</span>);
+</code></pre>
+<p><img src="examples/18_webp_buffer_logo_purple.webp" alt="WebP Buffer Logo Purple QR Code"></p>
+<h2 id="19-low-error-correction">19. Low Error Correction</h2>
+<p>QR code with low (L) error correction level, suitable for clean environments with minimal risk of damage.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"https://github.com/jaredwray/qrbit?test=this+is+an+error+correction+test"</span>,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">400</span>,
+  <span class="hljs-attr">errorCorrection</span>: <span class="hljs-string">"L"</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"#1e3a5f"</span>,
+  <span class="hljs-attr">foregroundColor</span>: <span class="hljs-string">"#FFFFFF"</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toPngFile</span>(<span class="hljs-string">"19_ec_low.png"</span>);
+</code></pre>
+<p><img src="examples/19_ec_low.png" alt="Low Error Correction QR Code"></p>
+<h2 id="20-high-error-correction">20. High Error Correction</h2>
+<p>QR code with high (H) error correction level, recovers up to 30% damage — ideal for logos or printed codes.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> qr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QrBit</span>({
+  <span class="hljs-attr">text</span>: <span class="hljs-string">"https://github.com/jaredwray/qrbit?test=this+is+an+error+correction+test"</span>,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">400</span>,
+  <span class="hljs-attr">errorCorrection</span>: <span class="hljs-string">"H"</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"#1e3a5f"</span>,
+  <span class="hljs-attr">foregroundColor</span>: <span class="hljs-string">"#FFFFFF"</span>
+});
+<span class="hljs-keyword">await</span> qr.<span class="hljs-title function_">toPngFile</span>(<span class="hljs-string">"20_ec_high.png"</span>);
+</code></pre>
+<p><img src="examples/20_ec_high.png" alt="High Error Correction QR Code"></p>
+<p>These examples demonstrate the versatility and capabilities of QrBit for generating QR codes with various customizations, from simple text encoding to complex styled codes with embedded logos, supporting SVG, PNG, JPEG, and WebP formats.</p>
+<h2 id="contributing">Contributing</h2>
+<p>Please read our <a href="./CONTRIBUTING.md">Contributing Guidelines</a> and also our <a href="./CODE_OF_CONDUCT.md">Code of Conduct</a>.</p>
+<h2 id="license-and-copyright">License and Copyright</h2>
+<p><a href="https://github.com/jaredwray/qrbit/blob/main/LICENSE">MIT &#x26; Copyright (c) Jared Wray</a></p>

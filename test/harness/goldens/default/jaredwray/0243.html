@@ -1,0 +1,56 @@
+<p>The <strong>OpenFeature Remote Evaluation Protocol (OFREP)</strong> is an <a href="/docs/reference/other-technologies/ofrep/openapi">API specification</a> for feature flagging that enables vendor-agnostic communication between applications and flag management systems. It defines a standard API layer between the provider and the flag management system, allowing any open source or commercial system to implement the protocol and be compatible with community-maintained providers.</p>
+<h3 id="key-benefits">Key Benefits</h3>
+<ul>
+<li><strong>Vendor Agnostic</strong>: Connect to any OFREP-compliant flag management system without vendor-specific implementations</li>
+<li><strong>Standardized</strong>: Built on a common <a href="/docs/reference/other-technologies/ofrep/openapi">OpenAPI specification</a> for consistent integration</li>
+<li><strong>Flexible</strong>: Works on both client-side and server-side applications</li>
+<li><strong>Community Maintained</strong>: Generic OFREP providers maintained by the OpenFeature project</li>
+</ul>
+<h2 id="how-it-works">How It Works</h2>
+<p>OFREP is <strong>a protocol, not a provider</strong>. It defines how to communicate with feature flag management systems and works on top of OpenFeature SDKs by providing standardized providers.</p>
+<pre><code class="hljs language-mermaid">graph LR
+    A[Your Application] --> B[OpenFeature SDK]
+    B --> C[OFREP Provider]
+    C --> D[OFREP API]
+    D --> E[Flag Management System]
+</code></pre>
+<ol>
+<li>Your application uses the OpenFeature SDK</li>
+<li>The OpenFeature SDK uses an OFREP provider</li>
+<li>The OFREP provider communicates with your flag management system via the standardized OFREP API</li>
+<li>Your flag management system implements the <a href="/docs/reference/other-technologies/ofrep/openapi">OFREP specification</a></li>
+</ol>
+<h3 id="server-vs-client">Server vs Client</h3>
+<p>OFREP supports both paradigms defined by OpenFeature:</p>
+<h4 id="server-side-dynamic-context">Server-Side (Dynamic Context)</h4>
+<ul>
+<li>Evaluation happens by calling the OFREP API with context</li>
+<li>API request with evaluation context is made on every evaluation</li>
+<li>Context per evaluation</li>
+</ul>
+<h4 id="client-side-static-context">Client-Side (Static Context)</h4>
+<ul>
+<li>All flags are evaluated in one OFREP API call using a common static context</li>
+<li>Then local flag evaluation happens against the cached static context</li>
+<li>Context represents a single user or session</li>
+</ul>
+<h2 id="using-ofrep">Using OFREP</h2>
+<h3 id="available-providers">Available Providers</h3>
+<p>The OpenFeature community maintains OFREP providers for multiple languages. View the complete list of <a href="https://openfeature.dev/ecosystem/?instant_search%5BrefinementList%5D%5Bvendor%5D%5B0%5D=OFREP">OFREP providers in the ecosystem</a>.</p>
+<h3 id="available-flag-management-systems">Available Flag Management Systems</h3>
+<p>Several flag management systems support OFREP. View the complete list of <a href="https://openfeature.dev/ecosystem/?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=OFREP%20API">OFREP-compliant systems in the ecosystem</a>.</p>
+<h2 id="implementing-ofrep">Implementing OFREP</h2>
+<h3 id="for-provider-developers">For Provider Developers</h3>
+<p>To create an OFREP provider for a new language:</p>
+<ol>
+<li>Review the <a href="https://github.com/open-feature/protocol/blob/main/guideline/dynamic-context-provider.md">server provider guideline</a> or <a href="https://github.com/open-feature/protocol/blob/main/guideline/static-context-provider.md">client provider guideline</a></li>
+<li>Implement the provider for your SDK according to the guidelines</li>
+<li>Register your provider in the <a href="https://github.com/open-feature/openfeature.dev/issues">OpenFeature ecosystem</a></li>
+</ol>
+<h3 id="for-flag-management-system-developers">For Flag Management System Developers</h3>
+<p>To make your flag management system OFREP-compliant:</p>
+<ol>
+<li>Implement the <a href="/docs/reference/other-technologies/ofrep/openapi">OFREP OpenAPI specification</a></li>
+<li>Test your implementation with existing OFREP providers</li>
+<li>Register your system in the <a href="https://github.com/open-feature/openfeature.dev/issues">OpenFeature ecosystem</a></li>
+</ol>

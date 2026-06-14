@@ -1,0 +1,52 @@
+<h1 id="getting-started">Getting Started</h1>
+<p>The fastest way to try <code>http-cache</code> is with the official Docker images. We ship images
+that <strong>bundle a storage provider together with the gateway</strong> so a cache hit never
+leaves the container — minimal hops, maximum speed.</p>
+<blockquote>
+<p>⚠️ The specification and APIs below describe the target design. Images and packages
+are published as the implementation lands.</p>
+</blockquote>
+<h2 id="run-with-docker-bundled-storage">Run with Docker (bundled storage)</h2>
+<pre><code class="hljs language-bash">docker run -p 8080:8080 \
+  -e HTTP_CACHE_TOKEN=dev-token \
+  ghcr.io/jaredwray/http-cache:redis
+</code></pre>
+<p>The <code>:redis</code> tag bundles Redis with the gateway in a single image. Other bundles
+(<code>:memcache</code>, <code>:mongo</code>, …) follow the same pattern. For full control, use the base
+image and point it at your own backend:</p>
+<pre><code class="hljs language-bash">docker run -p 8080:8080 \
+  -e HTTP_CACHE_TOKEN=dev-token \
+  -e HTTP_CACHE_STORE=redis://redis:6379 \
+  ghcr.io/jaredwray/http-cache:latest
+</code></pre>
+<h2 id="your-first-cache-operations">Your first cache operations</h2>
+<p>The gateway is REST by default. Authenticate with a <code>Bearer</code> token or <code>x-api-token</code>
+header.</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Store a value</span>
+curl -X PUT http://localhost:8080/cache/greeting \
+  -H <span class="hljs-string">"Authorization: Bearer dev-token"</span> \
+  -H <span class="hljs-string">"Content-Type: application/json"</span> \
+  -d <span class="hljs-string">'{"value":"hello world","ttl":"5m"}'</span>
+
+<span class="hljs-comment"># Read it back (served from L1/L2 memory)</span>
+curl http://localhost:8080/cache/greeting \
+  -H <span class="hljs-string">"x-api-token: dev-token"</span>
+
+<span class="hljs-comment"># Invalidate it</span>
+curl -X DELETE http://localhost:8080/cache/greeting \
+  -H <span class="hljs-string">"Authorization: Bearer dev-token"</span>
+</code></pre>
+<h2 id="subscribe-to-live-changes">Subscribe to live changes</h2>
+<p>socket.io is enabled by default, so clients can react to cache changes instantly:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { io } <span class="hljs-keyword">from</span> <span class="hljs-string">"socket.io-client"</span>;
+
+<span class="hljs-keyword">const</span> socket = <span class="hljs-title function_">io</span>(<span class="hljs-string">"http://localhost:8080"</span>, { <span class="hljs-attr">auth</span>: { <span class="hljs-attr">token</span>: <span class="hljs-string">"dev-token"</span> } });
+socket.<span class="hljs-title function_">on</span>(<span class="hljs-string">"cache:set"</span>, <span class="hljs-function">(<span class="hljs-params">{ key }</span>) =></span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"updated"</span>, key));
+socket.<span class="hljs-title function_">on</span>(<span class="hljs-string">"cache:delete"</span>, <span class="hljs-function">(<span class="hljs-params">{ key }</span>) =></span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"invalidated"</span>, key));
+</code></pre>
+<h2 id="next-steps">Next steps</h2>
+<ul>
+<li><strong><a href="/docs/architecture">Architecture</a></strong> — how it all fits together.</li>
+<li><strong><a href="/docs/gateway-and-api">Gateway &#x26; API</a></strong> — the full REST surface and auth model.</li>
+<li><strong><a href="/docs/deploy-cloudflare">Deployment</a></strong> — go global with load balancing.</li>
+</ul>

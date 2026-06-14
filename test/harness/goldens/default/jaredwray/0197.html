@@ -1,0 +1,87 @@
+<h1 id="versioning--release-tags">Versioning &#x26; Release Tags</h1>
+<p>Keyv supports more than one major version at a time, so the npm <a href="https://docs.npmjs.com/cli/v11/commands/npm-dist-tag/">dist-tags</a> are managed deliberately. This page explains which tag points where and which install command to use.</p>
+<p>Since <strong>v6</strong>, all Keyv packages — the core <code>keyv</code> package and every official adapter (<code>@keyv/redis</code>, <code>@keyv/postgres</code>, …) — share a single version and are released together, so the tags below apply consistently across the whole family. (v5 and earlier versioned each package independently — see <a href="#why-all-packages-share-one-version">Why all packages share one version</a> for the reasoning.)</p>
+<h2 id="which-version-do-i-get">Which version do I get?</h2>
+<pre><code class="hljs language-bash">pnpm add keyv          <span class="hljs-comment"># latest stable (recommended)</span>
+pnpm add keyv@beta     <span class="hljs-comment"># the newest v6 pre-release</span>
+pnpm add keyv@5        <span class="hljs-comment"># the newest stable v5 release</span>
+pnpm add keyv@4        <span class="hljs-comment"># the newest stable v4 release</span>
+</code></pre>
+<p>From v6 on, an adapter shares Keyv's version, so <code>pnpm add @keyv/redis@6</code> lines up with <code>keyv@6</code>. (On v5 and earlier, adapters carried their own version numbers — see <a href="#why-all-packages-share-one-version">Why all packages share one version</a>.)</p>
+<h2 id="dist-tags">Dist-tags</h2>
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Points to</th>
+<th>Use it for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>latest</code></td>
+<td>Newest <strong>stable</strong> release of the current major</td>
+<td>The default — <code>pnpm add keyv</code></td>
+</tr>
+<tr>
+<td><code>beta</code></td>
+<td>Newest <strong>v6 pre-release</strong></td>
+<td>Trying v6 before it ships</td>
+</tr>
+<tr>
+<td><code>v5-lts</code></td>
+<td>Newest <strong>stable v5</strong> release</td>
+<td>Pinning the v5 line explicitly (appears once v6 is <code>latest</code>)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>While a major is still in pre-release, <code>latest</code> stays on the previous stable major. Today <code>latest</code> is <strong>v5</strong> and <code>beta</code> is <strong>v6</strong>; when v6 ships stable, <code>latest</code> moves to v6 and <code>v5-lts</code> tracks the v5 line.</p>
+</blockquote>
+<h2 id="why-keyv5-works-without-a-special-tag">Why keyv@5 works without a special tag</h2>
+<p>You may notice there is no <code>v5</code> or <code>v6</code> dist-tag. That is intentional: npm <strong>rejects</strong> dist-tag names that look like a semver version or range, so a tag literally named <code>v6</code> is not allowed. Instead, <code>keyv@5</code>, <code>keyv@v5</code>, and <code>keyv@6</code> are interpreted as <strong>semver ranges</strong> (<code>5.x</code>, <code>6.x</code>) and npm resolves them to the newest matching <strong>stable</strong> release automatically — no tag required.</p>
+<p>One consequence: a semver range only matches stable releases. While v6 is in pre-release, <code>keyv@6</code> matches nothing, so use <strong><code>keyv@beta</code></strong> to try it. Once v6 ships a stable release, <code>keyv@6</code> starts resolving to it.</p>
+<h2 id="how-releases-are-tagged">How releases are tagged</h2>
+<p>Each release computes its tag from its version:</p>
+<ul>
+<li><strong>Pre-release</strong> (e.g. <code>6.0.0-beta.1</code>) → published under the pre-release channel (<code>beta</code>). Never touches <code>latest</code>.</li>
+<li><strong>Stable, current major</strong> → published under <code>latest</code>.</li>
+<li><strong>Stable, older major</strong> → published under <code>v{major}-lts</code> (e.g. <code>v5-lts</code>). An older major can never move <code>latest</code>.</li>
+</ul>
+<p>A safety guard refuses any release that would move <code>latest</code> backwards, so <code>pnpm add keyv</code> always installs a forward-moving stable line.</p>
+<h2 id="why-all-packages-share-one-version">Why all packages share one version</h2>
+<p>Before v6, each Keyv package was versioned independently — a package only got a new version when its own code changed. That is the textbook semver approach, but for a family of packages designed to be used together it created friction:</p>
+<ul>
+<li><strong>Compatibility was a guessing game.</strong> Which <code>@keyv/redis</code> works with which <code>keyv</code>? You had to consult a compatibility matrix instead of reading it off the version number.</li>
+<li><strong>Dist-tags didn't line up.</strong> <code>keyv@beta</code> and <code>@keyv/redis@beta</code> could point at unrelated version numbers, and a range like <code>@keyv/redis@6</code> would not necessarily match <code>keyv@6</code>.</li>
+<li><strong>Adapters looked stale.</strong> A solid adapter that simply hadn't changed in a while would lag several majors behind core, reading as unmaintained when it was fine.</li>
+<li><strong>Coordinated changes were awkward.</strong> The v6 overhaul touched core, serialization, compression, and the adapters together; shipping that cleanly wants a single coordinated release, not a dozen independently-versioned ones.</li>
+</ul>
+<p>From v6 onward we version the whole family together: every package shares one version and is published at the same time. Now the version number <em>is</em> the compatibility statement — <code>keyv@6.2.0</code> is built and tested against <code>@keyv/redis@6.2.0</code> — and every dist-tag (<code>latest</code>, <code>beta</code>, <code>v5-lts</code>) means the same thing across every package.</p>
+<p>The trade-off is that a package can get a new version even when its own code didn't change, simply because the family moved. We accept that: the clarity of "install everything at the same version" is worth more than a per-package number that strictly reflects only that package's own diffs.</p>
+<p>These family-wide behaviors — shared versions, and a dist-tag meaning the same thing everywhere — describe <strong>v6 onward</strong>. The v5 and v4 lines keep the independent versions they shipped with, so on those lines you pin each adapter to its own compatible release.</p>
+<h2 id="maintenance--breaking-changes-on-lts">Maintenance &#x26; breaking changes on LTS</h2>
+<p><strong>Our goal: an LTS line never changes its API landscape.</strong> We aim for staying within a major (<code>keyv@5</code>) to mean <code>pnpm update</code> is safe — your code keeps compiling and behaving the same. "API landscape" here means the public types and method signatures, constructor options, events, runtime behavior, and the supported runtimes (Node.js versions, ESM/CJS). We work to keep all of these stable across an LTS line.</p>
+<p>Breaking changes — to Keyv's API or to its supported runtimes — only ever land on the <strong>current development major</strong> (today, v6).</p>
+<h3 id="when-an-underlying-dependency-releases-a-breaking-major-on-lts">When an underlying dependency releases a breaking major on LTS</h3>
+<p>Keyv's core has no dependencies, but the storage adapters wrap third-party drivers (for example <code>@keyv/redis</code> over its Redis client, <code>@keyv/sqlite</code> over its SQLite driver). When one of those drivers ships a breaking major, the question is <strong>not</strong> "did the dependency have a major?" but "<strong>does adopting it change Keyv's own contract?</strong>":</p>
+<ul>
+<li><strong>It can be absorbed</strong> — the adapter handles the difference internally and nothing observable changes for you (same API, same behavior, same supported Node versions). → We ship it as a <strong>minor</strong> release on the LTS line. (A pure security or internal-only fix may be a <strong>patch</strong>.) A dependency major is significant enough that we signal it with a minor rather than a patch, even though your code needs no changes.</li>
+<li><strong>It cannot be absorbed</strong> — adopting it would change Keyv's API, alter a default you rely on, or drop a supported runtime (e.g. the driver drops an older Node version). → We <strong>do not</strong> take it on the LTS line. The LTS line stays on the last compatible driver major, and the upgrade lands only on the current development major.</li>
+</ul>
+<p>So a major bump of an inner dependency never forces a major bump of Keyv, and it never forces a breaking change onto LTS. The dependency's version number doesn't drive Keyv's — Keyv's public contract does. That is what semver actually versions: <em>our</em> API, not our dependencies' APIs.</p>
+<blockquote>
+<p>Because all Keyv packages share one version, a dependency change in a single adapter is released as a version bump across the whole family. That is expected — the family always moves together. (This is the v6 model; on the v5 line, which still uses independent versions, only the changed adapter bumps.)</p>
+</blockquote>
+<h3 id="when-a-dependency-raises-its-nodejs-requirement">When a dependency raises its Node.js requirement</h3>
+<p>Raising the minimum supported Node.js version is itself a <strong>breaking change</strong> — it is part of the runtime contract above, even when no code changes. A user on the dropped Node version who runs <code>pnpm update</code> would suddenly be unable to install or run Keyv. So we treat a dependency that raises its Node floor exactly like any other change we cannot absorb:</p>
+<ul>
+<li><strong>On an LTS line (and on any already-released major):</strong> we never raise the Node floor. If a driver's new version requires a newer Node than the line supports, the line stays on the last driver version compatible with its committed Node range. The newer driver is adopted only in the next Keyv major.</li>
+<li><strong>Node floor increases happen only at a major boundary.</strong> A new Keyv major may raise its minimum Node version — and is the place where we adopt drivers that did. While that major is still in pre-release the floor can still move; once it ships stable, the floor is fixed for that major's lifetime.</li>
+</ul>
+<p>In short, <code>engines.node</code> on a released line never goes up. We track Node.js's own <a href="https://nodejs.org/en/about/previous-releases">release schedule</a> and drop end-of-life Node versions only when we cut a new major — never on LTS, and never mid-major.</p>
+<h3 id="security-fixes-on-lts-versions">Security fixes on LTS versions</h3>
+<p>Security is the one thing that can override "no changes on LTS", and we work hard to avoid even that. If a vulnerability's only fix lives in a driver major that <em>would</em> break Keyv's contract, we first try to pin a patched release of the compatible major, or get the fix backported. Only if there is genuinely no compatible fix do we make an announced, documented exception — this is rare and clearly communicated.</p>
+<h3 id="peer-dependencies">Peer dependencies</h3>
+<p>Some adapters take their driver as a peer dependency, so you control its version. On an LTS line we keep the supported peer range stable; support for a driver's new breaking major is added on the current development major, not backported.</p>
+<p>For the v5 → v6 changes themselves, see the <a href="/docs/v5-to-v6">v5 to v6 Migration</a> guide.</p>

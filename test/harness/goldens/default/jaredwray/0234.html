@@ -1,0 +1,137 @@
+<p><img src="site/logo.svg" alt="Airhorn" title="Airhorn"></p>
+<p><a href="https://github.com/jaredwray/airhorn/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/airhorn/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://codecov.io/gh/jaredwray/airhorn"><img src="https://codecov.io/gh/jaredwray/airhorn/branch/main/graph/badge.svg?token=4OJEEB67Q5" alt="codecov"></a>
+<a href="https://github.com/jaredwray/airhorn/blob/master/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/airhorn" alt="license"></a>
+<a href="https://npmjs.com/package/airhorn"><img src="https://img.shields.io/npm/dm/airhorn" alt="npm"></a>
+<a href="https://npmjs.com/package/airhorn"><img src="https://img.shields.io/npm/v/airhorn" alt="npm"></a></p>
+<h1 id="cloud-native-notifications-library">Cloud Native Notifications Library</h1>
+<p>Airhorn makes it easy to send SMS, SMTP, Webhooks, and mobile push notifications easily using templates through your standard cloud providers. We focused on making it cloud native by default (using cloud services).</p>
+<h1 id="features">Features</h1>
+<ul>
+<li>Supports multiple notification types: SMS, Email, Mobile Push, Webhooks</li>
+<li>A unified API for all notification types using the <code>send()</code> method.</li>
+<li>Powerful <strong>Hooks system</strong> via <a href="https://hookified.org">Hookified</a> (<code>BeforeSend</code>, <code>AfterSend</code>) for intercepting and modifying messages using <code>onHook</code> with <code>IHook</code> objects.</li>
+<li>Event Emitting built in by default for extendability and observability.</li>
+<li>Send Strategy (Round Robin, Fail Over, All) Choose the best delivery method for each notification.</li>
+<li>Built in Webhook support for sending notifications to external services.</li>
+<li>Built in support for retries and error handling on sends.</li>
+<li>Advanced caching on template compilation and execution.</li>
+<li>Load a template from a file for easy GitOps based workflows.</li>
+<li>Many supported providers such as Twilio (with Sendgrid), AWS, and Google Cloud.</li>
+<li>Robust (6+ template formats) templating via <a href="https://github.com/jaredwray/ecto">ecto</a></li>
+<li>Easily build your own provider with minimal effort via <code>AirhornProvider</code> interface.</li>
+<li>Statistics tracking for send successes, failures, and execution times (instance only).</li>
+<li>ESM and Typescript based supporting Nodejs 22+</li>
+<li>Maintained on a regular basis with updates and improvements.</li>
+</ul>
+<h1 id="getting-started">Getting Started</h1>
+<p>To get started with Airhorn, you can install the package via npm:</p>
+<pre><code class="hljs language-bash">npm install airhorn @airhornjs/twilio
+</code></pre>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornProviderType</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">AirhornTwilio</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@airhornjs/twilio"</span>;
+
+<span class="hljs-keyword">const</span> providers = [
+	<span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornTwilio</span>({
+		<span class="hljs-attr">accountSid</span>: <span class="hljs-string">"your_account_sid"</span>,
+		<span class="hljs-attr">authToken</span>: <span class="hljs-string">"your_auth_token"</span>
+	}),
+];
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>({
+	providers
+});
+
+<span class="hljs-comment">// this will give you twilio and webhook (built in) support. Now lets create a template and send it!</span>
+<span class="hljs-keyword">const</span> template = {
+	<span class="hljs-attr">from</span>: <span class="hljs-string">"+12223334444"</span>,
+	<span class="hljs-attr">content</span>: <span class="hljs-string">"Hey &#x3C;%= name %> this is a test message from Airhorn"</span>,
+	<span class="hljs-attr">templateEngine</span>: <span class="hljs-string">"ejs"</span>,
+}
+
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">name</span>: <span class="hljs-string">"John"</span> };
+
+<span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(<span class="hljs-string">"+1234567890"</span>, template, data, <span class="hljs-title class_">AirhornProviderType</span>.<span class="hljs-property">SMS</span>);
+</code></pre>
+<p>Check out the documentation and providers to learn more!</p>
+<h1 id="packages">Packages</h1>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Description</th>
+<th>Documentation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="packages/airhorn"><code>airhorn</code></a></td>
+<td>Core library with unified send API and webhook support</td>
+<td><a href="packages/airhorn/README.md">README</a></td>
+</tr>
+<tr>
+<td><a href="packages/twilio"><code>@airhornjs/twilio</code></a></td>
+<td>Twilio provider for SMS and Email (SendGrid)</td>
+<td><a href="packages/twilio/README.md">README</a></td>
+</tr>
+<tr>
+<td><a href="packages/aws"><code>@airhornjs/aws</code></a></td>
+<td>AWS provider for SMS (SNS), Email (SES), and Push (SNS)</td>
+<td><a href="packages/aws/README.md">README</a></td>
+</tr>
+<tr>
+<td><a href="packages/azure"><code>@airhornjs/azure</code></a></td>
+<td>Azure provider for SMS, Email, and Push</td>
+<td><a href="packages/azure/README.md">README</a></td>
+</tr>
+</tbody>
+</table>
+<h1 id="providers">Providers</h1>
+<p>We currently support multiple providers and you can easily add more by following the <code>AirhornProvider</code> interface. Here are the supported providers:</p>
+<p>We currently support <code>twilio</code>, <code>aws</code>, and <code>azure</code> with thier offerings. Here is a chart showing what functionality is in each:</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>SMS</th>
+<th>Email</th>
+<th>Push</th>
+<th>Webhook</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(built in <code>airhorn</code>)</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>@airhornjs/twilio</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>@airhornjs/aws</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>@airhornjs/azure</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<p>Note: We used to support firebase because of mobile push but it made more sense to focus on <code>aws</code> and <code>azure</code> because it is more comprehensive.</p>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>Now that you've set up your workspace, you're ready to contribute changes to the <code>airhorn</code> repository you can refer to the <a href="CONTRIBUTING.md">CONTRIBUTING</a> guide. If you have any questions please feel free to ask by creating an issue and label it <code>question</code>.</p>
+<h1 id="licensing-and-copyright">Licensing and Copyright</h1>
+<p>This project is <a href="LICENSE">MIT License © Jared Wray</a></p>

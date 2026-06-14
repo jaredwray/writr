@@ -1,0 +1,109 @@
+<h1 id="rivus">Rivus</h1>
+<p>A Rust application gateway designed to serve static sites, run isolated WASM, and route traffic across a Kubernetes cluster — sitting behind Cloudflare for SSL termination and WAF.</p>
+<h2 id="projects">Projects</h2>
+<ul>
+<li><a href="./gateway"><code>gateway/</code></a> — Rust + Pingora data-plane gateway. Serves static sites from object storage; Cloudflare terminates TLS in front.</li>
+<li><a href="./management"><code>management/</code></a> — TypeScript management API. Owns deploys, config writes, replication to primary/secondary stores, and garbage collection.</li>
+</ul>
+<h2 id="phases">Phases</h2>
+<h3 id="phase-1--static-site-serving">Phase 1 — Static site serving</h3>
+<ul>
+<li>Rust-based, very fast for static content, very simple to configure.</li>
+<li>Object-storage backend with a primary and a secondary tier; per-call failover with hedging on slow primary and a per-pod circuit breaker.</li>
+<li>Each domain is a folder in object storage. If the folder is not there, the domain does not exist.</li>
+<li>Each domain ships an <code>app.config.json</code> (404/5xx pages, redirects, custom headers, SPA fallback, content-type rules, etc.).</li>
+<li>Structured access logs and application logs designed for high-volume scrape-and-ship pipelines (Vector / Fluent Bit → object storage / Loki / ClickHouse).</li>
+<li>Scalable and resilient: stateless pods, atomic content-addressed deploys, graceful shutdown, defense-in-depth limits.</li>
+<li>Runs on Kubernetes in Docker across hundreds of instances.</li>
+</ul>
+<h3 id="phase-2--isolated-wasm-execution--advanced-caching">Phase 2 — Isolated WASM execution + advanced caching</h3>
+<ul>
+<li>Define WASM handlers in <code>app.config.json</code> via route bindings.</li>
+<li>Execute WASM in isolation with high performance (Wasmtime + Component Model + WASI Preview 2; pre-compiled, warm-pool of stores per module, fuel/epoch + memory + wall-clock limits).</li>
+<li>Advanced cache for static + WASM responses with NATS-triggered invalidation by domain, path, or single file (JetStream for delivery guarantees; epoch-counter resync to recover missed messages).</li>
+</ul>
+<h3 id="phase-3--cluster-routing">Phase 3 — Cluster routing</h3>
+<ul>
+<li>Route based on <code>app.config.json</code> route handling to any instance inside the Kubernetes cluster (service discovery via the k8s API; per-route timeouts, retries on idempotent calls, hedging, circuit breakers; mTLS to upstreams; header hygiene).</li>
+</ul>
+<h2 id="architecture-decisions">Architecture decisions</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP / driver framework</td>
+<td>Pingora, hidden behind a <code>Gateway</code> trait so the framework is replaceable</td>
+</tr>
+<tr>
+<td>Async runtime</td>
+<td>tokio (via Pingora)</td>
+</tr>
+<tr>
+<td>Object-storage abstraction</td>
+<td>OpenDAL (S3, GCS, Azure)</td>
+</tr>
+<tr>
+<td>Storage tiering</td>
+<td>Primary + secondary, per-call failover, hedge on slow primary, per-pod circuit breaker, active health probe on a sentinel key</td>
+</tr>
+<tr>
+<td>TLS termination at origin</td>
+<td>Cloudflare Origin CA wildcard cert + Authenticated Origin Pulls (BoringSSL)</td>
+</tr>
+<tr>
+<td>HTTP versions to origin</td>
+<td>HTTP/1.1 + HTTP/2</td>
+</tr>
+<tr>
+<td>Logging / tracing</td>
+<td><code>tracing</code> + <code>tracing-subscriber</code> (JSON), <code>tracing-log</code> bridge for Pingora; structured access log emitted by the driver</td>
+</tr>
+<tr>
+<td><code>app.config</code> format</td>
+<td>JSON; schema generated from Rust types via <code>schemars</code></td>
+</tr>
+<tr>
+<td>Hostname encoding</td>
+<td>Literal punycode (IDNA via the <code>idna</code> crate)</td>
+</tr>
+<tr>
+<td>Container image</td>
+<td>distroless/cc + statically linked binary</td>
+</tr>
+<tr>
+<td>Repo scope</td>
+<td>Data plane only; control plane lives in <code>management/</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="storage-layout">Storage layout</h2>
+<pre><code>&#x3C;bucket>/
+  domains/
+    example.com/
+      current.json                         # tiny pointer { schema_version, release, deployed_at }
+      releases/&#x3C;sha>/
+        app.config.json                    # config travels with the release
+        index.html
+        assets/...
+  _health/
+    probe                                  # sentinel object for active health probes
+</code></pre>
+<ul>
+<li>Hostnames are lowercased and converted to punycode before being used as folder names.</li>
+<li>Each subdomain is its own folder; apex↔www is a per-domain redirect rule.</li>
+<li>Up to 1000 historical releases retained per domain.</li>
+<li>Pointer (<code>current.json</code>) is cached in-process by the gateway: 30s TTL + 60s stale-while-revalidate in Phase 1; NATS-driven invalidation in Phase 2.</li>
+</ul>
+<h2 id="contract-atomic-deploys">Contract: Atomic Deploys</h2>
+<ol>
+<li><strong>Releases are immutable and content-addressed.</strong> Each deploy creates <code>domains/&#x3C;host>/releases/&#x3C;sha>/...</code>. Once written, never modified.</li>
+<li><strong>Pointer flip is the deploy commit.</strong> The management API does NOT update <code>domains/&#x3C;host>/current.json</code> until all blobs of the new release have been confirmed written on BOTH primary and secondary. The pointer flip is the moment the new release becomes live.</li>
+<li><strong>Pointer file replication can be async.</strong> Primary's pointer may briefly lead secondary's. The gateway reads <code>current.json</code> from the same tier it ends up serving from, so a request is internally consistent (might be on the older release during primary outage, never torn between releases).</li>
+<li><strong>Old releases are retained for a grace period</strong> that must exceed the gateway's pointer cache TTL plus the maximum in-flight request duration (recommend ≥ 30 minutes) so requests holding the old pointer can complete.</li>
+<li><strong>Garbage collection</strong> of old releases is the management API's responsibility, never the gateway's. A release may only be deleted once it is unreferenced by any tier's <code>current.json</code> AND has remained unreferenced for longer than the grace period — content-addressing means the same SHA can be re-referenced by a rollback or repeat deploy.</li>
+</ol>

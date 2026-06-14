@@ -1,0 +1,765 @@
+<p><img src="https://airhorn.org/logo.svg" alt="Airhorn" title="Airhorn"></p>
+<p><a href="https://github.com/jaredwray/airhorn/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/airhorn/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://codecov.io/gh/jaredwray/airhorn"><img src="https://codecov.io/gh/jaredwray/airhorn/branch/main/graph/badge.svg?token=4OJEEB67Q5" alt="codecov"></a>
+<a href="https://github.com/jaredwray/airhorn/blob/master/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/airhorn" alt="license"></a>
+<a href="https://npmjs.com/package/airhorn"><img src="https://img.shields.io/npm/dm/airhorn" alt="npm"></a>
+<a href="https://npmjs.com/package/airhorn"><img src="https://img.shields.io/npm/v/airhorn" alt="npm"></a></p>
+<h1 id="cloud-native-notifications">Cloud Native Notifications</h1>
+<p><code>Airhorn</code> simplifies the process of notifications by using templates to send messages across various providers with a common easy to use interface.</p>
+<ul>
+<li>Supports multiple notification types: SMS, Email, Mobile Push, Webhooks</li>
+<li>A unified API for all notification types using the <code>send()</code> method.</li>
+<li>Hooks and Emitting built in by default for extendability and observability.</li>
+<li>Send Strategy (Round Robin, Fail Over, All) Choose the best delivery method for each notification.</li>
+<li>Built in Webhook support for sending notifications to external services.</li>
+<li>Built in support for retries and error handling on sends.</li>
+<li>Advanced caching on template compilation and execution.</li>
+<li>Load a template from a file for easy GitOps based workflows.</li>
+<li>Many supported providers such as Twilio (with Sendgrid), AWS, and Google Cloud.</li>
+<li>Robust (6+ template formats) templating via <a href="https://github.com/jaredwray/ecto">ecto</a></li>
+<li>Easily build your own provider with minimal effort via <code>AirhornProvider</code> interface.</li>
+<li>Statistics tracking for send successes, failures, and execution times (instance only).</li>
+<li>ESM and Typescript based supporting Nodejs 20+</li>
+<li>Maintained on a regular basis with updates and improvements.</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#airhorn-options">Airhorn Options</a></li>
+<li><a href="#using-send-helper-methods">Using Send Helper Methods</a></li>
+<li><a href="#airhorn-send-response">Airhorn Send Response</a></li>
+<li><a href="#send-strategies">Send Strategies</a>
+<ul>
+<li><a href="#sendall"><code>sendAll</code></a></li>
+<li><a href="#sendfailover"><code>sendFailOver</code></a></li>
+<li><a href="#sendroundrobin"><code>sendRoundRobin</code></a></li>
+</ul>
+</li>
+<li><a href="#airhorn-api">Airhorn API</a>
+<ul>
+<li><a href="#constructor">Constructor</a>
+<ul>
+<li><a href="#new-airhornoptions-airhornoptions"><code>new Airhorn(options?: AirhornOptions)</code></a></li>
+</ul>
+</li>
+<li><a href="#properties">Properties</a>
+<ul>
+<li><a href="#cache"><code>.cache</code></a></li>
+<li><a href="#sendstrategy"><code>.sendStrategy</code></a></li>
+<li><a href="#throwonerrors"><code>.throwOnErrors</code></a></li>
+<li><a href="#statistics"><code>.statistics</code></a></li>
+<li><a href="#providers"><code>.providers</code></a></li>
+</ul>
+</li>
+<li><a href="#methods">Methods</a>
+<ul>
+<li><a href="#send"><code>.send()</code></a></li>
+<li><a href="#sendall-1"><code>.sendAll()</code></a></li>
+<li><a href="#sendfailover-1"><code>.sendFailOver()</code></a></li>
+<li><a href="#sendroundrobin-1"><code>.sendRoundRobin()</code></a></li>
+<li><a href="#sendsms"><code>.sendSMS()</code></a></li>
+<li><a href="#sendemail"><code>.sendEmail()</code></a></li>
+<li><a href="#sendmobilepush"><code>.sendMobilePush()</code></a></li>
+<li><a href="#sendwebhook"><code>.sendWebhook()</code></a></li>
+<li><a href="#loadtemplate"><code>.loadTemplate()</code></a></li>
+<li><a href="#addprovider"><code>.addProvider()</code></a></li>
+<li><a href="#addproviders"><code>.addProviders()</code></a></li>
+<li><a href="#getprovidersbytype"><code>.getProvidersByType()</code></a></li>
+<li><a href="#generatemessage"><code>.generateMessage()</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#using-webhooks">Using Webhooks</a></li>
+<li><a href="#statistics-1">Statistics</a></li>
+<li><a href="#hooks">Hooks</a>
+<ul>
+<li><a href="#registering-hooks-with-onhook">Registering Hooks with <code>onHook</code></a></li>
+<li><a href="#modifying-messages-with-beforesend">Modifying Messages with BeforeSend</a></li>
+<li><a href="#inspecting-results-with-aftersend">Inspecting Results with AfterSend</a></li>
+<li><a href="#managing-hooks-by-id">Managing Hooks by ID</a></li>
+</ul>
+</li>
+<li><a href="#emitting-events">Emitting Events</a></li>
+<li><a href="#load-template-helper">Load Template Helper</a></li>
+<li><a href="#core-supported-providers">Core Supported Providers</a></li>
+<li><a href="#third-party-providers">Third Party Providers</a></li>
+<li><a href="#creating-a-provider">Creating a Provider</a></li>
+<li><a href="#migration-to-v7">Migration to v7</a>
+<ul>
+<li><a href="#breaking-changes">Breaking Changes</a>
+<ul>
+<li><a href="#nodejs-22180-required">Node.js >=22.18.0 required</a></li>
+<li><a href="#hookified-upgraded-to-v3-no-api-changes">Hookified upgraded to v3 (no API changes)</a></li>
+</ul>
+</li>
+<li><a href="#migration-checklist">Migration Checklist</a></li>
+</ul>
+</li>
+<li><a href="#migration-to-v6">Migration to v6</a>
+<ul>
+<li><a href="#breaking-changes-1">Breaking Changes</a>
+<ul>
+<li><a href="#addhook-renamed-to-onhook"><code>addHook</code> renamed to <code>onHook</code></a></li>
+<li><a href="#removehook-now-accepts-ihook-objects"><code>removeHook</code> now accepts <code>IHook</code> objects</a></li>
+<li><a href="#gethooks-returns-ihook-instead-of-functions"><code>getHooks</code> returns <code>IHook[]</code> instead of functions</a></li>
+<li><a href="#throwonerrors-now-delegates-to-hookified"><code>throwOnErrors</code> now delegates to hookified</a></li>
+<li><a href="#hookified-constructor-option-renames">Hookified constructor option renames</a></li>
+</ul>
+</li>
+<li><a href="#migration-checklist-1">Migration Checklist</a></li>
+</ul>
+</li>
+<li><a href="#how-to-contribute">How to Contribute</a></li>
+<li><a href="#licensing-and-copyright">Licensing and Copyright</a></li>
+</ul>
+<h1 id="getting-started">Getting Started</h1>
+<p>To get started with Airhorn, you can install it via npm:</p>
+<pre><code class="hljs language-bash">npm install airhorn
+</code></pre>
+<p>Once installed, this gives you the main send functionality and built in webhook support. You can use it in your project like so:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornProviderType</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>();
+
+<span class="hljs-keyword">const</span> template = {
+	<span class="hljs-attr">from</span>: <span class="hljs-string">"https://mywebhookdomain.com"</span>,
+	<span class="hljs-attr">content</span>: <span class="hljs-string">"Hey &#x3C;%= name %> this is a test message from Airhorn"</span>,
+	<span class="hljs-attr">templateEngine</span>: <span class="hljs-string">"ejs"</span>,
+}
+
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">name</span>: <span class="hljs-string">"John"</span> };
+
+<span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(<span class="hljs-string">"https://mockhttp.org/post"</span>, template, data, <span class="hljs-title class_">AirhornProviderType</span>.<span class="hljs-property">WEBHOOK</span>);
+</code></pre>
+<p>Now lets configure the Airhorn instance with your preferred providers such as <code>Twilio</code> for SMS and <code>SendGrid</code> for Email.</p>
+<pre><code class="hljs language-bash">npm install airhorn @airhornjs/twilio
+</code></pre>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornProviderType</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">AirhornTwilio</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@airhornjs/twilio"</span>;
+
+<span class="hljs-keyword">const</span> providers = [
+	<span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornTwilio</span>({
+		<span class="hljs-attr">accountSid</span>: <span class="hljs-string">"your_account_sid"</span>,
+		<span class="hljs-attr">authToken</span>: <span class="hljs-string">"your_auth_token"</span>
+	}),
+];
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>({
+	providers
+});
+
+<span class="hljs-comment">// this will give you twilio and webhook (built in) support. Now lets create a template and send it!</span>
+<span class="hljs-keyword">const</span> template = {
+	<span class="hljs-attr">from</span>: <span class="hljs-string">"+12223334444"</span>,
+	<span class="hljs-attr">content</span>: <span class="hljs-string">"Hey &#x3C;%= name %> this is a test message from Airhorn"</span>,
+	<span class="hljs-attr">templateEngine</span>: <span class="hljs-string">"ejs"</span>,
+}
+
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">name</span>: <span class="hljs-string">"John"</span> };
+
+<span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(<span class="hljs-string">"+1234567890"</span>, template, data, <span class="hljs-title class_">AirhornProviderType</span>.<span class="hljs-property">SMS</span>);
+</code></pre>
+<p>To learn about the available providers and their capabilities, check the <a href="#core-supported-providers">Providers</a> section.</p>
+<h1 id="airhorn-options">Airhorn Options</h1>
+<p>Airhorn provides a variety of options to customize its behavior. You can configure these options when creating an instance of the <code>Airhorn</code> class:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornSendStrategy</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>({
+	<span class="hljs-attr">sendStrategy</span>: <span class="hljs-title class_">AirhornSendStrategy</span>.<span class="hljs-property">RoundRobin</span>
+});
+</code></pre>
+<p>Here is the <code>AirhornOptions</code> type:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">AirhornOptions</span> = {
+	<span class="hljs-comment">/**
+	 * Whether to enable caching.
+	 * <span class="hljs-doctag">@default</span> <span class="hljs-variable">true</span>
+	 */</span>
+	<span class="hljs-attr">cache</span>?: <span class="hljs-built_in">boolean</span> | <span class="hljs-title class_">Cacheable</span> | <span class="hljs-title class_">CacheableOptions</span>;
+	<span class="hljs-comment">/**
+	 * Whether to collect statistics.
+	 * <span class="hljs-doctag">@default</span> <span class="hljs-variable">false</span>
+	 */</span>
+	<span class="hljs-attr">statistics</span>?: <span class="hljs-built_in">boolean</span>;
+	<span class="hljs-comment">/**
+	 * The providers to add to the Airhorn instance. AirhornWebhook is added by default unless `useWebhookProvider` is set to false.
+	 */</span>
+	<span class="hljs-attr">providers</span>?: <span class="hljs-title class_">Array</span>&#x3C;<span class="hljs-title class_">AirhornProvider</span>>;
+	<span class="hljs-comment">/**
+	 * Whether to use the built-in webhook provider.
+	 * <span class="hljs-doctag">@default</span> <span class="hljs-variable">true</span>
+	 */</span>
+	<span class="hljs-attr">useWebhookProvider</span>?: <span class="hljs-built_in">boolean</span>;
+	<span class="hljs-comment">/**
+	 * The retry strategy to use when sending messages.
+	 * <span class="hljs-doctag">@default</span> 0
+	 */</span>
+	<span class="hljs-attr">retryStrategy</span>?: <span class="hljs-title class_">AirhornRetryStrategy</span>;
+	<span class="hljs-comment">/**
+	 * The timeout to use when sending messages.
+	 * <span class="hljs-doctag">@default</span> 100
+	 */</span>
+	<span class="hljs-attr">timeout</span>?: <span class="hljs-built_in">number</span>;
+	<span class="hljs-comment">/**
+	 * The send strategy to use when sending messages.
+	 * <span class="hljs-doctag">@default</span> AirhornSendStrategy.RoundRobin
+	 */</span>
+	<span class="hljs-attr">sendStrategy</span>?: <span class="hljs-title class_">AirhornSendStrategy</span>;
+	<span class="hljs-comment">/**
+	 * Whether to throw an error if sending fails. By default we use emitting for errors.
+	 * Delegates to hookified's `throwOnEmitError` and `throwOnHookError`.
+	 * <span class="hljs-doctag">@default</span> <span class="hljs-variable">false</span>
+	 */</span>
+	<span class="hljs-attr">throwOnErrors</span>?: <span class="hljs-built_in">boolean</span>;
+};
+</code></pre>
+<h1 id="using-send-helper-methods">Using Send Helper Methods</h1>
+<p>Airhorn provides helper methods for common tasks. For example, you can use the <code>sendSMS</code> method to send SMS messages easily:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">AirhornTwilio</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@airhornjs/twilio"</span>;
+
+<span class="hljs-keyword">const</span> providers = [
+	<span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornTwilio</span>({
+		<span class="hljs-attr">accountSid</span>: <span class="hljs-string">"your_account_sid"</span>,
+		<span class="hljs-attr">authToken</span>: <span class="hljs-string">"your_auth_token"</span>
+	}),
+];
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>({
+	providers
+});
+
+<span class="hljs-keyword">const</span> template = {
+	<span class="hljs-attr">from</span>: <span class="hljs-string">"+12223334444"</span>,
+	<span class="hljs-attr">content</span>: <span class="hljs-string">"Hey &#x3C;%= name %> this is a test message from Airhorn"</span>,
+	<span class="hljs-attr">templateEngine</span>: <span class="hljs-string">"ejs"</span>,
+}
+
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">name</span>: <span class="hljs-string">"John"</span> };
+
+<span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">sendSMS</span>(<span class="hljs-string">"+1234567890"</span>, template, data);
+</code></pre>
+<p>All helper methods accept an optional <code>AirhornSendOptions</code> parameter to override the send strategy per call:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornSendStrategy</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">AirhornTwilio</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@airhornjs/twilio"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>({
+	<span class="hljs-attr">providers</span>: [
+		<span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornTwilio</span>({ <span class="hljs-attr">accountSid</span>: <span class="hljs-string">"sid_1"</span>, <span class="hljs-attr">authToken</span>: <span class="hljs-string">"token_1"</span> }),
+		<span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornTwilio</span>({ <span class="hljs-attr">accountSid</span>: <span class="hljs-string">"sid_2"</span>, <span class="hljs-attr">authToken</span>: <span class="hljs-string">"token_2"</span> }),
+	]
+});
+
+<span class="hljs-keyword">const</span> template = {
+	<span class="hljs-attr">from</span>: <span class="hljs-string">"+12223334444"</span>,
+	<span class="hljs-attr">content</span>: <span class="hljs-string">"Hey &#x3C;%= name %> this is a test message from Airhorn"</span>,
+	<span class="hljs-attr">templateEngine</span>: <span class="hljs-string">"ejs"</span>,
+}
+
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">name</span>: <span class="hljs-string">"John"</span> };
+
+<span class="hljs-comment">// Send SMS using fail-over strategy</span>
+<span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">sendSMS</span>(<span class="hljs-string">"+1234567890"</span>, template, data, {
+	<span class="hljs-attr">sendStrategy</span>: <span class="hljs-title class_">AirhornSendStrategy</span>.<span class="hljs-property">FailOver</span>
+});
+</code></pre>
+<p>Here are the following helper methods available:</p>
+<ul>
+<li><code>sendSMS</code>: Sends an SMS message.</li>
+<li><code>sendEmail</code>: Sends an email message.</li>
+<li><code>sendMobilePush</code>: Sends a mobile push notification.</li>
+<li><code>sendWebhook</code>: Sends a webhook notification.</li>
+<li><code>sendAll</code>: Sends to all providers simultaneously.</li>
+<li><code>sendFailOver</code>: Tries providers in order until one succeeds.</li>
+<li><code>sendRoundRobin</code>: Cycles through providers round-robin.</li>
+</ul>
+<h1 id="airhorn-send-response">Airhorn Send Response</h1>
+<p>The <code>send</code> method returns an <code>AirhornSendResult</code> object that contains information about the send operation. Here is the structure of the <code>AirhornSendResult</code> type:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">AirhornSendResult</span> = {
+	<span class="hljs-comment">/**
+	 * The providers that were used to send the message.
+	 */</span>
+	<span class="hljs-attr">providers</span>: <span class="hljs-title class_">Array</span>&#x3C;<span class="hljs-title class_">AirhornProvider</span>>;
+	<span class="hljs-comment">/**
+	 * The message that was sent.
+	 */</span>
+	<span class="hljs-attr">message</span>?: <span class="hljs-title class_">AirhornProviderMessage</span>;
+	<span class="hljs-comment">/**
+	 * Whether the message was sent successfully.
+	 */</span>
+	<span class="hljs-attr">success</span>: <span class="hljs-built_in">boolean</span>;
+	<span class="hljs-comment">/**
+	 * The response from the provider.
+	 */</span>
+	<span class="hljs-comment">// biome-ignore lint/suspicious/noExplicitAny: expected</span>
+	<span class="hljs-attr">response</span>: <span class="hljs-built_in">any</span>;
+	<span class="hljs-comment">/**
+	 * The number of times the message was retried.
+	 */</span>
+	<span class="hljs-attr">retries</span>: <span class="hljs-built_in">number</span>;
+	<span class="hljs-comment">/**
+	 * The errors that occurred while sending the message.
+	 */</span>
+	<span class="hljs-attr">errors</span>: <span class="hljs-title class_">Array</span>&#x3C;<span class="hljs-title class_">Error</span>>;
+	<span class="hljs-comment">/**
+	 * The time taken to execute the send operation.
+	 */</span>
+	<span class="hljs-attr">executionTime</span>: <span class="hljs-built_in">number</span>;
+};
+</code></pre>
+<h1 id="send-strategies">Send Strategies</h1>
+<p>Airhorn supports multiple send strategies to control how notifications are delivered. The <code>send()</code> method dispatches to the appropriate strategy method based on the configured <code>sendStrategy</code> (default: <code>RoundRobin</code>). You can also call each strategy method directly.</p>
+<ul>
+<li><strong>Round Robin</strong> (<code>sendRoundRobin</code>): Cycles through providers, selecting the next one on each call. <em>(Default)</em></li>
+<li><strong>Fail Over</strong> (<code>sendFailOver</code>): Tries each provider in order until one succeeds.</li>
+<li><strong>All</strong> (<code>sendAll</code>): Sends the notification to all providers simultaneously.</li>
+</ul>
+<p>You can configure the default send strategy when creating the Airhorn instance:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornSendStrategy</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>({
+	<span class="hljs-attr">sendStrategy</span>: <span class="hljs-title class_">AirhornSendStrategy</span>.<span class="hljs-property">RoundRobin</span>
+});
+</code></pre>
+<p>Or call a strategy method directly:</p>
+<h2 id="sendall"><code>sendAll</code></h2>
+<p>Sends a notification to all providers simultaneously. Succeeds if at least one provider succeeds.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornSendType</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>();
+
+<span class="hljs-keyword">const</span> template = {
+	<span class="hljs-attr">from</span>: <span class="hljs-string">"https://mywebhookdomain.com"</span>,
+	<span class="hljs-attr">content</span>: <span class="hljs-string">"Hey &#x3C;%= name %> this is a notification from Airhorn"</span>,
+	<span class="hljs-attr">templateEngine</span>: <span class="hljs-string">"ejs"</span>,
+}
+
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">name</span>: <span class="hljs-string">"John"</span> };
+
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">sendAll</span>(<span class="hljs-string">"https://mockhttp.org/post"</span>, template, data, <span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">Webhook</span>);
+</code></pre>
+<h2 id="sendfailover"><code>sendFailOver</code></h2>
+<p>Tries each provider in order until one succeeds. If the first provider fails, it moves to the next.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornSendType</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>();
+
+<span class="hljs-keyword">const</span> template = {
+	<span class="hljs-attr">from</span>: <span class="hljs-string">"https://mywebhookdomain.com"</span>,
+	<span class="hljs-attr">content</span>: <span class="hljs-string">"Hey &#x3C;%= name %> this is a notification from Airhorn"</span>,
+	<span class="hljs-attr">templateEngine</span>: <span class="hljs-string">"ejs"</span>,
+}
+
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">name</span>: <span class="hljs-string">"John"</span> };
+
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">sendFailOver</span>(<span class="hljs-string">"https://mockhttp.org/post"</span>, template, data, <span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">Webhook</span>);
+</code></pre>
+<h2 id="sendroundrobin"><code>sendRoundRobin</code></h2>
+<p>Cycles through providers, selecting the next one on each call. This is the default strategy.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornSendType</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>();
+
+<span class="hljs-keyword">const</span> template = {
+	<span class="hljs-attr">from</span>: <span class="hljs-string">"https://mywebhookdomain.com"</span>,
+	<span class="hljs-attr">content</span>: <span class="hljs-string">"Hey &#x3C;%= name %> this is a notification from Airhorn"</span>,
+	<span class="hljs-attr">templateEngine</span>: <span class="hljs-string">"ejs"</span>,
+}
+
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">name</span>: <span class="hljs-string">"John"</span> };
+
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">sendRoundRobin</span>(<span class="hljs-string">"https://mockhttp.org/post"</span>, template, data, <span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">Webhook</span>);
+</code></pre>
+<h1 id="airhorn-api">Airhorn API</h1>
+<h2 id="constructor">Constructor</h2>
+<h3 id="new-airhornoptions-airhornoptions"><code>new Airhorn(options?: AirhornOptions)</code></h3>
+<p>Creates a new Airhorn instance. See <a href="#airhorn-options">Airhorn Options</a> for available configuration options.</p>
+<h2 id="properties">Properties</h2>
+<h3 id="cache"><code>.cache</code></h3>
+<p>Gets/sets the cache instance which is based on <code>cacheable</code>.</p>
+<h3 id="sendstrategy"><code>.sendStrategy</code></h3>
+<p>Gets/sets the send strategy (<code>RoundRobin</code>, <code>FailOver</code>, or <code>All</code>).</p>
+<h3 id="throwonerrors"><code>.throwOnErrors</code></h3>
+<p>Gets/sets the throw on errors flag. Delegates to hookified's <code>throwOnEmitError</code> and <code>throwOnHookError</code>.</p>
+<h3 id="statistics"><code>.statistics</code></h3>
+<p>Access the statistics instance. See <a href="#statistics">Statistics</a> to learn more.</p>
+<h3 id="providers"><code>.providers</code></h3>
+<p>Gets/sets the list of configured providers.</p>
+<h2 id="methods">Methods</h2>
+<h3 id="send"><code>.send()</code></h3>
+<p>Dispatches to the appropriate strategy method based on the configured <code>sendStrategy</code>.</p>
+<h3 id="sendall-1"><code>.sendAll()</code></h3>
+<p>Sends to all providers simultaneously. Succeeds if at least one provider succeeds.</p>
+<h3 id="sendfailover-1"><code>.sendFailOver()</code></h3>
+<p>Tries providers in order until one succeeds.</p>
+<h3 id="sendroundrobin-1"><code>.sendRoundRobin()</code></h3>
+<p>Cycles through providers round-robin. This is the default strategy.</p>
+<h3 id="sendsms"><code>.sendSMS()</code></h3>
+<p>Sends an SMS message using the configured SMS providers.</p>
+<h3 id="sendemail"><code>.sendEmail()</code></h3>
+<p>Sends an email message using the configured email providers.</p>
+<h3 id="sendmobilepush"><code>.sendMobilePush()</code></h3>
+<p>Sends a mobile push notification using the configured push providers.</p>
+<h3 id="sendwebhook"><code>.sendWebhook()</code></h3>
+<p>Sends a webhook notification using the built-in webhook provider.</p>
+<h3 id="loadtemplate"><code>.loadTemplate()</code></h3>
+<p>Loads a template from the file system. See <a href="#load-template-helper">Load Template Helper</a> to learn more.</p>
+<h3 id="addprovider"><code>.addProvider()</code></h3>
+<p>Adds a single provider to the Airhorn instance.</p>
+<h3 id="addproviders"><code>.addProviders()</code></h3>
+<p>Adds multiple providers to the Airhorn instance.</p>
+<h3 id="getprovidersbytype"><code>.getProvidersByType()</code></h3>
+<p>Gets the list of providers filtered by type (SMS, Email, Push, Webhook).</p>
+<h3 id="generatemessage"><code>.generateMessage()</code></h3>
+<p>Generates a message from a template and data using the configured template engine.</p>
+<h1 id="using-webhooks">Using Webhooks</h1>
+<p>Webhooks is built into Airhorn as a default provider and can be used to send notifications to external services. To use the built in webhooks just create an instance of the <code>Airhorn</code> class and call the <code>send</code> or <code>sendWebhook</code> method.</p>
+<p>An example using the <code>send</code> method (recommended):</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornProviderType</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> template = {
+	<span class="hljs-attr">from</span>: <span class="hljs-string">"+12223334444"</span>,
+	<span class="hljs-attr">to</span>: <span class="hljs-string">"+1234567890"</span>,
+	<span class="hljs-attr">content</span>: <span class="hljs-string">"Hey &#x3C;%= name %> this is a test message from Airhorn"</span>,
+	<span class="hljs-attr">templateEngine</span>: <span class="hljs-string">"ejs"</span>,
+}
+
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">name</span>: <span class="hljs-string">"John"</span> };
+
+<span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(<span class="hljs-string">"https://mockhttp.org/post"</span>, template, data, <span class="hljs-title class_">AirhornProviderType</span>.<span class="hljs-property">WEBHOOK</span>);
+</code></pre>
+<p>To send using the helper function <code>sendWebhook</code>:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>();
+
+<span class="hljs-keyword">const</span> template = {
+	<span class="hljs-attr">from</span>: <span class="hljs-string">"+12223334444"</span>,
+	<span class="hljs-attr">to</span>: <span class="hljs-string">"+1234567890"</span>,
+	<span class="hljs-attr">content</span>: <span class="hljs-string">"Hey &#x3C;%= name %> this is a test message from Airhorn"</span>,
+	<span class="hljs-attr">templateEngine</span>: <span class="hljs-string">"ejs"</span>,
+}
+
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">name</span>: <span class="hljs-string">"John"</span> };
+
+<span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">sendWebhook</span>(<span class="hljs-string">"https://mockhttp.org/post"</span>, template, data);
+</code></pre>
+<h1 id="statistics-1">Statistics</h1>
+<p>Airhorn provides built-in statistics to help you monitor the performance of your notifications. You can access the statistics instance through the <code>.statistics</code> property:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>({ <span class="hljs-attr">statistics</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-comment">// Now you can use the stats object to get information about sent notifications</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Total Sends: <span class="hljs-subst">${airhorn.statistics.totalSends}</span>`</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Total Successful Sends: <span class="hljs-subst">${airhorn.statistics.totalSendSuccesses}</span>`</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Total Failed Sends: <span class="hljs-subst">${airhorn.statistics.totalSendFailures}</span>`</span>);
+
+<span class="hljs-comment">// execution time statistics</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Total Execution Time: <span class="hljs-subst">${airhorn.statistics.totalExecutionTime}</span> ms`</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Average Execution Time: <span class="hljs-subst">${airhorn.statistics.averageExecutionTime}</span> ms`</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Minimum Execution Time: <span class="hljs-subst">${airhorn.statistics.minimumExecutionTime}</span> ms`</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Maximum Execution Time: <span class="hljs-subst">${airhorn.statistics.maxExecutionTime}</span> ms`</span>);
+
+<span class="hljs-comment">// execution time data Array&#x3C;SendStatistic></span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`All Execution Times: <span class="hljs-subst">${airhorn.statistics.executionTimes}</span>`</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Slowest Execution Times: <span class="hljs-subst">${airhorn.statistics.slowestExecutionTimes}</span>`</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Fastest Execution Times: <span class="hljs-subst">${airhorn.statistics.fastestExecutionTimes}</span>`</span>);
+</code></pre>
+<p>By default, Airhorn statistics are disabled. You can enable them by setting the <code>statistics</code> option to <code>true</code> when creating the Airhorn instance. If you want to enable it after the Airhorn instance is created do the following:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>();
+
+airhorn.<span class="hljs-property">statistics</span>.<span class="hljs-title function_">enable</span>();
+</code></pre>
+<p>To reset the statistics, you can call the <code>reset</code> method:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>();
+
+airhorn.<span class="hljs-property">statistics</span>.<span class="hljs-title function_">reset</span>();
+</code></pre>
+<h1 id="hooks">Hooks</h1>
+<p>Airhorn extends <a href="https://hookified.org">Hookified</a> and provides two built-in hooks for intercepting the send pipeline:</p>
+<ul>
+<li><code>before:Send</code> (<code>AirhornHook.BeforeSend</code>) — Called before a message is sent. Receives <code>{ message, options }</code>.</li>
+<li><code>after:Send</code> (<code>AirhornHook.AfterSend</code>) — Called after a message is sent. Receives <code>{ result }</code>.</li>
+</ul>
+<h2 id="registering-hooks-with-onhook">Registering Hooks with <code>onHook</code></h2>
+<p>You can register hooks using the <code>onHook</code> method. It supports both a simple <code>(event, handler)</code> signature and the <code>IHook</code> object format (recommended):</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornHook</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">IHook</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"hookified"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>();
+
+airhorn.<span class="hljs-title function_">onHook</span>({
+	<span class="hljs-attr">event</span>: <span class="hljs-title class_">AirhornHook</span>.<span class="hljs-property">BeforeSend</span>,
+	<span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> ({ message, options }) => {
+		message.<span class="hljs-property">content</span> = <span class="hljs-string">`[PREFIX] <span class="hljs-subst">${message.content}</span>`</span>;
+	},
+});
+
+<span class="hljs-comment">// IHook object with an id and OnHookOptions for positioning</span>
+airhorn.<span class="hljs-title function_">onHook</span>(
+	{
+		<span class="hljs-attr">id</span>: <span class="hljs-string">'hook-after-send-1'</span>,
+		<span class="hljs-attr">event</span>: <span class="hljs-title class_">AirhornHook</span>.<span class="hljs-property">AfterSend</span>,
+		<span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> ({ result }) => {
+			<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"Send result:"</span>, result.<span class="hljs-property">success</span>);
+		},
+	},
+	{ <span class="hljs-attr">position</span>: <span class="hljs-string">"Top"</span> },
+);
+</code></pre>
+<h2 id="modifying-messages-with-beforesend">Modifying Messages with BeforeSend</h2>
+<p>The <code>BeforeSend</code> hook receives the message object by reference, so you can modify it before it is sent:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornHook</span>, <span class="hljs-title class_">AirhornSendType</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>();
+
+airhorn.<span class="hljs-title function_">onHook</span>(<span class="hljs-title class_">AirhornHook</span>.<span class="hljs-property">BeforeSend</span>, <span class="hljs-title function_">async</span> ({ message }) => {
+	<span class="hljs-comment">// Redirect the message</span>
+	message.<span class="hljs-property">to</span> = <span class="hljs-string">"https://new-endpoint.example.com/webhook"</span>;
+	<span class="hljs-comment">// Modify content</span>
+	message.<span class="hljs-property">content</span> = <span class="hljs-string">`[MODIFIED] <span class="hljs-subst">${message.content}</span>`</span>;
+});
+
+<span class="hljs-keyword">const</span> template = {
+	<span class="hljs-attr">from</span>: <span class="hljs-string">"sender@example.com"</span>,
+	<span class="hljs-attr">content</span>: <span class="hljs-string">"Hello &#x3C;%= name %>!"</span>,
+	<span class="hljs-attr">templateEngine</span>: <span class="hljs-string">"ejs"</span>,
+};
+
+<span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(<span class="hljs-string">"https://original.example.com/webhook"</span>, template, { <span class="hljs-attr">name</span>: <span class="hljs-string">"World"</span> }, <span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">Webhook</span>);
+</code></pre>
+<h2 id="inspecting-results-with-aftersend">Inspecting Results with AfterSend</h2>
+<p>The <code>AfterSend</code> hook is called after the send completes (even on failure):</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornHook</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>();
+
+airhorn.<span class="hljs-title function_">onHook</span>(<span class="hljs-title class_">AirhornHook</span>.<span class="hljs-property">AfterSend</span>, <span class="hljs-title function_">async</span> ({ result }) => {
+	<span class="hljs-keyword">if</span> (result.<span class="hljs-property">success</span>) {
+		<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"Message sent successfully"</span>);
+	} <span class="hljs-keyword">else</span> {
+		<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">"Send failed with errors:"</span>, result.<span class="hljs-property">errors</span>);
+	}
+});
+</code></pre>
+<h2 id="managing-hooks-by-id">Managing Hooks by ID</h2>
+<p>Using <code>IHook</code> objects with an <code>id</code> allows you to look up or remove hooks later:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornHook</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>();
+
+<span class="hljs-comment">// Register with an id</span>
+airhorn.<span class="hljs-title function_">onHook</span>({
+	<span class="hljs-attr">id</span>: <span class="hljs-string">"logging-hook"</span>,
+	<span class="hljs-attr">event</span>: <span class="hljs-title class_">AirhornHook</span>.<span class="hljs-property">BeforeSend</span>,
+	<span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> ({ message }) => {
+		<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"Sending:"</span>, message);
+	},
+});
+
+<span class="hljs-comment">// Look up by id</span>
+<span class="hljs-keyword">const</span> hook = airhorn.<span class="hljs-title function_">getHook</span>(<span class="hljs-string">"logging-hook"</span>);
+
+<span class="hljs-comment">// Remove by id</span>
+airhorn.<span class="hljs-title function_">removeHookById</span>(<span class="hljs-string">"logging-hook"</span>);
+</code></pre>
+<h1 id="emitting-events">Emitting Events</h1>
+<p>Airhorn provides event emitting by default with the following events:</p>
+<ul>
+<li><code>error</code>: Emitted when there is an error.</li>
+<li><code>send.success</code>: Emitted when a notification is successfully sent.</li>
+<li><code>send.failure</code>: Emitted when a notification fails to send.</li>
+</ul>
+<p>You can listen for these events using the <code>on</code> method:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornEvent</span>, <span class="hljs-keyword">type</span> <span class="hljs-title class_">AirhornSendResult</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>();
+
+airhorn.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">AirhornEvent</span>.<span class="hljs-property">SendSuccess</span>, <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">data</span>: <span class="hljs-title class_">AirhornSendResult</span></span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Notification sent successfully: <span class="hljs-subst">${data}</span>`</span>);
+});
+
+airhorn.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">AirhornEvent</span>.<span class="hljs-property">SendFailure</span>, <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">data</span>: <span class="hljs-title class_">AirhornSendResult</span></span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">`Failed to send notification: <span class="hljs-subst">${data}</span>`</span>);
+});
+</code></pre>
+<h1 id="load-template-helper">Load Template Helper</h1>
+<p>In previous versions of <code>Airhon</code> we used the file system to load all the templates into a store that was used by the instance. Now, we offer an easy method to just load it from a markdown file if you want from anywhere on the file system.</p>
+<p>Here is an example of how to use the <code>loadTemplate</code> helper method:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>();
+
+<span class="hljs-keyword">const</span> template = <span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">loadTemplate</span>(<span class="hljs-string">"path/to/template.md"</span>);
+
+<span class="hljs-comment">// now you can send with that template</span>
+<span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(<span class="hljs-string">"https://mockhttp.org/post"</span>, template, data, <span class="hljs-title class_">AirhornProviderType</span>.<span class="hljs-property">WEBHOOK</span>);
+</code></pre>
+<p>An example of the <code>markdown</code> format is located at <code>./packages/airhorn/test/fixtures</code>.</p>
+<h1 id="core-supported-providers">Core Supported Providers</h1>
+<p>We currently support <code>twilio</code>, <code>aws</code>, and <code>azure</code> with thier offerings. Here is a chart showing what functionality is in each:</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>SMS</th>
+<th>Email</th>
+<th>Push</th>
+<th>Webhook</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(built in <code>airhorn</code>)</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>@airhornjs/twilio</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>@airhornjs/aws</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>@airhornjs/azure</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<p>Note: We used to support firebase because of mobile push but it made more sense to focus on <code>aws</code> and <code>azure</code> because it is more comprehensive.</p>
+<h1 id="third-party-providers">Third Party Providers</h1>
+<p>If you have built a provider library let us know! We are more than happy to list it here!</p>
+<h1 id="creating-a-provider">Creating a Provider</h1>
+<p>To create a provider you can extend the <code>AirhornProvider</code> interface and implement the required methods for your specific provider.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">AirhornProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyCustomProvider</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">AirhornProvider</span> {
+  <span class="hljs-comment">// Implement required methods</span>
+}
+</code></pre>
+<p>Once implemented, you can use your custom provider just like any other provider in Airhorn.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span>, <span class="hljs-title class_">AirhornProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"airhorn"</span>;
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyCustomProvider</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">AirhornProvider</span> {
+  <span class="hljs-comment">// Implement required methods</span>
+}
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>({
+  <span class="hljs-attr">providers</span>: [<span class="hljs-keyword">new</span> <span class="hljs-title class_">MyCustomProvider</span>()]
+});
+</code></pre>
+<p>Use one of the built in providers as a reference such as <code>@airhornjs/twilio</code>.</p>
+<h1 id="migration-to-v7">Migration to v7</h1>
+<p>Airhorn v7 raises the minimum Node.js version to <strong><code>>=22.18.0</code></strong> and upgrades to <a href="https://hookified.org">Hookified v3</a>. Hookified v3 contains <strong>no API changes</strong> — the hooks API is identical to v6 — so for most users the only required change is updating the Node.js runtime.</p>
+<h2 id="breaking-changes">Breaking Changes</h2>
+<h3 id="nodejs-22180-required">Node.js >=22.18.0 required</h3>
+<p>The minimum supported Node.js version is now <strong>22.18.0</strong> (previously <code>>=20</code>). Node.js 20 reached end-of-life in April 2026, and <a href="https://hookified.org">Hookified v3</a> — which <code>Airhorn</code> extends — requires <code>>=22.18.0</code>.</p>
+<pre><code class="hljs language-jsonc"><span class="hljs-comment">// package.json (airhorn)</span>
+<span class="hljs-attr">"engines"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+	<span class="hljs-attr">"node"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">">=22.18.0"</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p><strong>Migration:</strong> Upgrade your runtime to Node.js 22 LTS (>= 22.18.0) or Node.js 24+. No code changes are required.</p>
+<h3 id="hookified-upgraded-to-v3-no-api-changes">Hookified upgraded to v3 (no API changes)</h3>
+<p><code>Airhorn</code> extends <a href="https://hookified.org">Hookified</a>, which was upgraded from v2 to v3. Hookified v3's only breaking change is the Node.js requirement above — <code>onHook</code>, <code>removeHook</code>, <code>removeHookById</code>, <code>getHooks</code>, and <code>throwOnErrors</code> all behave exactly as they did in v6:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// Unchanged from v6 — still works in v7</span>
+airhorn.<span class="hljs-title function_">onHook</span>({
+	<span class="hljs-attr">id</span>: <span class="hljs-string">"my-hook"</span>,
+	<span class="hljs-attr">event</span>: <span class="hljs-string">"before:Send"</span>,
+	<span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {},
+});
+</code></pre>
+<p>If you already migrated your hooks from v5 to v6, upgrading from v6 to v7 requires no hooks-related code changes.</p>
+<h2 id="migration-checklist">Migration Checklist</h2>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" disabled> Upgrade your runtime to Node.js >= 22.18.0 (Node 22 LTS or Node 24+)</li>
+<li class="task-list-item"><input type="checkbox" disabled> No code changes required — the hooks API is unchanged from v6</li>
+</ul>
+<h1 id="migration-to-v6">Migration to v6</h1>
+<p>Airhorn v6 upgrades to <a href="https://hookified.org">Hookified v2</a>, which introduces breaking changes to the hooks API. If you were using hooks in v5, you will need to update your code.</p>
+<h2 id="breaking-changes-1">Breaking Changes</h2>
+<h3 id="addhook-renamed-to-onhook"><code>addHook</code> renamed to <code>onHook</code></h3>
+<p>The <code>addHook</code> method has been renamed to <code>onHook</code>. The <code>onHook</code> method also now supports <code>IHook</code> objects and <code>OnHookOptions</code> for hook positioning and ID management:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// v5</span>
+airhorn.<span class="hljs-title function_">addHook</span>(<span class="hljs-string">"before:Send"</span>, <span class="hljs-title function_">async</span> (data) => {});
+
+<span class="hljs-comment">// v6 — simple signature (drop-in replacement)</span>
+airhorn.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">"before:Send"</span>, <span class="hljs-title function_">async</span> (data) => {});
+
+<span class="hljs-comment">// v6 — IHook object (recommended)</span>
+airhorn.<span class="hljs-title function_">onHook</span>({
+	<span class="hljs-attr">id</span>: <span class="hljs-string">"my-hook"</span>,
+	<span class="hljs-attr">event</span>: <span class="hljs-string">"before:Send"</span>,
+	<span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {},
+});
+</code></pre>
+<h3 id="removehook-now-accepts-ihook-objects"><code>removeHook</code> now accepts <code>IHook</code> objects</h3>
+<p>The <code>removeHook</code> method signature has changed to accept <code>IHook</code> objects and now returns the removed hook:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// v5</span>
+airhorn.<span class="hljs-title function_">removeHook</span>(<span class="hljs-string">"before:Send"</span>, handler);
+
+<span class="hljs-comment">// v6</span>
+<span class="hljs-keyword">const</span> removed = airhorn.<span class="hljs-title function_">removeHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">"before:Send"</span>, handler });
+</code></pre>
+<p>You can also remove hooks by ID:</p>
+<pre><code class="hljs language-typescript">airhorn.<span class="hljs-title function_">removeHookById</span>(<span class="hljs-string">"my-hook"</span>);
+</code></pre>
+<h3 id="gethooks-returns-ihook-instead-of-functions"><code>getHooks</code> returns <code>IHook[]</code> instead of functions</h3>
+<p>If you were calling <code>getHooks()</code>, it now returns <code>IHook[]</code> objects instead of raw handler functions:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// v5 — returns Function[]</span>
+<span class="hljs-keyword">const</span> hooks = airhorn.<span class="hljs-title function_">getHooks</span>(<span class="hljs-string">"before:Send"</span>);
+
+<span class="hljs-comment">// v6 — returns IHook[] with { id, event, handler }</span>
+<span class="hljs-keyword">const</span> hooks = airhorn.<span class="hljs-title function_">getHooks</span>(<span class="hljs-string">"before:Send"</span>);
+hooks.<span class="hljs-title function_">forEach</span>(<span class="hljs-function">(<span class="hljs-params">hook</span>) =></span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hook.<span class="hljs-property">handler</span>));
+</code></pre>
+<h3 id="throwonerrors-now-delegates-to-hookified"><code>throwOnErrors</code> now delegates to hookified</h3>
+<p>The <code>throwOnErrors</code> option still works the same way from a user perspective, but internally it now delegates to hookified's <code>throwOnEmitError</code> and <code>throwOnHookError</code> properties. The private <code>handleError</code> method has been removed — error throwing is handled by hookified automatically when <code>throwOnErrors</code> is set to <code>true</code>.</p>
+<h3 id="hookified-constructor-option-renames">Hookified constructor option renames</h3>
+<p>These are handled internally by Airhorn, but if you were extending the class:</p>
+<table>
+<thead>
+<tr>
+<th>v5</th>
+<th>v6</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>throwHookErrors</code></td>
+<td><code>throwOnHookError</code></td>
+</tr>
+<tr>
+<td><code>logger</code></td>
+<td><code>eventLogger</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="migration-checklist-1">Migration Checklist</h2>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" disabled> Replace all <code>addHook()</code> calls with <code>onHook()</code></li>
+<li class="task-list-item"><input type="checkbox" disabled> Update <code>removeHook()</code> calls to use <code>IHook</code> objects</li>
+<li class="task-list-item"><input type="checkbox" disabled> Update code that reads <code>getHooks()</code> results to handle <code>IHook[]</code></li>
+<li class="task-list-item"><input type="checkbox" disabled> If extending Airhorn, rename <code>throwHookErrors</code> to <code>throwOnHookError</code> in <code>super()</code> calls</li>
+</ul>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>Now that you've set up your workspace, you're ready to contribute changes to the <code>airhorn</code> repository you can refer to the <a href="../../CONTRIBUTING.md">CONTRIBUTING</a> guide. If you have any questions please feel free to ask by creating an issue and label it <code>question</code>.</p>
+<h1 id="licensing-and-copyright">Licensing and Copyright</h1>
+<p>This project is <a href="LICENSE">MIT License © Jared Wray</a></p>

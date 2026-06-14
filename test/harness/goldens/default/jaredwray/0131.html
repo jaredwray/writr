@@ -1,0 +1,178 @@
+<h1 id="templates">Templates</h1>
+<p>Docula ships with two built-in templates: <strong>Modern</strong> (default) and <strong>Classic</strong>. You can also provide your own custom template.</p>
+<h2 id="modern-default">Modern (default)</h2>
+<p>The Modern template is a contemporary, feature-rich design built for today's documentation sites. It is the default template when you create a new Docula project.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">template</span>: <span class="hljs-string">'modern'</span>,
+};
+</code></pre>
+<h3 id="documentation-page">Documentation Page</h3>
+<p>Documentation pages use a sticky header bar with icon-based navigation links (Documentation, API Reference, Changelog), a collapsible left sidebar with grouped section navigation, a main content area, and a right-side Table of Contents panel. On mobile, the sidebar collapses into a dropdown selector.</p>
+<p><img src="modern-docs.png" alt="Modern template docs page"></p>
+<h3 id="api-reference-page">API Reference Page</h3>
+<p>When an OpenAPI URL is configured, the Modern template renders a full API reference with a left sidebar listing HTTP methods and endpoint categories, a main content area showing endpoint details with parameters and response codes, and an interactive "Test Request" panel on the right for trying endpoints directly in the browser.</p>
+<p><img src="modern-api-reference.png" alt="Modern template API reference page"></p>
+<h3 id="key-features">Key Features</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Theme toggle</strong></td>
+<td>Built-in light/dark/system toggle stored in localStorage</td>
+</tr>
+<tr>
+<td><strong>Mobile navigation</strong></td>
+<td>Hamburger menu with slide-out sidebar and backdrop overlay</td>
+</tr>
+<tr>
+<td><strong>Sticky header</strong></td>
+<td>Always-visible navigation bar with Documentation, API Reference, and Changelog links</td>
+</tr>
+<tr>
+<td><strong>Site title</strong></td>
+<td>Displays the site title text next to the logo in the header</td>
+</tr>
+<tr>
+<td><strong>Logo Home Link</strong></td>
+<td>When <code>homeUrl</code> is configured, the logo links to that URL instead of <code>baseUrl</code></td>
+</tr>
+<tr>
+<td><strong>Copy code</strong></td>
+<td>Code blocks show a copy-to-clipboard button on hover with a checkmark confirmation</td>
+</tr>
+<tr>
+<td><strong>Image lightbox</strong></td>
+<td>Clicking images in docs and changelog opens a fullscreen overlay for zoomed viewing</td>
+</tr>
+<tr>
+<td><strong>Collapsible sidebar</strong></td>
+<td>Uses <code>&#x3C;details></code> elements for expandable section navigation</td>
+</tr>
+<tr>
+<td><strong>System fonts</strong></td>
+<td>No external font dependencies (<code>system-ui</code>, <code>-apple-system</code>, etc.)</td>
+</tr>
+<tr>
+<td><strong>Syntax highlighting</strong></td>
+<td>Docula code theme with light and dark variants</td>
+</tr>
+<tr>
+<td><strong>CSS variables</strong></td>
+<td>Full theming via <code>--bg</code>, <code>--fg</code>, <code>--border</code>, <code>--surface</code>, <code>--link</code>, and more</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="classic">Classic</h2>
+<p>The Classic template provides a traditional documentation layout inspired by popular open-source project sites. It uses a grid-based design with a prominent sidebar.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">template</span>: <span class="hljs-string">'classic'</span>,
+};
+</code></pre>
+<h3 id="documentation-page-1">Documentation Page</h3>
+<p>Documentation pages use a clean white layout with the project logo displayed prominently in the top-left corner, a flat left sidebar listing navigation links, and a main content area with an inline Table of Contents rendered at the top of the page. Code blocks use a dark theme for contrast.</p>
+<p><img src="classic-docs.png" alt="Classic template docs page"></p>
+<h3 id="key-features-1">Key Features</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Grid layout</strong></td>
+<td>Traditional two-column grid with sidebar and content area</td>
+</tr>
+<tr>
+<td><strong>Google Fonts</strong></td>
+<td>Uses Open Sans (weights 400, 600, 700) via Google Fonts</td>
+</tr>
+<tr>
+<td><strong>Modular CSS</strong></td>
+<td>Separate stylesheets for single-page, multi-page, and landing layouts</td>
+</tr>
+<tr>
+<td><strong>Syntax highlighting</strong></td>
+<td>Dracula code theme</td>
+</tr>
+<tr>
+<td><strong>CSS variables</strong></td>
+<td>Theming via <code>--color-primary</code>, <code>--color-secondary</code>, <code>--sidebar-background</code>, etc.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="comparison">Comparison</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Modern</th>
+<th>Classic</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Theme toggle</strong></td>
+<td>Built-in (light / dark / system)</td>
+<td>Not included</td>
+</tr>
+<tr>
+<td><strong>Mobile menu</strong></td>
+<td>Hamburger with slide-out sidebar</td>
+<td>Sidebar overlay</td>
+</tr>
+<tr>
+<td><strong>Header navigation</strong></td>
+<td>Sticky bar with SVG icons</td>
+<td>Minimal</td>
+</tr>
+<tr>
+<td><strong>Fonts</strong></td>
+<td>System fonts (no external requests)</td>
+<td>Google Fonts (Open Sans)</td>
+</tr>
+<tr>
+<td><strong>Code theme</strong></td>
+<td>Docula (light + dark)</td>
+<td>Dracula</td>
+</tr>
+<tr>
+<td><strong>Sidebar style</strong></td>
+<td>Collapsible <code>&#x3C;details></code> sections</td>
+<td>Flat list</td>
+</tr>
+<tr>
+<td><strong>CSS architecture</strong></td>
+<td>Single <code>styles.css</code> with variables</td>
+<td>Modular per-layout files</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="using-a-custom-template">Using a Custom Template</h2>
+<p>If neither built-in template fits your needs, you can point Docula at your own template directory. The directory should contain Handlebars (<code>.hbs</code>) files matching the structure of the built-in templates.</p>
+<h3 id="via-config">Via config</h3>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">DoculaOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'docula'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">Partial</span>&#x3C;<span class="hljs-title class_">DoculaOptions</span>> = {
+  <span class="hljs-attr">templatePath</span>: <span class="hljs-string">'./my-template'</span>,
+};
+</code></pre>
+<h3 id="via-the-cli">Via the CLI</h3>
+<pre><code class="hljs language-bash">npx docula build --templatePath ./my-template
+</code></pre>
+<p>When <code>templatePath</code> is set it takes priority over the <code>template</code> option. Your custom template directory should include at minimum:</p>
+<ul>
+<li><code>home.hbs</code> — Landing page</li>
+<li><code>docs.hbs</code> — Documentation page</li>
+<li><code>includes/</code> — Partials (header, footer, sidebar, etc.)</li>
+</ul>
+<p>Refer to the built-in templates in the <code>templates/</code> directory of the Docula repository for a complete example of the expected structure and available Handlebars variables.</p>

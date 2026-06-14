@@ -1,0 +1,92 @@
+<h1 id="cookie-auth">Cookie Auth</h1>
+<p>Docula supports cookie-based authentication that displays a <strong>Log In</strong> or <strong>Log Out</strong> button in the site header. Authentication state is determined by fetching a configurable URL with credentials included.</p>
+<p>This is useful for documentation sites that sit on a different domain from their auth provider, such as cross-domain OAuth setups.</p>
+<h2 id="configuration">Configuration</h2>
+<p>Add the <code>cookieAuth</code> option to your <code>docula.config.ts</code>:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">DoculaOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'docula'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">Partial</span>&#x3C;<span class="hljs-title class_">DoculaOptions</span>> = {
+  <span class="hljs-attr">siteTitle</span>: <span class="hljs-string">'My Project'</span>,
+  <span class="hljs-attr">cookieAuth</span>: {
+    <span class="hljs-attr">loginUrl</span>: <span class="hljs-string">'/login'</span>,
+    <span class="hljs-attr">logoutUrl</span>: <span class="hljs-string">'/api/auth/logout'</span>,
+    <span class="hljs-attr">authCheckUrl</span>: <span class="hljs-string">'https://api.example.com/me'</span>,
+    <span class="hljs-attr">authCheckUserPath</span>: <span class="hljs-string">'email'</span>,
+  },
+};
+</code></pre>
+<h3 id="options">Options</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>loginUrl</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>-</td>
+<td>URL to redirect to when "Log In" is clicked</td>
+</tr>
+<tr>
+<td><code>logoutUrl</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>URL to redirect to on logout. If not set, the page reloads</td>
+</tr>
+<tr>
+<td><code>authCheckUrl</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>URL to fetch (with <code>credentials: 'include'</code>) to determine if the user is logged in. A 2xx response means logged in</td>
+</tr>
+<tr>
+<td><code>authCheckMethod</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td><code>'GET'</code></td>
+<td>HTTP method to use when fetching <code>authCheckUrl</code></td>
+</tr>
+<tr>
+<td><code>authCheckUserPath</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Dot-notation path to extract a display name from the JSON response (e.g. <code>'email'</code>, <code>'user.name'</code>)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-it-works">How It Works</h2>
+<ol>
+<li>When <code>cookieAuth</code> is configured, a <strong>Log In</strong> link and a hidden <strong>Log Out</strong> button are rendered in the site header (both desktop and mobile).</li>
+<li>On page load, if <code>authCheckUrl</code> is set, client-side JavaScript fetches the URL with <code>credentials: 'include'</code> so that cookies are sent cross-domain.</li>
+<li>If the response is 2xx, the user is considered logged in. The "Log In" link is hidden and the "Log Out" button is shown.</li>
+<li>If the response is not 2xx or the fetch fails, the "Log In" link is shown and the "Log Out" button is hidden.</li>
+</ol>
+<h3 id="cached-auth-state">Cached Auth State</h3>
+<p>To avoid a flash of incorrect UI on page load, Docula caches the auth state in <code>localStorage</code>. On subsequent page loads, the cached state is applied immediately (before the page body renders) and then refreshed in the background by fetching <code>authCheckUrl</code> again. This means:</p>
+<ul>
+<li>First visit: brief delay before auth UI appears (waiting for the fetch)</li>
+<li>Subsequent visits: auth UI appears instantly from cache, then silently updates if the state has changed</li>
+</ul>
+<h3 id="user-display-name">User Display Name</h3>
+<p>If <code>authCheckUserPath</code> is set, Docula extracts a display name from the JSON response using dot-notation path traversal. For example, if the response is:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"email"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"user@example.com"</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>Setting <code>authCheckUserPath</code> to <code>'email'</code> will display <code>user@example.com</code> in the header.</p>
+<p>If the path doesn't resolve to a value, no name is displayed.</p>
+<h3 id="logout-behavior">Logout Behavior</h3>
+<p><strong>With <code>logoutUrl</code></strong>: Clicking "Log Out" redirects to the specified URL. Use this when your auth provider has a dedicated logout endpoint.</p>
+<p><strong>Without <code>logoutUrl</code></strong>: Clicking "Log Out" reloads the page.</p>
+<h2 id="api-reference-integration">API Reference Integration</h2>
+<p>When <code>cookieAuth</code> is configured and your OpenAPI spec defines an API Key security scheme with <code>"in": "cookie"</code>, the <a href="/docs/api-reference">API Reference</a> page shows a login status indicator in the authorization panel. The selected authorization type and auth state are persisted in <code>localStorage</code> so they survive page refreshes. Requests made via the "Try It" panel automatically include cookies, so no manual token entry is needed.</p>

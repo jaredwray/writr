@@ -1,0 +1,51 @@
+<h1 id="deploy-on-azure">Deploy on Azure</h1>
+<p>On Azure, <strong>Front Door</strong> is the global, anycast-based entry point that routes users to
+the nearest healthy backend across regions. It is the right layer to put in front of an
+<code>http-cache</code> fleet, matching the <a href="/docs/architecture">global-load-balancing model</a>.</p>
+<h2 id="why-azure-front-door">Why Azure Front Door</h2>
+<ul>
+<li><strong>Anycast global routing</strong> to the closest edge POP.</li>
+<li><strong>Latency-based backend selection</strong> with automatic failover.</li>
+<li><strong>Health probes</strong> built in for backend pools.</li>
+<li><strong>TLS termination and WAF</strong> at the edge.</li>
+</ul>
+<blockquote>
+<p>Use <strong>Front Door</strong> for global, cross-region routing. (Azure Load Balancer and
+Application Gateway are regional and best used <em>within</em> a region.)</p>
+</blockquote>
+<h2 id="setup">Setup</h2>
+<ol>
+<li>
+<p><strong>Deploy regional gateways</strong> — for example as <strong>Azure Container Apps</strong> or <strong>App
+Service</strong> in two or more regions:</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Container Apps must live in a Container Apps environment — create one first:</span>
+az containerapp <span class="hljs-built_in">env</span> create \
+  --name http-cache-env --resource-group http-cache-rg --location eastus
+
+az containerapp create \
+  --name http-cache --resource-group http-cache-rg \
+  --environment http-cache-env \
+  --image ghcr.io/jaredwray/http-cache:latest \
+  --target-port 8080 --ingress external \
+  --env-vars HTTP_CACHE_STORE=redis://your-redis:6379
+</code></pre>
+</li>
+<li>
+<p><strong>Create a Front Door profile</strong> and add an <strong>origin group</strong>, with each regional
+gateway as an <strong>origin</strong>.</p>
+</li>
+<li>
+<p><strong>Configure health probes</strong> to <code>GET /health</code> so Front Door drains unhealthy origins.</p>
+</li>
+<li>
+<p><strong>Set routing to latency-based</strong> so each user reaches the nearest healthy gateway.</p>
+</li>
+<li>
+<p><strong>Map your custom domain</strong> to the Front Door endpoint.</p>
+</li>
+</ol>
+<h2 id="result">Result</h2>
+<pre><code>user ─▶ Azure Front Door (anycast) ─▶ nearest regional gateway ─▶ L1/L2 → keyv backend
+</code></pre>
+<p>Add or remove an origin to scale regions in or out — there is no cluster state to
+reconcile.</p>

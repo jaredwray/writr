@@ -1,0 +1,405 @@
+<p>import MCPInstall from '@site/src/partials/mcp-install';</p>
+<h2 id="quick-start">Quick start</h2>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li>Python 3.9+</li>
+</ul>
+<h3 id="install">Install</h3>
+<h4 id="pip-install">Pip install</h4>
+<pre><code class="hljs language-bash">pip install openfeature-sdk==0.8.3
+</code></pre>
+<h4 id="requirementstxt">requirements.txt</h4>
+<pre><code class="hljs language-bash">openfeature-sdk==0.8.3
+</code></pre>
+<pre><code class="hljs language-python">pip install -r requirements.txt
+</code></pre>
+<h3 id="usage">Usage</h3>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> openfeature <span class="hljs-keyword">import</span> api
+<span class="hljs-keyword">from</span> openfeature.provider.in_memory_provider <span class="hljs-keyword">import</span> InMemoryFlag, InMemoryProvider
+
+<span class="hljs-comment"># flags defined in memory</span>
+my_flags = {
+  <span class="hljs-string">"v2_enabled"</span>: InMemoryFlag(<span class="hljs-string">"on"</span>, {<span class="hljs-string">"on"</span>: <span class="hljs-literal">True</span>, <span class="hljs-string">"off"</span>: <span class="hljs-literal">False</span>})
+}
+
+<span class="hljs-comment"># configure a provider</span>
+api.set_provider(InMemoryProvider(my_flags))
+
+<span class="hljs-comment"># create a client</span>
+client = api.get_client()
+
+<span class="hljs-comment"># get a bool flag value</span>
+flag_value = client.get_boolean_value(<span class="hljs-string">"v2_enabled"</span>, <span class="hljs-literal">False</span>)
+<span class="hljs-built_in">print</span>(<span class="hljs-string">"Value: "</span> + <span class="hljs-built_in">str</span>(flag_value))
+</code></pre>
+<h2 id="features">Features</h2>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Features</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✅</td>
+<td><a href="#providers">Providers</a></td>
+<td>Integrate with a commercial, open source, or in-house feature management tool.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#targeting">Targeting</a></td>
+<td>Contextually-aware flag evaluation using <a href="/docs/reference/concepts/evaluation-context">evaluation context</a>.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#hooks">Hooks</a></td>
+<td>Add functionality to various stages of the flag evaluation life-cycle.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#logging">Logging</a></td>
+<td>Integrate with popular logging packages.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#domains">Domains</a></td>
+<td>Logically bind clients with providers.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#eventing">Eventing</a></td>
+<td>React to state changes in the provider or flag management system.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#shutdown">Shutdown</a></td>
+<td>Gracefully clean up a provider during application shutdown.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#transaction-context-propagation">Transaction Context Propagation</a></td>
+<td>Set a specific <a href="/docs/reference/concepts/evaluation-context">evaluation context</a> for a transaction (e.g. an HTTP request or a thread)</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#extending">Extending</a></td>
+<td>Extend OpenFeature with custom providers and hooks.</td>
+</tr>
+</tbody>
+</table>
+<p>Implemented: ✅ | In-progress: ⚠️ | Not implemented yet: ❌</p>
+<h3 id="providers">Providers</h3>
+<p><a href="/docs/reference/concepts/provider">Providers</a> are an abstraction between a flag management system and the OpenFeature SDK.
+Look <a href="/ecosystem/?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Provider&#x26;instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=Python">here</a> for a complete list of available providers.
+If the provider you're looking for hasn't been created yet, see the <a href="#develop-a-provider">develop a provider</a> section to learn how to build it yourself.</p>
+<p>Once you've added a provider as a dependency, it can be registered with OpenFeature like this:</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> openfeature <span class="hljs-keyword">import</span> api
+<span class="hljs-keyword">from</span> openfeature.provider.no_op_provider <span class="hljs-keyword">import</span> NoOpProvider
+
+api.set_provider(NoOpProvider())
+open_feature_client = api.get_client()
+</code></pre>
+<p>In some situations, it may be beneficial to register multiple providers in the same application.
+This is possible using <a href="#domains">domains</a>, which is covered in more detail below.</p>
+<h3 id="targeting">Targeting</h3>
+<p>Sometimes, the value of a flag must consider some dynamic criteria about the application or user, such as the user's location, IP, email address, or the server's location.
+In OpenFeature, we refer to this as <a href="/specification/glossary#targeting">targeting</a>.
+If the flag management system you're using supports targeting, you can provide the input data using the <a href="/docs/reference/concepts/evaluation-context">evaluation context</a>.</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> openfeature.api <span class="hljs-keyword">import</span> (
+    get_client,
+    get_provider,
+    set_provider,
+    get_evaluation_context,
+    set_evaluation_context,
+)
+
+global_context = EvaluationContext(
+    targeting_key=<span class="hljs-string">"targeting_key1"</span>, attributes={<span class="hljs-string">"application"</span>: <span class="hljs-string">"value1"</span>}
+)
+request_context = EvaluationContext(
+    targeting_key=<span class="hljs-string">"targeting_key2"</span>, attributes={<span class="hljs-string">"email"</span>: request.form[<span class="hljs-string">'email'</span>]}
+)
+
+<span class="hljs-comment">## set global context</span>
+set_evaluation_context(global_context)
+
+<span class="hljs-comment"># merge second context</span>
+client = get_client(name=<span class="hljs-string">"No-op Provider"</span>)
+client.get_string_value(<span class="hljs-string">"email"</span>, <span class="hljs-string">"fallback"</span>, request_context)
+</code></pre>
+<h3 id="hooks">Hooks</h3>
+<p><a href="/docs/reference/concepts/hooks">Hooks</a> allow for custom logic to be added at well-defined points of the flag evaluation life-cycle.
+Look <a href="/ecosystem/?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Hook&#x26;instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=Python">here</a> for a complete list of available hooks.
+If the hook you're looking for hasn't been created yet, see the <a href="#develop-a-hook">develop a hook</a> section to learn how to build it yourself.</p>
+<p>Once you've added a hook as a dependency, it can be registered at the global, client, or flag invocation level.</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> openfeature.api <span class="hljs-keyword">import</span> add_hooks
+<span class="hljs-keyword">from</span> openfeature.flag_evaluation <span class="hljs-keyword">import</span> FlagEvaluationOptions
+
+<span class="hljs-comment"># set global hooks at the API-level</span>
+add_hooks([MyHook()])
+
+<span class="hljs-comment"># or configure them in the client</span>
+client = OpenFeatureClient()
+client.add_hooks([MyHook()])
+
+<span class="hljs-comment"># or at the invocation-level</span>
+options = FlagEvaluationOptions(hooks=[MyHook()])
+client.get_boolean_flag(<span class="hljs-string">"my-flag"</span>, <span class="hljs-literal">False</span>, flag_evaluation_options=options)
+</code></pre>
+<h3 id="logging">Logging</h3>
+<p>The OpenFeature SDK logs to the <code>openfeature</code> logger using the <code>logging</code> package from the Python Standard Library.</p>
+<h3 id="domains">Domains</h3>
+<p>Clients can be assigned to a domain.
+A domain is a logical identifier which can be used to associate clients with a particular provider.
+If a domain has no associated provider, the global provider is used.</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> openfeature <span class="hljs-keyword">import</span> api
+
+<span class="hljs-comment"># Registering the default provider</span>
+api.set_provider(MyProvider());
+<span class="hljs-comment"># Registering a provider to a domain</span>
+api.set_provider(MyProvider(), <span class="hljs-string">"my-domain"</span>);
+
+<span class="hljs-comment"># A client bound to the default provider</span>
+default_client = api.get_client();
+<span class="hljs-comment"># A client bound to the MyProvider provider</span>
+domain_scoped_client = api.get_client(<span class="hljs-string">"my-domain"</span>);
+</code></pre>
+<p>Domains can be defined on a provider during registration.
+For more details, please refer to the <a href="#providers">providers</a> section.</p>
+<h3 id="eventing">Eventing</h3>
+<p>Events allow you to react to state changes in the provider or underlying flag management system, such as flag definition changes, provider readiness, or error conditions. Initialization events (PROVIDER_READY on success, PROVIDER_ERROR on failure) are dispatched for every provider. Some providers support additional events, such as PROVIDER_CONFIGURATION_CHANGED.</p>
+<p>Please refer to the documentation of the provider you're using to see what events are supported.</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> openfeature <span class="hljs-keyword">import</span> api
+<span class="hljs-keyword">from</span> openfeature.provider <span class="hljs-keyword">import</span> ProviderEvent
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">on_provider_ready</span>(<span class="hljs-params">event_details: EventDetails</span>):
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f"Provider <span class="hljs-subst">{event_details.provider_name}</span> is ready"</span>)
+
+api.add_handler(ProviderEvent.PROVIDER_READY, on_provider_ready)
+
+client = api.get_client()
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">on_provider_ready</span>(<span class="hljs-params">event_details: EventDetails</span>):
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f"Provider <span class="hljs-subst">{event_details.provider_name}</span> is ready"</span>)
+
+client.add_handler(ProviderEvent.PROVIDER_READY, on_provider_ready)
+</code></pre>
+<h3 id="transaction-context-propagation">Transaction Context Propagation</h3>
+<p>Transaction context is a container for transaction-specific evaluation context (e.g. user id, user agent, IP).
+Transaction context can be set where specific data is available (e.g. an auth service or request handler) and by using the transaction context propagator it will automatically be applied to all flag evaluations within a transaction (e.g. a request or thread).</p>
+<p>You can implement a different transaction context propagator by implementing the <code>TransactionContextPropagator</code> class exported by the OpenFeature SDK.
+In most cases you can use <code>ContextVarsTransactionContextPropagator</code> as it works for <code>threads</code> and <code>asyncio</code> using <a href="https://peps.python.org/pep-0567/">Context Variables</a>.</p>
+<p>The following example shows a <strong>multithreaded</strong> Flask application using transaction context propagation to propagate the request ip and user id into request scoped transaction context.</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> flask <span class="hljs-keyword">import</span> Flask, request
+<span class="hljs-keyword">from</span> openfeature <span class="hljs-keyword">import</span> api
+<span class="hljs-keyword">from</span> openfeature.evaluation_context <span class="hljs-keyword">import</span> EvaluationContext
+<span class="hljs-keyword">from</span> openfeature.transaction_context <span class="hljs-keyword">import</span> ContextVarsTransactionContextPropagator
+
+<span class="hljs-comment"># Initialize the Flask app</span>
+app = Flask(__name__)
+
+<span class="hljs-comment"># Set the transaction context propagator</span>
+api.set_transaction_context_propagator(ContextVarsTransactionContextPropagator())
+
+<span class="hljs-comment"># Middleware to set the transaction context</span>
+<span class="hljs-comment"># You can call api.set_transaction_context anywhere you have information,</span>
+<span class="hljs-comment"># you want to have available in the code-paths below the current one.</span>
+<span class="hljs-meta">@app.before_request</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">set_request_transaction_context</span>():
+  ip = request.headers.get(<span class="hljs-string">"X-Forwarded-For"</span>, request.remote_addr)
+  user_id = request.headers.get(<span class="hljs-string">"User-Id"</span>)  <span class="hljs-comment"># Assuming we're getting the user ID from a header</span>
+  evaluation_context = EvaluationContext(targeting_key=user_id, attributes={<span class="hljs-string">"ipAddress"</span>: ip})
+  api.set_transaction_context(evaluation_context)
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">create_response</span>() -> <span class="hljs-built_in">str</span>:
+  <span class="hljs-comment"># This method can be anywhere in our code.</span>
+  <span class="hljs-comment"># The feature flag evaluation will automatically contain the transaction context merged with other context</span>
+  new_response = api.get_client().get_string_value(<span class="hljs-string">"response-message"</span>, <span class="hljs-string">"Hello User!"</span>)
+  <span class="hljs-keyword">return</span> <span class="hljs-string">f"Message from server: <span class="hljs-subst">{new_response}</span>"</span>
+
+<span class="hljs-comment"># Example route where we use the transaction context</span>
+<span class="hljs-meta">@app.route(<span class="hljs-params"><span class="hljs-string">'/greeting'</span></span>)</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">some_endpoint</span>():
+  <span class="hljs-keyword">return</span> create_response()
+</code></pre>
+<p>This also works for asyncio based implementations e.g. FastApi as seen in the following example:</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> fastapi <span class="hljs-keyword">import</span> FastAPI, Request
+<span class="hljs-keyword">from</span> openfeature <span class="hljs-keyword">import</span> api
+<span class="hljs-keyword">from</span> openfeature.evaluation_context <span class="hljs-keyword">import</span> EvaluationContext
+<span class="hljs-keyword">from</span> openfeature.transaction_context <span class="hljs-keyword">import</span> ContextVarsTransactionContextPropagator
+
+<span class="hljs-comment"># Initialize the FastAPI app</span>
+app = FastAPI()
+
+<span class="hljs-comment"># Set the transaction context propagator</span>
+api.set_transaction_context_propagator(ContextVarsTransactionContextPropagator())
+
+<span class="hljs-comment"># Middleware to set the transaction context</span>
+<span class="hljs-meta">@app.middleware(<span class="hljs-params"><span class="hljs-string">"http"</span></span>)</span>
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">def</span> <span class="hljs-title function_">set_request_transaction_context</span>(<span class="hljs-params">request: Request, call_next</span>):
+    ip = request.headers.get(<span class="hljs-string">"X-Forwarded-For"</span>, request.client.host)
+    user_id = request.headers.get(<span class="hljs-string">"User-Id"</span>)  <span class="hljs-comment"># Assuming we're getting the user ID from a header</span>
+    evaluation_context = EvaluationContext(targeting_key=user_id, attributes={<span class="hljs-string">"ipAddress"</span>: ip})
+    api.set_transaction_context(evaluation_context)
+    response = <span class="hljs-keyword">await</span> call_next(request)
+    <span class="hljs-keyword">return</span> response
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">create_response</span>() -> <span class="hljs-built_in">str</span>:
+    <span class="hljs-comment"># This method can be located anywhere in our code.</span>
+    <span class="hljs-comment"># The feature flag evaluation will automatically include the transaction context merged with other context.</span>
+    new_response = api.get_client().get_string_value(<span class="hljs-string">"response-message"</span>, <span class="hljs-string">"Hello User!"</span>)
+    <span class="hljs-keyword">return</span> <span class="hljs-string">f"Message from server: <span class="hljs-subst">{new_response}</span>"</span>
+
+<span class="hljs-comment"># Example route where we use the transaction context</span>
+<span class="hljs-meta">@app.get(<span class="hljs-params"><span class="hljs-string">'/greeting'</span></span>)</span>
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">def</span> <span class="hljs-title function_">some_endpoint</span>():
+    <span class="hljs-keyword">return</span> create_response()
+</code></pre>
+<h3 id="asynchronous-feature-retrieval">Asynchronous Feature Retrieval</h3>
+<p>The OpenFeature API supports asynchronous calls, enabling non-blocking feature evaluations for improved performance, especially useful in concurrent or latency-sensitive scenarios. If a provider <em>hasn't</em> implemented asynchronous calls, the client can still be used asynchronously, but calls will be blocking (synchronous).</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">import</span> asyncio
+<span class="hljs-keyword">from</span> openfeature <span class="hljs-keyword">import</span> api
+<span class="hljs-keyword">from</span> openfeature.provider.in_memory_provider <span class="hljs-keyword">import</span> InMemoryFlag, InMemoryProvider
+
+my_flags = { <span class="hljs-string">"v2_enabled"</span>: InMemoryFlag(<span class="hljs-string">"on"</span>, {<span class="hljs-string">"on"</span>: <span class="hljs-literal">True</span>, <span class="hljs-string">"off"</span>: <span class="hljs-literal">False</span>}) }
+api.set_provider(InMemoryProvider(my_flags))
+client = api.get_client()
+flag_value = <span class="hljs-keyword">await</span> client.get_boolean_value_async(<span class="hljs-string">"v2_enabled"</span>, <span class="hljs-literal">False</span>) <span class="hljs-comment"># API calls are suffixed by _async</span>
+
+<span class="hljs-built_in">print</span>(<span class="hljs-string">"Value: "</span> + <span class="hljs-built_in">str</span>(flag_value))
+</code></pre>
+<p>See the <a href="#develop-a-provider">develop a provider</a> for how to support asynchronous functionality in providers.</p>
+<h3 id="shutdown">Shutdown</h3>
+<p>The OpenFeature API provides a shutdown function to perform a cleanup of all registered providers. This should only be called when your application is in the process of shutting down.</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> openfeature <span class="hljs-keyword">import</span> api
+
+api.shutdown()
+</code></pre>
+<h2 id="extending">Extending</h2>
+<h3 id="develop-a-provider">Develop a provider</h3>
+<p>To develop a provider, you need to create a new project and include the OpenFeature SDK as a dependency.
+This can be a new repository or included in <a href="https://github.com/open-feature/python-sdk-contrib">the existing contrib repository</a> available under the OpenFeature organization.
+You’ll then need to write the provider by implementing the <code>AbstractProvider</code> class exported by the OpenFeature SDK.</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> <span class="hljs-type">List</span>, <span class="hljs-type">Optional</span>, <span class="hljs-type">Union</span>
+
+<span class="hljs-keyword">from</span> openfeature.evaluation_context <span class="hljs-keyword">import</span> EvaluationContext
+<span class="hljs-keyword">from</span> openfeature.flag_evaluation <span class="hljs-keyword">import</span> FlagResolutionDetails
+<span class="hljs-keyword">from</span> openfeature.hook <span class="hljs-keyword">import</span> Hook
+<span class="hljs-keyword">from</span> openfeature.provider <span class="hljs-keyword">import</span> AbstractProvider, Metadata
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyProvider</span>(<span class="hljs-title class_ inherited__">AbstractProvider</span>):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">get_metadata</span>(<span class="hljs-params">self</span>) -> Metadata:
+        ...
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">get_provider_hooks</span>(<span class="hljs-params">self</span>) -> <span class="hljs-type">List</span>[Hook]:
+        <span class="hljs-keyword">return</span> []
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_boolean_details</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-built_in">bool</span>,
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-built_in">bool</span>]:
+        ...
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_string_details</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-built_in">str</span>,
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-built_in">str</span>]:
+        ...
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_integer_details</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-built_in">int</span>,
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-built_in">int</span>]:
+        ...
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_float_details</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-built_in">float</span>,
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-built_in">float</span>]:
+        ...
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_object_details</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-type">Union</span>[<span class="hljs-built_in">dict</span>, <span class="hljs-built_in">list</span>],
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-type">Union</span>[<span class="hljs-built_in">dict</span>, <span class="hljs-built_in">list</span>]]:
+        ...
+</code></pre>
+<p>Providers can also be extended to support async functionality.
+To support add asynchronous calls to a provider:</p>
+<ul>
+<li>Implement the <code>AbstractProvider</code> as shown above.</li>
+<li>Define asynchronous calls for each data type.</li>
+</ul>
+<pre><code class="hljs language-python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyProvider</span>(<span class="hljs-title class_ inherited__">AbstractProvider</span>):
+    ...
+    <span class="hljs-keyword">async</span> <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_boolean_details_async</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-built_in">bool</span>,
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-built_in">bool</span>]:
+        ...
+
+    <span class="hljs-keyword">async</span> <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_string_details_async</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-built_in">str</span>,
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-built_in">str</span>]:
+        ...
+
+    <span class="hljs-keyword">async</span> <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_integer_details_async</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-built_in">int</span>,
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-built_in">int</span>]:
+        ...
+
+    <span class="hljs-keyword">async</span> <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_float_details_async</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-built_in">float</span>,
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-built_in">float</span>]:
+        ...
+
+    <span class="hljs-keyword">async</span> <span class="hljs-keyword">def</span> <span class="hljs-title function_">resolve_object_details_async</span>(<span class="hljs-params">
+        self,
+        flag_key: <span class="hljs-built_in">str</span>,
+        default_value: <span class="hljs-type">Union</span>[<span class="hljs-built_in">dict</span>, <span class="hljs-built_in">list</span>],
+        evaluation_context: <span class="hljs-type">Optional</span>[EvaluationContext] = <span class="hljs-literal">None</span>,
+    </span>) -> FlagResolutionDetails[<span class="hljs-type">Union</span>[<span class="hljs-built_in">dict</span>, <span class="hljs-built_in">list</span>]]:
+        ...
+
+</code></pre>
+<blockquote>
+<p>Built a new provider? <a href="https://github.com/open-feature/openfeature.dev/issues/new?assignees=&#x26;labels=provider&#x26;projects=&#x26;template=document-provider.yaml&#x26;title=%5BProvider%5D%3A+">Let us know</a> so we can add it to the docs!</p>
+</blockquote>
+<h3 id="develop-a-hook">Develop a hook</h3>
+<p>To develop a hook, you need to create a new project and include the OpenFeature SDK as a dependency.
+This can be a new repository or included in <a href="https://github.com/open-feature/python-sdk-contrib">the existing contrib repository</a> available under the OpenFeature organization.
+Implement your own hook by creating a hook that inherits from the <code>Hook</code> class.
+Any of the evaluation life-cycle stages (<code>before</code>/<code>after</code>/<code>error</code>/<code>finally_after</code>) can be override to add the desired business logic.</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> openfeature.hook <span class="hljs-keyword">import</span> Hook
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyHook</span>(<span class="hljs-title class_ inherited__">Hook</span>):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">after</span>(<span class="hljs-params">self, hook_context: HookContext, details: FlagEvaluationDetails, hints: <span class="hljs-built_in">dict</span></span>):
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">"This runs after the flag has been evaluated"</span>)
+
+</code></pre>
+<blockquote>
+<p>Built a new hook? <a href="https://github.com/open-feature/openfeature.dev/issues/new?assignees=&#x26;labels=hook&#x26;projects=&#x26;template=document-hook.yaml&#x26;title=%5BHook%5D%3A+">Let us know</a> so we can add it to the docs!</p>
+</blockquote>

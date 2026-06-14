@@ -1,0 +1,1302 @@
+<p><a href="https://mockhttp.org"><img src="public/logo.svg" alt="public/logo.svg"></a></p>
+<p><a href="https://github.com/jaredwray/mockhttp/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/mockhttp/actions/workflows/tests.yaml/badge.svg" alt="tests"></a>
+<a href="https://github.com/jaredwray/mockhttp/blob/master/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/mockhttp" alt="GitHub license"></a>
+<a href="https://codecov.io/gh/jaredwray/mockhttp"><img src="https://codecov.io/gh/jaredwray/mockhttp/graph/badge.svg?token=eqtqoA3olU" alt="codecov"></a>
+<a href="https://npmjs.com/package/@jaredwray/mockhttp"><img src="https://img.shields.io/npm/dm/@jaredwray/mockhttp" alt="npm"></a>
+<a href="https://npmjs.com/package/@jaredwray/mockhttp"><img src="https://img.shields.io/npm/v/@jaredwray/mockhttp" alt="npm"></a>
+<a href="https://hub.docker.com/r/jaredwray/mockhttp"><img src="https://img.shields.io/docker/pulls/jaredwray/mockhttp" alt="Docker Pulls"></a>
+<a href="https://mockhttp.org"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fjaredwray.com%2Fapi%2Fmockhttp-traffic&#x26;query=%24.message&#x26;label=mockhttp.org" alt="mockhttp.org"></a></p>
+<p>A simple HTTP server that can be used to mock HTTP responses for testing purposes. Inspired by <a href="https://httpbin.org/">httpbin</a> and built using <code>nodejs</code> and <code>fastify</code> with the idea of running it via <a href="https://mockhttp.org">https://mockhttp.org</a>, via docker <code>jaredwray/mockhttp</code>, or nodejs <code>npm install @jaredwray/mockhttp</code>.</p>
+<h1 id="features">Features</h1>
+<ul>
+<li>All the features of <a href="https://httpbin.org/">httpbin</a></li>
+<li>Taps - Inject custom responses for testing and development</li>
+<li>Bins - Capture and inspect incoming HTTP requests (great for webhook debugging)</li>
+<li><code>@fastify/helmet</code> built in by default</li>
+<li>Built with <code>nodejs</code>, <code>typescript</code>, and <code>fastify</code></li>
+<li>Deploy via <code>docker</code> or <code>nodejs</code></li>
+<li>Global deployment via <a href="https://mockhttp.org">mockhttp.org</a> (free service)</li>
+<li>Better API documentation and examples</li>
+<li>Auto detect the port that is not in use</li>
+<li>Maintained and updated regularly!</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#deploy-via-docker">Deploy via Docker</a></li>
+<li><a href="#deploy-via-docker-compose">Deploy via Docker Compose</a></li>
+<li><a href="#deploy-via-nodejs">Deploy via NodeJS</a></li>
+<li><a href="#https-support">HTTPS Support</a>
+<ul>
+<li><a href="#auto-generated-certificate">Auto-Generated Certificate</a></li>
+<li><a href="#custom-certificate-options">Custom Certificate Options</a></li>
+<li><a href="#provide-your-own-certificate">Provide Your Own Certificate</a></li>
+<li><a href="#standalone-certificate-generation">Standalone Certificate Generation</a></li>
+<li><a href="#https-options-reference">HTTPS Options Reference</a>
+<ul>
+<li><a href="#certificate-options">Certificate Options</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#http2-support">HTTP/2 Support</a>
+<ul>
+<li><a href="#http2-over-tls-h2">HTTP/2 over TLS (h2)</a></li>
+<li><a href="#http2-cleartext-h2c">HTTP/2 Cleartext (h2c)</a></li>
+<li><a href="#http2-via-environment-variable">HTTP/2 via Environment Variable</a></li>
+</ul>
+</li>
+<li><a href="#response-injection-tap-feature">Response Injection (Tap Feature)</a>
+<ul>
+<li><a href="#what-is-a-tap">What is a "Tap"?</a></li>
+<li><a href="#basic-usage">Basic Usage</a></li>
+<li><a href="#advanced-examples">Advanced Examples</a>
+<ul>
+<li><a href="#inject-json-response">Inject JSON Response</a></li>
+<li><a href="#wildcard-url-matching">Wildcard URL Matching</a></li>
+<li><a href="#multiple-injections">Multiple Injections</a></li>
+<li><a href="#match-by-http-method">Match by HTTP Method</a></li>
+<li><a href="#match-by-headers">Match by Headers</a></li>
+<li><a href="#catch-all-injection">Catch-All Injection</a></li>
+<li><a href="#dynamic-function-response">Dynamic Function Response</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#request-bins">Request Bins</a>
+<ul>
+<li><a href="#quick-start">Quick Start</a></li>
+<li><a href="#endpoints">Endpoints</a></li>
+<li><a href="#end-to-end-webhook-debugging-example">End-to-End Webhook Debugging Example</a></li>
+<li><a href="#captured-request-shape">Captured Request Shape</a></li>
+<li><a href="#body-encoding-examples">Body Encoding Examples</a>
+<ul>
+<li><a href="#text-content-utf-8">Text Content (UTF-8)</a></li>
+<li><a href="#binary-content-base64">Binary Content (Base64)</a></li>
+<li><a href="#truncation">Truncation</a></li>
+</ul>
+</li>
+<li><a href="#fifo-eviction-example">FIFO Eviction Example</a></li>
+<li><a href="#programmatic-access">Programmatic Access</a>
+<ul>
+<li><a href="#using-bins-in-a-vitest-test">Using Bins in a Vitest Test</a></li>
+</ul>
+</li>
+<li><a href="#configuration">Configuration</a>
+<ul>
+<li><a href="#defaults">Defaults</a></li>
+<li><a href="#pluggable-storage">Pluggable Storage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#rate-limiting">Rate Limiting</a>
+<ul>
+<li><a href="#default-rate-limiting">Default Rate Limiting</a></li>
+<li><a href="#customizing-rate-limiting">Customizing Rate Limiting</a></li>
+<li><a href="#common-configuration-options">Common Configuration Options</a>
+<ul>
+<li><a href="#basic-rate-limiting">Basic Rate Limiting</a></li>
+<li><a href="#stricter-limits-with-custom-error-response">Stricter Limits with Custom Error Response</a></li>
+<li><a href="#allow-list-exclude-specific-ips">Allow List (Exclude Specific IPs)</a></li>
+<li><a href="#custom-key-generator-rate-limit-by-header">Custom Key Generator (Rate Limit by Header)</a></li>
+<li><a href="#advanced-configuration">Advanced Configuration</a></li>
+</ul>
+</li>
+<li><a href="#disabling-rate-limiting">Disabling Rate Limiting</a></li>
+<li><a href="#available-options">Available Options</a></li>
+</ul>
+</li>
+<li><a href="#logging">Logging</a>
+<ul>
+<li><a href="#disabling-logging">Disabling Logging</a></li>
+</ul>
+</li>
+<li><a href="#flexible-url-matching">Flexible URL Matching</a></li>
+<li><a href="#api-reference">API Reference</a>
+<ul>
+<li><a href="#mockhttp-class">MockHttp Class</a>
+<ul>
+<li><a href="#constructor">Constructor</a></li>
+<li><a href="#properties">Properties</a></li>
+<li><a href="#methods">Methods</a>
+<ul>
+<li><a href="#async-start"><code>async start()</code></a></li>
+<li><a href="#async-close"><code>async close()</code></a></li>
+<li><a href="#async-detectport"><code>async detectPort()</code></a></li>
+<li><a href="#async-registerapidocsfastifyinstance"><code>async registerApiDocs(fastifyInstance?)</code></a></li>
+<li><a href="#async-registerhttpmethodsfastifyinstance"><code>async registerHttpMethods(fastifyInstance?)</code></a></li>
+<li><a href="#async-registerstatuscoderoutesfastifyinstance"><code>async registerStatusCodeRoutes(fastifyInstance?)</code></a></li>
+<li><a href="#async-registerrequestinspectionroutesfastifyinstance"><code>async registerRequestInspectionRoutes(fastifyInstance?)</code></a></li>
+<li><a href="#async-registerresponseinspectionroutesfastifyinstance"><code>async registerResponseInspectionRoutes(fastifyInstance?)</code></a></li>
+<li><a href="#async-registerresponseformatroutesfastifyinstance"><code>async registerResponseFormatRoutes(fastifyInstance?)</code></a></li>
+<li><a href="#async-registerredirectroutesfastifyinstance"><code>async registerRedirectRoutes(fastifyInstance?)</code></a></li>
+<li><a href="#async-registercookieroutesfastifyinstance"><code>async registerCookieRoutes(fastifyInstance?)</code></a></li>
+<li><a href="#async-registeranythingroutesfastifyinstance"><code>async registerAnythingRoutes(fastifyInstance?)</code></a></li>
+<li><a href="#async-registerauthroutesfastifyinstance"><code>async registerAuthRoutes(fastifyInstance?)</code></a></li>
+<li><a href="#async-registerimageroutesfastifyinstance"><code>async registerImageRoutes(fastifyInstance?)</code></a></li>
+<li><a href="#async-registerbinroutesfastifyinstance"><code>async registerBinRoutes(fastifyInstance?)</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#bins-request-capture">Bins (Request Capture)</a>
+<ul>
+<li><a href="#binscreatebin"><code>bins.createBin()</code></a></li>
+<li><a href="#binsgetbinid"><code>bins.getBin(id)</code></a></li>
+<li><a href="#binslistbins"><code>bins.listBins()</code></a></li>
+<li><a href="#binsdeletebinid"><code>bins.deleteBin(id)</code></a></li>
+<li><a href="#binsgetrequestsbinid"><code>bins.getRequests(binId)</code></a></li>
+<li><a href="#binsgetrequestbinid-reqid"><code>bins.getRequest(binId, reqId)</code></a></li>
+<li><a href="#binsclearrequestsbinid"><code>bins.clearRequests(binId)</code></a></li>
+<li><a href="#binsrecordrequestbinid-raw"><code>bins.recordRequest(binId, raw)</code></a></li>
+<li><a href="#binsstart--binsstop"><code>bins.start()</code> / <code>bins.stop()</code></a></li>
+<li><a href="#binsmaxbodysize--binsmaxrequestsperbin--binsdefaultttlms"><code>bins.maxBodySize</code> / <code>bins.maxRequestsPerBin</code> / <code>bins.defaultTtlMs</code></a></li>
+</ul>
+</li>
+<li><a href="#taps-response-injection">Taps (Response Injection)</a>
+<ul>
+<li><a href="#tapsinjectresponse-matcher"><code>taps.inject(response, matcher?)</code></a></li>
+</ul>
+</li>
+<li><a href="#tapsremoveinjectiontaporid"><code>taps.removeInjection(tapOrId)</code></a>
+<ul>
+<li><a href="#tapsinjections"><code>taps.injections</code></a></li>
+</ul>
+</li>
+<li><a href="#tapsclear"><code>taps.clear()</code></a></li>
+<li><a href="#tapshasinjections"><code>taps.hasInjections</code></a></li>
+</ul>
+</li>
+<li><a href="#about-mockhttporg">About mockhttp.org</a></li>
+<li><a href="#contributing">Contributing</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h1 id="deploy-via-docker">Deploy via Docker</h1>
+<pre><code class="hljs language-bash">docker run -d -p 3000:3000 jaredwray/mockhttp
+</code></pre>
+<h1 id="deploy-via-docker-compose">Deploy via Docker Compose</h1>
+<pre><code class="hljs language-yaml"><span class="hljs-attr">services:</span>
+  <span class="hljs-attr">mockhttp:</span>
+    <span class="hljs-attr">image:</span> <span class="hljs-string">jaredwray/mockhttp:latest</span>
+    <span class="hljs-attr">ports:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">"3000:3000"</span>
+</code></pre>
+<p>If you want to run it on a different port, just change the <code>3000</code> to whatever port you want and add in the environment variable <code>PORT</code> to the environment.</p>
+<pre><code class="hljs language-yaml"><span class="hljs-attr">services:</span>
+  <span class="hljs-attr">mockhttp:</span>
+    <span class="hljs-attr">image:</span> <span class="hljs-string">jaredwray/mockhttp:latest</span>
+    <span class="hljs-attr">ports:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">"3001:3001"</span>
+    <span class="hljs-attr">environment:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">PORT=3001</span>
+</code></pre>
+<p>You can see an example of this in the <a href="docker-compose.yaml">docker-compose.yaml</a> file.</p>
+<h1 id="deploy-via-nodejs">Deploy via NodeJS</h1>
+<pre><code class="hljs language-bash">npm install @jaredwray/mockhttp --save
+</code></pre>
+<p>then run <code>mockhttp</code> in your code.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">MockHttp</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/mockhttp'</span>;
+<span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>();
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>(); <span class="hljs-comment">// start the server</span>
+<span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">'http://localhost:3000/get'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(response);
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">close</span>(); <span class="hljs-comment">// stop the server</span>
+</code></pre>
+<h1 id="https-support">HTTPS Support</h1>
+<p>MockHttp supports HTTPS with auto-generated self-signed certificates or your own custom certificates. No external dependencies are required — certificate generation uses only Node.js built-in <code>crypto</code>.</p>
+<h2 id="auto-generated-certificate">Auto-Generated Certificate</h2>
+<p>The simplest way to enable HTTPS is to pass <code>https: true</code>. A self-signed certificate for <code>localhost</code> is generated automatically:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">MockHttp</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/mockhttp'</span>;
+
+<span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({ <span class="hljs-attr">https</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(mock.<span class="hljs-property">isHttps</span>); <span class="hljs-comment">// true</span>
+
+<span class="hljs-comment">// Use Fastify's built-in inject() for testing (no TLS setup needed)</span>
+<span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> mock.<span class="hljs-property">server</span>.<span class="hljs-title function_">inject</span>({ <span class="hljs-attr">method</span>: <span class="hljs-string">'GET'</span>, <span class="hljs-attr">url</span>: <span class="hljs-string">'/get'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(response.<span class="hljs-property">statusCode</span>); <span class="hljs-comment">// 200</span>
+
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">close</span>();
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> Self-signed certificates are not trusted by default. When making real HTTPS requests (e.g. with <code>fetch</code>), set <code>NODE_TLS_REJECT_UNAUTHORIZED=0</code> in your test environment or use a custom HTTPS agent.</p>
+</blockquote>
+<h2 id="custom-certificate-options">Custom Certificate Options</h2>
+<p>You can customize the auto-generated certificate by passing <code>certificateOptions</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({
+  <span class="hljs-attr">https</span>: {
+    <span class="hljs-attr">certificateOptions</span>: {
+      <span class="hljs-attr">commonName</span>: <span class="hljs-string">'my-test-server'</span>,
+      <span class="hljs-attr">validityDays</span>: <span class="hljs-number">30</span>,
+      <span class="hljs-attr">keySize</span>: <span class="hljs-number">4096</span>,
+      <span class="hljs-attr">altNames</span>: [
+        { <span class="hljs-attr">type</span>: <span class="hljs-string">'dns'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'example.local'</span> },
+        { <span class="hljs-attr">type</span>: <span class="hljs-string">'dns'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'*.example.local'</span> },
+        { <span class="hljs-attr">type</span>: <span class="hljs-string">'ip'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'192.168.1.100'</span> },
+      ],
+    },
+  },
+});
+
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+<span class="hljs-comment">// Make requests...</span>
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">close</span>();
+</code></pre>
+<h2 id="provide-your-own-certificate">Provide Your Own Certificate</h2>
+<p>You can supply your own PEM-encoded certificate and key, either as strings or file paths:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Using PEM strings</span>
+<span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({
+  <span class="hljs-attr">https</span>: {
+    <span class="hljs-attr">cert</span>: <span class="hljs-string">'-----BEGIN CERTIFICATE-----\n...'</span>,
+    <span class="hljs-attr">key</span>: <span class="hljs-string">'-----BEGIN PRIVATE KEY-----\n...'</span>,
+  },
+});
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+<span class="hljs-comment">// Make requests...</span>
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">close</span>();
+</code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Using file paths</span>
+<span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({
+  <span class="hljs-attr">https</span>: {
+    <span class="hljs-attr">cert</span>: <span class="hljs-string">'/path/to/cert.pem'</span>,
+    <span class="hljs-attr">key</span>: <span class="hljs-string">'/path/to/key.pem'</span>,
+  },
+});
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+<span class="hljs-comment">// Make requests...</span>
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">close</span>();
+</code></pre>
+<h2 id="standalone-certificate-generation">Standalone Certificate Generation</h2>
+<p>You can also generate certificates independently using the exported utility functions:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { generateCertificate, generateCertificateFiles } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/mockhttp'</span>;
+
+<span class="hljs-comment">// Generate in-memory PEM strings</span>
+<span class="hljs-keyword">const</span> { cert, key } = <span class="hljs-title function_">generateCertificate</span>({
+  <span class="hljs-attr">commonName</span>: <span class="hljs-string">'my-app'</span>,
+  <span class="hljs-attr">validityDays</span>: <span class="hljs-number">90</span>,
+});
+
+<span class="hljs-comment">// Generate and write to disk</span>
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> <span class="hljs-title function_">generateCertificateFiles</span>({
+  <span class="hljs-attr">certPath</span>: <span class="hljs-string">'./certs/cert.pem'</span>,
+  <span class="hljs-attr">keyPath</span>: <span class="hljs-string">'./certs/key.pem'</span>,
+  <span class="hljs-attr">commonName</span>: <span class="hljs-string">'my-app'</span>,
+});
+</code></pre>
+<h2 id="https-options-reference">HTTPS Options Reference</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cert</code></td>
+<td>string</td>
+<td>—</td>
+<td>PEM-encoded certificate string or file path</td>
+</tr>
+<tr>
+<td><code>key</code></td>
+<td>string</td>
+<td>—</td>
+<td>PEM-encoded private key string or file path</td>
+</tr>
+<tr>
+<td><code>autoGenerate</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Auto-generate a self-signed certificate when cert/key are not provided</td>
+</tr>
+<tr>
+<td><code>certificateOptions</code></td>
+<td>CertificateOptions</td>
+<td>—</td>
+<td>Options for the auto-generated certificate</td>
+</tr>
+</tbody>
+</table>
+<h3 id="certificate-options">Certificate Options</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>commonName</code></td>
+<td>string</td>
+<td><code>'localhost'</code></td>
+<td>Certificate subject Common Name (CN)</td>
+</tr>
+<tr>
+<td><code>altNames</code></td>
+<td>Array&#x3C;{ type, value }></td>
+<td><code>[dns:localhost, ip:127.0.0.1, ip:::1]</code></td>
+<td>Subject Alternative Names with type <code>'dns'</code> or <code>'ip'</code></td>
+</tr>
+<tr>
+<td><code>validityDays</code></td>
+<td>number</td>
+<td><code>365</code></td>
+<td>Certificate validity period in days</td>
+</tr>
+<tr>
+<td><code>keySize</code></td>
+<td>number</td>
+<td><code>2048</code></td>
+<td>RSA key size in bits</td>
+</tr>
+</tbody>
+</table>
+<h1 id="http2-support">HTTP/2 Support</h1>
+<p>MockHttp supports HTTP/2 in two modes:</p>
+<ul>
+<li><strong>h2</strong> — HTTP/2 over TLS (used by browsers), enabled with both <code>http2: true</code> and <code>https: true</code></li>
+<li><strong>h2c</strong> — HTTP/2 cleartext (no TLS), enabled with just <code>http2: true</code>, useful for service-to-service testing</li>
+</ul>
+<h2 id="http2-over-tls-h2">HTTP/2 over TLS (h2)</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">MockHttp</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/mockhttp'</span>;
+
+<span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({ <span class="hljs-attr">http2</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">https</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(mock.<span class="hljs-property">http2</span>); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(mock.<span class="hljs-property">isHttps</span>); <span class="hljs-comment">// true</span>
+
+<span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> mock.<span class="hljs-property">server</span>.<span class="hljs-title function_">inject</span>({ <span class="hljs-attr">method</span>: <span class="hljs-string">'GET'</span>, <span class="hljs-attr">url</span>: <span class="hljs-string">'/get'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(response.<span class="hljs-property">statusCode</span>); <span class="hljs-comment">// 200</span>
+
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">close</span>();
+</code></pre>
+<p>By default, HTTP/1.1 clients can still connect via ALPN negotiation (<code>http1</code> defaults to <code>true</code>). To disable HTTP/1.1 fallback:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({ <span class="hljs-attr">http2</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">https</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">http1</span>: <span class="hljs-literal">false</span> });
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+</code></pre>
+<h2 id="http2-cleartext-h2c">HTTP/2 Cleartext (h2c)</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({ <span class="hljs-attr">http2</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(mock.<span class="hljs-property">http2</span>); <span class="hljs-comment">// true</span>
+
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">close</span>();
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> Browsers do not support h2c. This mode is useful for testing gRPC or service-to-service communication.</p>
+</blockquote>
+<h2 id="http2-via-environment-variable">HTTP/2 via Environment Variable</h2>
+<pre><code class="hljs language-bash">HTTP2=<span class="hljs-literal">true</span> node your-app.js
+</code></pre>
+<h1 id="response-injection-tap-feature">Response Injection (Tap Feature)</h1>
+<p>The injection/tap feature allows you to "tap into" the request flow and inject custom responses for specific requests. This is particularly useful for:</p>
+<ul>
+<li><strong>Offline testing</strong> - Mock external API responses without network access</li>
+<li><strong>Testing edge cases</strong> - Simulate errors, timeouts, or specific response scenarios</li>
+<li><strong>Development</strong> - Work on your application without depending on external services</li>
+</ul>
+<h2 id="what-is-a-tap">What is a "Tap"?</h2>
+<p>A "tap" is a reference to an injected response, similar to "wiretapping" - you're intercepting requests and returning predefined responses. Each tap can be removed when you're done with it, restoring normal server behavior.</p>
+<h2 id="basic-usage">Basic Usage</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { mockhttp } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/mockhttp'</span>;
+
+<span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title function_">mockhttp</span>();
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+
+<span class="hljs-comment">// Inject a simple response</span>
+<span class="hljs-keyword">const</span> tap = mock.<span class="hljs-property">taps</span>.<span class="hljs-title function_">inject</span>(
+  {
+    <span class="hljs-attr">response</span>: <span class="hljs-string">"Hello, World!"</span>,
+    <span class="hljs-attr">statusCode</span>: <span class="hljs-number">200</span>,
+    <span class="hljs-attr">headers</span>: { <span class="hljs-string">"Content-Type"</span>: <span class="hljs-string">"text/plain"</span> }
+  },
+  {
+    <span class="hljs-attr">url</span>: <span class="hljs-string">"/api/greeting"</span>,
+    <span class="hljs-attr">method</span>: <span class="hljs-string">"GET"</span>
+  }
+);
+
+<span class="hljs-comment">// Make requests - they will get the injected response</span>
+<span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">'http://localhost:3000/api/greeting'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> response.<span class="hljs-title function_">text</span>()); <span class="hljs-comment">// "Hello, World!"</span>
+
+<span class="hljs-comment">// Remove the injection when done</span>
+mock.<span class="hljs-property">taps</span>.<span class="hljs-title function_">removeInjection</span>(tap);
+
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">close</span>();
+</code></pre>
+<h2 id="advanced-examples">Advanced Examples</h2>
+<h3 id="inject-json-response">Inject JSON Response</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> tap = mock.<span class="hljs-property">taps</span>.<span class="hljs-title function_">inject</span>(
+  {
+    <span class="hljs-attr">response</span>: { <span class="hljs-attr">message</span>: <span class="hljs-string">"Success"</span>, <span class="hljs-attr">data</span>: { <span class="hljs-attr">id</span>: <span class="hljs-number">123</span> } },
+    <span class="hljs-attr">statusCode</span>: <span class="hljs-number">200</span>
+  },
+  { <span class="hljs-attr">url</span>: <span class="hljs-string">"/api/users/123"</span> }
+);
+</code></pre>
+<h3 id="wildcard-url-matching">Wildcard URL Matching</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Match all requests under /api/</span>
+<span class="hljs-keyword">const</span> tap = mock.<span class="hljs-property">taps</span>.<span class="hljs-title function_">inject</span>(
+  {
+    <span class="hljs-attr">response</span>: <span class="hljs-string">"API is mocked"</span>,
+    <span class="hljs-attr">statusCode</span>: <span class="hljs-number">503</span>
+  },
+  { <span class="hljs-attr">url</span>: <span class="hljs-string">"/api/*"</span> }
+);
+</code></pre>
+<h3 id="multiple-injections">Multiple Injections</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> tap1 = mock.<span class="hljs-property">taps</span>.<span class="hljs-title function_">inject</span>(
+  { <span class="hljs-attr">response</span>: <span class="hljs-string">"Users data"</span> },
+  { <span class="hljs-attr">url</span>: <span class="hljs-string">"/api/users"</span> }
+);
+
+<span class="hljs-keyword">const</span> tap2 = mock.<span class="hljs-property">taps</span>.<span class="hljs-title function_">inject</span>(
+  { <span class="hljs-attr">response</span>: <span class="hljs-string">"Posts data"</span> },
+  { <span class="hljs-attr">url</span>: <span class="hljs-string">"/api/posts"</span> }
+);
+
+<span class="hljs-comment">// View all active injections</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(mock.<span class="hljs-property">taps</span>.<span class="hljs-property">injections</span>); <span class="hljs-comment">// Map of all active taps</span>
+
+<span class="hljs-comment">// Remove specific injections</span>
+mock.<span class="hljs-property">taps</span>.<span class="hljs-title function_">removeInjection</span>(tap1);
+mock.<span class="hljs-property">taps</span>.<span class="hljs-title function_">removeInjection</span>(tap2);
+</code></pre>
+<h3 id="match-by-http-method">Match by HTTP Method</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Only intercept POST requests</span>
+<span class="hljs-keyword">const</span> tap = mock.<span class="hljs-property">taps</span>.<span class="hljs-title function_">inject</span>(
+  { <span class="hljs-attr">response</span>: <span class="hljs-string">"Created"</span>, <span class="hljs-attr">statusCode</span>: <span class="hljs-number">201</span> },
+  { <span class="hljs-attr">url</span>: <span class="hljs-string">"/api/users"</span>, <span class="hljs-attr">method</span>: <span class="hljs-string">"POST"</span> }
+);
+</code></pre>
+<h3 id="match-by-headers">Match by Headers</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> tap = mock.<span class="hljs-property">taps</span>.<span class="hljs-title function_">inject</span>(
+  { <span class="hljs-attr">response</span>: <span class="hljs-string">"Authenticated response"</span> },
+  {
+    <span class="hljs-attr">url</span>: <span class="hljs-string">"/api/secure"</span>,
+    <span class="hljs-attr">headers</span>: {
+      <span class="hljs-string">"authorization"</span>: <span class="hljs-string">"Bearer token123"</span>
+    }
+  }
+);
+</code></pre>
+<h3 id="catch-all-injection">Catch-All Injection</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Match ALL requests (no matcher specified)</span>
+<span class="hljs-keyword">const</span> tap = mock.<span class="hljs-property">taps</span>.<span class="hljs-title function_">inject</span>({
+  <span class="hljs-attr">response</span>: <span class="hljs-string">"Server is in maintenance mode"</span>,
+  <span class="hljs-attr">statusCode</span>: <span class="hljs-number">503</span>
+});
+</code></pre>
+<h3 id="dynamic-function-response">Dynamic Function Response</h3>
+<p>You can provide a function that dynamically generates the response based on the incoming request:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Function response with access to the request object</span>
+<span class="hljs-keyword">const</span> tap = mock.<span class="hljs-property">taps</span>.<span class="hljs-title function_">inject</span>(
+  <span class="hljs-function">(<span class="hljs-params">request</span>) =></span> {
+    <span class="hljs-keyword">return</span> {
+      <span class="hljs-attr">response</span>: {
+        <span class="hljs-attr">message</span>: <span class="hljs-string">`You requested <span class="hljs-subst">${request.url}</span>`</span>,
+        <span class="hljs-attr">method</span>: request.<span class="hljs-property">method</span>,
+        <span class="hljs-attr">timestamp</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>().<span class="hljs-title function_">toISOString</span>()
+      },
+      <span class="hljs-attr">statusCode</span>: <span class="hljs-number">200</span>,
+      <span class="hljs-attr">headers</span>: {
+        <span class="hljs-string">"X-Request-Path"</span>: request.<span class="hljs-property">url</span>
+      }
+    };
+  },
+  { <span class="hljs-attr">url</span>: <span class="hljs-string">"/api/*"</span> }
+);
+</code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Conditional responses based on request</span>
+<span class="hljs-keyword">const</span> tap = mock.<span class="hljs-property">taps</span>.<span class="hljs-title function_">inject</span>(<span class="hljs-function">(<span class="hljs-params">request</span>) =></span> {
+  <span class="hljs-comment">// Return error for URLs containing 'error'</span>
+  <span class="hljs-keyword">if</span> (request.<span class="hljs-property">url</span>.<span class="hljs-title function_">includes</span>(<span class="hljs-string">'error'</span>)) {
+    <span class="hljs-keyword">return</span> {
+      <span class="hljs-attr">response</span>: { <span class="hljs-attr">error</span>: <span class="hljs-string">"Something went wrong"</span> },
+      <span class="hljs-attr">statusCode</span>: <span class="hljs-number">500</span>
+    };
+  }
+
+  <span class="hljs-comment">// Return success for everything else</span>
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">response</span>: { <span class="hljs-attr">status</span>: <span class="hljs-string">"success"</span> },
+    <span class="hljs-attr">statusCode</span>: <span class="hljs-number">200</span>
+  };
+});
+</code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Dynamic headers based on request</span>
+<span class="hljs-keyword">const</span> tap = mock.<span class="hljs-property">taps</span>.<span class="hljs-title function_">inject</span>(
+  <span class="hljs-function">(<span class="hljs-params">request</span>) =></span> ({
+    <span class="hljs-attr">response</span>: <span class="hljs-string">"OK"</span>,
+    <span class="hljs-attr">statusCode</span>: <span class="hljs-number">200</span>,
+    <span class="hljs-attr">headers</span>: {
+      <span class="hljs-string">"X-Original-Method"</span>: request.<span class="hljs-property">method</span>,
+      <span class="hljs-string">"X-Original-URL"</span>: request.<span class="hljs-property">url</span>,
+      <span class="hljs-string">"X-Original-Host"</span>: request.<span class="hljs-property">hostname</span>
+    }
+  }),
+  { <span class="hljs-attr">url</span>: <span class="hljs-string">"/api/mirror"</span> }
+);
+</code></pre>
+<h1 id="request-bins">Request Bins</h1>
+<p>Bins are ephemeral URL endpoints that <strong>capture incoming HTTP requests</strong> so you
+can inspect them later. They're the inverse of Taps: instead of injecting a
+response, they record everything they receive. Useful for:</p>
+<ul>
+<li><strong>Debugging webhooks</strong> — point Stripe / GitHub / Slack at a bin URL and see
+exactly what they send</li>
+<li><strong>Exercising client SDKs</strong> — verify your SDK sends the request shape you expect</li>
+<li><strong>Recording fixtures</strong> — capture real traffic to replay in tests later</li>
+</ul>
+<p>There are two URL prefixes:</p>
+<ul>
+<li><strong><code>/bins</code></strong> — JSON management API: create, list, inspect, delete bins</li>
+<li><strong><code>/b/:id</code></strong> — the capture URL. Any HTTP method, any sub-path, any body sent
+here is stored against bin <code>:id</code></li>
+</ul>
+<h2 id="quick-start">Quick Start</h2>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># 1. create a bin</span>
+curl -s -X POST http://localhost:3000/bins
+<span class="hljs-comment"># → { "id": "abc123def456", "url": "http://localhost:3000/b/abc123def456",</span>
+<span class="hljs-comment">#     "createdAt": "2026-05-18T12:00:00.000Z",</span>
+<span class="hljs-comment">#     "expiresAt": "2026-05-19T12:00:00.000Z",</span>
+<span class="hljs-comment">#     "requestCount": 0 }</span>
+
+<span class="hljs-comment"># 2. send anything to the capture URL</span>
+curl -X POST <span class="hljs-string">"http://localhost:3000/b/abc123def456/webhook?source=stripe"</span> \
+  -H <span class="hljs-string">'content-type: application/json'</span> \
+  -d <span class="hljs-string">'{"event":"payment.succeeded"}'</span>
+<span class="hljs-comment"># → { "ok": true, "binId": "abc123def456", "requestId": "f9c2e1a40b3d" }</span>
+
+<span class="hljs-comment"># 3. list captured requests (newest first)</span>
+curl http://localhost:3000/bins/abc123def456/requests
+</code></pre>
+<h2 id="endpoints">Endpoints</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/bins</code></td>
+<td>Create a new bin</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/bins</code></td>
+<td>List all active bins</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/bins/:id</code></td>
+<td>Get bin metadata</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/bins/:id/requests</code></td>
+<td>List captured requests (newest first)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/bins/:id/requests/:reqId</code></td>
+<td>Get a single captured request</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/bins/:id/requests</code></td>
+<td>Clear all captured requests in a bin</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/bins/:id</code></td>
+<td>Delete a bin</td>
+</tr>
+<tr>
+<td>ANY</td>
+<td><code>/b/:id</code> and <code>/b/:id/*</code></td>
+<td>Capture requests sent to a bin</td>
+</tr>
+</tbody>
+</table>
+<h2 id="end-to-end-webhook-debugging-example">End-to-End Webhook Debugging Example</h2>
+<p>A complete walkthrough using curl:</p>
+<pre><code class="hljs language-bash">BASE=http://localhost:3000
+
+<span class="hljs-comment"># Create the bin and grab its id</span>
+ID=$(curl -s -X POST <span class="hljs-variable">$BASE</span>/bins | jq -r .<span class="hljs-built_in">id</span>)
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"Bin URL: <span class="hljs-variable">$BASE</span>/b/<span class="hljs-variable">$ID</span>"</span>
+
+<span class="hljs-comment"># Simulate a Stripe webhook</span>
+curl -s -X POST <span class="hljs-string">"<span class="hljs-variable">$BASE</span>/b/<span class="hljs-variable">$ID</span>/stripe/events?secret=whsec_test"</span> \
+  -H <span class="hljs-string">'content-type: application/json'</span> \
+  -H <span class="hljs-string">'stripe-signature: t=1700000000,v1=abc123'</span> \
+  -d <span class="hljs-string">'{"id":"evt_1","type":"payment_intent.succeeded","data":{"object":{"amount":2000}}}'</span>
+
+<span class="hljs-comment"># Simulate a GitHub webhook</span>
+curl -s -X POST <span class="hljs-string">"<span class="hljs-variable">$BASE</span>/b/<span class="hljs-variable">$ID</span>/github"</span> \
+  -H <span class="hljs-string">'content-type: application/json'</span> \
+  -H <span class="hljs-string">'x-github-event: pull_request'</span> \
+  -d <span class="hljs-string">'{"action":"opened","number":42}'</span>
+
+<span class="hljs-comment"># Inspect everything that arrived</span>
+curl -s <span class="hljs-string">"<span class="hljs-variable">$BASE</span>/bins/<span class="hljs-variable">$ID</span>/requests"</span> | jq
+
+<span class="hljs-comment"># Drill into the most recent one</span>
+RID=$(curl -s <span class="hljs-string">"<span class="hljs-variable">$BASE</span>/bins/<span class="hljs-variable">$ID</span>/requests"</span> | jq -r <span class="hljs-string">'.requests[0].id'</span>)
+curl -s <span class="hljs-string">"<span class="hljs-variable">$BASE</span>/bins/<span class="hljs-variable">$ID</span>/requests/<span class="hljs-variable">$RID</span>"</span> | jq
+<span class="hljs-comment">#   {</span>
+<span class="hljs-comment">#     "id": "f9c2e1a40b3d",</span>
+<span class="hljs-comment">#     "binId": "abc123def456",</span>
+<span class="hljs-comment">#     "method": "POST",</span>
+<span class="hljs-comment">#     "url": "/github",</span>
+<span class="hljs-comment">#     "path": "/github",</span>
+<span class="hljs-comment">#     "query": {},</span>
+<span class="hljs-comment">#     "headers": {</span>
+<span class="hljs-comment">#       "host": "localhost:3000",</span>
+<span class="hljs-comment">#       "content-type": "application/json",</span>
+<span class="hljs-comment">#       "x-github-event": "pull_request"</span>
+<span class="hljs-comment">#     },</span>
+<span class="hljs-comment">#     "remoteAddress": "127.0.0.1",</span>
+<span class="hljs-comment">#     "contentType": "application/json",</span>
+<span class="hljs-comment">#     "bodySize": 32,</span>
+<span class="hljs-comment">#     "body": "{\"action\":\"opened\",\"number\":42}",</span>
+<span class="hljs-comment">#     "bodyEncoding": "utf8",</span>
+<span class="hljs-comment">#     "truncated": false,</span>
+<span class="hljs-comment">#     "capturedAt": "2026-05-18T12:00:01.234Z"</span>
+<span class="hljs-comment">#   }</span>
+
+<span class="hljs-comment"># Clean up</span>
+curl -s -X DELETE <span class="hljs-string">"<span class="hljs-variable">$BASE</span>/bins/<span class="hljs-variable">$ID</span>/requests"</span>  <span class="hljs-comment"># clear captures, keep the bin</span>
+curl -s -X DELETE <span class="hljs-string">"<span class="hljs-variable">$BASE</span>/bins/<span class="hljs-variable">$ID</span>"</span>           <span class="hljs-comment"># delete the bin entirely</span>
+</code></pre>
+<h2 id="captured-request-shape">Captured Request Shape</h2>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"f9c2e1a40b3d"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"binId"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123def456"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"method"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"POST"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"url"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"/webhook?source=stripe"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"path"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"/webhook"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"query"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span> <span class="hljs-attr">"source"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"stripe"</span> <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"headers"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span> <span class="hljs-attr">"content-type"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"application/json"</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"..."</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"..."</span> <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"remoteAddress"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"127.0.0.1"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"contentType"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"application/json"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"bodySize"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">32</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"body"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"{\"event\":\"payment.succeeded\"}"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"bodyEncoding"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"utf8"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"truncated"</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"capturedAt"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"2026-05-18T12:00:00.000Z"</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<ul>
+<li><strong><code>url</code></strong> is the request URL relative to the bin (everything after <code>/b/:id</code>).</li>
+<li><strong><code>path</code></strong> is the sub-path only, without the query string.</li>
+<li><strong><code>bodyEncoding</code></strong> is <code>"utf8"</code> for text content types (text/*, application/json,
+application/xml, application/x-www-form-urlencoded, application/javascript),
+<code>"base64"</code> for everything else (binary payloads), or <code>"none"</code> when no body
+was sent.</li>
+<li><strong><code>truncated</code></strong> is <code>true</code> when the body exceeded <code>maxBodySize</code> and was cut
+off. <code>bodySize</code> reflects the original length.</li>
+</ul>
+<h2 id="body-encoding-examples">Body Encoding Examples</h2>
+<h3 id="text-content-utf-8">Text Content (UTF-8)</h3>
+<p>JSON, XML, form-encoded, plain text, and JavaScript are stored as UTF-8 strings
+so you can read them directly:</p>
+<pre><code class="hljs language-bash">curl -X POST <span class="hljs-string">"http://localhost:3000/b/<span class="hljs-variable">$ID</span>"</span> \
+  -H <span class="hljs-string">'content-type: application/json'</span> \
+  -d <span class="hljs-string">'{"hello":"world"}'</span>
+
+curl -s <span class="hljs-string">"http://localhost:3000/bins/<span class="hljs-variable">$ID</span>/requests"</span> | jq <span class="hljs-string">'.requests[0] | {bodyEncoding, body}'</span>
+<span class="hljs-comment"># {</span>
+<span class="hljs-comment">#   "bodyEncoding": "utf8",</span>
+<span class="hljs-comment">#   "body": "{\"hello\":\"world\"}"</span>
+<span class="hljs-comment"># }</span>
+</code></pre>
+<h3 id="binary-content-base64">Binary Content (Base64)</h3>
+<p>Any non-text content type is base64-encoded, preserving the bytes exactly:</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Upload a PNG to the bin</span>
+curl -X POST <span class="hljs-string">"http://localhost:3000/b/<span class="hljs-variable">$ID</span>/upload"</span> \
+  -H <span class="hljs-string">'content-type: image/png'</span> \
+  --data-binary @logo.png
+
+curl -s <span class="hljs-string">"http://localhost:3000/bins/<span class="hljs-variable">$ID</span>/requests"</span> | jq <span class="hljs-string">'.requests[0] | {bodyEncoding, bodySize}'</span>
+<span class="hljs-comment"># {</span>
+<span class="hljs-comment">#   "bodyEncoding": "base64",</span>
+<span class="hljs-comment">#   "bodySize": 14823</span>
+<span class="hljs-comment"># }</span>
+
+<span class="hljs-comment"># Decode the body back to bytes</span>
+curl -s <span class="hljs-string">"http://localhost:3000/bins/<span class="hljs-variable">$ID</span>/requests"</span> \
+  | jq -r <span class="hljs-string">'.requests[0].body'</span> | <span class="hljs-built_in">base64</span> -d > recovered.png
+</code></pre>
+<h3 id="truncation">Truncation</h3>
+<p>Bodies larger than <code>maxBodySize</code> (1 MiB by default) are cut off and flagged:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// In test setup</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">MockHttp</span>, <span class="hljs-title class_">BinManager</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/mockhttp'</span>;
+<span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>();
+mock.<span class="hljs-property">bins</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BinManager</span>({ <span class="hljs-attr">maxBodySize</span>: <span class="hljs-number">1024</span> }); <span class="hljs-comment">// 1 KiB cap</span>
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+</code></pre>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Send 5000 bytes to a bin with a 1 KiB cap</span>
+<span class="hljs-built_in">head</span> -c 5000 /dev/urandom | curl -X POST <span class="hljs-string">"http://localhost:3000/b/<span class="hljs-variable">$ID</span>"</span> \
+  -H <span class="hljs-string">'content-type: application/octet-stream'</span> \
+  --data-binary @-
+
+curl -s <span class="hljs-string">"http://localhost:3000/bins/<span class="hljs-variable">$ID</span>/requests"</span> | jq <span class="hljs-string">'.requests[0] | {bodySize, truncated, body_len: (.body | length)}'</span>
+<span class="hljs-comment"># {</span>
+<span class="hljs-comment">#   "bodySize": 5000,        ← original size</span>
+<span class="hljs-comment">#   "truncated": true,</span>
+<span class="hljs-comment">#   "body_len": 1368         ← base64 of the first 1024 bytes</span>
+<span class="hljs-comment"># }</span>
+</code></pre>
+<h2 id="fifo-eviction-example">FIFO Eviction Example</h2>
+<p>Once a bin reaches <code>maxRequestsPerBin</code> captures (100 by default), the oldest
+ones are dropped:</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Send 105 requests</span>
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> $(<span class="hljs-built_in">seq</span> 1 105); <span class="hljs-keyword">do</span>
+  curl -s -X POST <span class="hljs-string">"http://localhost:3000/b/<span class="hljs-variable">$ID</span>/event/<span class="hljs-variable">$i</span>"</span> > /dev/null
+<span class="hljs-keyword">done</span>
+
+<span class="hljs-comment"># The bin holds the most recent 100; the first 5 are gone</span>
+curl -s <span class="hljs-string">"http://localhost:3000/bins/<span class="hljs-variable">$ID</span>/requests"</span> | jq <span class="hljs-string">'.requests | length'</span>
+<span class="hljs-comment"># 100</span>
+
+<span class="hljs-comment"># Newest is at the top</span>
+curl -s <span class="hljs-string">"http://localhost:3000/bins/<span class="hljs-variable">$ID</span>/requests"</span> | jq <span class="hljs-string">'.requests[0].path'</span>
+<span class="hljs-comment"># "/event/105"</span>
+</code></pre>
+<h2 id="programmatic-access">Programmatic Access</h2>
+<p>The bin manager is exposed on the <code>MockHttp</code> instance as <code>mock.bins</code>. This
+makes it easy to drive bins from a test suite without going through HTTP:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">MockHttp</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/mockhttp'</span>;
+
+<span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({ <span class="hljs-attr">logging</span>: <span class="hljs-literal">false</span> });
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+
+<span class="hljs-comment">// Create a bin</span>
+<span class="hljs-keyword">const</span> bin = mock.<span class="hljs-property">bins</span>.<span class="hljs-title function_">createBin</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Webhook target: http://localhost:<span class="hljs-subst">${mock.port}</span>/b/<span class="hljs-subst">${bin.id}</span>`</span>);
+
+<span class="hljs-comment">// ... point your code-under-test at that URL ...</span>
+
+<span class="hljs-comment">// Read captured requests (newest first)</span>
+<span class="hljs-keyword">const</span> requests = mock.<span class="hljs-property">bins</span>.<span class="hljs-title function_">getRequests</span>(bin.<span class="hljs-property">id</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Captured <span class="hljs-subst">${requests.length}</span> requests`</span>);
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> req <span class="hljs-keyword">of</span> requests) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`<span class="hljs-subst">${req.method}</span> <span class="hljs-subst">${req.path}</span> (<span class="hljs-subst">${req.bodySize}</span> bytes)`</span>);
+}
+
+<span class="hljs-comment">// Clean up</span>
+mock.<span class="hljs-property">bins</span>.<span class="hljs-title function_">deleteBin</span>(bin.<span class="hljs-property">id</span>);
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">close</span>(); <span class="hljs-comment">// also stops the bin cleanup timer</span>
+</code></pre>
+<h3 id="using-bins-in-a-vitest-test">Using Bins in a Vitest Test</h3>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { afterAll, beforeAll, expect, test } <span class="hljs-keyword">from</span> <span class="hljs-string">'vitest'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">MockHttp</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/mockhttp'</span>;
+
+<span class="hljs-keyword">let</span> <span class="hljs-attr">mock</span>: <span class="hljs-title class_">MockHttp</span>;
+
+<span class="hljs-title function_">beforeAll</span>(<span class="hljs-title function_">async</span> () => {
+  mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({ <span class="hljs-attr">logging</span>: <span class="hljs-literal">false</span> });
+  <span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+});
+
+<span class="hljs-title function_">afterAll</span>(<span class="hljs-title function_">async</span> () => {
+  <span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">close</span>();
+});
+
+<span class="hljs-title function_">test</span>(<span class="hljs-string">'my SDK sends the right webhook payload'</span>, <span class="hljs-title function_">async</span> () => {
+  <span class="hljs-keyword">const</span> bin = mock.<span class="hljs-property">bins</span>.<span class="hljs-title function_">createBin</span>();
+  <span class="hljs-keyword">const</span> webhookUrl = <span class="hljs-string">`http://localhost:<span class="hljs-subst">${mock.port}</span>/b/<span class="hljs-subst">${bin.id}</span>`</span>;
+
+  <span class="hljs-comment">// Drive your SDK at the bin</span>
+  <span class="hljs-keyword">await</span> mySdk.<span class="hljs-title function_">notify</span>(webhookUrl, { <span class="hljs-attr">event</span>: <span class="hljs-string">'user.created'</span>, <span class="hljs-attr">id</span>: <span class="hljs-number">42</span> });
+
+  <span class="hljs-comment">// Assert on what actually arrived</span>
+  <span class="hljs-keyword">const</span> [captured] = mock.<span class="hljs-property">bins</span>.<span class="hljs-title function_">getRequests</span>(bin.<span class="hljs-property">id</span>);
+  <span class="hljs-title function_">expect</span>(captured.<span class="hljs-property">method</span>).<span class="hljs-title function_">toBe</span>(<span class="hljs-string">'POST'</span>);
+  <span class="hljs-title function_">expect</span>(captured.<span class="hljs-property">contentType</span>).<span class="hljs-title function_">toBe</span>(<span class="hljs-string">'application/json'</span>);
+  <span class="hljs-title function_">expect</span>(<span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(captured.<span class="hljs-property">body</span>!)).<span class="hljs-title function_">toEqual</span>({
+    <span class="hljs-attr">event</span>: <span class="hljs-string">'user.created'</span>,
+    <span class="hljs-attr">id</span>: <span class="hljs-number">42</span>,
+  });
+  <span class="hljs-title function_">expect</span>(captured.<span class="hljs-property">headers</span>[<span class="hljs-string">'x-signature'</span>]).<span class="hljs-title function_">toBeDefined</span>();
+});
+</code></pre>
+<h2 id="configuration">Configuration</h2>
+<p>Bins are enabled by default. To disable the routes entirely:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({
+  <span class="hljs-attr">httpBin</span>: { <span class="hljs-attr">bins</span>: <span class="hljs-literal">false</span> },
+});
+</code></pre>
+<p>To tune limits, replace the default <code>BinManager</code> before starting:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">MockHttp</span>, <span class="hljs-title class_">BinManager</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/mockhttp'</span>;
+
+<span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>();
+mock.<span class="hljs-property">bins</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BinManager</span>({
+  <span class="hljs-attr">defaultTtlMs</span>: <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>,    <span class="hljs-comment">// 1 hour (default: 24h)</span>
+  <span class="hljs-attr">maxRequestsPerBin</span>: <span class="hljs-number">500</span>,           <span class="hljs-comment">// (default: 100)</span>
+  <span class="hljs-attr">maxBodySize</span>: <span class="hljs-number">5</span> * <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span>,     <span class="hljs-comment">// 5 MiB (default: 1 MiB)</span>
+  <span class="hljs-attr">idLength</span>: <span class="hljs-number">16</span>,                     <span class="hljs-comment">// (default: 12)</span>
+  <span class="hljs-attr">cleanupIntervalMs</span>: <span class="hljs-number">30</span> * <span class="hljs-number">1000</span>,     <span class="hljs-comment">// sweep every 30s (default: 60s)</span>
+});
+
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+</code></pre>
+<h3 id="defaults">Defaults</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>defaultTtlMs</code></td>
+<td><code>86400000</code> (24h)</td>
+<td>Bin lifetime. Expired bins return 404 and are lazily removed.</td>
+</tr>
+<tr>
+<td><code>maxRequestsPerBin</code></td>
+<td><code>100</code></td>
+<td>When exceeded, oldest captures are dropped (FIFO).</td>
+</tr>
+<tr>
+<td><code>maxBodySize</code></td>
+<td><code>1048576</code> (1 MiB)</td>
+<td>Larger bodies are truncated; <code>truncated: true</code> is set on the capture.</td>
+</tr>
+<tr>
+<td><code>idLength</code></td>
+<td><code>12</code></td>
+<td>Length of generated bin and request ids.</td>
+</tr>
+<tr>
+<td><code>cleanupIntervalMs</code></td>
+<td><code>60000</code> (1 min)</td>
+<td>How often expired bins are swept. The timer is <code>unref()</code>'d so it never keeps the process alive.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pluggable-storage">Pluggable Storage</h3>
+<p><code>BinManager</code> accepts a <code>store: BinStore</code> so you can plug in alternative
+backends (Redis, SQLite, etc.) without changing the rest of the codebase. The
+default <code>InMemoryBinStore</code> keeps state in process memory.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> {
+  <span class="hljs-title class_">BinManager</span>,
+  <span class="hljs-title class_">InMemoryBinStore</span>,
+  <span class="hljs-keyword">type</span> <span class="hljs-title class_">Bin</span>,
+  <span class="hljs-keyword">type</span> <span class="hljs-title class_">BinStore</span>,
+  <span class="hljs-keyword">type</span> <span class="hljs-title class_">CapturedRequest</span>,
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/mockhttp'</span>;
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">RedisBinStore</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">BinStore</span> {
+  <span class="hljs-title function_">createBin</span>(<span class="hljs-attr">bin</span>: <span class="hljs-title class_">Bin</span>): <span class="hljs-built_in">void</span> { <span class="hljs-comment">/* SET bin:${bin.id} ... */</span> }
+  <span class="hljs-title function_">getBin</span>(<span class="hljs-attr">id</span>: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">Bin</span> | <span class="hljs-literal">undefined</span> { <span class="hljs-comment">/* GET ... */</span> }
+  <span class="hljs-title function_">listBins</span>(): <span class="hljs-title class_">Bin</span>[] { <span class="hljs-comment">/* SCAN ... */</span> }
+  <span class="hljs-title function_">deleteBin</span>(<span class="hljs-attr">id</span>: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">boolean</span> { <span class="hljs-comment">/* DEL ... */</span> }
+  <span class="hljs-title function_">addRequest</span>(<span class="hljs-attr">binId</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">req</span>: <span class="hljs-title class_">CapturedRequest</span>, <span class="hljs-attr">max</span>: <span class="hljs-built_in">number</span>): <span class="hljs-built_in">void</span> {
+    <span class="hljs-comment">/* LPUSH bin:${binId}:requests + LTRIM to max */</span>
+  }
+  <span class="hljs-title function_">getRequests</span>(<span class="hljs-attr">binId</span>: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">CapturedRequest</span>[] { <span class="hljs-comment">/* LRANGE ... */</span> }
+  <span class="hljs-title function_">getRequest</span>(<span class="hljs-attr">binId</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">reqId</span>: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">CapturedRequest</span> | <span class="hljs-literal">undefined</span> { <span class="hljs-comment">/* ... */</span> }
+  <span class="hljs-title function_">clearRequests</span>(<span class="hljs-attr">binId</span>: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">void</span> { <span class="hljs-comment">/* DEL bin:${binId}:requests */</span> }
+  <span class="hljs-title function_">cleanupExpired</span>(<span class="hljs-attr">now</span>: <span class="hljs-built_in">number</span>): <span class="hljs-built_in">string</span>[] { <span class="hljs-comment">/* scan + delete */</span> <span class="hljs-keyword">return</span> []; }
+}
+
+mock.<span class="hljs-property">bins</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BinManager</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">RedisBinStore</span>() });
+</code></pre>
+<h1 id="rate-limiting">Rate Limiting</h1>
+<p>MockHttp supports rate limiting using <a href="https://github.com/fastify/fastify-rate-limit">@fastify/rate-limit</a>. Rate limiting is <strong>enabled by default</strong> at <strong>1000 requests per minute</strong> with <strong>localhost (127.0.0.1 and ::1) excluded</strong> from rate limiting.</p>
+<h2 id="default-rate-limiting">Default Rate Limiting</h2>
+<p>By default, MockHttp applies the following rate limit:</p>
+<ul>
+<li><strong>1000 requests per minute</strong> per IP address</li>
+<li><strong>Localhost is excluded</strong> - requests from 127.0.0.1 and ::1 bypass rate limiting (ideal for local development and testing)</li>
+</ul>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">MockHttp</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/mockhttp'</span>;
+
+<span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>();
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+<span class="hljs-comment">// Rate limiting is active (1000 req/min) except for localhost</span>
+</code></pre>
+<h2 id="customizing-rate-limiting">Customizing Rate Limiting</h2>
+<p>To customize rate limiting, pass a <code>rateLimit</code> configuration object when creating your MockHttp instance:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">MockHttp</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/mockhttp'</span>;
+
+<span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({
+  <span class="hljs-attr">rateLimit</span>: {
+    <span class="hljs-attr">max</span>: <span class="hljs-number">100</span>,              <span class="hljs-comment">// Maximum 100 requests</span>
+    <span class="hljs-attr">timeWindow</span>: <span class="hljs-string">'1 minute'</span> <span class="hljs-comment">// Per 1 minute window</span>
+  }
+});
+
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+</code></pre>
+<h2 id="common-configuration-options">Common Configuration Options</h2>
+<p>The <code>rateLimit</code> option accepts all <a href="https://github.com/fastify/fastify-rate-limit#options">@fastify/rate-limit options</a>:</p>
+<h3 id="basic-rate-limiting">Basic Rate Limiting</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Limit to 50 requests per minute</span>
+<span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({
+  <span class="hljs-attr">rateLimit</span>: {
+    <span class="hljs-attr">max</span>: <span class="hljs-number">50</span>,
+    <span class="hljs-attr">timeWindow</span>: <span class="hljs-string">'1 minute'</span>
+  }
+});
+</code></pre>
+<h3 id="stricter-limits-with-custom-error-response">Stricter Limits with Custom Error Response</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({
+  <span class="hljs-attr">rateLimit</span>: {
+    <span class="hljs-attr">max</span>: <span class="hljs-number">30</span>,
+    <span class="hljs-attr">timeWindow</span>: <span class="hljs-number">60000</span>, <span class="hljs-comment">// 1 minute in milliseconds</span>
+    <span class="hljs-attr">errorResponseBuilder</span>: <span class="hljs-function">(<span class="hljs-params">req, context</span>) =></span> ({
+      <span class="hljs-attr">statusCode</span>: <span class="hljs-number">429</span>,
+      <span class="hljs-attr">error</span>: <span class="hljs-string">'Too Many Requests'</span>,
+      <span class="hljs-attr">message</span>: <span class="hljs-string">`Rate limit exceeded. Try again in <span class="hljs-subst">${context.after}</span>`</span>
+    })
+  }
+});
+</code></pre>
+<h3 id="allow-list-exclude-specific-ips">Allow List (Exclude Specific IPs)</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({
+  <span class="hljs-attr">rateLimit</span>: {
+    <span class="hljs-attr">max</span>: <span class="hljs-number">100</span>,
+    <span class="hljs-attr">timeWindow</span>: <span class="hljs-string">'1 minute'</span>,
+    <span class="hljs-attr">allowList</span>: [<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-string">'192.168.1.100'</span>] <span class="hljs-comment">// These IPs bypass rate limiting</span>
+  }
+});
+</code></pre>
+<h3 id="custom-key-generator-rate-limit-by-header">Custom Key Generator (Rate Limit by Header)</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({
+  <span class="hljs-attr">rateLimit</span>: {
+    <span class="hljs-attr">max</span>: <span class="hljs-number">100</span>,
+    <span class="hljs-attr">timeWindow</span>: <span class="hljs-string">'1 minute'</span>,
+    <span class="hljs-attr">keyGenerator</span>: <span class="hljs-function">(<span class="hljs-params">request</span>) =></span> {
+      <span class="hljs-comment">// Rate limit by API key instead of IP</span>
+      <span class="hljs-keyword">return</span> request.<span class="hljs-property">headers</span>[<span class="hljs-string">'x-api-key'</span>] || request.<span class="hljs-property">ip</span>;
+    }
+  }
+});
+</code></pre>
+<h3 id="advanced-configuration">Advanced Configuration</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({
+  <span class="hljs-attr">rateLimit</span>: {
+    <span class="hljs-attr">global</span>: <span class="hljs-literal">true</span>,                    <span class="hljs-comment">// Apply to all routes</span>
+    <span class="hljs-attr">max</span>: <span class="hljs-number">100</span>,                        <span class="hljs-comment">// Max requests</span>
+    <span class="hljs-attr">timeWindow</span>: <span class="hljs-string">'1 minute'</span>,          <span class="hljs-comment">// Time window</span>
+    <span class="hljs-attr">cache</span>: <span class="hljs-number">10000</span>,                    <span class="hljs-comment">// Cache size for tracking clients</span>
+    <span class="hljs-attr">skipOnError</span>: <span class="hljs-literal">false</span>,              <span class="hljs-comment">// Don't skip on storage errors</span>
+    <span class="hljs-attr">ban</span>: <span class="hljs-number">10</span>,                         <span class="hljs-comment">// Ban after 10 rate limit violations</span>
+    <span class="hljs-attr">continueExceeding</span>: <span class="hljs-literal">false</span>,        <span class="hljs-comment">// Don't reset window on each request</span>
+    <span class="hljs-attr">enableDraftSpec</span>: <span class="hljs-literal">true</span>,           <span class="hljs-comment">// Use IETF draft spec headers</span>
+    <span class="hljs-attr">addHeaders</span>: {                    <span class="hljs-comment">// Customize rate limit headers</span>
+      <span class="hljs-string">'x-ratelimit-limit'</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-string">'x-ratelimit-remaining'</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-string">'x-ratelimit-reset'</span>: <span class="hljs-literal">true</span>
+    }
+  }
+});
+</code></pre>
+<h2 id="disabling-rate-limiting">Disabling Rate Limiting</h2>
+<p>To disable rate limiting completely, set the <code>rateLimit</code> option to <code>false</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({
+  <span class="hljs-attr">rateLimit</span>: <span class="hljs-literal">false</span> <span class="hljs-comment">// Completely disable rate limiting</span>
+});
+
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+<span class="hljs-comment">// No rate limiting is applied to any requests</span>
+</code></pre>
+<p><strong>Note:</strong> To change rate limiting settings after the server has started, you must restart the server:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>();
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>(); <span class="hljs-comment">// Starts with default rate limiting</span>
+
+<span class="hljs-comment">// To change or disable rate limiting:</span>
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">close</span>();
+mock.<span class="hljs-property">rateLimit</span> = <span class="hljs-literal">undefined</span>; <span class="hljs-comment">// or set new options</span>
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>(); <span class="hljs-comment">// Restarts with new settings</span>
+</code></pre>
+<h2 id="available-options">Available Options</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>max</code></td>
+<td>number | function</td>
+<td><code>1000</code></td>
+<td>Maximum requests per time window</td>
+</tr>
+<tr>
+<td><code>timeWindow</code></td>
+<td>number | string</td>
+<td><code>60000</code></td>
+<td>Duration of rate limit window (milliseconds or string like '1 minute')</td>
+</tr>
+<tr>
+<td><code>cache</code></td>
+<td>number</td>
+<td><code>5000</code></td>
+<td>LRU cache size for tracking clients</td>
+</tr>
+<tr>
+<td><code>allowList</code></td>
+<td>array | function</td>
+<td><code>[]</code></td>
+<td>IPs or function to exclude from rate limiting</td>
+</tr>
+<tr>
+<td><code>keyGenerator</code></td>
+<td>function</td>
+<td>IP-based</td>
+<td>Function to generate unique client identifier</td>
+</tr>
+<tr>
+<td><code>errorResponseBuilder</code></td>
+<td>function</td>
+<td>Default 429</td>
+<td>Custom error response function</td>
+</tr>
+<tr>
+<td><code>skipOnError</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Skip rate limiting if storage errors occur</td>
+</tr>
+<tr>
+<td><code>ban</code></td>
+<td>number</td>
+<td><code>-1</code></td>
+<td>Ban client after N violations (disabled by default)</td>
+</tr>
+<tr>
+<td><code>continueExceeding</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Renew time window on each request while limited</td>
+</tr>
+<tr>
+<td><code>enableDraftSpec</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Use IETF draft specification headers</td>
+</tr>
+</tbody>
+</table>
+<p>For the complete list of options, see the <a href="https://github.com/fastify/fastify-rate-limit#options">@fastify/rate-limit documentation</a>.</p>
+<h1 id="logging">Logging</h1>
+<p>MockHttp uses <a href="https://github.com/pinojs/pino">Pino</a> for logging via Fastify's built-in logger. Logging is <strong>enabled by default</strong> but can be disabled when needed.</p>
+<h2 id="disabling-logging">Disabling Logging</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">MockHttp</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@jaredwray/mockhttp'</span>;
+
+<span class="hljs-keyword">const</span> mock = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>({ <span class="hljs-attr">logging</span>: <span class="hljs-literal">false</span> });
+<span class="hljs-keyword">await</span> mock.<span class="hljs-title function_">start</span>();
+<span class="hljs-comment">// Server runs silently without any log output</span>
+</code></pre>
+<p>You can also disable logging via the <code>LOGGING</code> environment variable:</p>
+<pre><code class="hljs language-bash">LOGGING=<span class="hljs-literal">false</span> node your-app.js
+</code></pre>
+<h1 id="flexible-url-matching">Flexible URL Matching</h1>
+<p>MockHttp ignores trailing path segments that come after the parsable portion of a URL. This is useful when a client appends extra data to a known endpoint — instead of returning 404, MockHttp serves the closest matching route.</p>
+<p>For example, all of these are served by <code>/status/:code</code>:</p>
+<pre><code>GET /status/429
+GET /status/429/
+GET /status/429/foo
+GET /status/429/foo/bar
+</code></pre>
+<p>The rewrite preserves the query string and only triggers when a more specific route exists; URLs whose first path segment doesn't correspond to a registered route still return 404.</p>
+<h1 id="api-reference">API Reference</h1>
+<h2 id="mockhttp-class">MockHttp Class</h2>
+<h3 id="constructor">Constructor</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">new</span> <span class="hljs-title class_">MockHttp</span>(options?)
+</code></pre>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>options?</code> (MockHttpOptions):
+<ul>
+<li><code>port?</code>: number - The port to listen on (default: 3000)</li>
+<li><code>host?</code>: string - The host to listen on (default: '0.0.0.0')</li>
+<li><code>autoDetectPort?</code>: boolean - Auto-detect next available port if in use (default: true)</li>
+<li><code>helmet?</code>: boolean - Use Helmet for security headers (default: true)</li>
+<li><code>apiDocs?</code>: boolean - Enable Swagger API documentation (default: true)</li>
+<li><code>rateLimit?</code>: RateLimitPluginOptions - Configure rate limiting (default: 1000 req/min, localhost excluded)</li>
+<li><code>logging?</code>: boolean - Enable logging (default: true)</li>
+<li><code>httpBin?</code>: HttpBinOptions - Configure which httpbin routes to enable
+<ul>
+<li><code>httpMethods?</code>: boolean - Enable HTTP method routes (default: true)</li>
+<li><code>redirects?</code>: boolean - Enable redirect routes (default: true)</li>
+<li><code>requestInspection?</code>: boolean - Enable request inspection routes (default: true)</li>
+<li><code>responseInspection?</code>: boolean - Enable response inspection routes (default: true)</li>
+<li><code>statusCodes?</code>: boolean - Enable status code routes (default: true)</li>
+<li><code>responseFormats?</code>: boolean - Enable response format routes (default: true)</li>
+<li><code>cookies?</code>: boolean - Enable cookie routes (default: true)</li>
+<li><code>anything?</code>: boolean - Enable anything routes (default: true)</li>
+<li><code>auth?</code>: boolean - Enable authentication routes (default: true)</li>
+<li><code>images?</code>: boolean - Enable image routes (default: true)</li>
+<li><code>bins?</code>: boolean - Enable request bin routes /bins and /b/:id (default: true)</li>
+</ul>
+</li>
+<li><code>https?</code>: boolean | HttpsOptions - Enable HTTPS with auto-generated or custom certificates (default: undefined/disabled)</li>
+<li><code>http2?</code>: boolean - Enable HTTP/2 support (default: false)</li>
+<li><code>http1?</code>: boolean - Allow HTTP/1.1 fallback when using HTTP/2 with HTTPS (default: true)</li>
+<li><code>hookOptions?</code>: HookifiedOptions - Hookified options</li>
+</ul>
+</li>
+</ul>
+<h3 id="properties">Properties</h3>
+<ul>
+<li><code>port</code>: number - Get/set the server port</li>
+<li><code>host</code>: string - Get/set the server host</li>
+<li><code>autoDetectPort</code>: boolean - Get/set auto-detect port behavior</li>
+<li><code>helmet</code>: boolean - Get/set Helmet security headers</li>
+<li><code>apiDocs</code>: boolean - Get/set API documentation</li>
+<li><code>logging</code>: boolean - Get/set logging enabled state</li>
+<li><code>rateLimit</code>: RateLimitPluginOptions | undefined - Get/set rate limiting options</li>
+<li><code>httpBin</code>: HttpBinOptions - Get/set httpbin route options</li>
+<li><code>https</code>: HttpsOptions | undefined - Get/set HTTPS configuration</li>
+<li><code>isHttps</code>: boolean - Whether the server is running with HTTPS</li>
+<li><code>http2</code>: boolean - Get/set HTTP/2 support</li>
+<li><code>http1</code>: boolean - Get/set HTTP/1.1 fallback for HTTP/2 with HTTPS</li>
+<li><code>server</code>: FastifyInstance - Get/set the Fastify server instance</li>
+<li><code>taps</code>: TapManager - Get/set the TapManager instance</li>
+<li><code>bins</code>: BinManager - Get/set the BinManager instance for request bins</li>
+</ul>
+<h3 id="methods">Methods</h3>
+<h4 id="async-start"><code>async start()</code></h4>
+<p>Start the Fastify server. If already running, it will be closed and restarted.</p>
+<h4 id="async-close"><code>async close()</code></h4>
+<p>Stop the Fastify server.</p>
+<h4 id="async-detectport"><code>async detectPort()</code></h4>
+<p>Detect the next available port.</p>
+<p><strong>Returns:</strong> number - The available port</p>
+<h4 id="async-registerapidocsfastifyinstance"><code>async registerApiDocs(fastifyInstance?)</code></h4>
+<p>Register Swagger API documentation routes.</p>
+<h4 id="async-registerhttpmethodsfastifyinstance"><code>async registerHttpMethods(fastifyInstance?)</code></h4>
+<p>Register HTTP method routes (GET, POST, PUT, PATCH, DELETE).</p>
+<h4 id="async-registerstatuscoderoutesfastifyinstance"><code>async registerStatusCodeRoutes(fastifyInstance?)</code></h4>
+<p>Register status code routes.</p>
+<h4 id="async-registerrequestinspectionroutesfastifyinstance"><code>async registerRequestInspectionRoutes(fastifyInstance?)</code></h4>
+<p>Register request inspection routes (headers, ip, user-agent).</p>
+<h4 id="async-registerresponseinspectionroutesfastifyinstance"><code>async registerResponseInspectionRoutes(fastifyInstance?)</code></h4>
+<p>Register response inspection routes (cache, etag, response-headers).</p>
+<h4 id="async-registerresponseformatroutesfastifyinstance"><code>async registerResponseFormatRoutes(fastifyInstance?)</code></h4>
+<p>Register response format routes (json, xml, html, etc.).</p>
+<h4 id="async-registerredirectroutesfastifyinstance"><code>async registerRedirectRoutes(fastifyInstance?)</code></h4>
+<p>Register redirect routes (absolute, relative, redirect-to).</p>
+<h4 id="async-registercookieroutesfastifyinstance"><code>async registerCookieRoutes(fastifyInstance?)</code></h4>
+<p>Register cookie routes (get, set, delete).</p>
+<h4 id="async-registeranythingroutesfastifyinstance"><code>async registerAnythingRoutes(fastifyInstance?)</code></h4>
+<p>Register "anything" catch-all routes.</p>
+<h4 id="async-registerauthroutesfastifyinstance"><code>async registerAuthRoutes(fastifyInstance?)</code></h4>
+<p>Register authentication routes (basic, bearer, digest, hidden-basic).</p>
+<h4 id="async-registerimageroutesfastifyinstance"><code>async registerImageRoutes(fastifyInstance?)</code></h4>
+<p>Register image routes (jpeg, png, svg, webp) with content negotiation support.</p>
+<h4 id="async-registerbinroutesfastifyinstance"><code>async registerBinRoutes(fastifyInstance?)</code></h4>
+<p>Register the request bin routes — management at <code>/bins</code> and capture at <code>/b/:id</code>.</p>
+<h2 id="bins-request-capture">Bins (Request Capture)</h2>
+<p>Access the BinManager via <code>mockHttp.bins</code> to manage request bins programmatically. See <a href="#request-bins">Request Bins</a> for usage examples.</p>
+<h3 id="binscreatebin"><code>bins.createBin()</code></h3>
+<p>Create a new bin with the configured TTL.</p>
+<p><strong>Returns:</strong> <code>Bin</code> — <code>{ id, createdAt, expiresAt, requestCount }</code></p>
+<h3 id="binsgetbinid"><code>bins.getBin(id)</code></h3>
+<p>Look up a bin by id. Returns <code>undefined</code> if the bin does not exist or has expired (and lazily removes the expired entry).</p>
+<p><strong>Returns:</strong> <code>Bin | undefined</code></p>
+<h3 id="binslistbins"><code>bins.listBins()</code></h3>
+<p>List all non-expired bins.</p>
+<p><strong>Returns:</strong> <code>Bin[]</code></p>
+<h3 id="binsdeletebinid"><code>bins.deleteBin(id)</code></h3>
+<p>Delete a bin and all its captured requests.</p>
+<p><strong>Returns:</strong> <code>boolean</code> — <code>true</code> if the bin existed</p>
+<h3 id="binsgetrequestsbinid"><code>bins.getRequests(binId)</code></h3>
+<p>List captured requests for a bin, newest first.</p>
+<p><strong>Returns:</strong> <code>CapturedRequest[]</code></p>
+<h3 id="binsgetrequestbinid-reqid"><code>bins.getRequest(binId, reqId)</code></h3>
+<p>Look up a single captured request.</p>
+<p><strong>Returns:</strong> <code>CapturedRequest | undefined</code></p>
+<h3 id="binsclearrequestsbinid"><code>bins.clearRequests(binId)</code></h3>
+<p>Clear all captured requests in a bin (the bin itself is preserved).</p>
+<h3 id="binsrecordrequestbinid-raw"><code>bins.recordRequest(binId, raw)</code></h3>
+<p>Manually record a captured request. Returns <code>undefined</code> if the bin does not exist or is expired. Normally invoked by the capture route, but available for programmatic use.</p>
+<p><strong>Returns:</strong> <code>CapturedRequest | undefined</code></p>
+<h3 id="binsstart--binsstop"><code>bins.start()</code> / <code>bins.stop()</code></h3>
+<p>Start or stop the periodic cleanup of expired bins. <code>MockHttp.start()</code> and <code>MockHttp.close()</code> call these automatically. The interval is <code>unref()</code>'d so it never keeps the Node process alive.</p>
+<h3 id="binsmaxbodysize--binsmaxrequestsperbin--binsdefaultttlms"><code>bins.maxBodySize</code> / <code>bins.maxRequestsPerBin</code> / <code>bins.defaultTtlMs</code></h3>
+<p>Read-only getters for the currently-configured limits.</p>
+<h2 id="taps-response-injection">Taps (Response Injection)</h2>
+<p>Access the TapManager via <code>mockHttp.taps</code> to inject custom responses.</p>
+<h3 id="tapsinjectresponse-matcher"><code>taps.inject(response, matcher?)</code></h3>
+<p>Injects a custom response for requests matching the criteria.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li>
+<p><code>response</code> (InjectionResponse | InjectionResponseFunction):</p>
+<ul>
+<li><strong>Static Response</strong> (InjectionResponse):
+<ul>
+<li><code>response</code>: string | object | Buffer - The response body</li>
+<li><code>statusCode?</code>: number - HTTP status code (default: 200)</li>
+<li><code>headers?</code>: object - Response headers</li>
+</ul>
+</li>
+<li><strong>Function Response</strong> (InjectionResponseFunction):
+<ul>
+<li>A function that receives the Fastify request object and returns an InjectionResponse</li>
+<li><code>(request: FastifyRequest) => InjectionResponse</code></li>
+<li>Allows dynamic response generation based on request properties (url, method, headers, etc.)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><code>matcher?</code> (InjectionMatcher) - Optional matching criteria:</p>
+<ul>
+<li><code>url?</code>: string - URL path (supports wildcards with <code>*</code>)</li>
+<li><code>method?</code>: string - HTTP method (GET, POST, etc.)</li>
+<li><code>hostname?</code>: string - Hostname to match</li>
+<li><code>headers?</code>: object - Headers that must be present</li>
+</ul>
+</li>
+</ul>
+<p><strong>Returns:</strong> <code>InjectionTap</code> - A tap object with a unique <code>id</code> that can be used to remove the injection</p>
+<h2 id="tapsremoveinjectiontaporid"><code>taps.removeInjection(tapOrId)</code></h2>
+<p>Removes an injection.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>tapOrId</code>: InjectionTap | string - The tap object or tap ID to remove</li>
+</ul>
+<p><strong>Returns:</strong> boolean - <code>true</code> if removed, <code>false</code> if not found</p>
+<h3 id="tapsinjections"><code>taps.injections</code></h3>
+<p>A getter that returns a Map of all active injection taps.</p>
+<p><strong>Returns:</strong> <code>Map&#x3C;string, InjectionTap></code> - Map of all active injections with tap IDs as keys</p>
+<h2 id="tapsclear"><code>taps.clear()</code></h2>
+<p>Removes all injections.</p>
+<h2 id="tapshasinjections"><code>taps.hasInjections</code></h2>
+<p>A getter that returns whether there are any active injections.</p>
+<p><strong>Returns:</strong> boolean - <code>true</code> if there are active injections, <code>false</code> otherwise</p>
+<h1 id="about-mockhttporg">About mockhttp.org</h1>
+<p><a href="https://mockhttp.org">mockhttp.org</a> is a free service that runs this codebase and allows you to use it for testing purposes. It is a simple way to mock HTTP responses for testing purposes. It is globally available has some limitations on it to prevent abuse such as requests per second. It is ran via <a href="https://cloudflare.com">Cloudflare</a> and <a href="https://cloud.google.com/run/">Google Cloud Run</a> across 7 regions globally and can do millions of requests per second.</p>
+<h1 id="contributing">Contributing</h1>
+<p>Please read our <a href="CODE_OF_CONDUCT.md">CODE OF CONDUCT</a> and <a href="CONTRIBUTING.md">CONTRIBUTING</a> for details on our code of conduct, and the process for submitting pull requests to us.</p>
+<h1 id="license">License</h1>
+<p><a href="LICENSE">MIT License &#x26; © Jared Wray</a></p>

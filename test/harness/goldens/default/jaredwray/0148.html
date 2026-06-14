@@ -1,0 +1,89 @@
+<h1 id="contrib-server-package">Contrib server package</h1>
+<h2 id="running-locally">Running locally</h2>
+<ol>
+<li>Install dependencies: <code>$ yarn</code></li>
+<li>Copy <code>.env</code> file from 1password or create <code>.env</code> file similar to <code>.env_example</code> and fill in the required variables.</li>
+<li>Run server in dev setup: <code>$ yarn start</code></li>
+</ol>
+<h1 id="required-data-specified-in-the-env-file">Required data specified in the .env file:</h1>
+<h2 id="for-ups-service">For UPS service:</h2>
+<p>We using UPS service for deliver auction winnings. Description of fields of the required data:</p>
+<h3 id="ups_delivery_contrib_data">UPS_DELIVERY_CONTRIB_DATA</h3>
+<p>required sender data, further in more detail about some of these data fields:</p>
+<h4 id="example">example</h4>
+<pre><code>UPS_DELIVERY_CONTRIB_DATA='{"address":"524 9th Ave", "city":"Kirkland", "state":"WA", "zipCode":"98033", "shipperNumber":"3W090X"}'
+</code></pre>
+<h5 id="shippernumber">shipperNumber</h5>
+<p>Shipper’s six digit alphanumeric account number. Must be associated with the UserId specified in the AccessRequest. The account must be a valid UPS account number that is active.</p>
+<h2 id="ups_delivery_request_header">UPS_DELIVERY_REQUEST_HEADER</h2>
+<p>data required to form a request to UPS, further in more detail about some of these data fields:</p>
+<h4 id="example-1">example</h4>
+<pre><code>UPS_DELIVERY_REQUEST_HEADER='{"AccessLicenseNumber": "number", "Password": "password", "Username": "username"}'
+</code></pre>
+<h4 id="accesslicensenumber">AccessLicenseNumber</h4>
+<p>Authorization: Access Key obtained through on-boarding process. Contact your UPS representative for additional information.</p>
+<h4 id="password">Password</h4>
+<p>The customers MyUPS password.</p>
+<h4 id="username">Username</h4>
+<p>The customers MyUPS username.</p>
+<h2 id="for-auth-service">For AUTH service:</h2>
+<p>We using Passport.js to authenticate users on our platform. We using 3 strategies: Google, Twitter, Facebook. Required data examples:</p>
+<h4 id="examples">examples</h4>
+<pre><code>AUTH_API_URL=http://localhost:3001/
+GOOGLE_CLIENT_ID=googleClientId
+GOOGLE_CLIENT_SECRET=googleClientSecret
+FACEBOOK_APP_ID=facebookAppId
+FACEBOOK_APP_SECRET=facebookAppSecret
+TWITTER_CONSUMER_KEY=twitterConsumerKey
+TWITTER_CONSUMER_SECRET=twitterConsumerSecret
+COOKIE_KEY_SECRET=secretKey
+COOKIE_LIFE_TIVE=86400000
+</code></pre>
+<h2 id="for-cloud-storage">For Cloud Storage:</h2>
+<p>We using Cloud Storage for storing entity assets. Required data examples:</p>
+<h4 id="examples-1">examples</h4>
+<pre><code>CONTENT_STORAGE_NAME=content-dev.contrib.org
+CONTENT_STORAGE_KEY='{"type": "serviceType","project_id": "someId","private_key_id": "privatKeyID","private_key": "privateKey","client_email": "someEmail","client_id": "clientId","auth_uri": "authUri","token_uri": "tokenUri","auth_provider_x509_cert_url": "authProviderX509CertUrl","client_x509_cert_url": "clientX509CertUrl"}'
+</code></pre>
+<h2 id="for-twilio">For TWILIO</h2>
+<p>We using TWILIO to obtain secret codes used for authorization. Required data examples:</p>
+<h4 id="examples-2">examples</h4>
+<pre><code>TWILIO_ACCOUNT_SID=accountSid
+TWILIO_AUTH_TOKEN=authToken
+TWILIO_VERIFICATION_SERVICE_SID=verificationServiceSid
+TWILIO_SENDER_NUMBER=+17432294736
+</code></pre>
+<h2 id="for-cloudflare">For CloudFlare</h2>
+<p>We using CloudFlare for live streaming. Required data examples:</p>
+<h4 id="examples-3">examples</h4>
+<pre><code>CLOUDFLARE_STREAMING_KEY=streamingKey
+CLOUDFLARE_USER_ID=userId
+</code></pre>
+<h2 id="for-stripe">For STRIPE</h2>
+<p>We using STRIPE for monetary transactions. Required data examples:</p>
+<h4 id="examples-4">examples</h4>
+<pre><code>STRIPE_SECRET_KEY=stripeSecretKey
+STRIPE_WEBHOOK_SECRET_KEY="stripeWebhookSecretKey
+STRIPE_CONTRIB_SHARE_PERCENTAGE=numberValue
+</code></pre>
+<h2 id="for-cloud-tasks">For Cloud Tasks</h2>
+<p>We useing Cloud Tasks to manage the execution, dispatch, and delivery of a large number of distributed tasks.</p>
+<h4 id="examples-5">examples</h4>
+<pre><code>GOOGLE_CLOUD_PROJECT=contrib-dev
+GOOGLE_CLOUD_LOCATION=us-central1
+GOOGLE_CLOUD_TASK_QUEUE=bids-notification
+GOOGLE_CLOUD_TASK_API_TOKEN=12345678987654321
+</code></pre>
+<h2 id="for-mongodb">For MONGODB</h2>
+<p>We useing MONGODB for data storage.</p>
+<h4 id="examples-6">examples</h4>
+<pre><code>MONGODB_URI=mongodbUri
+</code></pre>
+<h2 id="for-platform-in-general">For Platform in general</h2>
+<h4 id="examples-7">examples</h4>
+<pre><code>PORT=3001
+APP_URL=http://localhost:3000/
+FACEBOOK_APP_ID=123
+MAX_SIZE_VIDEO_GB=1
+NOTIFICATION_TASK_TARGET_URL=api/v1/notification
+</code></pre>

@@ -1,0 +1,1805 @@
+<h1 id="hashery">hashery</h1>
+<p>Browser / Nodejs Compatible Object Hashing</p>
+<p><a href="https://github.com/jaredwray/hashery/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/hashery/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://codecov.io/gh/jaredwray/hashery"><img src="https://codecov.io/gh/jaredwray/hashery/branch/main/graph/badge.svg?token=JTuDzWoTRn" alt="codecov"></a>
+<a href="https://github.com/jaredwray/hashery/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/hashery" alt="GitHub license"></a>
+<a href="https://npmjs.com/package/hashery"><img src="https://img.shields.io/npm/dm/hashery" alt="npm"></a>
+<a href="https://www.jsdelivr.com/package/npm/hashery"><img src="https://data.jsdelivr.com/v1/package/npm/hashery/badge" alt="jsDelivr"></a>
+<a href="https://npmjs.com/package/hashery"><img src="https://img.shields.io/npm/v/hashery" alt="npm"></a></p>
+<h1 id="features">Features</h1>
+<ul>
+<li><strong>Simple and Easy Object Hashing</strong> - Object hashing based on multiple algorithms.</li>
+<li><strong>Browser and Node.js Compatible</strong> - Built using <code>WebCrypto</code> API for both environments</li>
+<li><strong>Multiple Hash Algorithms</strong> - Supports SHA-256, SHA-384, SHA-512 (WebCrypto), plus DJB2, FNV1, Murmur, and CRC32</li>
+<li><strong>Synchronous &#x26; Asynchronous</strong> - Both sync and async methods for flexible integration</li>
+<li><strong>Custom Serialization</strong> - Easily replace JSON <code>parse</code> and <code>stringify</code> with custom functions</li>
+<li><strong>Deterministic Hashing</strong> - Generate consistent hashes for the same input</li>
+<li><strong>Hash to Number</strong> - Convert hashes to deterministic numbers within a specified range. Great for slot management</li>
+<li><strong>Provider System</strong> - Extensible hash provider architecture for custom algorithms</li>
+<li><strong>Fuzzy Provider Matching</strong> - Case-insensitive and dash-tolerant algorithm name matching</li>
+<li><strong>Hooks Support</strong> - Extends Hookified for event-based functionality</li>
+<li><strong>Maintained on a Regular Basis</strong> - Active maintenance and updates</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#usage">Usage</a>
+<ul>
+<li><a href="#basic-hashing">Basic Hashing</a></li>
+<li><a href="#synchronous-hashing">Synchronous Hashing</a></li>
+<li><a href="#using-different-hash-algorithms">Using Different Hash Algorithms</a></li>
+<li><a href="#using-providers-directly">Using Providers Directly</a>
+<ul>
+<li><a href="#managing-providers-with-hashproviders">Managing Providers with HashProviders</a></li>
+<li><a href="#creating-custom-providers">Creating Custom Providers</a></li>
+</ul>
+</li>
+<li><a href="#setting-a-default-algorithm">Setting a Default Algorithm</a></li>
+<li><a href="#truncating-hash-output">Truncating Hash Output</a></li>
+<li><a href="#hash-to-number-great-for-slot-management">Hash to Number (Great for Slot Management)</a></li>
+<li><a href="#hash-to-number-synchronous">Hash to Number Synchronous</a></li>
+<li><a href="#browser-usage">Browser Usage</a>
+<ul>
+<li><a href="#using-via-cdn-jsdelivr">Using via CDN (jsDelivr)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#hooks">Hooks</a>
+<ul>
+<li><a href="#available-hooks">Available Hooks</a>
+<ul>
+<li><a href="#asynchronous-method-hooks">Asynchronous Method Hooks</a>
+<ul>
+<li><a href="#beforetohash"><code>before:toHash</code></a></li>
+<li><a href="#aftertohash"><code>after:toHash</code></a></li>
+</ul>
+</li>
+<li><a href="#synchronous-method-hooks">Synchronous Method Hooks</a>
+<ul>
+<li><a href="#beforetohashsync"><code>before:toHashSync</code></a></li>
+<li><a href="#aftertohashsync"><code>after:toHashSync</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#basic-hook-usage">Basic Hook Usage</a></li>
+<li><a href="#modifying-data-with-hooks">Modifying Data with Hooks</a></li>
+<li><a href="#modifying-algorithms-with-hooks">Modifying Algorithms with Hooks</a></li>
+<li><a href="#modifying-hash-results">Modifying Hash Results</a></li>
+<li><a href="#logging-and-debugging">Logging and Debugging</a></li>
+<li><a href="#multiple-hooks">Multiple Hooks</a></li>
+<li><a href="#synchronous-method-hooks-1">Synchronous Method Hooks</a></li>
+<li><a href="#warning-events-for-invalid-algorithms">Warning Events for Invalid Algorithms</a>
+<ul>
+<li><a href="#listening-to-warnings">Listening to Warnings</a></li>
+<li><a href="#behavior">Behavior</a></li>
+<li><a href="#warning-message-format">Warning Message Format</a></li>
+<li><a href="#example-use-cases">Example Use Cases</a></li>
+</ul>
+</li>
+<li><a href="#removing-hooks">Removing Hooks</a></li>
+<li><a href="#error-handling-in-hooks">Error Handling in Hooks</a></li>
+</ul>
+</li>
+<li><a href="#caching">Caching</a></li>
+<li><a href="#web-crypto">Web Crypto</a>
+<ul>
+<li><a href="#browser-support">Browser Support</a></li>
+<li><a href="#nodejs-support">Node.js Support</a></li>
+<li><a href="#available-algorithms">Available Algorithms</a>
+<ul>
+<li><a href="#web-crypto-algorithms-async-only">Web Crypto Algorithms (Async Only)</a></li>
+<li><a href="#non-crypto-algorithms-async--sync">Non-Crypto Algorithms (Async &#x26; Sync)</a></li>
+</ul>
+</li>
+<li><a href="#example-using-web-crypto">Example: Using Web Crypto</a></li>
+</ul>
+</li>
+<li><a href="#djb2-hashing">DJB2 Hashing</a>
+<ul>
+<li><a href="#why-use-djb2">Why Use DJB2?</a></li>
+<li><a href="#when-to-use-djb2">When to Use DJB2</a></li>
+<li><a href="#djb2-vs-cryptographic-hashes">DJB2 vs Cryptographic Hashes</a></li>
+<li><a href="#example-using-djb2">Example: Using DJB2</a></li>
+<li><a href="#algorithm-details">Algorithm Details</a></li>
+</ul>
+</li>
+<li><a href="#fnv1-hashing">FNV1 Hashing</a>
+<ul>
+<li><a href="#why-use-fnv1">Why Use FNV1?</a></li>
+<li><a href="#when-to-use-fnv1">When to Use FNV1</a></li>
+<li><a href="#fnv1-vs-other-hash-functions">FNV1 vs Other Hash Functions</a></li>
+<li><a href="#example-using-fnv1">Example: Using FNV1</a></li>
+<li><a href="#algorithm-details-1">Algorithm Details</a></li>
+</ul>
+</li>
+<li><a href="#crc-hashing">CRC Hashing</a>
+<ul>
+<li><a href="#why-use-crc">Why Use CRC?</a></li>
+<li><a href="#when-to-use-crc">When to Use CRC</a></li>
+<li><a href="#crc-vs-other-hash-functions">CRC vs Other Hash Functions</a></li>
+<li><a href="#example-using-crc">Example: Using CRC</a></li>
+<li><a href="#algorithm-details-2">Algorithm Details</a></li>
+<li><a href="#important-notes">Important Notes</a></li>
+</ul>
+</li>
+<li><a href="#api---properties">API - Properties</a>
+<ul>
+<li><a href="#parse"><code>parse</code></a></li>
+<li><a href="#stringify"><code>stringify</code></a></li>
+<li><a href="#providers"><code>providers</code></a></li>
+<li><a href="#names"><code>names</code></a></li>
+<li><a href="#defaultalgorithm"><code>defaultAlgorithm</code></a></li>
+<li><a href="#defaultalgorithmsync"><code>defaultAlgorithmSync</code></a></li>
+</ul>
+</li>
+<li><a href="#api---functions">API - Functions</a>
+<ul>
+<li><a href="#tohashdata-options"><code>toHash(data, options?)</code></a></li>
+<li><a href="#tohashsyncdata-options"><code>toHashSync(data, options?)</code></a></li>
+<li><a href="#tonumberdata-options"><code>toNumber(data, options?)</code></a></li>
+<li><a href="#tonumbersyncdata-options"><code>toNumberSync(data, options?)</code></a></li>
+<li><a href="#loadprovidersproviders-options"><code>loadProviders(providers?, options?)</code></a></li>
+</ul>
+</li>
+<li><a href="#api---types">API - Types</a>
+<ul>
+<li><a href="#hashalgorithm"><code>HashAlgorithm</code></a></li>
+</ul>
+</li>
+<li><a href="#benchmarks">Benchmarks</a>
+<ul>
+<li><a href="#tohash">toHash</a></li>
+<li><a href="#tonumber">toNumber</a></li>
+<li><a href="#hashery-vs-others">Hashery vs Others</a></li>
+<li><a href="#tonumber-1">toNumber</a></li>
+</ul>
+</li>
+<li><a href="#migration-from-v2-to-v3">Migration from v2 to v3</a>
+<ul>
+<li><a href="#nodejs-requirements">Node.js Requirements</a></li>
+<li><a href="#updated-dependencies">Updated Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#migration-from-v1-to-v2">Migration from v1 to v2</a>
+<ul>
+<li><a href="#changed-defaults">Changed Defaults</a></li>
+<li><a href="#renamed-options">Renamed Options</a></li>
+<li><a href="#changed-method-signatures">Changed Method Signatures</a></li>
+<li><a href="#removed-methods">Removed Methods</a></li>
+</ul>
+</li>
+<li><a href="#code-of-conduct-and-contributing">Code of Conduct and Contributing</a></li>
+<li><a href="#license-and-copyright">License and Copyright</a></li>
+</ul>
+<h1 id="installation">Installation</h1>
+<pre><code class="hljs language-bash">npm install hashery
+</code></pre>
+<h1 id="usage">Usage</h1>
+<h2 id="basic-hashing">Basic Hashing</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Hash an object (defaults to SHA-256)</span>
+<span class="hljs-keyword">const</span> hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John'</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">30</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hash); <span class="hljs-comment">// SHA-256 hash string</span>
+
+<span class="hljs-comment">// Hash a string</span>
+<span class="hljs-keyword">const</span> stringHash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>(<span class="hljs-string">'hello world'</span>);
+
+<span class="hljs-comment">// Hash any value (numbers, arrays, etc.)</span>
+<span class="hljs-keyword">const</span> numberHash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>(<span class="hljs-number">42</span>);
+<span class="hljs-keyword">const</span> arrayHash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>]);
+</code></pre>
+<h2 id="synchronous-hashing">Synchronous Hashing</h2>
+<p>For performance-critical applications or when you need to avoid async/await, use the synchronous hashing methods. These work with non-cryptographic hash algorithms (djb2, fnv1, murmur, crc32) and are significantly faster than WebCrypto methods.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Synchronous hash (defaults to djb2)</span>
+<span class="hljs-keyword">const</span> hash = hashery.<span class="hljs-title function_">toHashSync</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John'</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">30</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hash); <span class="hljs-comment">// djb2 hash string (8 hex characters)</span>
+
+<span class="hljs-comment">// Sync with specific algorithm</span>
+<span class="hljs-keyword">const</span> fnv1Hash = hashery.<span class="hljs-title function_">toHashSync</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'fnv1'</span> });
+<span class="hljs-keyword">const</span> murmurHash = hashery.<span class="hljs-title function_">toHashSync</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'murmur'</span> });
+<span class="hljs-keyword">const</span> crcHash = hashery.<span class="hljs-title function_">toHashSync</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'crc32'</span> });
+
+<span class="hljs-comment">// Note: WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are NOT supported in sync mode</span>
+<span class="hljs-comment">// This will throw an error:</span>
+<span class="hljs-comment">// hashery.toHashSync({ data: 'example' }, { algorithm: 'SHA-256' }); // ❌ Error!</span>
+</code></pre>
+<h2 id="using-different-hash-algorithms">Using Different Hash Algorithms</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Use SHA-384</span>
+<span class="hljs-keyword">const</span> hash384 = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'SHA-384'</span> });
+
+<span class="hljs-comment">// Use SHA-512</span>
+<span class="hljs-keyword">const</span> hash512 = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'SHA-512'</span> });
+
+<span class="hljs-comment">// Use non-crypto hash algorithms</span>
+<span class="hljs-keyword">const</span> fastHash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'djb2'</span> });
+</code></pre>
+<h2 id="using-providers-directly">Using Providers Directly</h2>
+<p>You can import and use the hash provider classes directly without the <code>Hashery</code> wrapper. This gives you direct access to the underlying hash algorithms.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">DJB2</span>, <span class="hljs-title class_">FNV1</span>, <span class="hljs-title class_">Murmur</span>, <span class="hljs-variable constant_">CRC</span>, <span class="hljs-title class_">WebCrypto</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-comment">// Use DJB2 directly</span>
+<span class="hljs-keyword">const</span> djb2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">DJB2</span>();
+<span class="hljs-keyword">const</span> encoder = <span class="hljs-keyword">new</span> <span class="hljs-title class_">TextEncoder</span>();
+<span class="hljs-keyword">const</span> data = encoder.<span class="hljs-title function_">encode</span>(<span class="hljs-string">'hello world'</span>);
+<span class="hljs-keyword">const</span> hash = djb2.<span class="hljs-title function_">toHashSync</span>(data); <span class="hljs-comment">// "7c9dc9e0"</span>
+
+<span class="hljs-comment">// Use FNV1 directly</span>
+<span class="hljs-keyword">const</span> fnv1 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FNV1</span>();
+<span class="hljs-keyword">const</span> fnv1Hash = fnv1.<span class="hljs-title function_">toHashSync</span>(data);
+
+<span class="hljs-comment">// Use Murmur directly (with optional seed)</span>
+<span class="hljs-keyword">const</span> murmur = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Murmur</span>(); <span class="hljs-comment">// default seed: 0</span>
+<span class="hljs-keyword">const</span> murmurHash = murmur.<span class="hljs-title function_">toHashSync</span>(data);
+
+<span class="hljs-keyword">const</span> murmurSeeded = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Murmur</span>(<span class="hljs-number">42</span>); <span class="hljs-comment">// custom seed</span>
+<span class="hljs-keyword">const</span> murmurSeededHash = murmurSeeded.<span class="hljs-title function_">toHashSync</span>(data);
+
+<span class="hljs-comment">// Use CRC32 directly</span>
+<span class="hljs-keyword">const</span> crc = <span class="hljs-keyword">new</span> <span class="hljs-title function_">CRC</span>();
+<span class="hljs-keyword">const</span> crcHash = crc.<span class="hljs-title function_">toHashSync</span>(data);
+
+<span class="hljs-comment">// Use WebCrypto directly (async only)</span>
+<span class="hljs-keyword">const</span> sha256 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">WebCrypto</span>({ <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'SHA-256'</span> });
+<span class="hljs-keyword">const</span> sha512 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">WebCrypto</span>({ <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'SHA-512'</span> });
+<span class="hljs-keyword">const</span> cryptoHash = <span class="hljs-keyword">await</span> sha256.<span class="hljs-title function_">toHash</span>(data);
+<span class="hljs-keyword">const</span> cryptoHash512 = <span class="hljs-keyword">await</span> sha512.<span class="hljs-title function_">toHash</span>(data);
+</code></pre>
+<h3 id="managing-providers-with-hashproviders">Managing Providers with HashProviders</h3>
+<p>You can also import the <code>HashProviders</code> class to manage a collection of providers:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">HashProviders</span>, <span class="hljs-title class_">DJB2</span>, <span class="hljs-title class_">FNV1</span>, <span class="hljs-title class_">Murmur</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> providers = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashProviders</span>();
+providers.<span class="hljs-title function_">add</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">DJB2</span>());
+providers.<span class="hljs-title function_">add</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">FNV1</span>());
+providers.<span class="hljs-title function_">add</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Murmur</span>());
+
+<span class="hljs-comment">// Get a provider by name (supports fuzzy matching)</span>
+<span class="hljs-keyword">const</span> djb2Provider = providers.<span class="hljs-title function_">get</span>(<span class="hljs-string">'djb2'</span>);
+<span class="hljs-keyword">const</span> alsoWorks = providers.<span class="hljs-title function_">get</span>(<span class="hljs-string">'DJB2'</span>); <span class="hljs-comment">// case-insensitive</span>
+
+<span class="hljs-comment">// Both variables point to the same provider instance</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(djb2Provider.<span class="hljs-property">name</span>); <span class="hljs-comment">// 'djb2'</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(alsoWorks.<span class="hljs-property">name</span>); <span class="hljs-comment">// 'djb2'</span>
+
+<span class="hljs-comment">// List all provider names</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(providers.<span class="hljs-property">names</span>); <span class="hljs-comment">// ['djb2', 'fnv1', 'murmur']</span>
+</code></pre>
+<h3 id="creating-custom-providers">Creating Custom Providers</h3>
+<p>Implement the <code>HashProvider</code> interface to create your own providers:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span>, <span class="hljs-keyword">type</span> <span class="hljs-title class_">HashProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> <span class="hljs-attr">myProvider</span>: <span class="hljs-title class_">HashProvider</span> = {
+  <span class="hljs-attr">name</span>: <span class="hljs-string">'my-hash'</span>,
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">toHash</span>(<span class="hljs-attr">data</span>: <span class="hljs-title class_">BufferSource</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">string</span>> {
+    <span class="hljs-comment">// Your hashing logic here</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-string">'custom-hash-value'</span>;
+  },
+  <span class="hljs-title function_">toHashSync</span>(<span class="hljs-attr">data</span>: <span class="hljs-title class_">BufferSource</span>): <span class="hljs-built_in">string</span> {
+    <span class="hljs-comment">// Optional: synchronous version</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-string">'custom-hash-value'</span>;
+  }
+};
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>({ <span class="hljs-attr">providers</span>: [myProvider] });
+<span class="hljs-keyword">const</span> hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'test'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'my-hash'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hash); <span class="hljs-comment">// 'custom-hash-value'</span>
+</code></pre>
+<h2 id="setting-a-default-algorithm">Setting a Default Algorithm</h2>
+<p>You can set a default algorithm for all hash operations via constructor or property:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-comment">// Set default algorithm via constructor</span>
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>({ <span class="hljs-attr">defaultAlgorithm</span>: <span class="hljs-string">'SHA-512'</span> });
+
+<span class="hljs-comment">// Now all hashes use SHA-512 by default</span>
+<span class="hljs-keyword">const</span> hash1 = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }); <span class="hljs-comment">// Uses SHA-512</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hash1.<span class="hljs-property">length</span>); <span class="hljs-comment">// 128 (SHA-512 produces 128 hex characters)</span>
+
+<span class="hljs-comment">// You can still override it per call</span>
+<span class="hljs-keyword">const</span> hash2 = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'SHA-256'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hash2.<span class="hljs-property">length</span>); <span class="hljs-comment">// 64 (SHA-256 produces 64 hex characters)</span>
+
+<span class="hljs-comment">// Change default algorithm at runtime</span>
+hashery.<span class="hljs-property">defaultAlgorithm</span> = <span class="hljs-string">'djb2'</span>;
+<span class="hljs-keyword">const</span> hash3 = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }); <span class="hljs-comment">// Uses djb2</span>
+</code></pre>
+<h2 id="truncating-hash-output">Truncating Hash Output</h2>
+<p>You can limit the length of the hash output using the <code>maxLength</code> option:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Get a shorter hash (16 characters instead of 64)</span>
+<span class="hljs-keyword">const</span> shortHash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>(
+  { <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> },
+  { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'SHA-256'</span>, <span class="hljs-attr">maxLength</span>: <span class="hljs-number">16</span> }
+);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(shortHash); <span class="hljs-comment">// "3f79bb7b435b0518" (16 chars)</span>
+
+<span class="hljs-comment">// Full hash for comparison</span>
+<span class="hljs-keyword">const</span> fullHash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(fullHash); <span class="hljs-comment">// "3f79bb7b435b05181e4ccf0d4e8..." (64 chars)</span>
+</code></pre>
+<h2 id="hash-to-number-great-for-slot-management">Hash to Number (Great for Slot Management)</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Convert hash to a number within a range</span>
+<span class="hljs-keyword">const</span> slot = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toNumber</span>({ <span class="hljs-attr">userId</span>: <span class="hljs-number">123</span> }, { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">100</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(slot); <span class="hljs-comment">// Deterministic number between 0-100</span>
+
+<span class="hljs-comment">// Use for consistent slot assignment</span>
+<span class="hljs-keyword">const</span> userSlot = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toNumber</span>({ <span class="hljs-attr">userId</span>: <span class="hljs-string">'user@example.com'</span> }, { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">9</span> });
+<span class="hljs-comment">// Same user will always get the same slot number</span>
+</code></pre>
+<h2 id="hash-to-number-synchronous">Hash to Number Synchronous</h2>
+<p>Generate deterministic numbers synchronously for high-performance scenarios. Perfect for A/B testing, sharding, and load balancing without async overhead.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Synchronous number generation (defaults to djb2)</span>
+<span class="hljs-keyword">const</span> slot = hashery.<span class="hljs-title function_">toNumberSync</span>({ <span class="hljs-attr">userId</span>: <span class="hljs-number">123</span> }, { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">100</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(slot); <span class="hljs-comment">// Deterministic number between 0-100</span>
+
+<span class="hljs-comment">// A/B testing without async/await</span>
+<span class="hljs-keyword">const</span> variant = hashery.<span class="hljs-title function_">toNumberSync</span>({ <span class="hljs-attr">userId</span>: <span class="hljs-string">'user123'</span> }, { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">1</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(variant === <span class="hljs-number">0</span> ? <span class="hljs-string">'Group A'</span> : <span class="hljs-string">'Group B'</span>);
+
+<span class="hljs-comment">// Load balancing across servers</span>
+<span class="hljs-keyword">const</span> serverIndex = hashery.<span class="hljs-title function_">toNumberSync</span>(
+  { <span class="hljs-attr">requestId</span>: <span class="hljs-string">'req_abc123'</span> },
+  { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">9</span>, <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'fnv1'</span> } <span class="hljs-comment">// 10 servers</span>
+);
+
+<span class="hljs-comment">// Sharding assignment</span>
+<span class="hljs-keyword">const</span> shardId = hashery.<span class="hljs-title function_">toNumberSync</span>(
+  { <span class="hljs-attr">customerId</span>: <span class="hljs-string">'cust_xyz'</span> },
+  { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">15</span>, <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'murmur'</span> } <span class="hljs-comment">// 16 shards</span>
+);
+
+<span class="hljs-comment">// Set default sync algorithm for all sync operations</span>
+<span class="hljs-keyword">const</span> hashery2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>({ <span class="hljs-attr">defaultAlgorithmSync</span>: <span class="hljs-string">'fnv1'</span> });
+<span class="hljs-keyword">const</span> num = hashery2.<span class="hljs-title function_">toNumberSync</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'test'</span> }); <span class="hljs-comment">// Uses fnv1 by default</span>
+</code></pre>
+<h2 id="browser-usage">Browser Usage</h2>
+<p>Hashery works seamlessly in the browser using the Web Crypto API. You can include it via CDN or bundle it with your application.</p>
+<h3 id="using-via-cdn-jsdelivr">Using via CDN (jsDelivr)</h3>
+<pre><code class="hljs language-html"><span class="hljs-meta">&#x3C;!DOCTYPE <span class="hljs-keyword">html</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">html</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">head</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">title</span>></span>Hashery Browser Example<span class="hljs-tag">&#x3C;/<span class="hljs-name">title</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">head</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">body</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>></span><span class="javascript">
+    <span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'https://cdn.jsdelivr.net/npm/hashery@latest/dist/browser/index.js'</span>;
+
+    <span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+    <span class="hljs-comment">// Hash data in the browser</span>
+    <span class="hljs-keyword">const</span> hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">page</span>: <span class="hljs-string">'home'</span>, <span class="hljs-attr">userId</span>: <span class="hljs-number">123</span> });
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Hash:'</span>, hash);
+
+    <span class="hljs-comment">// Generate slot numbers for A/B testing</span>
+    <span class="hljs-keyword">const</span> variant = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toNumber</span>({ <span class="hljs-attr">userId</span>: <span class="hljs-string">'user123'</span> }, { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">1</span> });
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'A/B Test Variant:'</span>, variant === <span class="hljs-number">0</span> ? <span class="hljs-string">'A'</span> : <span class="hljs-string">'B'</span>);
+  </span><span class="hljs-tag">&#x3C;/<span class="hljs-name">script</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">body</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">html</span>></span>
+</code></pre>
+<h1 id="hooks">Hooks</h1>
+<p>Hashery extends <a href="https://hookified.org">Hookified</a> to provide event-based functionality through hooks. Hooks allow you to intercept and modify behavior during the hashing process.</p>
+<blockquote>
+<p><strong>v2.0 breaking change:</strong> Hashery v2 upgrades to <code>hookified</code> v2. <code>HasheryOptions</code> extends <code>HookifiedOptions</code>, so the renamed/changed Hookified options below are also breaking for Hashery users. See <a href="#migration-from-v1-to-v2">Migration from v1 to v2</a> for details.</p>
+</blockquote>
+<h2 id="available-hooks">Available Hooks</h2>
+<h3 id="asynchronous-method-hooks">Asynchronous Method Hooks</h3>
+<h4 id="beforetohash"><code>before:toHash</code></h4>
+<p>Fired before hashing occurs. This hook receives a context object containing:</p>
+<ul>
+<li><code>data</code> - The data to be hashed (can be modified)</li>
+<li><code>algorithm</code> - The hash algorithm to use (can be modified)</li>
+<li><code>maxLength</code> - Optional maximum length for the hash output</li>
+</ul>
+<h4 id="aftertohash"><code>after:toHash</code></h4>
+<p>Fired after hashing completes. This hook receives a result object containing:</p>
+<ul>
+<li><code>hash</code> - The generated hash (can be modified)</li>
+<li><code>data</code> - The data that was hashed</li>
+<li><code>algorithm</code> - The algorithm that was used</li>
+</ul>
+<h3 id="synchronous-method-hooks">Synchronous Method Hooks</h3>
+<h4 id="beforetohashsync"><code>before:toHashSync</code></h4>
+<p>Fired before synchronous hashing occurs. This hook receives a context object containing:</p>
+<ul>
+<li><code>data</code> - The data to be hashed (can be modified)</li>
+<li><code>algorithm</code> - The hash algorithm to use (can be modified)</li>
+<li><code>maxLength</code> - Optional maximum length for the hash output</li>
+</ul>
+<p><strong>Note:</strong> This hook executes synchronously (blocking). Only synchronous hook handlers will run; async handlers are skipped.</p>
+<h4 id="aftertohashsync"><code>after:toHashSync</code></h4>
+<p>Fired after synchronous hashing completes. This hook receives a result object containing:</p>
+<ul>
+<li><code>hash</code> - The generated hash (can be modified)</li>
+<li><code>data</code> - The data that was hashed</li>
+<li><code>algorithm</code> - The algorithm that was used</li>
+</ul>
+<p><strong>Note:</strong> This hook executes synchronously (blocking). Only synchronous hook handlers will run; async handlers are skipped.</p>
+<h2 id="basic-hook-usage">Basic Hook Usage</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Listen to before:toHash hook</span>
+hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:toHash'</span>, <span class="hljs-title function_">async</span> (context) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'About to hash:'</span>, context.<span class="hljs-property">data</span>);
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Using algorithm:'</span>, context.<span class="hljs-property">algorithm</span>);
+});
+
+<span class="hljs-comment">// Listen to after:toHash hook</span>
+hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'after:toHash'</span>, <span class="hljs-title function_">async</span> (result) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Hash generated:'</span>, result.<span class="hljs-property">hash</span>);
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Original data:'</span>, result.<span class="hljs-property">data</span>);
+});
+
+<span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John'</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">30</span> });
+</code></pre>
+<h2 id="modifying-data-with-hooks">Modifying Data with Hooks</h2>
+<p>You can modify the data before it's hashed:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Add a timestamp to all hashed data</span>
+hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:toHash'</span>, <span class="hljs-title function_">async</span> (context) => {
+  context.<span class="hljs-property">data</span> = {
+    <span class="hljs-attr">original</span>: context.<span class="hljs-property">data</span>,
+    <span class="hljs-attr">timestamp</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>().<span class="hljs-title function_">toISOString</span>()
+  };
+});
+
+<span class="hljs-keyword">const</span> hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">userId</span>: <span class="hljs-number">123</span> });
+<span class="hljs-comment">// Data will be hashed with timestamp included</span>
+</code></pre>
+<h2 id="modifying-algorithms-with-hooks">Modifying Algorithms with Hooks</h2>
+<p>You can force a specific algorithm regardless of what's requested:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Force all hashes to use SHA-512</span>
+hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:toHash'</span>, <span class="hljs-title function_">async</span> (context) => {
+  context.<span class="hljs-property">algorithm</span> = <span class="hljs-string">'SHA-512'</span>;
+});
+
+<span class="hljs-comment">// Even though we request SHA-256, it will use SHA-512</span>
+<span class="hljs-keyword">const</span> hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'SHA-256'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hash.<span class="hljs-property">length</span>); <span class="hljs-comment">// 128 (SHA-512 hash length)</span>
+</code></pre>
+<h2 id="modifying-hash-results">Modifying Hash Results</h2>
+<p>You can transform the hash after it's generated:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Convert all hashes to uppercase</span>
+hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'after:toHash'</span>, <span class="hljs-title function_">async</span> (result) => {
+  result.<span class="hljs-property">hash</span> = result.<span class="hljs-property">hash</span>.<span class="hljs-title function_">toUpperCase</span>();
+});
+
+<span class="hljs-keyword">const</span> hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hash); <span class="hljs-comment">// Hash will be in uppercase</span>
+</code></pre>
+<h2 id="logging-and-debugging">Logging and Debugging</h2>
+<p>Hooks are perfect for logging and debugging:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:toHash'</span>, <span class="hljs-title function_">async</span> (context) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`[DEBUG] Hashing data with <span class="hljs-subst">${context.algorithm}</span>:`</span>, context.<span class="hljs-property">data</span>);
+});
+
+hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'after:toHash'</span>, <span class="hljs-title function_">async</span> (result) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`[DEBUG] Hash generated: <span class="hljs-subst">${result.hash.substring(<span class="hljs-number">0</span>, <span class="hljs-number">8</span>)}</span>...`</span>);
+});
+
+<span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">userId</span>: <span class="hljs-string">'user123'</span> });
+</code></pre>
+<h2 id="multiple-hooks">Multiple Hooks</h2>
+<p>You can register multiple hooks, and they will execute in the order they were registered:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:toHash'</span>, <span class="hljs-title function_">async</span> (context) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'First hook'</span>);
+  context.<span class="hljs-property">data</span> = { <span class="hljs-attr">step</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">original</span>: context.<span class="hljs-property">data</span> };
+});
+
+hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:toHash'</span>, <span class="hljs-title function_">async</span> (context) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Second hook'</span>);
+  context.<span class="hljs-property">data</span> = { <span class="hljs-attr">step</span>: <span class="hljs-number">2</span>, <span class="hljs-attr">previous</span>: context.<span class="hljs-property">data</span> };
+});
+
+<span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'test'</span> });
+<span class="hljs-comment">// Output: "First hook" then "Second hook"</span>
+<span class="hljs-comment">// Data will be wrapped twice</span>
+</code></pre>
+<h2 id="synchronous-method-hooks-1">Synchronous Method Hooks</h2>
+<p>Synchronous methods (<code>toHashSync</code>, <code>toNumberSync</code>) support hooks that execute synchronously (blocking). Hook handlers can modify context and results just like their async counterparts.</p>
+<p><strong>Important:</strong> Only synchronous hook handlers will run. Async handlers (functions that return a Promise) are skipped. Use synchronous functions when registering hooks for sync methods.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Listen to synchronous hash hooks (use synchronous handlers)</span>
+hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:toHashSync'</span>, <span class="hljs-function">(<span class="hljs-params">context</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'About to hash synchronously:'</span>, context.<span class="hljs-property">data</span>);
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Using algorithm:'</span>, context.<span class="hljs-property">algorithm</span>);
+});
+
+hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'after:toHashSync'</span>, <span class="hljs-function">(<span class="hljs-params">result</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Sync hash generated:'</span>, result.<span class="hljs-property">hash</span>);
+});
+
+<span class="hljs-keyword">const</span> hash = hashery.<span class="hljs-title function_">toHashSync</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John'</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">30</span> });
+</code></pre>
+<p>You can modify data and results in sync hooks, just like async hooks:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Modify input data before hashing</span>
+hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:toHashSync'</span>, <span class="hljs-function">(<span class="hljs-params">context</span>) =></span> {
+  context.<span class="hljs-property">data</span> = { <span class="hljs-attr">wrapped</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">original</span>: context.<span class="hljs-property">data</span> };
+});
+
+<span class="hljs-comment">// Modify the result after hashing</span>
+hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'after:toHashSync'</span>, <span class="hljs-function">(<span class="hljs-params">result</span>) =></span> {
+  result.<span class="hljs-property">hash</span> = result.<span class="hljs-property">hash</span>.<span class="hljs-title function_">toUpperCase</span>();
+});
+
+<span class="hljs-keyword">const</span> hash = hashery.<span class="hljs-title function_">toHashSync</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'test'</span> });
+<span class="hljs-comment">// hash will be uppercase and based on the modified data</span>
+</code></pre>
+<h2 id="warning-events-for-invalid-algorithms">Warning Events for Invalid Algorithms</h2>
+<p>When an invalid or unknown hash algorithm is provided to <code>toHash()</code> or <code>toHashSync()</code>, Hashery emits a 'warn' event and automatically falls back to the default algorithm instead of throwing an error. This ensures your application continues to work even when invalid algorithms are specified.</p>
+<h3 id="listening-to-warnings">Listening to Warnings</h3>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Listen for warning events</span>
+hashery.<span class="hljs-title function_">on</span>(<span class="hljs-string">'warn'</span>, <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span></span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Warning:'</span>, message);
+});
+
+<span class="hljs-comment">// Using an invalid algorithm will trigger the warning</span>
+<span class="hljs-keyword">const</span> hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'test'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'invalid-algo'</span> });
+<span class="hljs-comment">// Warning: Invalid algorithm 'invalid-algo' not found. Falling back to default algorithm 'SHA-256'.</span>
+
+<span class="hljs-comment">// Hash is still generated using SHA-256 (the default)</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hash); <span class="hljs-comment">// Valid SHA-256 hash</span>
+</code></pre>
+<h3 id="behavior">Behavior</h3>
+<p><strong>For async methods (<code>toHash</code>, <code>toNumber</code>):</strong></p>
+<ul>
+<li>Emits 'warn' event with descriptive message</li>
+<li>Falls back to <code>defaultAlgorithm</code> (SHA-256 by default)</li>
+<li>Returns a valid hash using the fallback algorithm</li>
+</ul>
+<p><strong>For sync methods (<code>toHashSync</code>, <code>toNumberSync</code>):</strong></p>
+<ul>
+<li>Emits 'warn' event with descriptive message</li>
+<li>Falls back to <code>defaultAlgorithmSync</code> (djb2 by default)</li>
+<li>Returns a valid hash using the fallback algorithm</li>
+<li><strong>Note:</strong> If the default sync algorithm is also not found, an error will be thrown</li>
+</ul>
+<h3 id="warning-message-format">Warning Message Format</h3>
+<p>The warning message includes both the invalid algorithm name and the fallback algorithm being used:</p>
+<pre><code>Invalid algorithm '&#x3C;requested-algorithm>' not found. Falling back to default algorithm '&#x3C;default-algorithm>'.
+</code></pre>
+<h3 id="example-use-cases">Example Use Cases</h3>
+<p><strong>Development/Debugging:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+hashery.<span class="hljs-title function_">on</span>(<span class="hljs-string">'warn'</span>, <span class="hljs-function">(<span class="hljs-params">message</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'[Hashery Warning]'</span>, message);
+  <span class="hljs-comment">// Log to monitoring service, etc.</span>
+});
+</code></pre>
+<p><strong>Production Monitoring:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+hashery.<span class="hljs-title function_">on</span>(<span class="hljs-string">'warn'</span>, <span class="hljs-function">(<span class="hljs-params">message</span>) =></span> {
+  <span class="hljs-comment">// Send to error tracking service</span>
+  errorTracker.<span class="hljs-title function_">captureMessage</span>(message, <span class="hljs-string">'warning'</span>);
+});
+</code></pre>
+<p><strong>Graceful Degradation:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+<span class="hljs-keyword">let</span> hasWarnings = <span class="hljs-literal">false</span>;
+
+hashery.<span class="hljs-title function_">on</span>(<span class="hljs-string">'warn'</span>, <span class="hljs-function">() =></span> {
+  hasWarnings = <span class="hljs-literal">true</span>;
+});
+
+<span class="hljs-keyword">const</span> hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>(userData, { <span class="hljs-attr">algorithm</span>: userPreferredAlgo });
+
+<span class="hljs-keyword">if</span> (hasWarnings) {
+  <span class="hljs-comment">// Notify user that their preferred algorithm is not available</span>
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Using default algorithm instead of your preference'</span>);
+}
+</code></pre>
+<h2 id="removing-hooks">Removing Hooks</h2>
+<p>You can remove hooks when they're no longer needed. <code>onHook()</code> returns the stored <code>IHook</code> object, which you pass to <code>removeHook()</code>:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">myHook</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params"><span class="hljs-attr">context</span>: <span class="hljs-built_in">any</span></span>) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Hook called'</span>);
+};
+
+<span class="hljs-comment">// Add the hook — onHook returns the stored IHook</span>
+<span class="hljs-keyword">const</span> hook = hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:toHash'</span>, myHook);
+
+<span class="hljs-comment">// Remove the hook by passing the IHook</span>
+<span class="hljs-keyword">if</span> (hook) {
+  hashery.<span class="hljs-title function_">removeHook</span>(hook);
+}
+
+<span class="hljs-comment">// Same works for sync hooks</span>
+<span class="hljs-keyword">const</span> syncHook = hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:toHashSync'</span>, myHook);
+<span class="hljs-keyword">if</span> (syncHook) {
+  hashery.<span class="hljs-title function_">removeHook</span>(syncHook);
+}
+</code></pre>
+<h2 id="error-handling-in-hooks">Error Handling in Hooks</h2>
+<p>Control how errors in hooks are handled using the <code>throwOnEmitError</code> option:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// Throw errors that occur in hooks</span>
+<span class="hljs-keyword">const</span> hashery1 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>({ <span class="hljs-attr">throwOnEmitError</span>: <span class="hljs-literal">true</span> });
+
+hashery1.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:toHash'</span>, <span class="hljs-title function_">async</span> (context) => {
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'Hook error'</span>);
+});
+
+<span class="hljs-comment">// This will throw the error</span>
+<span class="hljs-keyword">await</span> hashery1.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }); <span class="hljs-comment">// Throws Error: Hook error</span>
+
+<span class="hljs-comment">// Silently handle errors in hooks</span>
+<span class="hljs-keyword">const</span> hashery2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>({ <span class="hljs-attr">throwOnEmitError</span>: <span class="hljs-literal">false</span> });
+
+hashery2.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:toHash'</span>, <span class="hljs-title function_">async</span> (context) => {
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'Hook error'</span>);
+});
+
+<span class="hljs-comment">// This will not throw, hashing continues</span>
+<span class="hljs-keyword">const</span> hash = <span class="hljs-keyword">await</span> hashery2.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }); <span class="hljs-comment">// Returns hash successfully</span>
+</code></pre>
+<h1 id="caching">Caching</h1>
+<p>Hashery includes a built-in FIFO (First In, First Out) cache that stores computed hash values. When the same data is hashed with the same algorithm, the cached result is returned instead of recomputing. Caching is enabled by default with a max size of 4000 entries.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-comment">// Default: cache enabled with maxSize of 4000</span>
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Or customize cache settings</span>
+<span class="hljs-keyword">const</span> hashery2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>({ <span class="hljs-attr">cache</span>: { <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">maxSize</span>: <span class="hljs-number">10000</span> } });
+
+<span class="hljs-comment">// Hashing results are automatically cached</span>
+<span class="hljs-keyword">const</span> hash1 = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">user</span>: <span class="hljs-string">'john'</span> }); <span class="hljs-comment">// computed</span>
+<span class="hljs-keyword">const</span> hash2 = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">user</span>: <span class="hljs-string">'john'</span> }); <span class="hljs-comment">// served from cache</span>
+
+<span class="hljs-comment">// Cache management</span>
+hashery.<span class="hljs-property">cache</span>.<span class="hljs-property">size</span>;           <span class="hljs-comment">// number of cached entries</span>
+hashery.<span class="hljs-property">cache</span>.<span class="hljs-title function_">clear</span>();        <span class="hljs-comment">// clear all cached entries</span>
+hashery.<span class="hljs-property">cache</span>.<span class="hljs-property">enabled</span> = <span class="hljs-literal">false</span>; <span class="hljs-comment">// disable caching at runtime</span>
+</code></pre>
+<h1 id="web-crypto">Web Crypto</h1>
+<p>Hashery is built on top of the Web Crypto API, which provides cryptographic operations in both browser and Node.js environments. This ensures consistent, secure hashing across all platforms.</p>
+<h2 id="browser-support">Browser Support</h2>
+<p>The Web Crypto API is supported in all modern browsers:</p>
+<ul>
+<li>Chrome 37+</li>
+<li>Firefox 34+</li>
+<li>Safari 11+</li>
+<li>Edge 12+</li>
+</ul>
+<h2 id="nodejs-support">Node.js Support</h2>
+<p>Web Crypto API was introduced in Node.js 15.0.0. Hashery is tested against Node.js LTS 22+ and automatically detects and uses the appropriate crypto implementation for your environment via the <code>crypto.webcrypto</code> global.</p>
+<h2 id="available-algorithms">Available Algorithms</h2>
+<h3 id="web-crypto-algorithms-async-only">Web Crypto Algorithms (Async Only)</h3>
+<p>These algorithms use the Web Crypto API and are only available asynchronously:</p>
+<ul>
+<li><strong>SHA-256</strong> - Secure Hash Algorithm 256-bit (default for async methods)</li>
+<li><strong>SHA-384</strong> - Secure Hash Algorithm 384-bit</li>
+<li><strong>SHA-512</strong> - Secure Hash Algorithm 512-bit</li>
+</ul>
+<p>These are cryptographically secure and suitable for security-sensitive applications.</p>
+<h3 id="non-crypto-algorithms-async--sync">Non-Crypto Algorithms (Async &#x26; Sync)</h3>
+<p>These algorithms support both synchronous and asynchronous operation:</p>
+<ul>
+<li><strong>djb2</strong> - Fast hash function by Daniel J. Bernstein (default for sync methods)</li>
+<li><strong>fnv1</strong> - Fowler-Noll-Vo hash function</li>
+<li><strong>murmur</strong> - MurmurHash algorithm</li>
+<li><strong>crc32</strong> - Cyclic Redundancy Check 32-bit</li>
+</ul>
+<p><strong>Async methods</strong> (<code>toHash</code>, <code>toNumber</code>):</p>
+<ul>
+<li>Default to <code>SHA-256</code></li>
+<li>Can use any algorithm (WebCrypto or non-crypto)</li>
+<li>Return Promises</li>
+</ul>
+<p><strong>Sync methods</strong> (<code>toHashSync</code>, <code>toNumberSync</code>):</p>
+<ul>
+<li>Default to <code>djb2</code></li>
+<li>Only work with non-crypto algorithms (djb2, fnv1, murmur, crc32)</li>
+<li>Return values immediately</li>
+<li>Throw an error if you try to use WebCrypto algorithms</li>
+</ul>
+<h2 id="example-using-web-crypto">Example: Using Web Crypto</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Web Crypto algorithms</span>
+<span class="hljs-keyword">const</span> sha256 = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }); <span class="hljs-comment">// Default SHA-256</span>
+<span class="hljs-keyword">const</span> sha384 = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'SHA-384'</span> });
+<span class="hljs-keyword">const</span> sha512 = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'SHA-512'</span> });
+
+<span class="hljs-comment">// Non-crypto algorithms (faster, but not cryptographically secure)</span>
+<span class="hljs-keyword">const</span> djb2Hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'djb2'</span> });
+<span class="hljs-keyword">const</span> fnv1Hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'fnv1'</span> });
+</code></pre>
+<h1 id="djb2-hashing">DJB2 Hashing</h1>
+<p>DJB2 is a non-cryptographic hash function created by Daniel J. Bernstein. It's known for its simplicity and speed, making it ideal for hash tables, checksums, and other non-security applications.</p>
+<h2 id="why-use-djb2">Why Use DJB2?</h2>
+<ul>
+<li><strong>Fast Performance</strong> - Significantly faster than cryptographic hash functions</li>
+<li><strong>Good Distribution</strong> - Provides good hash distribution for most data</li>
+<li><strong>Simple Algorithm</strong> - Easy to understand and implement</li>
+<li><strong>Low Collision Rate</strong> - Works well for hash tables and data structures</li>
+<li><strong>Deterministic</strong> - Same input always produces the same output</li>
+</ul>
+<h2 id="when-to-use-djb2">When to Use DJB2</h2>
+<p><strong>Good for:</strong></p>
+<ul>
+<li>Hash tables and data structures</li>
+<li>Non-security checksums</li>
+<li>Fast data lookups</li>
+<li>Cache keys</li>
+<li>General-purpose hashing where security isn't a concern</li>
+</ul>
+<p><strong>Not suitable for:</strong></p>
+<ul>
+<li>Password hashing</li>
+<li>Cryptographic signatures</li>
+<li>Security-sensitive applications</li>
+<li>Data integrity verification where tampering is a concern</li>
+</ul>
+<h2 id="djb2-vs-cryptographic-hashes">DJB2 vs Cryptographic Hashes</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>DJB2</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Speed</td>
+<td>Very Fast</td>
+<td>Slower</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>Not Secure</td>
+<td>Cryptographically Secure</td>
+</tr>
+<tr>
+<td>Hash Length</td>
+<td>32-bit</td>
+<td>256-bit</td>
+</tr>
+<tr>
+<td>Collision Resistance</td>
+<td>Good</td>
+<td>Excellent</td>
+</tr>
+<tr>
+<td>Use Case</td>
+<td>General Purpose</td>
+<td>Security</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example-using-djb2">Example: Using DJB2</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Hash with DJB2 (fast, non-cryptographic)</span>
+<span class="hljs-keyword">const</span> djb2Hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">userId</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">action</span>: <span class="hljs-string">'login'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'djb2'</span> });
+
+<span class="hljs-comment">// Use for cache keys</span>
+<span class="hljs-keyword">const</span> cacheKey = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({
+  <span class="hljs-attr">endpoint</span>: <span class="hljs-string">'/api/users'</span>,
+  <span class="hljs-attr">params</span>: { <span class="hljs-attr">page</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">limit</span>: <span class="hljs-number">10</span> }
+}, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'djb2'</span> });
+
+<span class="hljs-comment">// Generate slot numbers with DJB2</span>
+<span class="hljs-keyword">const</span> slot = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toNumber</span>({ <span class="hljs-attr">userId</span>: <span class="hljs-string">'user123'</span> }, { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">99</span>, <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'djb2'</span> });
+</code></pre>
+<h2 id="algorithm-details">Algorithm Details</h2>
+<p>DJB2 uses a simple formula:</p>
+<pre><code>hash = 5381
+for each character c:
+    hash = ((hash &#x3C;&#x3C; 5) + hash) + c
+</code></pre>
+<p>This translates to: <code>hash * 33 + c</code>, where 5381 is the magic initial value chosen by Daniel J. Bernstein for its distribution properties.</p>
+<h1 id="fnv1-hashing">FNV1 Hashing</h1>
+<p>FNV1 (Fowler-Noll-Vo) is a non-cryptographic hash function designed for fast hash table and checksum use. Created by Glenn Fowler, Landon Curt Noll, and Kiem-Phong Vo, it's known for its excellent distribution properties and simplicity.</p>
+<h2 id="why-use-fnv1">Why Use FNV1?</h2>
+<ul>
+<li><strong>Excellent Distribution</strong> - Superior hash distribution reduces collisions</li>
+<li><strong>Fast Performance</strong> - Very fast computation with minimal operations</li>
+<li><strong>Simple Implementation</strong> - Easy to understand and implement</li>
+<li><strong>Public Domain</strong> - No licensing restrictions</li>
+<li><strong>Well-Tested</strong> - Extensively used and tested in production systems</li>
+<li><strong>Deterministic</strong> - Same input always produces the same output</li>
+</ul>
+<h2 id="when-to-use-fnv1">When to Use FNV1</h2>
+<p><strong>Good for:</strong></p>
+<ul>
+<li>Hash tables and associative arrays</li>
+<li>Checksums and fingerprints</li>
+<li>Data deduplication</li>
+<li>Bloom filters</li>
+<li>Fast lookups and indexing</li>
+<li>Non-cryptographic applications</li>
+</ul>
+<p><strong>Not suitable for:</strong></p>
+<ul>
+<li>Password hashing</li>
+<li>Cryptographic signatures</li>
+<li>Security-critical applications</li>
+<li>Digital signatures</li>
+<li>Data integrity in adversarial environments</li>
+</ul>
+<h2 id="fnv1-vs-other-hash-functions">FNV1 vs Other Hash Functions</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>FNV1</th>
+<th>DJB2</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Speed</td>
+<td>Very Fast</td>
+<td>Very Fast</td>
+<td>Slower</td>
+</tr>
+<tr>
+<td>Distribution</td>
+<td>Excellent</td>
+<td>Good</td>
+<td>Excellent</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>Not Secure</td>
+<td>Not Secure</td>
+<td>Cryptographically Secure</td>
+</tr>
+<tr>
+<td>Collision Resistance</td>
+<td>Good</td>
+<td>Good</td>
+<td>Excellent</td>
+</tr>
+<tr>
+<td>Use Case</td>
+<td>Hash Tables</td>
+<td>General Purpose</td>
+<td>Security</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example-using-fnv1">Example: Using FNV1</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Hash with FNV1 (fast, excellent distribution)</span>
+<span class="hljs-keyword">const</span> fnv1Hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">productId</span>: <span class="hljs-string">'ABC123'</span>, <span class="hljs-attr">variant</span>: <span class="hljs-string">'red'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'fnv1'</span> });
+
+<span class="hljs-comment">// Use for hash table keys</span>
+<span class="hljs-keyword">const</span> tableKey = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({
+  <span class="hljs-attr">userId</span>: <span class="hljs-string">'user@example.com'</span>,
+  <span class="hljs-attr">resource</span>: <span class="hljs-string">'profile'</span>
+}, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'fnv1'</span> });
+
+<span class="hljs-comment">// Generate distributed slot numbers with FNV1</span>
+<span class="hljs-keyword">const</span> slot = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toNumber</span>({ <span class="hljs-attr">sessionId</span>: <span class="hljs-string">'sess_xyz789'</span> }, { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">999</span>, <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'fnv1'</span> });
+
+<span class="hljs-comment">// Use for data deduplication</span>
+<span class="hljs-keyword">const</span> fingerprint = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({
+  <span class="hljs-attr">content</span>: <span class="hljs-string">'document content here'</span>,
+  <span class="hljs-attr">metadata</span>: { <span class="hljs-attr">author</span>: <span class="hljs-string">'John'</span>, <span class="hljs-attr">date</span>: <span class="hljs-string">'2024-01-01'</span> }
+}, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'fnv1'</span> });
+</code></pre>
+<h2 id="algorithm-details-1">Algorithm Details</h2>
+<p>FNV1 uses the following formula:</p>
+<pre><code>hash = FNV_offset_basis
+for each byte b:
+    hash = hash * FNV_prime
+    hash = hash XOR b
+</code></pre>
+<p>Where:</p>
+<ul>
+<li><strong>FNV_offset_basis</strong>: Initial hash value (different for 32-bit, 64-bit, etc.)</li>
+<li><strong>FNV_prime</strong>: A carefully chosen prime number for good distribution</li>
+<li><strong>XOR</strong>: Bitwise exclusive OR operation</li>
+</ul>
+<p>The algorithm multiplies by a prime and XORs with each input byte, creating excellent avalanche properties where small input changes result in very different hash values.</p>
+<h1 id="crc-hashing">CRC Hashing</h1>
+<p>CRC (Cyclic Redundancy Check) is a non-cryptographic hash function designed primarily for detecting accidental changes to data. CRC32 is a 32-bit variant widely used in network protocols, file formats, and data integrity verification.</p>
+<h2 id="why-use-crc">Why Use CRC?</h2>
+<ul>
+<li><strong>Error Detection</strong> - Excellent at detecting accidental data corruption</li>
+<li><strong>Industry Standard</strong> - Widely used in ZIP, PNG, Ethernet, and many other standards</li>
+<li><strong>Fast Performance</strong> - Very efficient computation using lookup tables</li>
+<li><strong>Hardware Support</strong> - Often implemented in hardware for maximum speed</li>
+<li><strong>Well-Understood</strong> - Decades of use and mathematical analysis</li>
+<li><strong>Deterministic</strong> - Same input always produces the same output</li>
+</ul>
+<h2 id="when-to-use-crc">When to Use CRC</h2>
+<p><strong>Good for:</strong></p>
+<ul>
+<li>Data integrity verification</li>
+<li>Error detection in network protocols</li>
+<li>File format checksums (ZIP, PNG, etc.)</li>
+<li>Storage integrity checks</li>
+<li>Detecting accidental corruption</li>
+<li>Quick data validation</li>
+</ul>
+<p><strong>Not suitable for:</strong></p>
+<ul>
+<li>Cryptographic applications</li>
+<li>Password hashing</li>
+<li>Digital signatures</li>
+<li>Security-sensitive checksums</li>
+<li>Protection against intentional tampering</li>
+<li>Hash tables (not designed for this use case)</li>
+</ul>
+<h2 id="crc-vs-other-hash-functions">CRC vs Other Hash Functions</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>CRC32</th>
+<th>DJB2</th>
+<th>FNV1</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Primary Use</td>
+<td>Error Detection</td>
+<td>Hash Tables</td>
+<td>Hash Tables</td>
+<td>Security</td>
+</tr>
+<tr>
+<td>Speed</td>
+<td>Very Fast</td>
+<td>Very Fast</td>
+<td>Very Fast</td>
+<td>Slower</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>Not Secure</td>
+<td>Not Secure</td>
+<td>Not Secure</td>
+<td>Cryptographically Secure</td>
+</tr>
+<tr>
+<td>Hash Length</td>
+<td>32-bit</td>
+<td>32-bit</td>
+<td>32-bit/64-bit</td>
+<td>256-bit</td>
+</tr>
+<tr>
+<td>Error Detection</td>
+<td>Excellent</td>
+<td>Poor</td>
+<td>Poor</td>
+<td>Excellent</td>
+</tr>
+<tr>
+<td>Use Case</td>
+<td>Data Integrity</td>
+<td>General Purpose</td>
+<td>Hash Tables</td>
+<td>Security</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example-using-crc">Example: Using CRC</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Hash with CRC32 for data integrity</span>
+<span class="hljs-keyword">const</span> crcHash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">fileData</span>: <span class="hljs-string">'content here'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'crc32'</span> });
+
+<span class="hljs-comment">// Verify file integrity</span>
+<span class="hljs-keyword">const</span> fileChecksum = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({
+  <span class="hljs-attr">filename</span>: <span class="hljs-string">'document.pdf'</span>,
+  <span class="hljs-attr">size</span>: <span class="hljs-number">1024000</span>,
+  <span class="hljs-attr">modified</span>: <span class="hljs-string">'2024-01-01'</span>
+}, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'crc32'</span> });
+
+<span class="hljs-comment">// Network packet validation</span>
+<span class="hljs-keyword">const</span> packetChecksum = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({
+  <span class="hljs-attr">header</span>: { <span class="hljs-attr">type</span>: <span class="hljs-string">'data'</span>, <span class="hljs-attr">seq</span>: <span class="hljs-number">123</span> },
+  <span class="hljs-attr">payload</span>: <span class="hljs-string">'packet payload data'</span>
+}, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'crc32'</span> });
+
+<span class="hljs-comment">// Quick data validation</span>
+<span class="hljs-keyword">const</span> dataIntegrity = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({
+  <span class="hljs-attr">recordId</span>: <span class="hljs-string">'rec_123'</span>,
+  <span class="hljs-attr">data</span>: { <span class="hljs-attr">field1</span>: <span class="hljs-string">'value1'</span>, <span class="hljs-attr">field2</span>: <span class="hljs-string">'value2'</span> }
+}, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'crc32'</span> });
+</code></pre>
+<h2 id="algorithm-details-2">Algorithm Details</h2>
+<p>CRC32 uses polynomial division in a finite field (GF(2)):</p>
+<pre><code>CRC32 polynomial: 0x04C11DB7 (IEEE 802.3 standard)
+
+for each byte b:
+    crc = (crc >> 8) XOR table[(crc XOR b) &#x26; 0xFF]
+</code></pre>
+<p>Key characteristics:</p>
+<ul>
+<li><strong>Polynomial</strong>: Uses a standardized polynomial for consistent results</li>
+<li><strong>Lookup Table</strong>: Pre-computed table for fast calculation</li>
+<li><strong>Bit Shifting</strong>: Efficient XOR and shift operations</li>
+<li><strong>Finite Field</strong>: Mathematical properties ensure good error detection</li>
+</ul>
+<h2 id="important-notes">Important Notes</h2>
+<p>⚠️ <strong>Security Warning</strong>: CRC is NOT cryptographically secure. It's designed to detect accidental errors, not intentional tampering. For security applications, use SHA-256 or other cryptographic hash functions.</p>
+<p>✅ <strong>Best Practice</strong>: Use CRC32 for checksums and error detection in non-adversarial environments. Use cryptographic hashes (SHA-256, SHA-512) when security matters.</p>
+<h1 id="api---properties">API - Properties</h1>
+<h2 id="parse"><code>parse</code></h2>
+<p>Gets or sets the parse function used to deserialize stored values.</p>
+<p><strong>Type:</strong> <code>ParseFn</code></p>
+<p><strong>Default:</strong> <code>JSON.parse</code></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+hashery.<span class="hljs-property">parse</span> = customParseFunction;
+</code></pre>
+<h2 id="stringify"><code>stringify</code></h2>
+<p>Gets or sets the stringify function used to serialize values for storage.</p>
+<p><strong>Type:</strong> <code>StringifyFn</code></p>
+<p><strong>Default:</strong> <code>JSON.stringify</code></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+hashery.<span class="hljs-property">stringify</span> = customStringifyFunction;
+</code></pre>
+<h2 id="providers"><code>providers</code></h2>
+<p>Gets or sets the HashProviders instance used to manage hash providers.</p>
+<p><strong>Type:</strong> <code>HashProviders</code></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hashery.<span class="hljs-property">providers</span>);
+</code></pre>
+<h2 id="names"><code>names</code></h2>
+<p>Gets the names of all registered hash algorithm providers.</p>
+<p><strong>Type:</strong> <code>Array&#x3C;string></code></p>
+<p><strong>Returns:</strong> An array of provider names (e.g., ['SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmur', 'crc32'])</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hashery.<span class="hljs-property">names</span>); <span class="hljs-comment">// ['SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmur', 'crc32']</span>
+</code></pre>
+<h2 id="defaultalgorithm"><code>defaultAlgorithm</code></h2>
+<p>Gets or sets the default hash algorithm to use when none is specified for async methods.</p>
+<p><strong>Type:</strong> <code>string</code></p>
+<p><strong>Default:</strong> <code>'SHA-256'</code></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Get default algorithm</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hashery.<span class="hljs-property">defaultAlgorithm</span>); <span class="hljs-comment">// 'SHA-256'</span>
+
+<span class="hljs-comment">// Set default algorithm</span>
+hashery.<span class="hljs-property">defaultAlgorithm</span> = <span class="hljs-string">'SHA-512'</span>;
+
+<span class="hljs-comment">// Now all async hashes use SHA-512 by default</span>
+<span class="hljs-keyword">const</span> hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hash.<span class="hljs-property">length</span>); <span class="hljs-comment">// 128 (SHA-512 produces 128 hex characters)</span>
+</code></pre>
+<h2 id="defaultalgorithmsync"><code>defaultAlgorithmSync</code></h2>
+<p>Gets or sets the default hash algorithm to use when none is specified for synchronous methods.</p>
+<p><strong>Type:</strong> <code>string</code></p>
+<p><strong>Default:</strong> <code>'djb2'</code></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Get default sync algorithm</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hashery.<span class="hljs-property">defaultAlgorithmSync</span>); <span class="hljs-comment">// 'djb2'</span>
+
+<span class="hljs-comment">// Set default sync algorithm</span>
+hashery.<span class="hljs-property">defaultAlgorithmSync</span> = <span class="hljs-string">'fnv1'</span>;
+
+<span class="hljs-comment">// Now all sync hashes use fnv1 by default</span>
+<span class="hljs-keyword">const</span> hash = hashery.<span class="hljs-title function_">toHashSync</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> });
+
+<span class="hljs-comment">// You can also set it in the constructor</span>
+<span class="hljs-keyword">const</span> hashery2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>({ <span class="hljs-attr">defaultAlgorithmSync</span>: <span class="hljs-string">'murmur'</span> });
+<span class="hljs-keyword">const</span> hash2 = hashery2.<span class="hljs-title function_">toHashSync</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'test'</span> }); <span class="hljs-comment">// Uses murmur</span>
+</code></pre>
+<h1 id="api---functions">API - Functions</h1>
+<h2 id="tohashdata-options"><code>toHash(data, options?)</code></h2>
+<p>Generates a cryptographic hash of the provided data using the specified algorithm (async). The data is first stringified using the configured stringify function, then hashed.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>data</code> (unknown) - The data to hash (will be stringified before hashing)</li>
+<li><code>options</code> (object, optional) - Configuration options
+<ul>
+<li><code>algorithm</code> (string, optional) - The hash algorithm to use (defaults to 'SHA-256')</li>
+<li><code>maxLength</code> (number, optional) - Maximum length for the hash output (truncates from the start)</li>
+</ul>
+</li>
+</ul>
+<p><strong>Returns:</strong> <code>Promise&#x3C;string></code> - A Promise that resolves to the hexadecimal string representation of the hash</p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Using default SHA-256</span>
+<span class="hljs-keyword">const</span> hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John'</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">30</span> });
+
+<span class="hljs-comment">// Using a different algorithm</span>
+<span class="hljs-keyword">const</span> hash512 = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'SHA-512'</span> });
+<span class="hljs-keyword">const</span> fastHash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'djb2'</span> });
+
+<span class="hljs-comment">// Truncating hash output</span>
+<span class="hljs-keyword">const</span> shortHash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>(
+  { <span class="hljs-attr">name</span>: <span class="hljs-string">'John'</span> },
+  { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'SHA-256'</span>, <span class="hljs-attr">maxLength</span>: <span class="hljs-number">16</span> }
+);
+</code></pre>
+<h2 id="tohashsyncdata-options"><code>toHashSync(data, options?)</code></h2>
+<p>Generates a hash of the provided data synchronously using a non-cryptographic hash algorithm. The data is first stringified using the configured stringify function, then hashed.</p>
+<p><strong>Important:</strong> This method only works with synchronous hash providers (djb2, fnv1, murmur, crc32). WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported and will throw an error.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>data</code> (unknown) - The data to hash (will be stringified before hashing)</li>
+<li><code>options</code> (object, optional) - Configuration options
+<ul>
+<li><code>algorithm</code> (string, optional) - The hash algorithm to use (defaults to 'djb2')</li>
+<li><code>maxLength</code> (number, optional) - Maximum length for the hash output (truncates from the start)</li>
+</ul>
+</li>
+</ul>
+<p><strong>Returns:</strong> <code>string</code> - The hexadecimal string representation of the hash</p>
+<p><strong>Throws:</strong> <code>Error</code> if the specified algorithm does not support synchronous hashing</p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Using default djb2</span>
+<span class="hljs-keyword">const</span> hash = hashery.<span class="hljs-title function_">toHashSync</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John'</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">30</span> });
+
+<span class="hljs-comment">// Using a different algorithm</span>
+<span class="hljs-keyword">const</span> hashFnv1 = hashery.<span class="hljs-title function_">toHashSync</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'fnv1'</span> });
+<span class="hljs-keyword">const</span> hashMurmur = hashery.<span class="hljs-title function_">toHashSync</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'murmur'</span> });
+<span class="hljs-keyword">const</span> hashCrc = hashery.<span class="hljs-title function_">toHashSync</span>({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John'</span> }, { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'crc32'</span> });
+
+<span class="hljs-comment">// Truncating hash output</span>
+<span class="hljs-keyword">const</span> shortHash = hashery.<span class="hljs-title function_">toHashSync</span>(
+  { <span class="hljs-attr">name</span>: <span class="hljs-string">'John'</span> },
+  { <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'djb2'</span>, <span class="hljs-attr">maxLength</span>: <span class="hljs-number">4</span> }
+);
+
+<span class="hljs-comment">// This will throw an error (WebCrypto not supported in sync mode)</span>
+<span class="hljs-comment">// const invalid = hashery.toHashSync({ name: 'John' }, { algorithm: 'SHA-256' }); // ❌</span>
+</code></pre>
+<h2 id="tonumberdata-options"><code>toNumber(data, options?)</code></h2>
+<p>Generates a deterministic number within a specified range based on the hash of the provided data (async). This method uses the toHash function to create a consistent hash, then maps it to a number between min and max (inclusive).</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>data</code> (unknown) - The data to hash (will be stringified before hashing)</li>
+<li><code>options</code> (object, optional) - Configuration options
+<ul>
+<li><code>min</code> (number, optional) - The minimum value of the range (inclusive, defaults to 0)</li>
+<li><code>max</code> (number, optional) - The maximum value of the range (inclusive, defaults to 100)</li>
+<li><code>algorithm</code> (string, optional) - The hash algorithm to use (defaults to 'SHA-256')</li>
+<li><code>hashLength</code> (number, optional) - Number of characters from hash to use for conversion (defaults to 16)</li>
+</ul>
+</li>
+</ul>
+<p><strong>Returns:</strong> <code>Promise&#x3C;number></code> - A Promise that resolves to a number between min and max (inclusive)</p>
+<p><strong>Throws:</strong> Error if min is greater than max</p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Generate a number between 0 and 100 (default range)</span>
+<span class="hljs-keyword">const</span> num = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toNumber</span>({ <span class="hljs-attr">user</span>: <span class="hljs-string">'john'</span> });
+
+<span class="hljs-comment">// Generate a number with custom range</span>
+<span class="hljs-keyword">const</span> num2 = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toNumber</span>({ <span class="hljs-attr">user</span>: <span class="hljs-string">'john'</span> }, { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">100</span> });
+
+<span class="hljs-comment">// Using a different algorithm</span>
+<span class="hljs-keyword">const</span> num512 = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toNumber</span>({ <span class="hljs-attr">user</span>: <span class="hljs-string">'john'</span> }, { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">255</span>, <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'SHA-512'</span> });
+</code></pre>
+<h2 id="tonumbersyncdata-options"><code>toNumberSync(data, options?)</code></h2>
+<p>Generates a deterministic number within a specified range based on the hash of the provided data synchronously. This method uses the toHashSync function to create a consistent hash, then maps it to a number between min and max (inclusive).</p>
+<p><strong>Important:</strong> This method only works with synchronous hash providers (djb2, fnv1, murmur, crc32).</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>data</code> (unknown) - The data to hash (will be stringified before hashing)</li>
+<li><code>options</code> (object, optional) - Configuration options
+<ul>
+<li><code>min</code> (number, optional) - The minimum value of the range (inclusive, defaults to 0)</li>
+<li><code>max</code> (number, optional) - The maximum value of the range (inclusive, defaults to 100)</li>
+<li><code>algorithm</code> (string, optional) - The hash algorithm to use (defaults to 'djb2')</li>
+<li><code>hashLength</code> (number, optional) - Number of characters from hash to use for conversion (defaults to 16)</li>
+</ul>
+</li>
+</ul>
+<p><strong>Returns:</strong> <code>number</code> - A number between min and max (inclusive)</p>
+<p><strong>Throws:</strong></p>
+<ul>
+<li>Error if min is greater than max</li>
+<li>Error if the specified algorithm does not support synchronous hashing</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Generate a number between 0 and 100 (default range)</span>
+<span class="hljs-keyword">const</span> num = hashery.<span class="hljs-title function_">toNumberSync</span>({ <span class="hljs-attr">user</span>: <span class="hljs-string">'john'</span> });
+
+<span class="hljs-comment">// Generate a number with custom range</span>
+<span class="hljs-keyword">const</span> slot = hashery.<span class="hljs-title function_">toNumberSync</span>({ <span class="hljs-attr">user</span>: <span class="hljs-string">'john'</span> }, { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">9</span> });
+
+<span class="hljs-comment">// Using a different algorithm</span>
+<span class="hljs-keyword">const</span> numFnv1 = hashery.<span class="hljs-title function_">toNumberSync</span>({ <span class="hljs-attr">user</span>: <span class="hljs-string">'john'</span> }, { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">255</span>, <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'fnv1'</span> });
+
+<span class="hljs-comment">// A/B testing</span>
+<span class="hljs-keyword">const</span> variant = hashery.<span class="hljs-title function_">toNumberSync</span>({ <span class="hljs-attr">userId</span>: <span class="hljs-string">'user123'</span> }, { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">1</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(variant === <span class="hljs-number">0</span> ? <span class="hljs-string">'Group A'</span> : <span class="hljs-string">'Group B'</span>);
+
+<span class="hljs-comment">// Load balancing</span>
+<span class="hljs-keyword">const</span> serverId = hashery.<span class="hljs-title function_">toNumberSync</span>(
+  { <span class="hljs-attr">requestId</span>: <span class="hljs-string">'req_abc'</span> },
+  { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">9</span>, <span class="hljs-attr">algorithm</span>: <span class="hljs-string">'murmur'</span> } <span class="hljs-comment">// 10 servers</span>
+);
+
+<span class="hljs-comment">// This will throw an error (WebCrypto not supported in sync mode)</span>
+<span class="hljs-comment">// const invalid = hashery.toNumberSync({ user: 'john' }, { algorithm: 'SHA-256' }); // ❌</span>
+</code></pre>
+<h2 id="loadprovidersproviders-options"><code>loadProviders(providers?, options?)</code></h2>
+<p>Loads hash providers into the Hashery instance. This allows you to add custom hash providers or replace the default ones.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>providers</code> (Array, optional) - Array of hash providers to add</li>
+<li><code>options</code> (HasheryLoadProviderOptions, optional) - Options object
+<ul>
+<li><code>includeBase</code> (boolean) - Whether to include base providers (default: true)</li>
+</ul>
+</li>
+</ul>
+<p><strong>Returns:</strong> <code>void</code></p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Add a custom provider</span>
+<span class="hljs-keyword">const</span> customProvider = {
+  <span class="hljs-attr">name</span>: <span class="hljs-string">'custom'</span>,
+  <span class="hljs-attr">toHash</span>: <span class="hljs-title function_">async</span> (<span class="hljs-attr">data</span>: <span class="hljs-title class_">BufferSource</span>) => <span class="hljs-string">'custom-hash'</span>
+};
+
+hashery.<span class="hljs-title function_">loadProviders</span>([customProvider]);
+
+<span class="hljs-comment">// Load without base providers</span>
+hashery.<span class="hljs-title function_">loadProviders</span>([customProvider], { <span class="hljs-attr">includeBase</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<h1 id="api---types">API - Types</h1>
+<h2 id="hashalgorithm"><code>HashAlgorithm</code></h2>
+<p>A string literal union type representing all built-in hash algorithm names. Provides autocomplete in IDEs while still accepting custom provider names as strings.</p>
+<p><strong>Type:</strong> <code>"SHA-256" | "SHA-384" | "SHA-512" | "djb2" | "fnv1" | "murmur" | "crc32"</code></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hashery</span>, <span class="hljs-keyword">type</span> <span class="hljs-title class_">HashAlgorithm</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hashery'</span>;
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Use the type for your own variables and functions</span>
+<span class="hljs-keyword">const</span> <span class="hljs-attr">algorithm</span>: <span class="hljs-title class_">HashAlgorithm</span> = <span class="hljs-string">'SHA-256'</span>;
+<span class="hljs-keyword">const</span> hash = <span class="hljs-keyword">await</span> hashery.<span class="hljs-title function_">toHash</span>({ <span class="hljs-attr">data</span>: <span class="hljs-string">'example'</span> }, { algorithm });
+
+<span class="hljs-comment">// All option fields accept HashAlgorithm with full autocomplete</span>
+<span class="hljs-keyword">const</span> hashery2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>({ <span class="hljs-attr">defaultAlgorithm</span>: <span class="hljs-string">'SHA-512'</span> }); <span class="hljs-comment">// autocomplete for algorithm names</span>
+</code></pre>
+<h1 id="benchmarks">Benchmarks</h1>
+<p>Overall view of the current algorithm's and their performance using simple hashing with random data. <code>Sync</code> is when we use <code>toHashSync</code> and <code>Async</code> is the <code>toHash</code> function which requires <code>await</code>.</p>
+<p><strong>NOTE: Many of these are not secure and should be used only for object hashing. Read about each one in the documentation and pick what works best for your use case.</strong></p>
+<h2 id="tohash">toHash</h2>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DJB2 Sync</td>
+<td align="center">🥇</td>
+<td align="right">649K</td>
+<td align="right">2µs</td>
+<td align="center">±0.01%</td>
+<td align="right">645K</td>
+</tr>
+<tr>
+<td>FNV1 Sync</td>
+<td align="center">-0.64%</td>
+<td align="right">644K</td>
+<td align="right">2µs</td>
+<td align="center">±0.01%</td>
+<td align="right">635K</td>
+</tr>
+<tr>
+<td>CRC32 Sync</td>
+<td align="center">-1.4%</td>
+<td align="right">639K</td>
+<td align="right">2µs</td>
+<td align="center">±0.02%</td>
+<td align="right">615K</td>
+</tr>
+<tr>
+<td>MURMUR Sync</td>
+<td align="center">-2.3%</td>
+<td align="right">634K</td>
+<td align="right">2µs</td>
+<td align="center">±0.01%</td>
+<td align="right">629K</td>
+</tr>
+<tr>
+<td>CRC32 Async</td>
+<td align="center">-19%</td>
+<td align="right">524K</td>
+<td align="right">2µs</td>
+<td align="center">±0.02%</td>
+<td align="right">514K</td>
+</tr>
+<tr>
+<td>SHA-384 Async</td>
+<td align="center">-20%</td>
+<td align="right">519K</td>
+<td align="right">2µs</td>
+<td align="center">±0.03%</td>
+<td align="right">481K</td>
+</tr>
+<tr>
+<td>MURMUR Async</td>
+<td align="center">-20%</td>
+<td align="right">518K</td>
+<td align="right">2µs</td>
+<td align="center">±0.02%</td>
+<td align="right">512K</td>
+</tr>
+<tr>
+<td>SHA-512 Async</td>
+<td align="center">-21%</td>
+<td align="right">513K</td>
+<td align="right">2µs</td>
+<td align="center">±0.03%</td>
+<td align="right">473K</td>
+</tr>
+<tr>
+<td>SHA-256 Async</td>
+<td align="center">-21%</td>
+<td align="right">513K</td>
+<td align="right">2µs</td>
+<td align="center">±0.03%</td>
+<td align="right">472K</td>
+</tr>
+<tr>
+<td>DJB2 Async</td>
+<td align="center">-21%</td>
+<td align="right">512K</td>
+<td align="right">2µs</td>
+<td align="center">±0.02%</td>
+<td align="right">504K</td>
+</tr>
+<tr>
+<td>FNV1 Async</td>
+<td align="center">-22%</td>
+<td align="right">508K</td>
+<td align="right">2µs</td>
+<td align="center">±0.02%</td>
+<td align="right">501K</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tonumber">toNumber</h2>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CRC32 Sync</td>
+<td align="center">🥇</td>
+<td align="right">601K</td>
+<td align="right">2µs</td>
+<td align="center">±0.01%</td>
+<td align="right">591K</td>
+</tr>
+<tr>
+<td>DJB2 Sync</td>
+<td align="center">-0.51%</td>
+<td align="right">598K</td>
+<td align="right">2µs</td>
+<td align="center">±0.01%</td>
+<td align="right">588K</td>
+</tr>
+<tr>
+<td>MURMUR Sync</td>
+<td align="center">-1.4%</td>
+<td align="right">593K</td>
+<td align="right">2µs</td>
+<td align="center">±0.02%</td>
+<td align="right">582K</td>
+</tr>
+<tr>
+<td>FNV1 Sync</td>
+<td align="center">-2%</td>
+<td align="right">589K</td>
+<td align="right">2µs</td>
+<td align="center">±0.01%</td>
+<td align="right">583K</td>
+</tr>
+<tr>
+<td>CRC32 Async</td>
+<td align="center">-24%</td>
+<td align="right">457K</td>
+<td align="right">2µs</td>
+<td align="center">±0.02%</td>
+<td align="right">446K</td>
+</tr>
+<tr>
+<td>DJB2 Async</td>
+<td align="center">-25%</td>
+<td align="right">449K</td>
+<td align="right">2µs</td>
+<td align="center">±0.02%</td>
+<td align="right">441K</td>
+</tr>
+<tr>
+<td>MURMUR Async</td>
+<td align="center">-25%</td>
+<td align="right">448K</td>
+<td align="right">2µs</td>
+<td align="center">±0.02%</td>
+<td align="right">434K</td>
+</tr>
+<tr>
+<td>SHA-512 Async</td>
+<td align="center">-27%</td>
+<td align="right">439K</td>
+<td align="right">2µs</td>
+<td align="center">±0.03%</td>
+<td align="right">404K</td>
+</tr>
+<tr>
+<td>SHA-384 Async</td>
+<td align="center">-27%</td>
+<td align="right">437K</td>
+<td align="right">2µs</td>
+<td align="center">±0.03%</td>
+<td align="right">406K</td>
+</tr>
+<tr>
+<td>SHA-256 Async</td>
+<td align="center">-28%</td>
+<td align="right">433K</td>
+<td align="right">2µs</td>
+<td align="center">±0.03%</td>
+<td align="right">404K</td>
+</tr>
+<tr>
+<td>FNV1 Async</td>
+<td align="center">-35%</td>
+<td align="right">392K</td>
+<td align="right">3µs</td>
+<td align="center">±0.08%</td>
+<td align="right">296K</td>
+</tr>
+</tbody>
+</table>
+<h2 id="hashery-vs-others">Hashery vs Others</h2>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>node:crypto SHA-256</td>
+<td align="center">🥇</td>
+<td align="right">529K</td>
+<td align="right">2µs</td>
+<td align="center">±0.03%</td>
+<td align="right">470K</td>
+</tr>
+<tr>
+<td>Hashery SHA-512 (Cache)</td>
+<td align="center">-3.7%</td>
+<td align="right">509K</td>
+<td align="right">2µs</td>
+<td align="center">±0.03%</td>
+<td align="right">473K</td>
+</tr>
+<tr>
+<td>Hashery SHA-384 (Cache)</td>
+<td align="center">-4.7%</td>
+<td align="right">505K</td>
+<td align="right">2µs</td>
+<td align="center">±0.03%</td>
+<td align="right">471K</td>
+</tr>
+<tr>
+<td>Hashery SHA-256 (Cache)</td>
+<td align="center">-4.7%</td>
+<td align="right">504K</td>
+<td align="right">2µs</td>
+<td align="center">±0.03%</td>
+<td align="right">471K</td>
+</tr>
+<tr>
+<td>node:crypto SHA-512</td>
+<td align="center">-5%</td>
+<td align="right">502K</td>
+<td align="right">2µs</td>
+<td align="center">±0.02%</td>
+<td align="right">471K</td>
+</tr>
+<tr>
+<td>node:crypto SHA-384</td>
+<td align="center">-5.5%</td>
+<td align="right">500K</td>
+<td align="right">2µs</td>
+<td align="center">±0.02%</td>
+<td align="right">489K</td>
+</tr>
+<tr>
+<td>object-hash SHA1</td>
+<td align="center">-87%</td>
+<td align="right">71K</td>
+<td align="right">14µs</td>
+<td align="center">±0.04%</td>
+<td align="right">70K</td>
+</tr>
+<tr>
+<td>object-hash SHA256</td>
+<td align="center">-87%</td>
+<td align="right">70K</td>
+<td align="right">15µs</td>
+<td align="center">±0.04%</td>
+<td align="right">69K</td>
+</tr>
+<tr>
+<td>Hashery SHA-256</td>
+<td align="center">-88%</td>
+<td align="right">63K</td>
+<td align="right">16µs</td>
+<td align="center">±0.08%</td>
+<td align="right">61K</td>
+</tr>
+<tr>
+<td>Hashery SHA-384</td>
+<td align="center">-89%</td>
+<td align="right">60K</td>
+<td align="right">17µs</td>
+<td align="center">±0.08%</td>
+<td align="right">58K</td>
+</tr>
+<tr>
+<td>Hashery SHA-512</td>
+<td align="center">-89%</td>
+<td align="right">56K</td>
+<td align="right">19µs</td>
+<td align="center">±0.09%</td>
+<td align="right">54K</td>
+</tr>
+</tbody>
+</table>
+<p>In this benchmark it shows the performance comparison between Hashery, <code>node:crypto</code>, and the <code>object-hash</code> package. By default <code>node:crypto</code> has significant performance natively and doesnt use <code>async/await</code> to perform its hash. With caching enabled we start to see the performance become more similar. The <code>object-hash</code> package is included for comparison as a popular alternative.</p>
+<h2 id="tonumber-1">toNumber</h2>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CRC32 Sync</td>
+<td align="center">🥇</td>
+<td align="right">601K</td>
+<td align="right">2µs</td>
+<td align="center">±0.01%</td>
+<td align="right">594K</td>
+</tr>
+<tr>
+<td>FNV1 Sync</td>
+<td align="center">-0.67%</td>
+<td align="right">597K</td>
+<td align="right">2µs</td>
+<td align="center">±0.01%</td>
+<td align="right">588K</td>
+</tr>
+<tr>
+<td>MURMUR Sync</td>
+<td align="center">-0.76%</td>
+<td align="right">597K</td>
+<td align="right">2µs</td>
+<td align="center">±0.01%</td>
+<td align="right">592K</td>
+</tr>
+<tr>
+<td>DJB2 Sync</td>
+<td align="center">-1.6%</td>
+<td align="right">592K</td>
+<td align="right">2µs</td>
+<td align="center">±0.02%</td>
+<td align="right">576K</td>
+</tr>
+<tr>
+<td>FNV1 Async</td>
+<td align="center">-24%</td>
+<td align="right">456K</td>
+<td align="right">2µs</td>
+<td align="center">±0.02%</td>
+<td align="right">447K</td>
+</tr>
+<tr>
+<td>CRC32 Async</td>
+<td align="center">-25%</td>
+<td align="right">453K</td>
+<td align="right">2µs</td>
+<td align="center">±0.03%</td>
+<td align="right">426K</td>
+</tr>
+<tr>
+<td>DJB2 Async</td>
+<td align="center">-25%</td>
+<td align="right">451K</td>
+<td align="right">2µs</td>
+<td align="center">±0.02%</td>
+<td align="right">440K</td>
+</tr>
+<tr>
+<td>MURMUR Async</td>
+<td align="center">-28%</td>
+<td align="right">433K</td>
+<td align="right">2µs</td>
+<td align="center">±0.03%</td>
+<td align="right">420K</td>
+</tr>
+<tr>
+<td>SHA-384 Async</td>
+<td align="center">-28%</td>
+<td align="right">432K</td>
+<td align="right">3µs</td>
+<td align="center">±0.03%</td>
+<td align="right">394K</td>
+</tr>
+<tr>
+<td>SHA-256 Async</td>
+<td align="center">-29%</td>
+<td align="right">425K</td>
+<td align="right">3µs</td>
+<td align="center">±0.03%</td>
+<td align="right">393K</td>
+</tr>
+<tr>
+<td>SHA-512 Async</td>
+<td align="center">-29%</td>
+<td align="right">425K</td>
+<td align="right">3µs</td>
+<td align="center">±0.04%</td>
+<td align="right">384K</td>
+</tr>
+</tbody>
+</table>
+<h1 id="migration-from-v2-to-v3">Migration from v2 to v3</h1>
+<p>Hashery v3 contains <strong>no API changes</strong>. All classes, methods, options, hooks, and events work exactly as they did in v2 — no code changes are required. The breaking changes are limited to runtime requirements.</p>
+<h2 id="nodejs-requirements">Node.js Requirements</h2>
+<p>Hashery v3 requires Node.js <code>>= 22.18</code> (v2 supported Node.js <code>>= 20</code>, which has reached end of life). Upgrade your Node.js version if needed, then update the package:</p>
+<pre><code class="hljs language-bash">npm install hashery@3
+</code></pre>
+<h2 id="updated-dependencies">Updated Dependencies</h2>
+<p>The underlying <a href="https://hookified.org"><code>hookified</code></a> dependency has been upgraded from v2 to v3. Its public API is unchanged — the hook event names, the <code>warn</code> event, <code>onHook()</code>/<code>removeHook()</code>, and all <code>HasheryOptions</code> from v2 continue to work without modification. Browser usage is unaffected.</p>
+<h1 id="migration-from-v1-to-v2">Migration from v1 to v2</h1>
+<p>Hashery v2 upgrades its underlying <a href="https://hookified.org"><code>hookified</code></a> dependency from v1 to v2. Because <code>HasheryOptions</code> extends <code>HookifiedOptions</code>, the breaking changes in <code>hookified</code> v2 also apply to Hashery. The hook event names (<code>before:toHash</code>, <code>after:toHash</code>, <code>before:toHashSync</code>, <code>after:toHashSync</code>), the <code>warn</code> event, and the <code>onHook(event, handler)</code> calling style are <strong>unchanged</strong> — existing code that uses these will continue to work without modification.</p>
+<h2 id="changed-defaults">Changed Defaults</h2>
+<p>The most important behavior change is that <code>throwOnEmptyListeners</code> now defaults to <code>true</code>. When a hook handler throws, <code>hookified</code> internally emits an <code>error</code> event; if you have no <code>'error'</code> listener attached, that emit will now re-throw. To restore the v1 behavior, either attach an <code>error</code> listener or disable the option:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// Option A: opt back into v1 behavior</span>
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>({ <span class="hljs-attr">throwOnEmptyListeners</span>: <span class="hljs-literal">false</span> });
+
+<span class="hljs-comment">// Option B: handle error events explicitly (recommended)</span>
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+hashery.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">(<span class="hljs-params">err</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'Hook error:'</span>, err);
+});
+</code></pre>
+<h2 id="renamed-options">Renamed Options</h2>
+<table>
+<thead>
+<tr>
+<th>v1 (deprecated)</th>
+<th>v2 (use this)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>throwHookErrors</code></td>
+<td><code>throwOnHookError</code></td>
+</tr>
+<tr>
+<td><code>logger</code></td>
+<td><code>eventLogger</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// Before (v1)</span>
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>({ <span class="hljs-attr">throwHookErrors</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">logger</span>: myLogger });
+
+<span class="hljs-comment">// After (v2)</span>
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>({ <span class="hljs-attr">throwOnHookError</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">eventLogger</span>: myLogger });
+</code></pre>
+<h2 id="changed-method-signatures">Changed Method Signatures</h2>
+<p><code>removeHook()</code> no longer takes positional <code>(event, handler)</code> arguments. It now accepts the <code>IHook</code> object that <code>onHook()</code> returns:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// Before (v1)</span>
+hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:toHash'</span>, myHandler);
+hashery.<span class="hljs-title function_">removeHook</span>(<span class="hljs-string">'before:toHash'</span>, myHandler);
+
+<span class="hljs-comment">// After (v2) — onHook returns the stored IHook</span>
+<span class="hljs-keyword">const</span> hook = hashery.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:toHash'</span>, myHandler);
+<span class="hljs-keyword">if</span> (hook) {
+  hashery.<span class="hljs-title function_">removeHook</span>(hook);
+}
+</code></pre>
+<h2 id="removed-methods">Removed Methods</h2>
+<ul>
+<li><code>onHookEntry()</code> has been removed. Use <code>onHook()</code> instead.</li>
+</ul>
+<p>For the full list of <code>hookified</code> v2 changes, see the <a href="https://hookified.org">hookified docs</a>.</p>
+<h1 id="code-of-conduct-and-contributing">Code of Conduct and Contributing</h1>
+<p>Please use our <a href="CODE_OF_CONDUCT.md">Code of Conduct</a> and <a href="CONTRIBUTING.md">Contributing</a> guidelines for development and testing. We appreciate your contributions!</p>
+<h1 id="license-and-copyright">License and Copyright</h1>
+<p><a href="LICENSE">MIT</a> &#x26; © <a href="https://jaredwray.com">Jared Wray</a></p>

@@ -1,0 +1,88 @@
+<blockquote>
+<p><strong>Availability:</strong> Registered in both the Node and browser builds.</p>
+</blockquote>
+<h2 id="number">number</h2>
+<h3 id="bytes">{{bytes}}</h3>
+<p>Format a number to it's equivalent in bytes. If a string is passed, it's length will be formatted and returned.</p>
+<p><strong>Examples:</strong></p>
+<ul>
+<li><code>'foo' => 3 B</code></li>
+<li><code>13661855 => 13.66 MB</code></li>
+<li><code>825399 => 825.39 kB</code></li>
+<li><code>1396 => 1.4 kB</code></li>
+</ul>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>number</code> <strong>{Number|String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<h3 id="addcommas">{{addCommas}}</h3>
+<p>Add commas to numbers</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>num</code> <strong>{Number}</strong></li>
+<li><code>returns</code> <strong>{Number}</strong></li>
+</ul>
+<h3 id="phonenumber">{{phoneNumber}}</h3>
+<p>Convert a string or number to a formatted phone number.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>num</code> <strong>{Number|String}</strong>: The phone number to format, e.g. <code>8005551212</code></li>
+<li><code>returns</code> <strong>{Number}</strong>: Formatted phone number: <code>(800) 555-1212</code></li>
+</ul>
+<h3 id="toabbr">{{toAbbr}}</h3>
+<p>Abbreviate numbers to the given number of <code>precision</code>. This is for
+general numbers, not size in bytes.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>number</code> <strong>{Number}</strong></li>
+<li><code>precision</code> <strong>{Number}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<h3 id="toexponential">{{toExponential}}</h3>
+<p>Returns a string representing the given number in exponential notation.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>number</code> <strong>{Number}</strong></li>
+<li><code>fractionDigits</code> <strong>{Number}</strong>: Optional. An integer specifying the number of digits to use after the decimal point. Defaults to as many digits as necessary to specify the number.</li>
+<li><code>returns</code> <strong>{Number}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{toExponential number digits}};
+</code></pre>
+<h3 id="tofixed">{{toFixed}}</h3>
+<p>Formats the given number using fixed-point notation.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>number</code> <strong>{Number}</strong></li>
+<li><code>digits</code> <strong>{Number}</strong>: (Optional) The number of digits to appear after the decimal point; this may be a value between 0 and 20. If this argument is omitted, it is treated as 0.</li>
+<li><code>returns</code> <strong>{String}</strong>: A string representing the given number using fixed-point notation.</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{toFixed "1.1234" 2}}
+//=> '1.12'
+</code></pre>
+<h3 id="tofloat">{{toFloat}}</h3>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>number</code> <strong>{Number}</strong></li>
+<li><code>returns</code> <strong>{Number}</strong></li>
+</ul>
+<h3 id="toint">{{toInt}}</h3>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>number</code> <strong>{Number}</strong></li>
+<li><code>returns</code> <strong>{Number}</strong></li>
+</ul>
+<h3 id="toprecision">{{toPrecision}}</h3>
+<p>Returns a string representing the <code>Number</code> object to the specified precision.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>number</code> <strong>{Number}</strong></li>
+<li><code>precision</code> <strong>{Number}</strong>: (Optional) An integer specifying the number of significant digits. If precison is not between 1 and 100 (inclusive), it will be coerced to <code>0</code>.</li>
+<li><code>returns</code> <strong>{String}</strong>: A string representing a Number object in fixed-point or exponential notation rounded to precision significant digits.</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{toPrecision "1.1234" 2}}
+//=> '1.1'
+</code></pre>

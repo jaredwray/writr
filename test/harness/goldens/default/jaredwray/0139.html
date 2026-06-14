@@ -1,0 +1,410 @@
+<p>import MCPInstall from '@site/src/partials/mcp-install';</p>
+<h2 id="quick-start">Quick start</h2>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li>Node.js version 18+</li>
+</ul>
+<h3 id="install">Install</h3>
+<h4 id="npm">npm</h4>
+<pre><code class="hljs language-sh">npm install --save @openfeature/server-sdk
+</code></pre>
+<div class="markdown-alert markdown-alert-tip" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848.075-.088.147-.173.213-.253.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z"></path></svg>TIP</p>
+<p>This SDK is designed to run in Node.JS. If you're interested in browser support, check out the <a href="/docs/reference/sdks/client/web/">Web SDK</a>.</p>
+</div>
+<h4 id="yarn">yarn</h4>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># yarn requires manual installation of the @openfeature/core peer-dependency</span>
+yarn add @openfeature/server-sdk @openfeature/core
+</code></pre>
+<div class="markdown-alert markdown-alert-note" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>NOTE</p>
+<p><code>@openfeature/core</code> contains common components used by all OpenFeature JavaScript implementations.
+Every SDK version has a requirement on a single, specific version of this dependency.
+For more information, and similar implications on libraries developed with OpenFeature see <a href="#considerations">considerations when extending</a>.</p>
+</div>
+<h3 id="usage">Usage</h3>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/server-sdk'</span>;
+
+<span class="hljs-comment">// Register your feature flag provider</span>
+<span class="hljs-keyword">try</span> {
+  <span class="hljs-keyword">await</span> <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProviderAndWait</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">YourProviderOfChoice</span>());
+} <span class="hljs-keyword">catch</span> (error) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'Failed to initialize provider:'</span>, error);
+}
+
+<span class="hljs-comment">// create a new client</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+
+<span class="hljs-comment">// Evaluate your feature flag</span>
+<span class="hljs-keyword">const</span> v2Enabled = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">'v2_enabled'</span>, <span class="hljs-literal">false</span>);
+
+<span class="hljs-keyword">if</span> (v2Enabled) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"v2 is enabled"</span>);
+}
+</code></pre>
+<h3 id="api-reference">API Reference</h3>
+<p>See <a href="https://open-feature.github.io/js-sdk/modules/_openfeature_server_sdk.html">here</a> for the complete API documentation.</p>
+<h2 id="features">Features</h2>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Features</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✅</td>
+<td><a href="#providers">Providers</a></td>
+<td>Integrate with a commercial, open source, or in-house feature management tool.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#targeting">Targeting</a></td>
+<td>Contextually-aware flag evaluation using <a href="/docs/reference/concepts/evaluation-context">evaluation context</a>.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#hooks">Hooks</a></td>
+<td>Add functionality to various stages of the flag evaluation life-cycle.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#logging">Logging</a></td>
+<td>Integrate with popular logging packages.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#domains">Domains</a></td>
+<td>Logically bind clients with providers.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#eventing">Eventing</a></td>
+<td>React to state changes in the provider or flag management system.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#transaction-context-propagation">Transaction Context Propagation</a></td>
+<td>Set a specific <a href="/docs/reference/concepts/evaluation-context">evaluation context</a> for a transaction (e.g. an HTTP request or a thread)</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#tracking">Tracking</a></td>
+<td>Associate user actions with feature flag evaluations, particularly for A/B testing.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#shutdown">Shutdown</a></td>
+<td>Gracefully clean up a provider during application shutdown.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#extending">Extending</a></td>
+<td>Extend OpenFeature with custom providers and hooks.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#multi-provider">Multi-Provider</a></td>
+<td>Combine multiple providers with configurable evaluation strategies.</td>
+</tr>
+</tbody>
+</table>
+<p>Implemented: ✅ | In-progress: ⚠️ | Not implemented yet: ❌</p>
+<h3 id="providers">Providers</h3>
+<p><a href="/docs/reference/concepts/provider">Providers</a> are an abstraction between a flag management system and the OpenFeature SDK.
+Look <a href="/ecosystem/?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Provider&#x26;instant_search%5BrefinementList%5D%5Bcategory%5D%5B0%5D=Server-side&#x26;instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=JavaScript">here</a> for a complete list of available providers.
+If the provider you're looking for hasn't been created yet, see the <a href="#develop-a-provider">develop a provider</a> section to learn how to build it yourself.</p>
+<p>Once you've added a provider as a dependency, it can be registered with OpenFeature like this:</p>
+<h4 id="awaitable">Awaitable</h4>
+<p>To register a provider and ensure it is ready before further actions are taken, you can use the <code>setProviderAndWait</code> method as shown below:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">await</span> <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProviderAndWait</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">MyProvider</span>());
+</code></pre>
+<h4 id="synchronous">Synchronous</h4>
+<p>To register a provider in a synchronous manner, you can use the <code>setProvider</code> method as shown below:</p>
+<pre><code class="hljs language-ts"><span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProvider</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">MyProvider</span>());
+</code></pre>
+<p>Once the provider has been registered, the status can be tracked using <a href="#eventing">events</a>.</p>
+<p>In some situations, it may be beneficial to register multiple providers in the same application.
+This is possible using <a href="#domains">domains</a>, which is covered in more detail below.</p>
+<h4 id="multi-provider">Multi-Provider</h4>
+<p>The Multi-Provider allows you to use multiple underlying providers as sources of flag data for the OpenFeature server SDK. When a flag is being evaluated, the Multi-Provider will consult each underlying provider it is managing in order to determine the final result. Different evaluation strategies can be defined to control which providers get evaluated and which result is used.</p>
+<p>The Multi-Provider is a powerful tool for performing migrations between flag providers, or combining multiple providers into a single feature flagging interface. For example:</p>
+<ul>
+<li><strong>Migration</strong>: Gradually migrate from one provider to another by serving some flags from your old provider and some from your new provider</li>
+<li><strong>Backup</strong>: Use one provider as a backup for another in case of failures</li>
+<li><strong>Comparison</strong>: Compare results from multiple providers to validate consistency</li>
+<li><strong>Hybrid</strong>: Combine multiple providers to leverage different strengths (e.g., one for simple flags, another for complex targeting)</li>
+</ul>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span>, <span class="hljs-title class_">MultiProvider</span>, <span class="hljs-title class_">FirstMatchStrategy</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/server-sdk'</span>;
+
+<span class="hljs-comment">// Create providers</span>
+<span class="hljs-keyword">const</span> primaryProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">YourPrimaryProvider</span>();
+<span class="hljs-keyword">const</span> backupProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">YourBackupProvider</span>();
+
+<span class="hljs-comment">// Create multi-provider with a strategy</span>
+<span class="hljs-keyword">const</span> multiProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MultiProvider</span>(
+  [primaryProvider, backupProvider],
+  <span class="hljs-keyword">new</span> <span class="hljs-title class_">FirstMatchStrategy</span>()
+);
+
+<span class="hljs-comment">// Register the multi-provider</span>
+<span class="hljs-keyword">await</span> <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProviderAndWait</span>(multiProvider);
+
+<span class="hljs-comment">// Use as normal</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">'my-flag'</span>, <span class="hljs-literal">false</span>);
+</code></pre>
+<p><strong>Available Strategies:</strong></p>
+<ul>
+<li><code>FirstMatchStrategy</code>: Returns the first successful result from the list of providers</li>
+<li><code>ComparisonStrategy</code>: Compares results from multiple providers and can handle discrepancies</li>
+</ul>
+<p><strong>Migration Example:</strong></p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span>, <span class="hljs-title class_">MultiProvider</span>, <span class="hljs-title class_">FirstMatchStrategy</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/server-sdk'</span>;
+
+<span class="hljs-comment">// During migration, serve some flags from the new provider and fallback to the old one</span>
+<span class="hljs-keyword">const</span> newProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NewFlagProvider</span>();
+<span class="hljs-keyword">const</span> oldProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">OldFlagProvider</span>();
+
+<span class="hljs-keyword">const</span> multiProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MultiProvider</span>(
+  [newProvider, oldProvider], <span class="hljs-comment">// New provider is consulted first</span>
+  <span class="hljs-keyword">new</span> <span class="hljs-title class_">FirstMatchStrategy</span>()
+);
+
+<span class="hljs-keyword">await</span> <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProviderAndWait</span>(multiProvider);
+</code></pre>
+<p><strong>Comparison Example:</strong></p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span>, <span class="hljs-title class_">MultiProvider</span>, <span class="hljs-title class_">ComparisonStrategy</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/server-sdk'</span>;
+
+<span class="hljs-comment">// Compare results from two providers for validation</span>
+<span class="hljs-keyword">const</span> providerA = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ProviderA</span>();
+<span class="hljs-keyword">const</span> providerB = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ProviderB</span>();
+
+<span class="hljs-keyword">const</span> multiProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MultiProvider</span>(
+  [
+    { <span class="hljs-attr">provider</span>: providerA },
+    { <span class="hljs-attr">provider</span>: providerB }
+  ],
+  <span class="hljs-keyword">new</span> <span class="hljs-title class_">ComparisonStrategy</span>(providerA, <span class="hljs-function">(<span class="hljs-params">resolutions</span>) =></span> {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">warn</span>(<span class="hljs-string">'Mismatch detected'</span>, resolutions);
+  })
+);
+
+<span class="hljs-keyword">await</span> <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProviderAndWait</span>(multiProvider);
+</code></pre>
+<h3 id="targeting">Targeting</h3>
+<p>Sometimes, the value of a flag must consider some dynamic criteria about the application or user, such as the user's location, IP, email address, or the server's location.
+In OpenFeature, we refer to this as <a href="/specification/glossary#targeting">targeting</a>.
+If the flag management system you're using supports targeting, you can provide the input data using the <a href="/docs/reference/concepts/evaluation-context">evaluation context</a>.</p>
+<pre><code class="hljs language-ts"><span class="hljs-comment">// set a value to the global context</span>
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setContext</span>({ <span class="hljs-attr">region</span>: <span class="hljs-string">"us-east-1"</span> });
+
+<span class="hljs-comment">// set a value to the client context</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+client.<span class="hljs-title function_">setContext</span>({ <span class="hljs-attr">version</span>: process.<span class="hljs-property">env</span>.<span class="hljs-property">APP_VERSION</span> });
+
+<span class="hljs-comment">// set a value to the invocation context</span>
+<span class="hljs-keyword">const</span> requestContext = {
+  <span class="hljs-attr">targetingKey</span>: req.<span class="hljs-property">session</span>.<span class="hljs-property">id</span>,
+  <span class="hljs-attr">email</span>: req.<span class="hljs-property">session</span>.<span class="hljs-property">email</span>,
+  <span class="hljs-attr">product</span>: req.<span class="hljs-property">productId</span>
+};
+
+<span class="hljs-keyword">const</span> boolValue = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">'some-flag'</span>, <span class="hljs-literal">false</span>, requestContext);
+</code></pre>
+<p>Context is merged by the SDK before a flag evaluation occurs.
+The merge order is defined <a href="/specification/sections/evaluation-context#requirement-323">here</a> in the OpenFeature specification.</p>
+<h3 id="hooks">Hooks</h3>
+<p><a href="/docs/reference/concepts/hooks">Hooks</a> allow for custom logic to be added at well-defined points of the flag evaluation life-cycle.
+Look <a href="/ecosystem/?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Hook&#x26;instant_search%5BrefinementList%5D%5Bcategory%5D%5B0%5D=Server-side&#x26;instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=JavaScript">here</a> for a complete list of available hooks.
+If the hook you're looking for hasn't been created yet, see the <a href="#develop-a-hook">develop a hook</a> section to learn how to build it yourself.</p>
+<p>Once you've added a hook as a dependency, it can be registered at the global, client, or flag invocation level.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@openfeature/server-sdk"</span>;
+
+<span class="hljs-comment">// add a hook globally, to run on all evaluations</span>
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">addHooks</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleGlobalHook</span>());
+
+<span class="hljs-comment">// add a hook on this client, to run on all evaluations made by this client</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+client.<span class="hljs-title function_">addHooks</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleClientHook</span>());
+
+<span class="hljs-comment">// add a hook for this evaluation only</span>
+<span class="hljs-keyword">const</span> boolValue = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">"bool-flag"</span>, <span class="hljs-literal">false</span>, { <span class="hljs-attr">hooks</span>: [<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleHook</span>()]});
+</code></pre>
+<h3 id="logging">Logging</h3>
+<p>The Node.JS SDK will log warnings and errors to the console by default.
+This behavior can be overridden by passing a custom logger either globally or per client.
+A custom logger must implement the <a href="https://github.com/open-feature/js-sdk/blob/main/packages/shared/src/logger/logger.ts">Logger interface</a>.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">Logger</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@openfeature/server-sdk"</span>;
+
+<span class="hljs-comment">// The logger can be anything that conforms with the Logger interface</span>
+<span class="hljs-keyword">const</span> <span class="hljs-attr">logger</span>: <span class="hljs-title class_">Logger</span> = <span class="hljs-variable language_">console</span>;
+
+<span class="hljs-comment">// Sets a global logger</span>
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setLogger</span>(logger);
+
+<span class="hljs-comment">// Sets a client logger</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+client.<span class="hljs-title function_">setLogger</span>(logger);
+</code></pre>
+<h3 id="domains">Domains</h3>
+<p>Clients can be assigned to a domain.
+A domain is a logical identifier which can be used to associate clients with a particular provider.
+If a domain has no associated provider, the default provider is used.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span>, <span class="hljs-title class_">InMemoryProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@openfeature/server-sdk"</span>;
+
+<span class="hljs-keyword">const</span> myFlags = {
+  <span class="hljs-string">'v2_enabled'</span>: {
+    <span class="hljs-attr">variants</span>: {
+      <span class="hljs-attr">on</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-attr">off</span>: <span class="hljs-literal">false</span>
+    },
+    <span class="hljs-attr">disabled</span>: <span class="hljs-literal">false</span>,
+    <span class="hljs-attr">defaultVariant</span>: <span class="hljs-string">"on"</span>
+  }
+};
+
+<span class="hljs-comment">// Registering the default provider</span>
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProvider</span>(<span class="hljs-title class_">InMemoryProvider</span>(myFlags));
+<span class="hljs-comment">// Registering a provider to a domain</span>
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setProvider</span>(<span class="hljs-string">"my-domain"</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">InMemoryProvider</span>(someOtherFlags));
+
+<span class="hljs-comment">// A Client bound to the default provider</span>
+<span class="hljs-keyword">const</span> clientWithDefault = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+<span class="hljs-comment">// A Client bound to the InMemoryProvider provider</span>
+<span class="hljs-keyword">const</span> domainScopedClient = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>(<span class="hljs-string">"my-domain"</span>);
+</code></pre>
+<p>Domains can be defined on a provider during registration.
+For more details, please refer to the <a href="#providers">providers</a> section.</p>
+<h3 id="eventing">Eventing</h3>
+<p>Events allow you to react to state changes in the provider or underlying flag management system, such as flag definition changes, provider readiness, or error conditions.
+Initialization events (<code>PROVIDER_READY</code> on success, <code>PROVIDER_ERROR</code> on failure) are dispatched for every provider.
+Some providers support additional events, such as <code>PROVIDER_CONFIGURATION_CHANGED</code>.</p>
+<p>Please refer to the documentation of the provider you're using to see what events are supported.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span>, <span class="hljs-title class_">ProviderEvents</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/server-sdk'</span>;
+
+<span class="hljs-comment">// OpenFeature API</span>
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">addHandler</span>(<span class="hljs-title class_">ProviderEvents</span>.<span class="hljs-property">Ready</span>, <span class="hljs-function">(<span class="hljs-params">eventDetails</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Ready event from: <span class="hljs-subst">${eventDetails?.providerName}</span>:`</span>, eventDetails);
+});
+
+<span class="hljs-comment">// Specific client</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+client.<span class="hljs-title function_">addHandler</span>(<span class="hljs-title class_">ProviderEvents</span>.<span class="hljs-property">Error</span>, <span class="hljs-function">(<span class="hljs-params">eventDetails</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Error event from: <span class="hljs-subst">${eventDetails?.providerName}</span>:`</span>, eventDetails);
+});
+</code></pre>
+<h3 id="transaction-context-propagation">Transaction Context Propagation</h3>
+<p>Transaction context is a container for transaction-specific evaluation context (e.g. user id, user agent, IP).
+Transaction context can be set where specific data is available (e.g. an auth service or request handler) and by using the transaction context propagator it will automatically be applied to all flag evaluations within a transaction (e.g. a request or thread).</p>
+<p>The following example shows an Express middleware using transaction context propagation to propagate the request ip and user id into request scoped transaction context.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> express, { <span class="hljs-title class_">Request</span>, <span class="hljs-title class_">Response</span>, <span class="hljs-title class_">NextFunction</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"express"</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span>, <span class="hljs-title class_">AsyncLocalStorageTransactionContextPropagator</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/server-sdk'</span>;
+
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setTransactionContextPropagator</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">AsyncLocalStorageTransactionContextPropagator</span>())
+
+<span class="hljs-comment">/**
+ * This example is based on an express middleware.
+ */</span>
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">express</span>();
+app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">req</span>: <span class="hljs-title class_">Request</span>, <span class="hljs-attr">res</span>: <span class="hljs-title class_">Response</span>, <span class="hljs-attr">next</span>: <span class="hljs-title class_">NextFunction</span></span>) =></span> {
+  <span class="hljs-keyword">const</span> ip = res.<span class="hljs-property">headers</span>.<span class="hljs-title function_">get</span>(<span class="hljs-string">"X-Forwarded-For"</span>)
+  <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">setTransactionContext</span>({ <span class="hljs-attr">targetingKey</span>: req.<span class="hljs-property">user</span>.<span class="hljs-property">id</span>, <span class="hljs-attr">ipAddress</span>: ip }, <span class="hljs-function">() =></span> {
+    <span class="hljs-comment">// The transaction context is used in any flag evaluation throughout the whole call chain of next</span>
+    <span class="hljs-title function_">next</span>();
+  });
+})
+</code></pre>
+<h3 id="tracking">Tracking</h3>
+<p>The tracking API allows you to use OpenFeature abstractions and objects to associate user actions with feature flag evaluations.
+This is essential for robust experimentation powered by feature flags.
+For example, a flag enhancing the appearance of a UI component might drive user engagement to a new feature; to test this hypothesis, telemetry collected by a <a href="#hooks">hook</a> or <a href="#providers">provider</a> can be associated with telemetry reported in the client's <code>track</code> function.</p>
+<pre><code class="hljs language-ts"><span class="hljs-comment">// flag is evaluated</span>
+<span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">'new-feature'</span>, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// new feature is used and track function is called recording the usage</span>
+<span class="hljs-title function_">useNewFeature</span>();
+client.<span class="hljs-title function_">track</span>(<span class="hljs-string">'new-feature-used'</span>);
+</code></pre>
+<h3 id="shutdown">Shutdown</h3>
+<p>The OpenFeature API provides a close function to perform a cleanup of all registered providers.
+This should only be called when your application is in the process of shutting down.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeature</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/server-sdk'</span>;
+
+<span class="hljs-keyword">await</span> <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">close</span>()
+</code></pre>
+<h2 id="extending">Extending</h2>
+<h3 id="develop-a-provider">Develop a provider</h3>
+<p>To develop a provider, you need to create a new project and include the OpenFeature SDK as a dependency.
+This can be a new repository or included in <a href="https://github.com/open-feature/js-sdk-contrib">the existing contrib repository</a> available under the OpenFeature organization.
+You’ll then need to write the provider by implementing the <a href="https://github.com/open-feature/js-sdk/blob/main/packages/server/src/provider/provider.ts">Provider interface</a> exported by the OpenFeature SDK.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> {
+  <span class="hljs-title class_">AnyProviderEvent</span>,
+  <span class="hljs-title class_">EvaluationContext</span>,
+  <span class="hljs-title class_">Hook</span>,
+  <span class="hljs-title class_">JsonValue</span>,
+  <span class="hljs-title class_">Logger</span>,
+  <span class="hljs-title class_">Provider</span>,
+  <span class="hljs-title class_">ProviderEventEmitter</span>,
+  <span class="hljs-title class_">ResolutionDetails</span>
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/server-sdk'</span>;
+
+<span class="hljs-comment">// implement the provider interface</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyProvider</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Provider</span> {
+  <span class="hljs-comment">// Adds runtime validation that the provider is used with the expected SDK</span>
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">readonly</span> runsOn = <span class="hljs-string">'server'</span>;
+  <span class="hljs-keyword">readonly</span> metadata = {
+    <span class="hljs-attr">name</span>: <span class="hljs-string">'My Provider'</span>,
+  } <span class="hljs-keyword">as</span> <span class="hljs-keyword">const</span>;
+  <span class="hljs-comment">// Optional provider managed hooks</span>
+  <span class="hljs-attr">hooks</span>?: <span class="hljs-title class_">Hook</span>[];
+  <span class="hljs-title function_">resolveBooleanEvaluation</span>(<span class="hljs-attr">flagKey</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">defaultValue</span>: <span class="hljs-built_in">boolean</span>, <span class="hljs-attr">context</span>: <span class="hljs-title class_">EvaluationContext</span>, <span class="hljs-attr">logger</span>: <span class="hljs-title class_">Logger</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">ResolutionDetails</span>&#x3C;<span class="hljs-built_in">boolean</span>>> {
+    <span class="hljs-comment">// code to evaluate a boolean</span>
+  }
+  <span class="hljs-title function_">resolveStringEvaluation</span>(<span class="hljs-attr">flagKey</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">defaultValue</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">context</span>: <span class="hljs-title class_">EvaluationContext</span>, <span class="hljs-attr">logger</span>: <span class="hljs-title class_">Logger</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">ResolutionDetails</span>&#x3C;<span class="hljs-built_in">string</span>>> {
+    <span class="hljs-comment">// code to evaluate a string</span>
+  }
+  <span class="hljs-title function_">resolveNumberEvaluation</span>(<span class="hljs-attr">flagKey</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">defaultValue</span>: <span class="hljs-built_in">number</span>, <span class="hljs-attr">context</span>: <span class="hljs-title class_">EvaluationContext</span>, <span class="hljs-attr">logger</span>: <span class="hljs-title class_">Logger</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">ResolutionDetails</span>&#x3C;<span class="hljs-built_in">number</span>>> {
+    <span class="hljs-comment">// code to evaluate a number</span>
+  }
+  resolveObjectEvaluation&#x3C;T <span class="hljs-keyword">extends</span> <span class="hljs-title class_">JsonValue</span>>(<span class="hljs-attr">flagKey</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">defaultValue</span>: T, <span class="hljs-attr">context</span>: <span class="hljs-title class_">EvaluationContext</span>, <span class="hljs-attr">logger</span>: <span class="hljs-title class_">Logger</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">ResolutionDetails</span>&#x3C;T>> {
+    <span class="hljs-comment">// code to evaluate an object</span>
+  }
+
+  <span class="hljs-comment">// implement with "new OpenFeatureEventEmitter()", and use "emit()" to emit events</span>
+  <span class="hljs-attr">events</span>?: <span class="hljs-title class_">ProviderEventEmitter</span>&#x3C;<span class="hljs-title class_">AnyProviderEvent</span>> | <span class="hljs-literal">undefined</span>;
+
+  initialize?(<span class="hljs-attr">context</span>?: <span class="hljs-title class_">EvaluationContext</span> | <span class="hljs-literal">undefined</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">void</span>> {
+    <span class="hljs-comment">// code to initialize your provider</span>
+  }
+  onClose?(): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">void</span>> {
+    <span class="hljs-comment">// code to shut down your provider</span>
+  }
+}
+</code></pre>
+<blockquote>
+<p>Built a new provider? <a href="https://github.com/open-feature/openfeature.dev/issues/new?assignees=&#x26;labels=provider&#x26;projects=&#x26;template=document-provider.yaml&#x26;title=%5BProvider%5D%3A+">Let us know</a> so we can add it to the docs!</p>
+</blockquote>
+<h3 id="develop-a-hook">Develop a hook</h3>
+<p>To develop a hook, you need to create a new project and include the OpenFeature SDK as a dependency.
+This can be a new repository or included in <a href="https://github.com/open-feature/js-sdk-contrib">the existing contrib repository</a> available under the OpenFeature organization.
+Implement your own hook by conforming to the <a href="https://github.com/open-feature/js-sdk/blob/main/packages/shared/src/hooks/hook.ts">Hook interface</a>.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">Hook</span>, <span class="hljs-title class_">HookContext</span>, <span class="hljs-title class_">EvaluationDetails</span>, <span class="hljs-title class_">FlagValue</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@openfeature/server-sdk"</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyHook</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Hook</span> {
+  <span class="hljs-title function_">after</span>(<span class="hljs-params"><span class="hljs-attr">hookContext</span>: <span class="hljs-title class_">HookContext</span>, <span class="hljs-attr">evaluationDetails</span>: <span class="hljs-title class_">EvaluationDetails</span>&#x3C;<span class="hljs-title class_">FlagValue</span>></span>) {
+    <span class="hljs-comment">// code that runs after flag values are successfully resolved from the provider</span>
+  }
+}
+</code></pre>
+<blockquote>
+<p>Built a new hook? <a href="https://github.com/open-feature/openfeature.dev/issues/new?assignees=&#x26;labels=hook&#x26;projects=&#x26;template=document-hook.yaml&#x26;title=%5BHook%5D%3A+">Let us know</a> so we can add it to the docs!</p>
+</blockquote>
+<h3 id="considerations">Considerations</h3>
+<p>When developing a library based on OpenFeature components, it's important to list the <code>@openfeature/server-sdk</code> as a <code>peerDependency</code> of your package.
+This is a general best-practice when developing JavaScript libraries that have dependencies in common with their consuming application.
+Failing to do this can result in multiple copies of the OpenFeature SDK in the consumer, which can lead to type errors, and broken singleton behavior.
+The <code>@openfeature/core</code> package itself follows this pattern: the <code>@openfeature/server-sdk</code> has a peer dependency on <code>@openfeature/core</code>, and uses whatever copy of that module the consumer has installed (note that NPM installs peers automatically unless <code>--legacy-peer-deps</code> is set, while yarn does not, and PNPM does so based on its configuration).
+When developing such libraries, it's NOT necessary to add a <code>peerDependency</code> on <code>@openfeature/core</code>, since the <code>@openfeature/server-sdk</code> establishes that dependency itself transitively.</p>

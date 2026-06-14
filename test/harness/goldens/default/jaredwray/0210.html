@@ -1,0 +1,23 @@
+<h1 id="how-to-implement-caching-in-javascript">How to Implement Caching in Javascript</h1>
+<h2 id="what-is-a-cache">What is a Cache?</h2>
+<p>A cache is a short-term, high-speed data storage layer that stores a subset of data, enabling it to be retrieved faster than accessing it from its primary storage location. Caching allows you to reuse previously retrieved data efficiently.</p>
+<h2 id="caching-support-in-keyv">Caching Support in Keyv</h2>
+<p>Caching will work in memory by default. However, users can also install a Keyv storage adapter that is initialized with a connection string or any other storage that implements the Map API.</p>
+<h2 id="caching-support-in-keyv-via-cacheable">Caching Support in Keyv via Cacheable</h2>
+<p>We can use Keyv to implement caching using <a href="https://npmjs.org/package/cacheable">Cacheable</a> which is a high performance layer 1 / layer 2 caching framework built on Keyv. It supports multiple storage backends and provides a simple, consistent API for caching.</p>
+<h3 id="example---add-cache-support-to-a-module">Example - Add Cache Support to a Module</h3>
+<ol>
+<li>Install whichever storage adapter you will be using, <code>@keyv/redis</code> in this example</li>
+</ol>
+<pre><code class="hljs language-sh">npm install --save @keyv/redis cacheable
+</code></pre>
+<ol start="2">
+<li>Declare the Module with the cache controlled by a Keyv instance</li>
+</ol>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-comment">// by default layer 1 cache is in-memory. If you want to add a layer 2 cache, you can use KeyvRedis</span>
+<span class="hljs-keyword">const</span> secondary = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({ secondary, <span class="hljs-attr">ttl</span>: <span class="hljs-string">'4h'</span> }); <span class="hljs-comment">// default time to live set to 4 hours</span>
+</code></pre>

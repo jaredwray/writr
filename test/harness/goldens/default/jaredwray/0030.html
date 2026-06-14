@@ -1,62 +1,89 @@
-<h1 id="utilizing-keyv-for-caching-in-nodejs-a-step-by-step-guide">Utilizing Keyv for Caching in Node.js: A Step-by-Step Guide</h1>
-<h2 id="1-setting-up-the-project">1. Setting up the Project</h2>
-<p>To start a new Node.js project, you first need to create a new directory for your project and then initialize a new Node.js project in that directory.</p>
-<pre><code class="hljs language-bash"><span class="hljs-built_in">mkdir</span> keyv-cache-demo
-<span class="hljs-built_in">cd</span> keyv-cache-demo
-npm init -y
+<p><em>Please note: This is a cross post from the <a href="https://www.virtru.com/blog/feature-flags-with-great-power-comes-great-responsibility">Virtru Blog, dated June 16, 2023 by Jake Van Vorhis</a>.</em></p>
+<p>There is an ever-present tradeoff between speed and durability in engineering. Even if you’re cooking up boxed mac n cheese, there’s a spectrum that spans bare minimum utility on one side and needless hyper-optimization to the nth degree on the other side. Nobody wants uncooked noodles with still-dry cheese powder for dinner, but they’re also not expecting a couple of bucks at the grocery store to lead to a Michelin-quality in-home dining experience. It’s about balance.</p>
+<p>As the Engineering org and Product roadmaps grow, the question “How can we make this happen?” needs to become “How can we make this happen quickly while not harming ourselves later on?” There is a priority switch from feature enablement to enablement while minimizing new tech debt. Paying the technical debt credit card bill is always painful, so navigating the speed and durability tradeoff effectively is one of the most important challenges teams face.</p>
+<p>Last year, a feature in one of Virtru’s newer products kicked off an exploration into Feature Flags. What follows is a recap of that journey. I hope you have your cheesy mac ready.</p>
+<h2 id="what-are-feature-flags">What Are Feature Flags?</h2>
+<p><a href="https://www.atlassian.com/continuous-delivery/principles/feature-flags">Feature Flags</a>, also known as feature toggles, are in-code switches that evaluate at runtime based on predefined criteria to switch or toggle various potential code paths depending on flag state. That is a bit of a mouthful, but at the most basic level, they’re a commented out line of code that is intended to be uncommented at a future date when some condition is met is a rudimentary feature flag. A complex feature flag would be one where a code path of the application with specific features is conditionally enabled for a subset of users.</p>
+<p>You’ve most likely seen basic flags like these before:</p>
+<pre><code> // if in development, uncomment this line. Comment out for production!!
+
+// exposeSomethingInDev();
 </code></pre>
-<p>The npm init -y command will create a new package.json file in your project directory with default settings.</p>
-<h2 id="2-installing-keyv-and-its-dependencies">2. Installing Keyv and its Dependencies</h2>
-<p>In this step, you'll install Keyv and a Keyv storage adapter for your project. For this example, we'll use SQLite as the storage adapter.</p>
-<pre><code class="hljs language-bash">npm install keyv @keyv/sqlite
+<p>or</p>
+<pre><code>// when support for xyz is available, update value to true
+
+isXYZAvailable = false;
 </code></pre>
-<p>Keyv supports a variety of storage adapters like Redis, MongoDB, PostgreSQL, etc. Feel free to choose the one that best fits your project requirements.</p>
-<h2 id="3-creating-a-caching-service-example">3. Creating a Caching Service Example</h2>
-<p>In this step, we'll create a simple caching service using Keyv.</p>
-<p>Create a new file named cacheService.js in your project directory and add the following code to that file.</p>
-<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'keyv'</span>);
-<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-string">'sqlite://path/to/database.sqlite'</span>);
+<p>Feature flags can also contain more complex deterministic logic:</p>
+<pre><code>// enables a feature for a paid user but not for a free user
 
-<span class="hljs-keyword">class</span> <span class="hljs-title class_">CacheService</span> {
-  <span class="hljs-keyword">async</span> <span class="hljs-title function_">get</span>(<span class="hljs-params">key</span>) {
-    <span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(key);
-    <span class="hljs-keyword">if</span> (value) {
-      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Cache hit'</span>);
-    } <span class="hljs-keyword">else</span> {
-      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Cache miss'</span>);
-    }
-    <span class="hljs-keyword">return</span> value;
-  }
+if (isPaidUser(user)) {
 
-  <span class="hljs-keyword">async</span> <span class="hljs-title function_">set</span>(<span class="hljs-params">key, value, ttlInMilliseconds</span>) {
-    <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(key, value, ttlInMilliseconds);
-  }
+enableFeature();
 
-  <span class="hljs-keyword">async</span> <span class="hljs-title function_">delete</span>(<span class="hljs-params">key</span>) {
-    <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">delete</span>(key);
-  }
-}
-
-<span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = <span class="hljs-title class_">CacheService</span>;
-</code></pre>
-<p>In this code:</p>
-<p>We're importing the Keyv library and initializing it with an SQLite database.</p>
-<p>We're creating a CacheService class with get, set, and delete methods that wrap the corresponding methods of the Keyv instance. The get method includes console logs to indicate whether the requested value was found in the cache.</p>
-<p>The set method includes an optional ttlInMilliseconds parameter, which you can use to set a time-to-live (TTL) for the cached value.</p>
-<p>Now you have a reusable CacheService that you can use to add caching to your Node.js project.</p>
-<p>Here is how you could use the CacheService:</p>
-<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> <span class="hljs-title class_">CacheService</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./cacheService'</span>);
-<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheService</span>();
-
-<span class="hljs-comment">// Usage</span>
-<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">fetchData</span>(<span class="hljs-params"></span>) {
-  <span class="hljs-keyword">const</span> key = <span class="hljs-string">'myData'</span>;
-  <span class="hljs-keyword">let</span> data = <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(key);
-  <span class="hljs-keyword">if</span> (!data) {
-    data = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getMyData</span>(); <span class="hljs-comment">// Function that fetches your data</span>
-    <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(key, data, <span class="hljs-number">10000</span>); <span class="hljs-comment">// Cache for 10 seconds</span>
-  }
-  <span class="hljs-keyword">return</span> data;
 }
 </code></pre>
-<p>This is a basic example, and Keyv provides a lot of flexibility, so you can modify this service to better suit your project's needs.</p>
+<p>Looking at those examples, you might ask “Well is every if/else code block a feature flag, then?” The distinction that makes a switch a feature flag is if the flag state and therefore the result of the logic is determined at runtime by a source of truth outside the app or service. It’ll usually look something like this:</p>
+<pre><code>const flagVal = await fetchFlagVal(“some-flag”);
+
+if (flagVal) {
+
+renderComponent();
+
+}
+</code></pre>
+<p>Prior to our recent journey, Virtru’s feature flagging approaches varied across products and services, with some teams utilizing homegrown tools, some using environment variables and in-line expressions, and others using nothing at all. Feature flags had not been widely used because there had been no widespread effort to intentionally build and maintain a system and process.</p>
+<p>A way to kick development and release speed up a notch had been found!</p>
+<h2 id="diving-deeper-into-feature-flags">Diving Deeper Into Feature Flags</h2>
+<p>The uses of feature flags are endless, but most fall into one of 4 categories:</p>
+<ol>
+<li><em>Rollout flags</em> - For example, a flag that shows a new variation to 5% of users first, then 25%, then 100%. These flags are usually short-lived and removed once 100% of users have access to the new variation.</li>
+<li><em>Experiment flags</em> - For example, a flag that is designed to gather data or metrics with 50% of users experiencing one flag variation and the other 50% receiving a different variation - more or less A/B testing. These flags are also usually short-lived and removed at the end of the experiment.</li>
+<li><em>Entitlement flags</em> - For example, a flag that provides an admin-level user with additional features. These flags are usually long-lived or permanent, and it should be seriously considered whether or not this is business logic that should not live within a flag. Another example of a kind of entitlement flag could be one that causes a code-split version of an application between one with an SBOM approved for FedRAMP and one with bleeding edge packages not yet FedRAMP-approved.</li>
+<li><em>Operational flags</em> - For example, a kill switch that turns off a resource-intensive feature under times of peak load and scale. These flags are usually long-lived or permanent. An oft-cited example is a recommendation engine on an eCommerce homepage - this might be something worth turning off on Black Friday to drop out every extra millisecond of initial load time.</li>
+</ol>
+<p>A system for maintaining and evaluating Feature Flags can be as simple as a service that responds to every request with a dynamically configured set of flags based on the flag evaluation context. If the flag values are used client-side, that context is probably the user. If the flag values are consumed server-side, the environment and individual requests likely make up the flag evaluation context. Feature flagging can absolutely be a homegrown solution.</p>
+<p>As we went down this road toward a build vs. buy decision, we weighed the paid and open source options and decided to transition away from our semi-utilized legacy homegrown solution to a paid vendor service.</p>
+<p>With a solution in hand, our focus then shifted from what could be done with feature flags to what should be done with them. There’s an old saying that “It’s easy to see everything as a nail when all you have is a hammer,” and it was time to make sure our hammer stayed in the toolbox reserved only for nails.</p>
+<h2 id="proceed-with-caution">Proceed with Caution…</h2>
+<p>Feature flags are powerful tools, and with great power comes great responsibility. Let’s place 5 boolean flags in an application that are utilized to toggle features on or off. The count of potential feature variations within which to handle testing, debugging, and maintenance would not be 5 variations or even 10, but 2^5 or 32 variations. With just one additional flag placed: 64 variations.</p>
+<p>Remember this formula:</p>
+<pre><code>(# of flags)^2 = potential unique code paths
+</code></pre>
+<p>Placing a flag today to quickly implement a new feature could mean double the potential test paths tomorrow for QA. If a team makes that decision 10 times and adds 10 flags, that’s potentially 2^10 different code paths, or 1024 end-to-end variations in behavior. That’s quite a bit of variation to test, debug, maintain, cover in QA, share with Support, communicate to Sales and Product, and so on.</p>
+<p>Being quick to place feature flags and slow to remove them can result in a tangled mess of dead code paths, unmaintainable variation, flaky automated tests, and an unknown thread of execution. We started this blog with mac n cheese but now it’s all about spaghetti (code, that is).</p>
+<p>This isn’t just theoretical, either. Here’s a use case gone wrong: in 2012, a poorly managed feature flag cost the financial firm Knight Capital <a href="https://blog.statsig.com/how-to-lose-half-a-billion-dollars-with-bad-feature-flags-ccebb26adeec">$440M in a span of about 45 minutes</a>. Imagine being the engineer, EM, PM, or whoever that decided to place that flag… Feature Flags make us nimble and unlock significant development speed, but those gains can be instantly erased.</p>
+<p>The takeaway is clear: the exponential growth nature of variability requires thoughtful feature flag management.</p>
+<h2 id="feature-flags-at-virtru">Feature Flags at Virtru</h2>
+<p>For Virtru’s engineering team, development team, and product roadmap, it made sense to go with <a href="https://launchdarkly.com/">LaunchDarkly</a> (LD) as our Flags aaS vendor, buying instead of building this time:</p>
+<ul>
+<li>We have federal customers, and LaunchDarkly has a <a href="https://launchdarkly.com/blog/launchdarkly-fedramp-authorized/">FedRAMP Moderate Authorized</a> offering that complies with our audit requirements as a 3rd party subprocessor.</li>
+<li>LD has a variety of language SDKs for both client-side and server-side flag calls, as well as an API</li>
+<li>LD’s highly available and reliable architecture takes away the need for the Virtru Ops/SRE teams to support such a performant system in a homegrown flagging solution (which frees them up to focus on maintaining great metrics for our actual products and user base)</li>
+<li>LaunchDarkly is featureful, with current flag support of types Boolean, String, Number, and JSON</li>
+<li>LaunchDarkly also has additional features that will be useful to Virtru in the future, such as gathering data on experimentation and rollouts for our Analytics team directly from the flag instead of another tool, and tracking code references to LD flags in configured repos so dead code paths and unused flags can be maintained and eliminated</li>
+<li>An external source of truth in LaunchDarkly means we can make dynamic changes in each environment, including production, without new PRs, builds, deployments, and releases</li>
+</ul>
+<p>That last point should be double-emphasized: with LD as our managed feature flag vendor, we’re actually able to affect the behavior of our products and services in production via flag changes without going through a deployment and release lifecycle. A flag can be placed in an app, a deployment can go out, and there can be no changes to the end-user experience until a feature toggle is flipped later on changing the state. That’s powerful!</p>
+<p>Great! We have a great Flags as a service vendor selected, so we are good to go, right? Not quite. Feedback from different teams across Virtru identified some gaps that still needed to be addressed.</p>
+<p>First, as a security-focused organization, we take a “least access required” approach to all systems and development. While LaunchDarkly has a flag change approval flow and a change audit record within its platform, our Ops/SRE/Security teams had concerns about multiple sources of truth and levels of LD platform access privileges. We already rely on Terraform as an Infrastructure As Code provider and the decision was made to utilize a <a href="https://registry.terraform.io/providers/launchdarkly/launchdarkly/latest/docs">Terraform Provider for LaunchDarkly</a> to manage LD users, projects, and even the individual flags. Most of Virtru’s engineers are not as familiar with Terraform HCL as with YAML, so we implemented a YAML API to allow our engineers to easily maintain LD flags via Terraform in YAML.</p>
+<p>Here is a basic_example feature flag placed via our YAML API with boolean flag values across three environments in a product called tf-example:</p>
+<pre><code>project:
+name: tf-example
+flags:
+- name: 'basic_example'
+    environments:
+        development:
+            variation: true
+        staging:
+            variation: true
+        production:
+            variation: false
+</code></pre>
+<p>The other benefit of managing LD flags through Terraform is the version control that comes with Git. We can maintain an auditable history of changes without adding a separate source of truth from existing infrastructure changes. A change to a flag in any environment is as simple as a quick PR to the relevant YAML file and applying the merged changes via Terraform. The app requires no new release, LD returns the updated value in flag call responses, and code paths dependent upon the flag logic “magically” start to execute.</p>
+<p>This also relieved a second concern our teams had with implementing Feature Flags: misuse of them as holders of business logic (see entitlement flags above) rather than for dark releases or experiments. For example, it would never be a good idea to use a flag to determine if a user is an admin or not, but it’s easy to see how something like that could get considered if flags are ridiculously easy to place. Some friction is definitely a good thing! The PR approval process that is required to define flags through our YAML/Terraform implementation is the perfect amount of friction to relieve this concern.</p>
+<p>The third and final large concern identified was that opting for a paid Feature Flag solution necessitated understanding and mitigating vendor lock-in. LaunchDarkly, like all enterprise SaaS, comes at a price. Our team felt very secure in the value of the offering today, but nobody knows what the future holds. If we utilized LaunchDarkly’s SDKs across all of our products and services and then decided to change vendors for some unknown reason in the future, it would require significant changes in every single location a flag had been placed in a code base.</p>
+<p>There’s always an answer to a problem like that: abstraction. Lucky for us, a fairly new open source project born out of the <a href="https://www.cncf.io/">Cloud Native Computing Foundation</a> (responsible for efforts like <a href="https://kubernetes.io/">Kubernetes</a>, <a href="https://opentelemetry.io/">OpenTelemetry</a>, <a href="https://prometheus.io/">Prometheus</a>, <a href="https://kyverno.io/">Kyverno</a>, and more) was designed specifically for this problem. We utilize some of these tools at Virtru already and are invested in open source both in principle and in practice with OpenTDF, so we were excited about <a href="https://openfeature.dev">OpenFeature</a>.</p>
+<p><a href="https://openfeature.dev">OpenFeature</a> is a vendor-agnostic feature flagging SDK that is nimble enough to handle multiple flag vendors and provide easy switching in the future. OpenFeature promotes minimizing Feature Flag SaaS vendor lock-in as possible, especially since other flag vendors are also likely to match the OpenFeature spec. LaunchDarkly currently supports and maintains a Node.js Provider for OpenFeature and has stated its intention to continue investing effort in the future.</p>
+<p>Our teams are now utilizing OpenFeature to abstract out our paid solution and relieve some of the vendor lock-in, and we’re excited about the future of this open-source project.</p>
+<p>If you’ve read this far, hopefully you’ve learned something about feature flags, how they’re powerful, when and when not to use them, and how we’ve proactively approached their placement and governance at Virtru. This is intended to be a multi-part technical series, so stay tuned for more in the future about Virtru Engineering’s use of Feature Flags.</p>

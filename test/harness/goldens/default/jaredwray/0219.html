@@ -1,0 +1,1761 @@
+<p><img src="site/logo.svg" alt="Hookified"></p>
+<h1 id="event-emitting-and-middleware-hooks">Event Emitting and Middleware Hooks</h1>
+<p><a href="https://github.com/jaredwray/hookified/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/hookified/actions/workflows/tests.yaml/badge.svg" alt="tests"></a>
+<a href="https://github.com/jaredwray/hookified/blob/master/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/hookified" alt="GitHub license"></a>
+<a href="https://codecov.io/gh/jaredwray/hookified"><img src="https://codecov.io/gh/jaredwray/hookified/branch/main/graph/badge.svg?token=nKkVklTFdA" alt="codecov"></a>
+<a href="https://npmjs.com/package/hookified"><img src="https://img.shields.io/npm/dm/hookified" alt="npm"></a>
+<a href="https://www.jsdelivr.com/package/npm/hookified"><img src="https://data.jsdelivr.com/v1/package/npm/hookified/badge" alt="jsDelivr"></a>
+<a href="https://npmjs.com/package/hookified"><img src="https://img.shields.io/npm/v/hookified" alt="npm"></a></p>
+<h1 id="features">Features</h1>
+<ul>
+<li>Simple replacement for EventEmitter</li>
+<li>Async / Sync Middleware Hooks for Your Methods</li>
+<li>ESM / CJS with Types</li>
+<li>Browser Support and Delivered via CDN</li>
+<li>Ability to throw errors in hooks</li>
+<li>Ability to pass in a logger (such as Pino) for errors</li>
+<li>Enforce consistent hook naming conventions with <code>enforceBeforeAfter</code></li>
+<li>Deprecation warnings for hooks with <code>deprecatedHooks</code></li>
+<li>Control deprecated hook execution with <code>allowDeprecated</code></li>
+<li>WaterfallHook for sequential data transformation pipelines</li>
+<li>ParallelHook for concurrent fan-out execution with collected results</li>
+<li>No package dependencies and only 250KB in size</li>
+<li>Fast and Efficient with <a href="#benchmarks">Benchmarks</a></li>
+<li>Maintained on a regular basis!</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#using-it-in-the-browser">Using it in the Browser</a></li>
+<li><a href="#hooks">Hooks</a>
+<ul>
+<li><a href="#standard-hook">Standard Hook</a></li>
+<li><a href="#waterfall-hook">Waterfall Hook</a></li>
+<li><a href="#parallel-hook">Parallel Hook</a></li>
+</ul>
+</li>
+<li><a href="#api---hooks">API - Hooks</a>
+<ul>
+<li><a href="#allowdeprecated">.allowDeprecated</a></li>
+<li><a href="#deprecatedhooks">.deprecatedHooks</a></li>
+<li><a href="#enforcebeforeafter">.enforceBeforeAfter</a></li>
+<li><a href="#eventlogger">.eventLogger</a></li>
+<li><a href="#hooks-1">.hooks</a></li>
+<li><a href="#throwonhookerror">.throwOnHookError</a></li>
+<li><a href="#usehookclone">.useHookClone</a></li>
+<li><a href="#addhookevent-handler">.addHook(event, handler)</a></li>
+<li><a href="#afterhookeventname-args">.afterHook(eventName, ...args)</a></li>
+<li><a href="#beforehookeventname-args">.beforeHook(eventName, ...args)</a></li>
+<li><a href="#callhookeventname-args">.callHook(eventName, ...args)</a></li>
+<li><a href="#clearhooks">.clearHooks()</a></li>
+<li><a href="#gethookid">.getHook(id)</a></li>
+<li><a href="#gethookseventname">.getHooks(eventName)</a></li>
+<li><a href="#hookeventname-args">.hook(eventName, ...args)</a></li>
+<li><a href="#hooksynceventname-args">.hookSync(eventName, ...args)</a></li>
+<li><a href="#onhookhook-options--onhookevent-handler">.onHook(hook, options?) / .onHook(event, handler)</a></li>
+<li><a href="#onhooksarray-options">.onHooks(Array, options?)</a></li>
+<li><a href="#oncehookhook">.onceHook(hook)</a></li>
+<li><a href="#prependhookhook-options">.prependHook(hook, options?)</a></li>
+<li><a href="#prependoncehookhook-options">.prependOnceHook(hook, options?)</a></li>
+<li><a href="#removeeventhookseventname">.removeEventHooks(eventName)</a></li>
+<li><a href="#removehookhook">.removeHook(hook)</a></li>
+<li><a href="#removehookbyidid">.removeHookById(id)</a></li>
+<li><a href="#removehooksarray">.removeHooks(Array)</a></li>
+</ul>
+</li>
+<li><a href="#api---events">API - Events</a>
+<ul>
+<li><a href="#throwonemiterror">.throwOnEmitError</a></li>
+<li><a href="#throwonemptylisteners">.throwOnEmptyListeners</a></li>
+<li><a href="#oneventname-handler">.on(eventName, handler)</a></li>
+<li><a href="#offeventname-handler">.off(eventName, handler)</a></li>
+<li><a href="#emiteventname-args">.emit(eventName, ...args)</a></li>
+<li><a href="#listenerseventname">.listeners(eventName)</a></li>
+<li><a href="#removealllistenerseventname">.removeAllListeners(eventName)</a></li>
+<li><a href="#setmaxlistenersmaxlisteners-number">.setMaxListeners(maxListeners: number)</a></li>
+<li><a href="#onceeventname-handler">.once(eventName, handler)</a></li>
+<li><a href="#prependlistenereventname-handler">.prependListener(eventName, handler)</a></li>
+<li><a href="#prependoncelistenereventname-handler">.prependOnceListener(eventName, handler)</a></li>
+<li><a href="#eventnames">.eventNames()</a></li>
+<li><a href="#listenercounteventname">.listenerCount(eventName?)</a></li>
+<li><a href="#rawlistenerseventname">.rawListeners(eventName?)</a></li>
+</ul>
+</li>
+<li><a href="#logging">Logging</a>
+<ul>
+<li><a href="#how-it-works">How It Works</a></li>
+<li><a href="#setting-up-a-logger">Setting Up a Logger</a></li>
+<li><a href="#usage-example-with-pino">Usage Example with Pino</a></li>
+</ul>
+</li>
+<li><a href="#benchmarks">Benchmarks</a>
+<ul>
+<li><a href="#hooks-2">Hooks</a></li>
+<li><a href="#emits">Emits</a></li>
+</ul>
+</li>
+<li><a href="#migrating-from-v2-to-v3">Migrating from v2 to v3</a>
+<ul>
+<li><a href="#breaking-changes">Breaking Changes</a>
+<ul>
+<li><a href="#nodejs-22180-required">Node.js >=22.18.0 required</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#migrating-from-v1-to-v2">Migrating from v1 to v2</a>
+<ul>
+<li><a href="#quick-guide">Quick Guide</a></li>
+<li><a href="#breaking-changes-1">Breaking Changes</a>
+<ul>
+<li><a href="#throwhookerrors-removed--use-throwonhookerror-instead"><code>throwHookErrors</code> removed — use <code>throwOnHookError</code> instead</a></li>
+<li><a href="#throwonemptylisteners-now-defaults-to-true"><code>throwOnEmptyListeners</code> now defaults to <code>true</code></a></li>
+<li><a href="#logger-renamed-to-eventlogger"><code>logger</code> renamed to <code>eventLogger</code></a></li>
+<li><a href="#maxlisteners-default-changed-from-100-to-0-unlimited-and-no-longer-truncates"><code>maxListeners</code> default changed from <code>100</code> to <code>0</code> (unlimited) and no longer truncates</a></li>
+<li><a href="#onhookentry-removed--use-onhook-instead"><code>onHookEntry</code> removed — use <code>onHook</code> instead</a></li>
+<li><a href="#onhook-signature-updated"><code>onHook</code> signature updated</a></li>
+<li><a href="#hookentry-type-and-hook-type-removed"><code>HookEntry</code> type and <code>Hook</code> type removed</a></li>
+<li><a href="#removehook-and-removehooks-now-return-removed-hooks"><code>removeHook</code> and <code>removeHooks</code> now return removed hooks</a></li>
+<li><a href="#removehook-removehooks-and-gethooks-no-longer-check-for-deprecated-hooks"><code>removeHook</code>, <code>removeHooks</code>, and <code>getHooks</code> no longer check for deprecated hooks</a></li>
+<li><a href="#internal-hook-storage-now-uses-ihook-objects">Internal hook storage now uses <code>IHook</code> objects</a></li>
+<li><a href="#oncehook-prependhook-prependoncehook-and-removehook-now-take-ihook"><code>onceHook</code>, <code>prependHook</code>, <code>prependOnceHook</code>, and <code>removeHook</code> now take <code>IHook</code></a></li>
+<li><a href="#onhook-now-returns-the-stored-hook"><code>onHook</code> now returns the stored hook</a></li>
+</ul>
+</li>
+<li><a href="#new-features">New Features</a>
+<ul>
+<li><a href="#hook-class"><code>Hook</code> class</a></li>
+<li><a href="#waterfallhook-class"><code>WaterfallHook</code> class</a></li>
+<li><a href="#usehookclone-option"><code>useHookClone</code> option</a></li>
+<li><a href="#onhook-now-accepts-onhookoptions"><code>onHook</code> now accepts <code>OnHookOptions</code></a></li>
+<li><a href="#ihook-now-has-an-id-property"><code>IHook</code> now has an <code>id</code> property</a></li>
+<li><a href="#removeeventhooks-method"><code>removeEventHooks</code> method</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#how-to-contribute">How to Contribute</a></li>
+<li><a href="#license-and-copyright">License and Copyright</a></li>
+</ul>
+<h1 id="installation">Installation</h1>
+<pre><code class="hljs language-bash">npm install hookified --save
+</code></pre>
+<h1 id="usage">Usage</h1>
+<p>This was built because we constantly wanted hooks and events extended on libraires we are building such as <a href="https://keyv.org">Keyv</a> and <a href="https://cacheable.org">Cacheable</a>. This is a simple way to add hooks and events to your classes.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hookified</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-variable language_">super</span>();
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">myMethodEmittingEvent</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'message'</span>, <span class="hljs-string">'Hello World'</span>);
+  }
+
+  <span class="hljs-comment">//with hooks you can pass data in and if they are subscribed via onHook they can modify the data</span>
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">myMethodWithHooks</span>(): <span class="hljs-title class_">Promise</span>&#x3C;any> {
+    <span class="hljs-keyword">let</span> data = { <span class="hljs-attr">some</span>: <span class="hljs-string">'data'</span> };
+    <span class="hljs-comment">// do something</span>
+    <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">hook</span>(<span class="hljs-string">'before:myMethod2'</span>, data);
+
+    <span class="hljs-keyword">return</span> data;
+  }
+}
+</code></pre>
+<p>You can even pass in multiple arguments to the hooks:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hookified</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-variable language_">super</span>();
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">myMethodWithHooks</span>(): <span class="hljs-title class_">Promise</span>&#x3C;any> {
+    <span class="hljs-keyword">let</span> data = { <span class="hljs-attr">some</span>: <span class="hljs-string">'data'</span> };
+    <span class="hljs-keyword">let</span> data2 = { <span class="hljs-attr">some</span>: <span class="hljs-string">'data2'</span> };
+    <span class="hljs-comment">// do something</span>
+    <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">hook</span>(<span class="hljs-string">'before:myMethod2'</span>, data, data2);
+
+    <span class="hljs-keyword">return</span> data;
+  }
+}
+</code></pre>
+<h1 id="using-it-in-the-browser">Using it in the Browser</h1>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>></span><span class="javascript">
+  <span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hookified</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'https://cdn.jsdelivr.net/npm/hookified/dist/browser/index.js'</span>;
+
+  <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+    <span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>) {
+      <span class="hljs-variable language_">super</span>();
+    }
+
+    <span class="hljs-keyword">async</span> <span class="hljs-title function_">myMethodEmittingEvent</span>(<span class="hljs-params"></span>) {
+      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'message'</span>, <span class="hljs-string">'Hello World'</span>);
+    }
+
+    <span class="hljs-comment">//with hooks you can pass data in and if they are subscribed via onHook they can modify the data</span>
+    <span class="hljs-keyword">async</span> <span class="hljs-title function_">myMethodWithHooks</span>(): <span class="hljs-title class_">Promise</span>&#x3C;any> {
+      <span class="hljs-keyword">let</span> data = { <span class="hljs-attr">some</span>: <span class="hljs-string">'data'</span> };
+      <span class="hljs-comment">// do something</span>
+      <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">hook</span>(<span class="hljs-string">'before:myMethod2'</span>, data);
+
+      <span class="hljs-keyword">return</span> data;
+    }
+  }
+</span><span class="hljs-tag">&#x3C;/<span class="hljs-name">script</span>></span>
+</code></pre>
+<p>if you are not using ESM modules, you can use the following:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"https://cdn.jsdelivr.net/npm/hookified/dist/browser/index.global.js"</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">script</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">script</span>></span><span class="javascript">
+  <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+    <span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>) {
+      <span class="hljs-variable language_">super</span>();
+    }
+
+    <span class="hljs-keyword">async</span> <span class="hljs-title function_">myMethodEmittingEvent</span>(<span class="hljs-params"></span>) {
+      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'message'</span>, <span class="hljs-string">'Hello World'</span>);
+    }
+
+    <span class="hljs-comment">//with hooks you can pass data in and if they are subscribed via onHook they can modify the data</span>
+    <span class="hljs-keyword">async</span> <span class="hljs-title function_">myMethodWithHooks</span>(): <span class="hljs-title class_">Promise</span>&#x3C;any> {
+      <span class="hljs-keyword">let</span> data = { <span class="hljs-attr">some</span>: <span class="hljs-string">'data'</span> };
+      <span class="hljs-comment">// do something</span>
+      <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">hook</span>(<span class="hljs-string">'before:myMethod2'</span>, data);
+
+      <span class="hljs-keyword">return</span> data;
+    }
+  }
+</span><span class="hljs-tag">&#x3C;/<span class="hljs-name">script</span>></span>
+</code></pre>
+<h1 id="hooks">Hooks</h1>
+<h2 id="standard-hook">Standard Hook</h2>
+<p>The <code>Hook</code> class provides a convenient way to create hook entries. It implements the <code>IHook</code> interface.</p>
+<p>The <code>IHook</code> interface has the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Unique identifier for the hook. Auto-generated via <code>crypto.randomUUID()</code> if not provided.</td>
+</tr>
+<tr>
+<td><code>event</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The event name for the hook.</td>
+</tr>
+<tr>
+<td><code>handler</code></td>
+<td><code>HookFn</code></td>
+<td>Yes</td>
+<td>The handler function for the hook.</td>
+</tr>
+</tbody>
+</table>
+<p>When a hook is registered, it is assigned an <code>id</code> (auto-generated if not provided). The <code>id</code> can be used to look up or remove hooks via <code>getHook</code> and <code>removeHookById</code>. If you register a hook with the same <code>id</code> on the same event, it will replace the existing hook in-place (preserving its position).</p>
+<p><strong>Using the <code>Hook</code> class:</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hook</span>, <span class="hljs-title class_">Hookified</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>) { <span class="hljs-variable language_">super</span>(); }
+}
+
+<span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>();
+
+<span class="hljs-comment">// Without id (auto-generated)</span>
+<span class="hljs-keyword">const</span> hook = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hook</span>(<span class="hljs-string">'before:save'</span>, <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">validated</span> = <span class="hljs-literal">true</span>;
+});
+
+<span class="hljs-comment">// With id</span>
+<span class="hljs-keyword">const</span> hook2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hook</span>(<span class="hljs-string">'after:save'</span>, <span class="hljs-title function_">async</span> (data) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'saved'</span>);
+}, <span class="hljs-string">'my-after-save-hook'</span>);
+
+<span class="hljs-comment">// Register with onHook</span>
+myClass.<span class="hljs-title function_">onHook</span>(hook);
+
+<span class="hljs-comment">// Or register multiple hooks with onHooks</span>
+<span class="hljs-keyword">const</span> hooks = [
+  <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hook</span>(<span class="hljs-string">'before:save'</span>, <span class="hljs-title function_">async</span> (data) => { data.<span class="hljs-property">validated</span> = <span class="hljs-literal">true</span>; }),
+  <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hook</span>(<span class="hljs-string">'after:save'</span>, <span class="hljs-title function_">async</span> (data) => { <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'saved'</span>); }),
+];
+myClass.<span class="hljs-title function_">onHooks</span>(hooks);
+
+<span class="hljs-comment">// Remove hooks</span>
+myClass.<span class="hljs-title function_">removeHooks</span>(hooks);
+</code></pre>
+<p><strong>Using plain TypeScript with the <code>IHook</code> interface:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hookified</span>, <span class="hljs-keyword">type</span> <span class="hljs-title class_">IHook</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>) { <span class="hljs-variable language_">super</span>(); }
+}
+
+<span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>();
+
+<span class="hljs-keyword">const</span> <span class="hljs-attr">hook</span>: <span class="hljs-title class_">IHook</span> = {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'my-validation-hook'</span>, <span class="hljs-comment">// optional — auto-generated if omitted</span>
+  <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+    data.<span class="hljs-property">validated</span> = <span class="hljs-literal">true</span>;
+  },
+};
+
+<span class="hljs-keyword">const</span> stored = myClass.<span class="hljs-title function_">onHook</span>(hook);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stored?.<span class="hljs-property">id</span>); <span class="hljs-comment">// 'my-validation-hook'</span>
+
+<span class="hljs-comment">// Later, remove by id</span>
+myClass.<span class="hljs-title function_">removeHookById</span>(<span class="hljs-string">'my-validation-hook'</span>);
+</code></pre>
+<h2 id="waterfall-hook">Waterfall Hook</h2>
+<p>The <code>WaterfallHook</code> class chains multiple hook functions sequentially in a waterfall pipeline. Each hook receives a context containing the original arguments and the accumulated results from all previous hooks. It implements the <code>IHook</code> interface, so it integrates directly with <code>Hookified.onHook()</code>.</p>
+<p>The <code>WaterfallHookContext</code> has the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>initialArgs</code></td>
+<td><code>any</code></td>
+<td>The original arguments passed to the waterfall execution.</td>
+</tr>
+<tr>
+<td><code>results</code></td>
+<td><code>WaterfallHookResult[]</code></td>
+<td>Array of <code>{ hook, result }</code> entries from previous hooks. Empty for the first hook.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Basic usage:</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">WaterfallHook</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">const</span> wh = <span class="hljs-keyword">new</span> <span class="hljs-title class_">WaterfallHook</span>(<span class="hljs-string">'process'</span>, <span class="hljs-function">(<span class="hljs-params">{ results, initialArgs }</span>) =></span> {
+  <span class="hljs-comment">// Final handler receives all accumulated results</span>
+  <span class="hljs-keyword">const</span> lastResult = results[results.<span class="hljs-property">length</span> - <span class="hljs-number">1</span>].<span class="hljs-property">result</span>;
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Final:'</span>, lastResult);
+});
+
+<span class="hljs-comment">// Add transformation hooks to the pipeline</span>
+wh.<span class="hljs-title function_">addHook</span>(<span class="hljs-function">(<span class="hljs-params">{ initialArgs }</span>) =></span> {
+  <span class="hljs-keyword">return</span> initialArgs + <span class="hljs-number">1</span>; <span class="hljs-comment">// 5 -> 6</span>
+});
+
+wh.<span class="hljs-title function_">addHook</span>(<span class="hljs-function">(<span class="hljs-params">{ results }</span>) =></span> {
+  <span class="hljs-keyword">return</span> results[results.<span class="hljs-property">length</span> - <span class="hljs-number">1</span>].<span class="hljs-property">result</span> * <span class="hljs-number">2</span>; <span class="hljs-comment">// 6 -> 12</span>
+});
+
+<span class="hljs-comment">// Execute the waterfall by calling handler directly</span>
+<span class="hljs-keyword">await</span> wh.<span class="hljs-title function_">handler</span>(<span class="hljs-number">5</span>); <span class="hljs-comment">// Final: 12</span>
+</code></pre>
+<p><strong>Integrating with Hookified via <code>onHook()</code>:</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hookified</span>, <span class="hljs-title class_">WaterfallHook</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>) { <span class="hljs-variable language_">super</span>(); }
+}
+
+<span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>();
+
+<span class="hljs-keyword">const</span> wh = <span class="hljs-keyword">new</span> <span class="hljs-title class_">WaterfallHook</span>(<span class="hljs-string">'save'</span>, <span class="hljs-function">(<span class="hljs-params">{ results }</span>) =></span> {
+  <span class="hljs-keyword">const</span> data = results[results.<span class="hljs-property">length</span> - <span class="hljs-number">1</span>].<span class="hljs-property">result</span>;
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Saved:'</span>, data);
+});
+
+wh.<span class="hljs-title function_">addHook</span>(<span class="hljs-function">(<span class="hljs-params">{ initialArgs }</span>) =></span> {
+  <span class="hljs-keyword">return</span> { ...initialArgs, <span class="hljs-attr">validated</span>: <span class="hljs-literal">true</span> };
+});
+
+wh.<span class="hljs-title function_">addHook</span>(<span class="hljs-function">(<span class="hljs-params">{ results }</span>) =></span> {
+  <span class="hljs-keyword">return</span> { ...results[results.<span class="hljs-property">length</span> - <span class="hljs-number">1</span>].<span class="hljs-property">result</span>, <span class="hljs-attr">timestamp</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() };
+});
+
+<span class="hljs-comment">// Register with Hookified — works because WaterfallHook implements IHook</span>
+myClass.<span class="hljs-title function_">onHook</span>(wh);
+
+<span class="hljs-comment">// When hook() fires, the full waterfall pipeline executes</span>
+<span class="hljs-keyword">await</span> myClass.<span class="hljs-title function_">hook</span>(<span class="hljs-string">'save'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'test'</span> });
+<span class="hljs-comment">// Saved: { name: 'test', validated: true, timestamp: ... }</span>
+</code></pre>
+<p><strong>Managing hooks:</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> wh = <span class="hljs-keyword">new</span> <span class="hljs-title class_">WaterfallHook</span>(<span class="hljs-string">'process'</span>, <span class="hljs-function">(<span class="hljs-params">{ results }</span>) =></span> results);
+
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">myHook</span> = (<span class="hljs-params">{ initialArgs }</span>) => initialArgs + <span class="hljs-number">1</span>;
+wh.<span class="hljs-title function_">addHook</span>(myHook);
+
+<span class="hljs-comment">// Remove a hook by reference</span>
+wh.<span class="hljs-title function_">removeHook</span>(myHook); <span class="hljs-comment">// returns true</span>
+
+<span class="hljs-comment">// Access the hooks array</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(wh.<span class="hljs-property">hooks</span>.<span class="hljs-property">length</span>); <span class="hljs-comment">// 0</span>
+</code></pre>
+<h2 id="parallel-hook">Parallel Hook</h2>
+<p>The <code>ParallelHook</code> class fans a single invocation out to many registered hook functions concurrently via <code>Promise.allSettled</code>, then calls a final handler with the aggregated outcomes — including failures. Unlike <code>WaterfallHook</code>, hooks do not see each other's results: every hook receives the same <code>initialArgs</code> and runs in parallel. It implements the <code>IHook</code> interface, so it integrates directly with <code>Hookified.onHook()</code>, and the final handler still fires whether the hook is invoked directly or through <code>Hookified.hook()</code>.</p>
+<p>Per-hook functions receive a <code>ParallelHookContext</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>initialArgs</code></td>
+<td><code>any</code></td>
+<td>The original arguments passed to <code>handler()</code>. Single argument stays as-is; multiple arguments become an array.</td>
+</tr>
+</tbody>
+</table>
+<p>The final handler receives a <code>ParallelHookFinalContext</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>initialArgs</code></td>
+<td><code>any</code></td>
+<td>Same value passed to every hook.</td>
+</tr>
+<tr>
+<td><code>results</code></td>
+<td><code>Map&#x3C;ParallelHookFn, ParallelHookResult></code></td>
+<td>One entry per registered hook, keyed by the hook function reference for direct lookup. Iteration order matches registration order.</td>
+</tr>
+</tbody>
+</table>
+<p>Each <code>ParallelHookResult</code> value is a discriminated union — failures are reported, not thrown:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>status</code></td>
+<td><code>"fulfilled" | "rejected"</code></td>
+<td>Discriminator.</td>
+</tr>
+<tr>
+<td><code>result</code></td>
+<td><code>TResult</code></td>
+<td>Present when <code>status === "fulfilled"</code>. The value the hook returned. Defaults to <code>any</code>; tighten via the <code>ParallelHook&#x3C;TArgs, TResult></code> generic.</td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td><code>unknown</code></td>
+<td>Present when <code>status === "rejected"</code>. The error or value the hook threw. Stays <code>unknown</code> regardless of the result generic, since errors in JS aren't typed.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Basic usage with <code>Hookified</code>:</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hookified</span>, <span class="hljs-title class_">ParallelHook</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>) { <span class="hljs-variable language_">super</span>(); }
+}
+
+<span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>();
+
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">sendEmailHook</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params">{ initialArgs }</span>) => <span class="hljs-title function_">sendEmail</span>(initialArgs);
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">sendSlackHook</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params">{ initialArgs }</span>) => <span class="hljs-title function_">sendSlack</span>(initialArgs);
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">sendWebhookHook</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params">{ initialArgs }</span>) => <span class="hljs-title function_">sendWebhook</span>(initialArgs);
+
+<span class="hljs-keyword">const</span> ph = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ParallelHook</span>(<span class="hljs-string">'notify'</span>, <span class="hljs-function">(<span class="hljs-params">{ results }</span>) =></span> {
+  <span class="hljs-comment">// Look up a specific hook's outcome by reference</span>
+  <span class="hljs-keyword">const</span> emailOutcome = results.<span class="hljs-title function_">get</span>(sendEmailHook);
+  <span class="hljs-keyword">if</span> (emailOutcome?.<span class="hljs-property">status</span> === <span class="hljs-string">'rejected'</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'email failed:'</span>, emailOutcome.<span class="hljs-property">reason</span>);
+  }
+
+  <span class="hljs-comment">// Or iterate every result in registration order</span>
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [hook, r] <span class="hljs-keyword">of</span> results) {
+    <span class="hljs-keyword">if</span> (r.<span class="hljs-property">status</span> === <span class="hljs-string">'fulfilled'</span>) {
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'ok:'</span>, r.<span class="hljs-property">result</span>);
+    } <span class="hljs-keyword">else</span> {
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'failed:'</span>, r.<span class="hljs-property">reason</span>);
+    }
+  }
+});
+
+ph.<span class="hljs-title function_">addHook</span>(sendEmailHook);
+ph.<span class="hljs-title function_">addHook</span>(sendSlackHook);
+ph.<span class="hljs-title function_">addHook</span>(sendWebhookHook);
+
+<span class="hljs-comment">// Register with Hookified — works because ParallelHook implements IHook</span>
+myClass.<span class="hljs-title function_">onHook</span>(ph);
+
+<span class="hljs-comment">// All three notification hooks fire concurrently, then the final handler runs</span>
+<span class="hljs-keyword">await</span> myClass.<span class="hljs-title function_">hook</span>(<span class="hljs-string">'notify'</span>, { <span class="hljs-attr">user</span>: <span class="hljs-string">'alice'</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">'hi'</span> });
+</code></pre>
+<p><strong>Tightening the result type:</strong></p>
+<p>When every hook returns the same shape, pass generics so <code>result</code> is fully typed instead of <code>any</code>:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">ParallelHook</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">type</span> <span class="hljs-title class_">NotifyArgs</span> = { <span class="hljs-attr">user</span>: <span class="hljs-built_in">string</span>; <span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span> };
+<span class="hljs-keyword">type</span> <span class="hljs-title class_">NotifyResult</span> = { <span class="hljs-attr">channel</span>: <span class="hljs-built_in">string</span>; <span class="hljs-attr">messageId</span>: <span class="hljs-built_in">string</span> };
+
+<span class="hljs-keyword">const</span> ph = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ParallelHook</span>&#x3C;<span class="hljs-title class_">NotifyArgs</span>, <span class="hljs-title class_">NotifyResult</span>>(<span class="hljs-string">'notify'</span>, <span class="hljs-function">(<span class="hljs-params">{ results }</span>) =></span> {
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [, r] <span class="hljs-keyword">of</span> results) {
+    <span class="hljs-keyword">if</span> (r.<span class="hljs-property">status</span> === <span class="hljs-string">'fulfilled'</span>) {
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`<span class="hljs-subst">${r.result.channel}</span>: <span class="hljs-subst">${r.result.messageId}</span>`</span>);
+    } <span class="hljs-keyword">else</span> {
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(r.<span class="hljs-property">reason</span>); <span class="hljs-comment">// still `unknown` — errors aren't typed</span>
+    }
+  }
+});
+
+ph.<span class="hljs-title function_">addHook</span>(<span class="hljs-title function_">async</span> ({ initialArgs }) => ({ <span class="hljs-attr">channel</span>: <span class="hljs-string">'email'</span>, <span class="hljs-attr">messageId</span>: <span class="hljs-string">'1'</span> }));
+</code></pre>
+<p><strong>Managing hooks:</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ph = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ParallelHook</span>(<span class="hljs-string">'process'</span>, <span class="hljs-function">(<span class="hljs-params">{ results }</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(results.<span class="hljs-property">size</span>); <span class="hljs-comment">// number of hooks that ran</span>
+});
+
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">myHook</span> = (<span class="hljs-params">{ initialArgs }</span>) => initialArgs + <span class="hljs-number">1</span>;
+ph.<span class="hljs-title function_">addHook</span>(myHook);
+
+<span class="hljs-comment">// Remove a hook by reference</span>
+ph.<span class="hljs-title function_">removeHook</span>(myHook); <span class="hljs-comment">// returns true</span>
+
+<span class="hljs-comment">// Access the hooks array</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(ph.<span class="hljs-property">hooks</span>.<span class="hljs-property">length</span>); <span class="hljs-comment">// 0</span>
+</code></pre>
+<h1 id="api---hooks">API - Hooks</h1>
+<blockquote>
+<p>All examples below assume the following setup unless otherwise noted:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hookified</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">options</span>) { <span class="hljs-variable language_">super</span>(options); }
+}
+<span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>();
+</code></pre>
+</blockquote>
+<h2 id="allowdeprecated">.allowDeprecated</h2>
+<p>Controls whether deprecated hooks are allowed to be registered and executed. Default is true. When set to false, deprecated hooks will still emit warnings but will be prevented from registration and execution.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hookified</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">const</span> deprecatedHooks = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>([
+  [<span class="hljs-string">'oldHook'</span>, <span class="hljs-string">'Use newHook instead'</span>]
+]);
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-variable language_">super</span>({ deprecatedHooks, <span class="hljs-attr">allowDeprecated</span>: <span class="hljs-literal">false</span> });
+  }
+}
+
+<span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>();
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-property">allowDeprecated</span>); <span class="hljs-comment">// false</span>
+
+<span class="hljs-comment">// Listen for deprecation warnings (still emitted even when blocked)</span>
+myClass.<span class="hljs-title function_">on</span>(<span class="hljs-string">'warn'</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Warning: <span class="hljs-subst">${event.message}</span>`</span>);
+});
+
+<span class="hljs-comment">// Try to register a deprecated hook - will emit warning but not register</span>
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'oldHook'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'This will never execute'</span>);
+}});
+<span class="hljs-comment">// Output: Warning: Hook "oldHook" is deprecated: Use newHook instead</span>
+
+<span class="hljs-comment">// Verify hook was not registered</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-title function_">getHooks</span>(<span class="hljs-string">'oldHook'</span>)); <span class="hljs-comment">// undefined</span>
+
+<span class="hljs-comment">// Try to execute a deprecated hook - will emit warning but not execute</span>
+<span class="hljs-keyword">await</span> myClass.<span class="hljs-title function_">hook</span>(<span class="hljs-string">'oldHook'</span>);
+<span class="hljs-comment">// Output: Warning: Hook "oldHook" is deprecated: Use newHook instead</span>
+<span class="hljs-comment">// (but no handlers execute)</span>
+
+<span class="hljs-comment">// Non-deprecated hooks work normally</span>
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'validHook'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'This works fine'</span>);
+}});
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-title function_">getHooks</span>(<span class="hljs-string">'validHook'</span>)); <span class="hljs-comment">// [handler function]</span>
+
+<span class="hljs-comment">// You can dynamically change the setting</span>
+myClass.<span class="hljs-property">allowDeprecated</span> = <span class="hljs-literal">true</span>;
+
+<span class="hljs-comment">// Now deprecated hooks can be registered and executed</span>
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'oldHook'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Now this works'</span>);
+}});
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-title function_">getHooks</span>(<span class="hljs-string">'oldHook'</span>)); <span class="hljs-comment">// [handler function]</span>
+</code></pre>
+<p><strong>Behavior when <code>allowDeprecated</code> is false:</strong></p>
+<ul>
+<li><strong>Registration</strong>: All hook registration methods (<code>onHook</code>, <code>addHook</code>, <code>prependHook</code>, etc.) will emit warnings but skip registration</li>
+<li><strong>Execution</strong>: Hook execution methods (<code>hook</code>, <code>callHook</code>) will emit warnings but skip execution</li>
+<li><strong>Removal/Reading</strong>: <code>removeHook</code>, <code>removeHooks</code>, and <code>getHooks</code> always work regardless of deprecation status</li>
+<li><strong>Warnings</strong>: Deprecation warnings are always emitted regardless of <code>allowDeprecated</code> setting</li>
+</ul>
+<p><strong>Use cases:</strong></p>
+<ul>
+<li><strong>Development</strong>: Keep <code>allowDeprecated: true</code> to maintain functionality while seeing warnings</li>
+<li><strong>Testing</strong>: Set <code>allowDeprecated: false</code> to ensure no deprecated hooks are accidentally used</li>
+<li><strong>Migration</strong>: Gradually disable deprecated hooks during API transitions</li>
+<li><strong>Production</strong>: Disable deprecated hooks to prevent legacy code execution</li>
+</ul>
+<h2 id="deprecatedhooks">.deprecatedHooks</h2>
+<p>A Map of deprecated hook names to deprecation messages. When a deprecated hook is used, a warning will be emitted via the 'warn' event and logged to the logger (if available). Default is an empty Map.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hookified</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-comment">// Define deprecated hooks with custom messages</span>
+<span class="hljs-keyword">const</span> deprecatedHooks = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>([
+  [<span class="hljs-string">'oldHook'</span>, <span class="hljs-string">'Use newHook instead'</span>],
+  [<span class="hljs-string">'legacyMethod'</span>, <span class="hljs-string">'This hook will be removed in v2.0'</span>],
+  [<span class="hljs-string">'deprecatedFeature'</span>, <span class="hljs-string">''</span>] <span class="hljs-comment">// Empty message - will just say "deprecated"</span>
+]);
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-variable language_">super</span>({ deprecatedHooks });
+  }
+}
+
+<span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>();
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-property">deprecatedHooks</span>); <span class="hljs-comment">// Map with deprecated hooks</span>
+
+<span class="hljs-comment">// Listen for deprecation warnings</span>
+myClass.<span class="hljs-title function_">on</span>(<span class="hljs-string">'warn'</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Deprecation warning: <span class="hljs-subst">${event.message}</span>`</span>);
+  <span class="hljs-comment">// event.hook contains the hook name</span>
+  <span class="hljs-comment">// event.message contains the full warning message</span>
+});
+
+<span class="hljs-comment">// Using a deprecated hook will emit warnings</span>
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'oldHook'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'This hook is deprecated'</span>);
+}});
+<span class="hljs-comment">// Output: Hook "oldHook" is deprecated: Use newHook instead</span>
+
+<span class="hljs-comment">// Using a deprecated hook with empty message</span>
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'deprecatedFeature'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'This hook is deprecated'</span>);
+}});
+<span class="hljs-comment">// Output: Hook "deprecatedFeature" is deprecated</span>
+
+<span class="hljs-comment">// You can also set deprecated hooks dynamically</span>
+myClass.<span class="hljs-property">deprecatedHooks</span>.<span class="hljs-title function_">set</span>(<span class="hljs-string">'anotherOldHook'</span>, <span class="hljs-string">'Please migrate to the new API'</span>);
+
+<span class="hljs-comment">// Works with logger if provided</span>
+<span class="hljs-keyword">import</span> pino <span class="hljs-keyword">from</span> <span class="hljs-string">'pino'</span>;
+<span class="hljs-keyword">const</span> logger = <span class="hljs-title function_">pino</span>();
+
+<span class="hljs-keyword">const</span> myClassWithLogger = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hookified</span>({
+  deprecatedHooks,
+  <span class="hljs-attr">eventLogger</span>: logger
+});
+
+<span class="hljs-comment">// Deprecation warnings will be logged to logger.warn</span>
+</code></pre>
+<p>The deprecation warning system applies to the following hook-related methods:</p>
+<ul>
+<li>Registration: <code>onHook()</code>, <code>addHook()</code>, <code>onHooks()</code>, <code>prependHook()</code>, <code>onceHook()</code>, <code>prependOnceHook()</code></li>
+<li>Execution: <code>hook()</code>, <code>callHook()</code></li>
+</ul>
+<p>Note: <code>getHooks()</code>, <code>removeHook()</code>, and <code>removeHooks()</code> do not check for deprecated hooks and always operate normally.</p>
+<p>Deprecation warnings are emitted in two ways:</p>
+<ol>
+<li><strong>Event</strong>: A 'warn' event is emitted with <code>{ hook: string, message: string }</code></li>
+<li><strong>Logger</strong>: Logged to <code>eventLogger.warn()</code> if an <code>eventLogger</code> is configured and has a <code>warn</code> method</li>
+</ol>
+<h2 id="enforcebeforeafter">.enforceBeforeAfter</h2>
+<p>If set to true, enforces that all hook names must start with 'before' or 'after'. This is useful for maintaining consistent hook naming conventions in your application. Default is false.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hookified</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-variable language_">super</span>({ <span class="hljs-attr">enforceBeforeAfter</span>: <span class="hljs-literal">true</span> });
+  }
+}
+
+<span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>();
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-property">enforceBeforeAfter</span>); <span class="hljs-comment">// true</span>
+
+<span class="hljs-comment">// These will work fine</span>
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'beforeSave'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> () => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Before save hook'</span>);
+}});
+
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'afterSave'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> () => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'After save hook'</span>);
+}});
+
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:validation'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> () => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Before validation hook'</span>);
+}});
+
+<span class="hljs-comment">// This will throw an error</span>
+<span class="hljs-keyword">try</span> {
+  myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'customEvent'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> () => {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'This will not work'</span>);
+  }});
+} <span class="hljs-keyword">catch</span> (error) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(error.<span class="hljs-property">message</span>); <span class="hljs-comment">// Hook event "customEvent" must start with "before" or "after" when enforceBeforeAfter is enabled</span>
+}
+
+<span class="hljs-comment">// You can also change it dynamically</span>
+myClass.<span class="hljs-property">enforceBeforeAfter</span> = <span class="hljs-literal">false</span>;
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'customEvent'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> () => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'This will work now'</span>);
+}});
+</code></pre>
+<p>The validation applies to all hook-related methods:</p>
+<ul>
+<li><code>onHook()</code>, <code>addHook()</code>, <code>onHooks()</code></li>
+<li><code>prependHook()</code>, <code>onceHook()</code>, <code>prependOnceHook()</code></li>
+<li><code>hook()</code>, <code>callHook()</code></li>
+<li><code>getHooks()</code>, <code>removeHook()</code>, <code>removeHooks()</code></li>
+</ul>
+<p>Note: The <code>beforeHook()</code> and <code>afterHook()</code> helper methods automatically generate proper hook names and work regardless of the <code>enforceBeforeAfter</code> setting.</p>
+<h2 id="eventlogger">.eventLogger</h2>
+<p>If set, errors thrown in hooks will be logged to the logger. If not set, errors will be only emitted.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> pino <span class="hljs-keyword">from</span> <span class="hljs-string">'pino'</span>;
+
+<span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>({ <span class="hljs-attr">eventLogger</span>: <span class="hljs-title function_">pino</span>() });
+
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> () => {
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'error'</span>);
+}});
+
+<span class="hljs-comment">// when you call before:myMethod2 it will log the error to the logger</span>
+<span class="hljs-keyword">await</span> myClass.<span class="hljs-title function_">hook</span>(<span class="hljs-string">'before:myMethod2'</span>);
+</code></pre>
+<h2 id="hooks-1">.hooks</h2>
+<p>Get all hooks. Returns a <code>Map&#x3C;string, IHook[]></code> where each key is an event name and the value is an array of <code>IHook</code> objects.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data'</span>;
+}});
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-property">hooks</span>); <span class="hljs-comment">// Map { 'before:myMethod2' => [{ event: 'before:myMethod2', handler: [Function] }] }</span>
+</code></pre>
+<h2 id="throwonhookerror">.throwOnHookError</h2>
+<p>If set to true, errors thrown in hooks will be thrown. If set to false, errors will be only emitted.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>({ <span class="hljs-attr">throwOnHookError</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-property">throwOnHookError</span>); <span class="hljs-comment">// true</span>
+
+<span class="hljs-keyword">try</span> {
+  myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'error-event'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> () => {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'error'</span>);
+  }});
+
+  <span class="hljs-keyword">await</span> myClass.<span class="hljs-title function_">hook</span>(<span class="hljs-string">'error-event'</span>);
+} <span class="hljs-keyword">catch</span> (error) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(error.<span class="hljs-property">message</span>); <span class="hljs-comment">// error</span>
+}
+
+myClass.<span class="hljs-property">throwOnHookError</span> = <span class="hljs-literal">false</span>;
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-property">throwOnHookError</span>); <span class="hljs-comment">// false</span>
+</code></pre>
+<h2 id="usehookclone">.useHookClone</h2>
+<p>Controls whether hook objects are cloned before storing internally. Default is <code>true</code>. When <code>true</code>, a shallow copy of the <code>IHook</code> object is stored, preventing external mutation from affecting registered hooks. When <code>false</code>, the original reference is stored directly.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>({ <span class="hljs-attr">useHookClone</span>: <span class="hljs-literal">false</span> });
+
+<span class="hljs-keyword">const</span> hook = { <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {} };
+myClass.<span class="hljs-title function_">onHook</span>(hook);
+
+<span class="hljs-comment">// With useHookClone: false, the stored hook is the same reference</span>
+<span class="hljs-keyword">const</span> storedHooks = myClass.<span class="hljs-title function_">getHooks</span>(<span class="hljs-string">'before:save'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(storedHooks[<span class="hljs-number">0</span>] === hook); <span class="hljs-comment">// true</span>
+
+<span class="hljs-comment">// You can dynamically change the setting</span>
+myClass.<span class="hljs-property">useHookClone</span> = <span class="hljs-literal">true</span>;
+</code></pre>
+<h2 id="addhookevent-handler">.addHook(event, handler)</h2>
+<p>This is an alias for <code>.onHook()</code> that takes an event name and handler function directly.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">addHook</span>(<span class="hljs-string">'before:myMethod2'</span>, <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data'</span>;
+});
+</code></pre>
+<h2 id="afterhookeventname-args">.afterHook(eventName, ...args)</h2>
+<p>This is a helper function that will prepend a hook name with <code>after:</code>.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Inside your class method — the event name will be `after:myMethod2`</span>
+<span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">afterHook</span>(<span class="hljs-string">'myMethod2'</span>, data);
+</code></pre>
+<h2 id="beforehookeventname-args">.beforeHook(eventName, ...args)</h2>
+<p>This is a helper function that will prepend a hook name with <code>before:</code>.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Inside your class method — the event name will be `before:myMethod2`</span>
+<span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">beforeHook</span>(<span class="hljs-string">'myMethod2'</span>, data);
+</code></pre>
+<h2 id="callhookeventname-args">.callHook(eventName, ...args)</h2>
+<p>This is an alias for <code>.hook(eventName, ...args)</code> for backwards compatibility.</p>
+<h2 id="clearhooks">.clearHooks()</h2>
+<p>Clear all hooks across all events.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data'</span>;
+}});
+
+myClass.<span class="hljs-title function_">clearHooks</span>();
+</code></pre>
+<h2 id="gethookid">.getHook(id)</h2>
+<p>Get a specific hook by <code>id</code>, searching across all events. Returns the <code>IHook</code> if found, or <code>undefined</code>.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>();
+
+myClass.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'my-hook'</span>,
+  <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => { data.<span class="hljs-property">validated</span> = <span class="hljs-literal">true</span>; },
+});
+
+<span class="hljs-keyword">const</span> hook = myClass.<span class="hljs-title function_">getHook</span>(<span class="hljs-string">'my-hook'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hook?.<span class="hljs-property">id</span>); <span class="hljs-comment">// 'my-hook'</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hook?.<span class="hljs-property">event</span>); <span class="hljs-comment">// 'before:save'</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hook?.<span class="hljs-property">handler</span>); <span class="hljs-comment">// [Function]</span>
+</code></pre>
+<h2 id="gethookseventname">.getHooks(eventName)</h2>
+<p>Get all hooks for an event. Returns an <code>IHook[]</code> array, or <code>undefined</code> if no hooks are registered for the event.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data'</span>;
+}});
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-title function_">getHooks</span>(<span class="hljs-string">'before:myMethod2'</span>)); <span class="hljs-comment">// [{ event: 'before:myMethod2', handler: [Function] }]</span>
+</code></pre>
+<h2 id="hookeventname-args">.hook(eventName, ...args)</h2>
+<p>Run a hook event.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Inside your class method</span>
+<span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">hook</span>(<span class="hljs-string">'before:myMethod2'</span>, data);
+</code></pre>
+<p>You can pass multiple arguments to the hook:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Inside your class method</span>
+<span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">hook</span>(<span class="hljs-string">'before:myMethod2'</span>, data, data2);
+
+<span class="hljs-comment">// The handler receives all arguments</span>
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data, data2) => {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data'</span>;
+  data2.<span class="hljs-property">some</span> = <span class="hljs-string">'new data2'</span>;
+}});
+</code></pre>
+<h2 id="hooksynceventname-args">.hookSync(eventName, ...args)</h2>
+<p>Run a hook event synchronously. Async handlers (functions declared with <code>async</code> keyword) are silently skipped and only synchronous handlers are executed.</p>
+<blockquote>
+<p><strong>Note:</strong> The <code>.hook()</code> method is preferred as it executes both sync and async functions. Use <code>.hookSync()</code> only when you specifically need synchronous execution.</p>
+</blockquote>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// This sync handler will execute</span>
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-function">(<span class="hljs-params">data</span>) =></span> {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'modified'</span>;
+}});
+
+<span class="hljs-comment">// This async handler will be silently skipped</span>
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'will not run'</span>;
+}});
+
+<span class="hljs-comment">// Inside your class method</span>
+<span class="hljs-variable language_">this</span>.<span class="hljs-title function_">hookSync</span>(<span class="hljs-string">'before:myMethod'</span>, data); <span class="hljs-comment">// Only sync handler runs</span>
+</code></pre>
+<h2 id="onhookhook-options--onhookevent-handler">.onHook(hook, options?) / .onHook(event, handler)</h2>
+<p>Subscribe to a hook event. Supports two calling styles:</p>
+<ul>
+<li><strong>Object form</strong>: <code>onHook(hook, options?)</code> — takes an <code>IHook</code> object and an optional <code>OnHookOptions</code> object.</li>
+<li><strong>Shorthand form</strong>: <code>onHook(event, handler)</code> — takes an event name string and a handler function (v1-compatible).</li>
+</ul>
+<p>Returns the stored <code>IHook</code> (with <code>id</code> assigned), or <code>undefined</code> if the hook was blocked by deprecation. The returned reference is the exact object stored internally, which is useful for later removal with <code>.removeHook()</code> or <code>.removeHookById()</code>. To register multiple hooks at once, use <code>.onHooks()</code>.</p>
+<p>If the hook has an <code>id</code>, it will be used as-is. If not, a UUID is auto-generated via <code>crypto.randomUUID()</code>. If a hook with the same <code>id</code> already exists on the same event, it will be <strong>replaced in-place</strong> (preserving its position in the array).</p>
+<p><strong>Options (<code>OnHookOptions</code>)</strong>:</p>
+<ul>
+<li><code>useHookClone</code> (boolean, optional) — Per-call override for the instance-level <code>useHookClone</code> setting. When <code>true</code>, the hook object is cloned before storing. When <code>false</code>, the original reference is stored directly. When omitted, falls back to the instance-level setting.</li>
+<li><code>position</code> (<code>"Top"</code> | <code>"Bottom"</code> | <code>number</code>, optional) — Controls where the hook is inserted in the handlers array. <code>"Top"</code> inserts at the beginning, <code>"Bottom"</code> appends to the end (default). A number inserts at that index, clamped to the array bounds.</li>
+</ul>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Single hook — returns the stored IHook with id</span>
+<span class="hljs-keyword">const</span> stored = myClass.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+    data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data'</span>;
+  },
+});
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stored.<span class="hljs-property">id</span>); <span class="hljs-comment">// auto-generated UUID</span>
+
+<span class="hljs-comment">// With a custom id</span>
+<span class="hljs-keyword">const</span> stored2 = myClass.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'my-validation'</span>,
+  <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => { data.<span class="hljs-property">validated</span> = <span class="hljs-literal">true</span>; },
+});
+
+<span class="hljs-comment">// Replace hook by registering with the same id</span>
+myClass.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'my-validation'</span>,
+  <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => { data.<span class="hljs-property">validated</span> = <span class="hljs-literal">true</span>; data.<span class="hljs-property">extra</span> = <span class="hljs-literal">true</span>; },
+});
+<span class="hljs-comment">// Only one hook with id 'my-validation' exists, at the same position</span>
+
+<span class="hljs-comment">// Remove by id</span>
+myClass.<span class="hljs-title function_">removeHookById</span>(<span class="hljs-string">'my-validation'</span>);
+
+<span class="hljs-comment">// Use the returned reference to remove the hook later</span>
+myClass.<span class="hljs-title function_">removeHook</span>(stored);
+
+<span class="hljs-comment">// Override useHookClone per-call — store original reference even though instance default is true</span>
+<span class="hljs-keyword">const</span> hook = { <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {} };
+myClass.<span class="hljs-title function_">onHook</span>(hook, { <span class="hljs-attr">useHookClone</span>: <span class="hljs-literal">false</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-title function_">getHooks</span>(<span class="hljs-string">'before:save'</span>)[<span class="hljs-number">0</span>] === hook); <span class="hljs-comment">// true</span>
+
+<span class="hljs-comment">// Insert at the top of the handlers array</span>
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {} }, { <span class="hljs-attr">position</span>: <span class="hljs-string">'Top'</span> });
+
+<span class="hljs-comment">// Insert at a specific index</span>
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {} }, { <span class="hljs-attr">position</span>: <span class="hljs-number">1</span> });
+
+<span class="hljs-comment">// Shorthand form — pass event name and handler directly (v1-compatible)</span>
+myClass.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:save'</span>, <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">validated</span> = <span class="hljs-literal">true</span>;
+});
+</code></pre>
+<h2 id="onhooksarray-options">.onHooks(Array, options?)</h2>
+<p>Subscribe to multiple hook events at once. Takes an array of <code>IHook</code> objects and an optional <code>OnHookOptions</code> object that is applied to each hook.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> hooks = [
+  {
+    <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethodWithHooks'</span>,
+    <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+      data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data1'</span>;
+    },
+  },
+  {
+    <span class="hljs-attr">event</span>: <span class="hljs-string">'after:myMethodWithHooks'</span>,
+    <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+      data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data2'</span>;
+    },
+  },
+];
+myClass.<span class="hljs-title function_">onHooks</span>(hooks);
+
+<span class="hljs-comment">// With options — insert all hooks at the top</span>
+myClass.<span class="hljs-title function_">onHooks</span>(hooks, { <span class="hljs-attr">position</span>: <span class="hljs-string">'Top'</span> });
+
+<span class="hljs-comment">// With options — skip cloning for all hooks in this batch</span>
+myClass.<span class="hljs-title function_">onHooks</span>(hooks, { <span class="hljs-attr">useHookClone</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<h2 id="oncehookhook">.onceHook(hook)</h2>
+<p>Subscribe to a hook event once. Takes an <code>IHook</code> object with <code>event</code> and <code>handler</code> properties. After the handler is called once, it is automatically removed.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">onceHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data'</span>;
+}});
+
+<span class="hljs-keyword">await</span> myClass.<span class="hljs-title function_">hook</span>(<span class="hljs-string">'before:myMethod2'</span>, data); <span class="hljs-comment">// handler runs once then is removed</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-property">hooks</span>.<span class="hljs-property">size</span>); <span class="hljs-comment">// 0</span>
+</code></pre>
+<h2 id="prependhookhook-options">.prependHook(hook, options?)</h2>
+<p>Subscribe to a hook event before all other hooks. Takes an <code>IHook</code> object with <code>event</code> and <code>handler</code> properties. Returns the stored <code>IHook</code> (with generated <code>id</code>), or <code>undefined</code> if blocked by deprecation. Equivalent to calling <code>onHook(hook, { position: "Top" })</code>.</p>
+<p>An optional <code>PrependHookOptions</code> object can be passed with:</p>
+<ul>
+<li><code>useHookClone</code> (boolean) — per-call override for hook cloning behavior</li>
+</ul>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data'</span>;
+}});
+myClass.<span class="hljs-title function_">prependHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'will run before new data'</span>;
+}});
+</code></pre>
+<h2 id="prependoncehookhook-options">.prependOnceHook(hook, options?)</h2>
+<p>Subscribe to a hook event before all other hooks. Takes an <code>IHook</code> object with <code>event</code> and <code>handler</code> properties. After the handler is called once, it is automatically removed. Returns the stored <code>IHook</code> (with generated <code>id</code>), or <code>undefined</code> if blocked by deprecation.</p>
+<p>An optional <code>PrependHookOptions</code> object can be passed with:</p>
+<ul>
+<li><code>useHookClone</code> (boolean) — per-call override for hook cloning behavior</li>
+</ul>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data'</span>;
+}});
+myClass.<span class="hljs-title function_">prependOnceHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'will run before new data'</span>;
+}});
+</code></pre>
+<h2 id="removeeventhookseventname">.removeEventHooks(eventName)</h2>
+<p>Removes all hooks for a specific event and returns the removed hooks as an <code>IHook[]</code> array. Returns an empty array if no hooks are registered for the event.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data'</span>;
+}});
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'more data'</span>;
+}});
+
+<span class="hljs-comment">// Remove all hooks for a specific event</span>
+<span class="hljs-keyword">const</span> removed = myClass.<span class="hljs-title function_">removeEventHooks</span>(<span class="hljs-string">'before:myMethod2'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(removed.<span class="hljs-property">length</span>); <span class="hljs-comment">// 2</span>
+</code></pre>
+<h2 id="removehookhook">.removeHook(hook)</h2>
+<p>Unsubscribe a handler from a hook event. Takes an <code>IHook</code> object with <code>event</code> and <code>handler</code> properties. Returns the removed hook as an <code>IHook</code> object, or <code>undefined</code> if the handler was not found.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> <span class="hljs-title function_">handler</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params">data</span>) => {
+  data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data'</span>;
+};
+
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>, handler });
+
+<span class="hljs-keyword">const</span> removed = myClass.<span class="hljs-title function_">removeHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:myMethod2'</span>, handler });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(removed); <span class="hljs-comment">// { event: 'before:myMethod2', handler: [Function] }</span>
+</code></pre>
+<h2 id="removehookbyidid">.removeHookById(id)</h2>
+<p>Remove one or more hooks by <code>id</code>, searching across all events. Accepts a single <code>string</code> or an array of <code>string</code> ids.</p>
+<ul>
+<li><strong>Single id</strong>: Returns the removed <code>IHook</code>, or <code>undefined</code> if not found.</li>
+<li><strong>Array of ids</strong>: Returns an <code>IHook[]</code> array of the hooks that were successfully removed.</li>
+</ul>
+<p>When the last hook for an event is removed, the event key is cleaned up.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>();
+
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">id</span>: <span class="hljs-string">'hook-a'</span>, <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> () => {} });
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">id</span>: <span class="hljs-string">'hook-b'</span>, <span class="hljs-attr">event</span>: <span class="hljs-string">'after:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> () => {} });
+myClass.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">id</span>: <span class="hljs-string">'hook-c'</span>, <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> () => {} });
+
+<span class="hljs-comment">// Remove a single hook by id</span>
+<span class="hljs-keyword">const</span> removed = myClass.<span class="hljs-title function_">removeHookById</span>(<span class="hljs-string">'hook-a'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(removed?.<span class="hljs-property">id</span>); <span class="hljs-comment">// 'hook-a'</span>
+
+<span class="hljs-comment">// Remove multiple hooks by ids</span>
+<span class="hljs-keyword">const</span> removedMany = myClass.<span class="hljs-title function_">removeHookById</span>([<span class="hljs-string">'hook-b'</span>, <span class="hljs-string">'hook-c'</span>]);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(removedMany.<span class="hljs-property">length</span>); <span class="hljs-comment">// 2</span>
+</code></pre>
+<h2 id="removehooksarray">.removeHooks(Array)</h2>
+<p>Unsubscribe from multiple hooks. Returns an array of the hooks that were successfully removed.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> hooks = [
+  { <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => { data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data1'</span>; } },
+  { <span class="hljs-attr">event</span>: <span class="hljs-string">'after:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => { data.<span class="hljs-property">some</span> = <span class="hljs-string">'new data2'</span>; } },
+];
+myClass.<span class="hljs-title function_">onHooks</span>(hooks);
+
+<span class="hljs-keyword">const</span> removed = myClass.<span class="hljs-title function_">removeHooks</span>(hooks);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(removed.<span class="hljs-property">length</span>); <span class="hljs-comment">// 2</span>
+</code></pre>
+<h1 id="api---events">API - Events</h1>
+<blockquote>
+<p>All examples below assume the following setup unless otherwise noted:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hookified</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">options</span>) { <span class="hljs-variable language_">super</span>(options); }
+}
+<span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>();
+</code></pre>
+</blockquote>
+<h2 id="throwonemiterror">.throwOnEmitError</h2>
+<p>If set to true, errors emitted as <code>error</code> will always be thrown, even if there are listeners. If set to false (default), errors will only be emitted to listeners.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>({ <span class="hljs-attr">throwOnEmitError</span>: <span class="hljs-literal">true</span> });
+
+myClass.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">(<span class="hljs-params">err</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'listener received:'</span>, err.<span class="hljs-property">message</span>);
+});
+
+<span class="hljs-keyword">try</span> {
+  myClass.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'This will throw despite having a listener'</span>));
+} <span class="hljs-keyword">catch</span> (error) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(error.<span class="hljs-property">message</span>); <span class="hljs-comment">// This will throw despite having a listener</span>
+}
+</code></pre>
+<h2 id="throwonemptylisteners">.throwOnEmptyListeners</h2>
+<p>If set to true, errors will be thrown when emitting an <code>error</code> event with no listeners. This follows the standard Node.js EventEmitter behavior. Default is <code>true</code>.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>({ <span class="hljs-attr">throwOnEmptyListeners</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-property">throwOnEmptyListeners</span>); <span class="hljs-comment">// true (default)</span>
+
+<span class="hljs-comment">// This will throw because there are no error listeners</span>
+<span class="hljs-keyword">try</span> {
+  myClass.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'Something went wrong'</span>));
+} <span class="hljs-keyword">catch</span> (error) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(error.<span class="hljs-property">message</span>); <span class="hljs-comment">// Something went wrong</span>
+}
+
+<span class="hljs-comment">// Add an error listener - now it won't throw</span>
+myClass.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">(<span class="hljs-params">error</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Error caught:'</span>, error.<span class="hljs-property">message</span>);
+});
+
+myClass.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'This will be caught'</span>)); <span class="hljs-comment">// No throw, listener handles it</span>
+
+<span class="hljs-comment">// You can also change it dynamically</span>
+myClass.<span class="hljs-property">throwOnEmptyListeners</span> = <span class="hljs-literal">false</span>;
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-property">throwOnEmptyListeners</span>); <span class="hljs-comment">// false</span>
+</code></pre>
+<p><strong>Difference between <code>throwOnEmitError</code> and <code>throwOnEmptyListeners</code>:</strong></p>
+<ul>
+<li><code>throwOnEmitError</code>: Throws when emitting 'error' event every time.</li>
+<li><code>throwOnEmptyListeners</code>: Throws only when there are NO error listeners registered</li>
+</ul>
+<p>When both are set to <code>true</code>, <code>throwOnEmitError</code> takes precedence.</p>
+<h2 id="oneventname-handler">.on(eventName, handler)</h2>
+<p>Subscribe to an event.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">on</span>(<span class="hljs-string">'message'</span>, <span class="hljs-function">(<span class="hljs-params">message</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(message);
+});
+</code></pre>
+<h2 id="offeventname-handler">.off(eventName, handler)</h2>
+<p>Unsubscribe from an event.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> <span class="hljs-title function_">handler</span> = (<span class="hljs-params">message</span>) => {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(message);
+};
+
+myClass.<span class="hljs-title function_">on</span>(<span class="hljs-string">'message'</span>, handler);
+myClass.<span class="hljs-title function_">off</span>(<span class="hljs-string">'message'</span>, handler);
+</code></pre>
+<h2 id="emiteventname-args">.emit(eventName, ...args)</h2>
+<p>Emit an event.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'message'</span>, <span class="hljs-string">'Hello World'</span>);
+</code></pre>
+<h2 id="listenerseventname">.listeners(eventName)</h2>
+<p>Get all listeners for an event.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">on</span>(<span class="hljs-string">'message'</span>, <span class="hljs-function">(<span class="hljs-params">message</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(message);
+});
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-title function_">listeners</span>(<span class="hljs-string">'message'</span>));
+</code></pre>
+<h2 id="removealllistenerseventname">.removeAllListeners(eventName)</h2>
+<p>Remove all listeners for an event.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">on</span>(<span class="hljs-string">'message'</span>, <span class="hljs-function">(<span class="hljs-params">message</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(message);
+});
+
+myClass.<span class="hljs-title function_">removeAllListeners</span>(<span class="hljs-string">'message'</span>);
+</code></pre>
+<h2 id="setmaxlistenersmaxlisteners-number">.setMaxListeners(maxListeners: number)</h2>
+<p>Set the maximum number of listeners for a single event. Default is <code>0</code> (unlimited). Negative values are treated as <code>0</code>. Setting to <code>0</code> disables the limit and the warning. When the limit is exceeded, a <code>MaxListenersExceededWarning</code> is emitted via <code>console.warn</code> but the listener is still added. This matches standard Node.js EventEmitter behavior.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">setMaxListeners</span>(<span class="hljs-number">1</span>);
+
+myClass.<span class="hljs-title function_">on</span>(<span class="hljs-string">'message'</span>, <span class="hljs-function">(<span class="hljs-params">message</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(message);
+});
+
+myClass.<span class="hljs-title function_">on</span>(<span class="hljs-string">'message'</span>, <span class="hljs-function">(<span class="hljs-params">message</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(message);
+}); <span class="hljs-comment">// warning emitted but listener is still added</span>
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-title function_">listenerCount</span>(<span class="hljs-string">'message'</span>)); <span class="hljs-comment">// 2</span>
+</code></pre>
+<h2 id="onceeventname-handler">.once(eventName, handler)</h2>
+<p>Subscribe to an event once.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">once</span>(<span class="hljs-string">'message'</span>, <span class="hljs-function">(<span class="hljs-params">message</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(message);
+});
+
+myClass.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'message'</span>, <span class="hljs-string">'Hello World'</span>); <span class="hljs-comment">// handler runs</span>
+myClass.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'message'</span>, <span class="hljs-string">'Hello World'</span>); <span class="hljs-comment">// handler does not run</span>
+</code></pre>
+<h2 id="prependlistenereventname-handler">.prependListener(eventName, handler)</h2>
+<p>Prepend a listener to an event. This will be called before any other listeners.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">prependListener</span>(<span class="hljs-string">'message'</span>, <span class="hljs-function">(<span class="hljs-params">message</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(message);
+});
+</code></pre>
+<h2 id="prependoncelistenereventname-handler">.prependOnceListener(eventName, handler)</h2>
+<p>Prepend a listener to an event once. This will be called before any other listeners.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">prependOnceListener</span>(<span class="hljs-string">'message'</span>, <span class="hljs-function">(<span class="hljs-params">message</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(message);
+});
+
+myClass.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'message'</span>, <span class="hljs-string">'Hello World'</span>);
+</code></pre>
+<h2 id="eventnames">.eventNames()</h2>
+<p>Get all event names.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">on</span>(<span class="hljs-string">'message'</span>, <span class="hljs-function">(<span class="hljs-params">message</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(message);
+});
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-title function_">eventNames</span>()); <span class="hljs-comment">// ['message']</span>
+</code></pre>
+<h2 id="listenercounteventname">.listenerCount(eventName?)</h2>
+<p>Get the count of listeners for an event or all events if eventName not provided.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">on</span>(<span class="hljs-string">'message'</span>, <span class="hljs-function">(<span class="hljs-params">message</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(message);
+});
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-title function_">listenerCount</span>(<span class="hljs-string">'message'</span>)); <span class="hljs-comment">// 1</span>
+</code></pre>
+<h2 id="rawlistenerseventname">.rawListeners(eventName?)</h2>
+<p>Get all listeners for an event or all events if eventName not provided.</p>
+<pre><code class="hljs language-javascript">myClass.<span class="hljs-title function_">on</span>(<span class="hljs-string">'message'</span>, <span class="hljs-function">(<span class="hljs-params">message</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(message);
+});
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(myClass.<span class="hljs-title function_">rawListeners</span>(<span class="hljs-string">'message'</span>));
+</code></pre>
+<h1 id="logging">Logging</h1>
+<p>Hookified integrates logging directly into the event system. When an <code>eventLogger</code> is configured, all emitted events are automatically logged to the appropriate log level based on the event name.</p>
+<h2 id="how-it-works">How It Works</h2>
+<p>When you emit an event, Hookified automatically sends the event data to the configured <code>eventLogger</code> using the appropriate log method:</p>
+<table>
+<thead>
+<tr>
+<th>Event Name</th>
+<th>Logger Method</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>error</code></td>
+<td><code>eventLogger.error()</code></td>
+</tr>
+<tr>
+<td><code>warn</code></td>
+<td><code>eventLogger.warn()</code></td>
+</tr>
+<tr>
+<td><code>debug</code></td>
+<td><code>eventLogger.debug()</code></td>
+</tr>
+<tr>
+<td><code>trace</code></td>
+<td><code>eventLogger.trace()</code></td>
+</tr>
+<tr>
+<td><code>fatal</code></td>
+<td><code>eventLogger.fatal()</code></td>
+</tr>
+<tr>
+<td>Any other</td>
+<td><code>eventLogger.info()</code></td>
+</tr>
+</tbody>
+</table>
+<p>The logger receives two arguments:</p>
+<ol>
+<li><strong>message</strong>: A string extracted from the event data (error messages, object messages, or JSON stringified data)</li>
+<li><strong>context</strong>: An object containing <code>{ event: eventName, data: originalData }</code></li>
+</ol>
+<h2 id="setting-up-a-logger">Setting Up a Logger</h2>
+<p>Any logger that implements the <code>Logger</code> interface is compatible. This includes popular loggers like <a href="https://github.com/pinojs/pino">Pino</a>, <a href="https://github.com/winstonjs/winston">Winston</a>, <a href="https://github.com/trentm/node-bunyan">Bunyan</a>, and others.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">type</span> <span class="hljs-title class_">Logger</span> = {
+  <span class="hljs-attr">trace</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span>, ...<span class="hljs-attr">args</span>: <span class="hljs-built_in">unknown</span>[]</span>) =></span> <span class="hljs-built_in">void</span>;
+  <span class="hljs-attr">debug</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span>, ...<span class="hljs-attr">args</span>: <span class="hljs-built_in">unknown</span>[]</span>) =></span> <span class="hljs-built_in">void</span>;
+  <span class="hljs-attr">info</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span>, ...<span class="hljs-attr">args</span>: <span class="hljs-built_in">unknown</span>[]</span>) =></span> <span class="hljs-built_in">void</span>;
+  <span class="hljs-attr">warn</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span>, ...<span class="hljs-attr">args</span>: <span class="hljs-built_in">unknown</span>[]</span>) =></span> <span class="hljs-built_in">void</span>;
+  <span class="hljs-attr">error</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span>, ...<span class="hljs-attr">args</span>: <span class="hljs-built_in">unknown</span>[]</span>) =></span> <span class="hljs-built_in">void</span>;
+  <span class="hljs-attr">fatal</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span>, ...<span class="hljs-attr">args</span>: <span class="hljs-built_in">unknown</span>[]</span>) =></span> <span class="hljs-built_in">void</span>;
+};
+</code></pre>
+<h2 id="usage-example-with-pino">Usage Example with Pino</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hookified</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+<span class="hljs-keyword">import</span> pino <span class="hljs-keyword">from</span> <span class="hljs-string">'pino'</span>;
+
+<span class="hljs-keyword">const</span> logger = <span class="hljs-title function_">pino</span>();
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyService</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-variable language_">super</span>({ <span class="hljs-attr">eventLogger</span>: logger });
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">processData</span>(<span class="hljs-params">data</span>) {
+    <span class="hljs-comment">// This will log to logger.info with the data</span>
+    <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'info'</span>, { <span class="hljs-attr">action</span>: <span class="hljs-string">'processing'</span>, data });
+
+    <span class="hljs-keyword">try</span> {
+      <span class="hljs-comment">// ... process data</span>
+      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'debug'</span>, { <span class="hljs-attr">action</span>: <span class="hljs-string">'completed'</span>, <span class="hljs-attr">result</span>: <span class="hljs-string">'success'</span> });
+    } <span class="hljs-keyword">catch</span> (err) {
+      <span class="hljs-comment">// This will log to logger.error with the error message</span>
+      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'error'</span>, err);
+    }
+  }
+}
+
+<span class="hljs-keyword">const</span> service = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyService</span>();
+
+<span class="hljs-comment">// All events are automatically logged</span>
+service.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'info'</span>, <span class="hljs-string">'Service started'</span>);        <span class="hljs-comment">// -> logger.info()</span>
+service.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'warn'</span>, { <span class="hljs-attr">message</span>: <span class="hljs-string">'Low memory'</span> }); <span class="hljs-comment">// -> logger.warn()</span>
+service.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'Failed'</span>));      <span class="hljs-comment">// -> logger.error()</span>
+service.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'custom-event'</span>, { <span class="hljs-attr">foo</span>: <span class="hljs-string">'bar'</span> });    <span class="hljs-comment">// -> logger.info() (default)</span>
+</code></pre>
+<p>You can also set or change the eventLogger after instantiation:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> service = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyService</span>();
+service.<span class="hljs-property">eventLogger</span> = <span class="hljs-title function_">pino</span>({ <span class="hljs-attr">level</span>: <span class="hljs-string">'debug'</span> });
+
+<span class="hljs-comment">// Or remove the eventLogger</span>
+service.<span class="hljs-property">eventLogger</span> = <span class="hljs-literal">undefined</span>;
+</code></pre>
+<h1 id="benchmarks">Benchmarks</h1>
+<p>We are doing very simple benchmarking to see how this compares to other libraries using <code>tinybench</code>. This is not a full benchmark but just a simple way to see how it performs.</p>
+<h2 id="hooks-2">Hooks</h2>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hookified (v2.0.1)</td>
+<td align="center">🥇</td>
+<td align="right">5M</td>
+<td align="right">221ns</td>
+<td align="center">±0.01%</td>
+<td align="right">5M</td>
+</tr>
+<tr>
+<td>Hookable (v6.0.1)</td>
+<td align="center">-59%</td>
+<td align="right">2M</td>
+<td align="right">569ns</td>
+<td align="center">±0.01%</td>
+<td align="right">2M</td>
+</tr>
+</tbody>
+</table>
+<h2 id="emits">Emits</h2>
+<p>This shows how on par <code>hookified</code> is to the native <code>EventEmitter</code> and popular <code>eventemitter3</code>. These are simple emitting benchmarks to see how it performs. Our goal is to be as close or better than the other libraries including native (EventEmitter).</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hookified (v2.1.0)</td>
+<td align="center">🥇</td>
+<td align="right">17M</td>
+<td align="right">73ns</td>
+<td align="center">±0.02%</td>
+<td align="right">14M</td>
+</tr>
+<tr>
+<td>EventEmitter3 (v5.0.4)</td>
+<td align="center">-2.2%</td>
+<td align="right">17M</td>
+<td align="right">70ns</td>
+<td align="center">±0.02%</td>
+<td align="right">14M</td>
+</tr>
+<tr>
+<td>EventEmitter (v24.14.0)</td>
+<td align="center">-4.5%</td>
+<td align="right">16M</td>
+<td align="right">70ns</td>
+<td align="center">±0.02%</td>
+<td align="right">14M</td>
+</tr>
+<tr>
+<td>Emittery (v2.0.0)</td>
+<td align="center">-92%</td>
+<td align="right">1M</td>
+<td align="right">792ns</td>
+<td align="center">±0.01%</td>
+<td align="right">1M</td>
+</tr>
+</tbody>
+</table>
+<p><em>Note: the <code>EventEmitter</code> version is Nodejs versioning.</em></p>
+<h1 id="migrating-from-v2-to-v3">Migrating from v2 to v3</h1>
+<p>v3 has no API changes. The only breaking change is the minimum Node.js version requirement.</p>
+<h2 id="breaking-changes">Breaking Changes</h2>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node.js version</td>
+<td>Minimum required version is now <code>>=22.18.0</code> (previously no <code>engines</code> constraint)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="nodejs-22180-required">Node.js >=22.18.0 required</h3>
+<p>The <code>engines</code> field in <code>package.json</code> now requires Node.js 22.18.0 or later. Node.js 20 reached end-of-life in April 2026.</p>
+<p><strong>Migration:</strong> Upgrade to Node.js 22 LTS or Node.js 24+. No code changes are required — the library API is identical to v2.</p>
+<h1 id="migrating-from-v1-to-v2">Migrating from v1 to v2</h1>
+<h2 id="quick-guide">Quick Guide</h2>
+<p>v2 overhauls hook storage to use <code>IHook</code> objects instead of raw functions. This enables hook IDs, ordering via position, cloning control, and new hook types like <code>WaterfallHook</code>. <code>onHook</code> now supports both the v1 positional <code>(event, handler)</code> form and the new <code>IHook</code> object form, so this is <strong>not a breaking change</strong>:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// v1 style — still works</span>
+hookified.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:save'</span>, <span class="hljs-title function_">async</span> (data) => {});
+
+<span class="hljs-comment">// v2 style — IHook object with options support</span>
+hookified.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {} });
+
+<span class="hljs-comment">// addHook also works as an alias for the positional form</span>
+hookified.<span class="hljs-title function_">addHook</span>(<span class="hljs-string">'before:save'</span>, <span class="hljs-title function_">async</span> (data) => {});
+</code></pre>
+<p><strong>Other common changes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>v1</th>
+<th>v2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>throwHookErrors</code></td>
+<td><code>throwOnHookError</code></td>
+</tr>
+<tr>
+<td><code>logger</code></td>
+<td><code>eventLogger</code></td>
+</tr>
+<tr>
+<td><code>onHookEntry(hook)</code></td>
+<td><code>onHook(hook)</code></td>
+</tr>
+<tr>
+<td><code>HookEntry</code> type</td>
+<td><code>IHook</code> interface</td>
+</tr>
+<tr>
+<td><code>Hook</code> type (fn)</td>
+<td><code>HookFn</code> type</td>
+</tr>
+<tr>
+<td><code>getHooks()</code> returns <code>HookFn[]</code></td>
+<td><code>getHooks()</code> returns <code>IHook[]</code></td>
+</tr>
+<tr>
+<td><code>removeHook(event, handler)</code></td>
+<td><code>removeHook({ event, handler })</code></td>
+</tr>
+</tbody>
+</table>
+<p>See below for full details on each change.</p>
+<p><strong><a href="#breaking-changes">Breaking Changes</a></strong></p>
+<ul>
+<li><a href="#throwhookerrors-removed--use-throwonhookerror-instead"><code>throwHookErrors</code> removed — use <code>throwOnHookError</code> instead</a></li>
+<li><a href="#throwonemptylisteners-now-defaults-to-true"><code>throwOnEmptyListeners</code> now defaults to <code>true</code></a></li>
+<li><a href="#logger-renamed-to-eventlogger"><code>logger</code> renamed to <code>eventLogger</code></a></li>
+<li><a href="#maxlisteners-default-changed-from-100-to-0-unlimited-and-no-longer-truncates"><code>maxListeners</code> default changed from <code>100</code> to <code>0</code> (unlimited) and no longer truncates</a></li>
+<li><a href="#onhookentry-removed--use-onhook-instead"><code>onHookEntry</code> removed — use <code>onHook</code> instead</a></li>
+<li><a href="#onhook-signature-updated"><code>onHook</code> signature updated (not breaking)</a></li>
+<li><a href="#hookentry-type-and-hook-type-removed"><code>HookEntry</code> type and <code>Hook</code> type removed</a></li>
+<li><a href="#removehook-and-removehooks-now-return-removed-hooks"><code>removeHook</code> and <code>removeHooks</code> now return removed hooks</a></li>
+<li><a href="#removehook-removehooks-and-gethooks-no-longer-check-for-deprecated-hooks"><code>removeHook</code>, <code>removeHooks</code>, and <code>getHooks</code> no longer check for deprecated hooks</a></li>
+<li><a href="#internal-hook-storage-now-uses-ihook-objects">Internal hook storage now uses <code>IHook</code> objects</a></li>
+<li><a href="#oncehook-prependhook-prependoncehook-and-removehook-now-take-ihook"><code>onceHook</code>, <code>prependHook</code>, <code>prependOnceHook</code>, and <code>removeHook</code> now take <code>IHook</code></a></li>
+<li><a href="#onhook-now-returns-the-stored-hook"><code>onHook</code> now returns the stored hook</a></li>
+</ul>
+<p><strong><a href="#new-features">New Features</a></strong></p>
+<ul>
+<li><a href="#standard-hook">standard <code>Hook</code> class now available</a></li>
+<li><a href="#waterfallhook-class"><code>WaterfallHook</code> class for sequential data transformation pipelines</a></li>
+<li><a href="#usehookclone-option"><code>useHookClone</code> option</a></li>
+<li><a href="#onhook-now-accepts-onhookoptions"><code>onHook</code> now accepts <code>OnHookOptions</code></a></li>
+<li><a href="#ihook-now-has-an-id-property"><code>IHook</code> now has an <code>id</code> property</a></li>
+<li><a href="#removeeventhooks-method"><code>removeEventHooks</code> method</a></li>
+</ul>
+<h2 id="breaking-changes-1">Breaking Changes</h2>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>throwHookErrors</code></td>
+<td>Renamed to <code>throwOnHookError</code></td>
+</tr>
+<tr>
+<td><code>throwOnEmptyListeners</code></td>
+<td>Default changed from <code>false</code> to <code>true</code></td>
+</tr>
+<tr>
+<td><code>logger</code></td>
+<td>Renamed to <code>eventLogger</code></td>
+</tr>
+<tr>
+<td><code>maxListeners</code></td>
+<td>Default changed from <code>100</code> to <code>0</code> (unlimited), no longer truncates</td>
+</tr>
+<tr>
+<td><code>onHookEntry</code></td>
+<td>Removed — use <code>onHook</code> instead</td>
+</tr>
+<tr>
+<td><code>onHook</code> signature</td>
+<td>Now takes <code>IHook</code> object <strong>or</strong> <code>(event, handler)</code> — both supported (not breaking)</td>
+</tr>
+<tr>
+<td><code>HookEntry</code> / <code>Hook</code> types</td>
+<td>Replaced with <code>IHook</code> / <code>HookFn</code></td>
+</tr>
+<tr>
+<td><code>removeHook</code> / <code>removeHooks</code></td>
+<td>Now return removed hooks; no longer check deprecated status</td>
+</tr>
+<tr>
+<td>Internal hook storage</td>
+<td>Uses <code>IHook</code> objects instead of raw functions</td>
+</tr>
+<tr>
+<td><code>onceHook</code>, <code>prependHook</code>, etc.</td>
+<td>Now take <code>IHook</code> instead of <code>(event, handler)</code></td>
+</tr>
+<tr>
+<td><code>onHook</code> return</td>
+<td>Now returns stored <code>IHook</code> (was <code>void</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="throwhookerrors-removed--use-throwonhookerror-instead"><code>throwHookErrors</code> removed — use <code>throwOnHookError</code> instead</h3>
+<p>The deprecated <code>throwHookErrors</code> option and property has been removed. Use <code>throwOnHookError</code> instead.</p>
+<p><strong>Before (v1):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-variable language_">super</span>({ <span class="hljs-attr">throwHookErrors</span>: <span class="hljs-literal">true</span> });
+myClass.<span class="hljs-property">throwHookErrors</span> = <span class="hljs-literal">false</span>;
+</code></pre>
+<p><strong>After (v2):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-variable language_">super</span>({ <span class="hljs-attr">throwOnHookError</span>: <span class="hljs-literal">true</span> });
+myClass.<span class="hljs-property">throwOnHookError</span> = <span class="hljs-literal">false</span>;
+</code></pre>
+<h3 id="throwonemptylisteners-now-defaults-to-true"><code>throwOnEmptyListeners</code> now defaults to <code>true</code></h3>
+<p>The <code>throwOnEmptyListeners</code> option now defaults to <code>true</code>, matching standard Node.js EventEmitter behavior. Previously it defaulted to <code>false</code>. If you emit an <code>error</code> event with no listeners registered, an error will now be thrown by default.</p>
+<p><strong>Before (v1):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>(); <span class="hljs-comment">// throwOnEmptyListeners defaults to false</span>
+myClass.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'No throw'</span>)); <span class="hljs-comment">// silently ignored</span>
+</code></pre>
+<p><strong>After (v2):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>(); <span class="hljs-comment">// throwOnEmptyListeners defaults to true</span>
+myClass.<span class="hljs-title function_">emit</span>(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'This will throw'</span>)); <span class="hljs-comment">// throws!</span>
+
+<span class="hljs-comment">// To restore v1 behavior:</span>
+<span class="hljs-keyword">const</span> myClass2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>({ <span class="hljs-attr">throwOnEmptyListeners</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<h3 id="logger-renamed-to-eventlogger"><code>logger</code> renamed to <code>eventLogger</code></h3>
+<p>The <code>logger</code> option and property has been renamed to <code>eventLogger</code> to avoid conflicts with other logger properties in your classes.</p>
+<p><strong>Before (v1):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-variable language_">super</span>({ logger });
+myClass.<span class="hljs-property">logger</span> = <span class="hljs-title function_">pino</span>({ <span class="hljs-attr">level</span>: <span class="hljs-string">'debug'</span> });
+</code></pre>
+<p><strong>After (v2):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-variable language_">super</span>({ <span class="hljs-attr">eventLogger</span>: logger });
+myClass.<span class="hljs-property">eventLogger</span> = <span class="hljs-title function_">pino</span>({ <span class="hljs-attr">level</span>: <span class="hljs-string">'debug'</span> });
+</code></pre>
+<h3 id="maxlisteners-default-changed-from-100-to-0-unlimited-and-no-longer-truncates"><code>maxListeners</code> default changed from <code>100</code> to <code>0</code> (unlimited) and no longer truncates</h3>
+<p>The default maximum number of listeners has changed from <code>100</code> to <code>0</code> (unlimited). The <code>MaxListenersExceededWarning</code> will no longer be emitted unless you explicitly set a limit via <code>setMaxListeners()</code>. Additionally, <code>setMaxListeners()</code> no longer truncates existing listeners — it only sets the warning threshold, matching standard Node.js EventEmitter behavior.</p>
+<p><strong>Before (v1):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>(); <span class="hljs-comment">// maxListeners defaults to 100</span>
+<span class="hljs-comment">// Warning emitted after adding 100+ listeners to the same event</span>
+<span class="hljs-comment">// setMaxListeners() would truncate existing listeners exceeding the limit</span>
+</code></pre>
+<p><strong>After (v2):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>(); <span class="hljs-comment">// maxListeners defaults to 0 (unlimited)</span>
+<span class="hljs-comment">// No warning — unlimited listeners allowed</span>
+<span class="hljs-comment">// setMaxListeners() only sets warning threshold, never removes listeners</span>
+
+<span class="hljs-comment">// To restore v1 warning behavior:</span>
+myClass.<span class="hljs-title function_">setMaxListeners</span>(<span class="hljs-number">100</span>);
+</code></pre>
+<h3 id="onhookentry-removed--use-onhook-instead"><code>onHookEntry</code> removed — use <code>onHook</code> instead</h3>
+<p>The <code>onHookEntry</code> method has been removed. Use <code>onHook</code> which now accepts an <code>IHook</code> object (or array of <code>IHook</code>) directly.</p>
+<p><strong>Before (v1):</strong></p>
+<pre><code class="hljs language-typescript">hookified.<span class="hljs-title function_">onHookEntry</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {} });
+</code></pre>
+<p><strong>After (v2):</strong></p>
+<pre><code class="hljs language-typescript">hookified.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {} });
+</code></pre>
+<h3 id="onhook-signature-updated"><code>onHook</code> signature updated</h3>
+<p><code>onHook</code> now supports both the v1 positional <code>(event, handler)</code> form and the new <code>IHook</code> object form. <strong>This is not a breaking change</strong> — existing v1 code continues to work. The <code>IHook</code> object form is recommended for new code as it supports hook IDs, positioning, and cloning options. You can also use <code>addHook(event, handler)</code> as an alias or <code>onHooks()</code> for bulk registration.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// v1 style — still works</span>
+hookified.<span class="hljs-title function_">onHook</span>(<span class="hljs-string">'before:save'</span>, <span class="hljs-title function_">async</span> (data) => {});
+
+<span class="hljs-comment">// v2 style — IHook object with full options support</span>
+hookified.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {} });
+
+<span class="hljs-comment">// For multiple hooks, use onHooks</span>
+hookified.<span class="hljs-title function_">onHooks</span>([
+  { <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {} },
+  { <span class="hljs-attr">event</span>: <span class="hljs-string">'after:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {} },
+]);
+
+<span class="hljs-comment">// addHook also works as an alias for positional args</span>
+hookified.<span class="hljs-title function_">addHook</span>(<span class="hljs-string">'before:save'</span>, <span class="hljs-title function_">async</span> (data) => {});
+</code></pre>
+<h3 id="hookentry-type-and-hook-type-removed"><code>HookEntry</code> type and <code>Hook</code> type removed</h3>
+<p>The <code>HookEntry</code> type has been removed and replaced with the <code>IHook</code> interface. The <code>Hook</code> type (function type) has been renamed to <code>HookFn</code>.</p>
+<p><strong>Before (v1):</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">HookEntry</span>, <span class="hljs-title class_">Hook</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">const</span> <span class="hljs-attr">hook</span>: <span class="hljs-title class_">HookEntry</span> = { <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> () => {} };
+<span class="hljs-keyword">const</span> <span class="hljs-attr">myHook</span>: <span class="hljs-title class_">Hook</span> = <span class="hljs-title function_">async</span> (data) => {};
+</code></pre>
+<p><strong>After (v2):</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">IHook</span>, <span class="hljs-title class_">HookFn</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">const</span> <span class="hljs-attr">hook</span>: <span class="hljs-title class_">IHook</span> = { <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> () => {} };
+<span class="hljs-keyword">const</span> <span class="hljs-attr">myHook</span>: <span class="hljs-title class_">HookFn</span> = <span class="hljs-title function_">async</span> (data) => {};
+</code></pre>
+<h3 id="removehook-and-removehooks-now-return-removed-hooks"><code>removeHook</code> and <code>removeHooks</code> now return removed hooks</h3>
+<p><code>removeHook</code> now returns the removed hook as an <code>IHook</code> object (or <code>undefined</code> if not found). <code>removeHooks</code> now returns an <code>IHook[]</code> array of the hooks that were successfully removed. Previously both returned <code>void</code>.</p>
+<p><strong>Before (v1):</strong></p>
+<pre><code class="hljs language-typescript">hookified.<span class="hljs-title function_">removeHook</span>(<span class="hljs-string">'before:save'</span>, handler); <span class="hljs-comment">// void</span>
+hookified.<span class="hljs-title function_">removeHooks</span>(hooks); <span class="hljs-comment">// void</span>
+</code></pre>
+<p><strong>After (v2):</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> removed = hookified.<span class="hljs-title function_">removeHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, handler }); <span class="hljs-comment">// IHook | undefined</span>
+<span class="hljs-keyword">const</span> removedHooks = hookified.<span class="hljs-title function_">removeHooks</span>(hooks); <span class="hljs-comment">// IHook[]</span>
+</code></pre>
+<h3 id="removehook-removehooks-and-gethooks-no-longer-check-for-deprecated-hooks"><code>removeHook</code>, <code>removeHooks</code>, and <code>getHooks</code> no longer check for deprecated hooks</h3>
+<p>Previously, <code>removeHook</code>, <code>removeHooks</code>, and <code>getHooks</code> would skip their operation and emit a deprecation warning when called with a deprecated hook name and <code>allowDeprecated</code> was <code>false</code>. This made it impossible to clean up or inspect deprecated hooks. These methods now always operate regardless of deprecation status.</p>
+<h3 id="internal-hook-storage-now-uses-ihook-objects">Internal hook storage now uses <code>IHook</code> objects</h3>
+<p>The internal <code>_hooks</code> map now stores full <code>IHook</code> objects (<code>Map&#x3C;string, IHook[]></code>) instead of raw handler functions (<code>Map&#x3C;string, HookFn[]></code>). This means <code>.hooks</code> returns <code>Map&#x3C;string, IHook[]></code> and <code>.getHooks()</code> returns <code>IHook[] | undefined</code>.</p>
+<p><strong>Before (v1):</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hooks = myClass.<span class="hljs-title function_">getHooks</span>(<span class="hljs-string">'before:save'</span>); <span class="hljs-comment">// HookFn[]</span>
+hooks[<span class="hljs-number">0</span>](data); <span class="hljs-comment">// direct function call</span>
+</code></pre>
+<p><strong>After (v2):</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hooks = myClass.<span class="hljs-title function_">getHooks</span>(<span class="hljs-string">'before:save'</span>); <span class="hljs-comment">// IHook[]</span>
+hooks[<span class="hljs-number">0</span>].<span class="hljs-title function_">handler</span>(data); <span class="hljs-comment">// access .handler property</span>
+hooks[<span class="hljs-number">0</span>].<span class="hljs-property">event</span>; <span class="hljs-comment">// 'before:save'</span>
+</code></pre>
+<h3 id="oncehook-prependhook-prependoncehook-and-removehook-now-take-ihook"><code>onceHook</code>, <code>prependHook</code>, <code>prependOnceHook</code>, and <code>removeHook</code> now take <code>IHook</code></h3>
+<p>These methods now accept an <code>IHook</code> object instead of separate <code>(event, handler)</code> arguments.</p>
+<p><strong>Before (v1):</strong></p>
+<pre><code class="hljs language-typescript">hookified.<span class="hljs-title function_">onceHook</span>(<span class="hljs-string">'before:save'</span>, <span class="hljs-title function_">async</span> (data) => {});
+hookified.<span class="hljs-title function_">prependHook</span>(<span class="hljs-string">'before:save'</span>, <span class="hljs-title function_">async</span> (data) => {});
+hookified.<span class="hljs-title function_">prependOnceHook</span>(<span class="hljs-string">'before:save'</span>, <span class="hljs-title function_">async</span> (data) => {});
+hookified.<span class="hljs-title function_">removeHook</span>(<span class="hljs-string">'before:save'</span>, handler);
+</code></pre>
+<p><strong>After (v2):</strong></p>
+<pre><code class="hljs language-typescript">hookified.<span class="hljs-title function_">onceHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {} });
+hookified.<span class="hljs-title function_">prependHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {} });
+hookified.<span class="hljs-title function_">prependOnceHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {} });
+hookified.<span class="hljs-title function_">removeHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, handler });
+</code></pre>
+<h3 id="onhook-now-returns-the-stored-hook"><code>onHook</code> now returns the stored hook</h3>
+<p><code>onHook</code> now returns the stored <code>IHook</code> object (or <code>undefined</code> if blocked by deprecation). Previously it returned <code>void</code>. The returned reference is the exact object stored internally, making it easy to later remove with <code>removeHook()</code>.</p>
+<p><strong>Before (v1):</strong></p>
+<pre><code class="hljs language-typescript">hookified.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, handler }); <span class="hljs-comment">// void</span>
+</code></pre>
+<p><strong>After (v2):</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> stored = hookified.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, handler }); <span class="hljs-comment">// IHook | undefined</span>
+hookified.<span class="hljs-title function_">removeHook</span>(stored); <span class="hljs-comment">// exact reference match</span>
+</code></pre>
+<h2 id="new-features">New Features</h2>
+<h3 id="hook-class"><code>Hook</code> class</h3>
+<p>A new <code>Hook</code> class is available for creating hook entries. It implements the <code>IHook</code> interface and can be used anywhere <code>IHook</code> is accepted.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hook</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">const</span> hook = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hook</span>(<span class="hljs-string">'before:save'</span>, <span class="hljs-title function_">async</span> (data) => {
+  data.<span class="hljs-property">validated</span> = <span class="hljs-literal">true</span>;
+});
+
+myClass.<span class="hljs-title function_">onHook</span>(hook);
+</code></pre>
+<h3 id="waterfallhook-class"><code>WaterfallHook</code> class</h3>
+<p>A new <code>WaterfallHook</code> class is available for creating sequential data transformation pipelines. It implements the <code>IHook</code> interface and integrates directly with <code>Hookified.onHook()</code>. Each hook in the chain receives a <code>WaterfallHookContext</code> with <code>initialArgs</code> (the original arguments) and <code>results</code> (an array of <code>{ hook, result }</code> entries from all previous hooks).</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hookified</span>, <span class="hljs-title class_">WaterfallHook</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>) { <span class="hljs-variable language_">super</span>(); }
+}
+
+<span class="hljs-keyword">const</span> myClass = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>();
+
+<span class="hljs-keyword">const</span> wh = <span class="hljs-keyword">new</span> <span class="hljs-title class_">WaterfallHook</span>(<span class="hljs-string">'save'</span>, <span class="hljs-function">(<span class="hljs-params">{ results }</span>) =></span> {
+  <span class="hljs-keyword">const</span> data = results[results.<span class="hljs-property">length</span> - <span class="hljs-number">1</span>].<span class="hljs-property">result</span>;
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Saved:'</span>, data);
+});
+
+wh.<span class="hljs-title function_">addHook</span>(<span class="hljs-function">(<span class="hljs-params">{ initialArgs }</span>) =></span> {
+  <span class="hljs-keyword">return</span> { ...initialArgs, <span class="hljs-attr">validated</span>: <span class="hljs-literal">true</span> };
+});
+
+wh.<span class="hljs-title function_">addHook</span>(<span class="hljs-function">(<span class="hljs-params">{ results }</span>) =></span> {
+  <span class="hljs-keyword">return</span> { ...results[results.<span class="hljs-property">length</span> - <span class="hljs-number">1</span>].<span class="hljs-property">result</span>, <span class="hljs-attr">timestamp</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() };
+});
+
+myClass.<span class="hljs-title function_">onHook</span>(wh);
+<span class="hljs-keyword">await</span> myClass.<span class="hljs-title function_">hook</span>(<span class="hljs-string">'save'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'test'</span> });
+<span class="hljs-comment">// Saved: { name: 'test', validated: true, timestamp: ... }</span>
+</code></pre>
+<p>See the <a href="#waterfallhook">Waterfall Hook</a> section for full documentation.</p>
+<h3 id="usehookclone-option"><code>useHookClone</code> option</h3>
+<p>A new <code>useHookClone</code> option (default <code>true</code>) controls whether hook objects are shallow-cloned before storing. When enabled, external mutation of a registered hook object won't affect the internal state. Set to <code>false</code> to store the original reference for performance or when you need reference equality.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Hookified</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"></span>) { <span class="hljs-variable language_">super</span>({ <span class="hljs-attr">useHookClone</span>: <span class="hljs-literal">false</span> }); }
+}
+</code></pre>
+<h3 id="onhook-now-accepts-onhookoptions"><code>onHook</code> now accepts <code>OnHookOptions</code></h3>
+<p><code>onHook</code> now accepts an optional second parameter of type <code>OnHookOptions</code>. This allows you to override the instance-level <code>useHookClone</code> setting and control hook positioning on a per-call basis.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// Override useHookClone for this specific call</span>
+hookified.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, handler }, { <span class="hljs-attr">useHookClone</span>: <span class="hljs-literal">false</span> });
+
+<span class="hljs-comment">// Insert at the top of the handlers array instead of the end</span>
+hookified.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, handler }, { <span class="hljs-attr">position</span>: <span class="hljs-string">'Top'</span> });
+
+<span class="hljs-comment">// Insert at a specific index</span>
+hookified.<span class="hljs-title function_">onHook</span>({ <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>, handler }, { <span class="hljs-attr">position</span>: <span class="hljs-number">1</span> });
+</code></pre>
+<h3 id="ihook-now-has-an-id-property"><code>IHook</code> now has an <code>id</code> property</h3>
+<p>Every hook now has an optional <code>id</code> property. If not provided, a UUID is auto-generated via <code>crypto.randomUUID()</code>. The <code>id</code> enables easier lookups and removal via the new <code>getHook(id)</code> and <code>removeHookById(id)</code> methods, which search across all events.</p>
+<p>Registering a hook with the same <code>id</code> on the same event replaces the existing hook in-place (preserving its position).</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// With custom id</span>
+<span class="hljs-keyword">const</span> stored = hookified.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'my-validation'</span>,
+  <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => { data.<span class="hljs-property">validated</span> = <span class="hljs-literal">true</span>; },
+});
+
+<span class="hljs-comment">// Without id — auto-generated</span>
+<span class="hljs-keyword">const</span> stored2 = hookified.<span class="hljs-title function_">onHook</span>({
+  <span class="hljs-attr">event</span>: <span class="hljs-string">'before:save'</span>,
+  <span class="hljs-attr">handler</span>: <span class="hljs-title function_">async</span> (data) => {},
+});
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(stored2.<span class="hljs-property">id</span>); <span class="hljs-comment">// e.g. '550e8400-e29b-41d4-a716-446655440000'</span>
+
+<span class="hljs-comment">// Look up by id (searches all events)</span>
+<span class="hljs-keyword">const</span> hook = hookified.<span class="hljs-title function_">getHook</span>(<span class="hljs-string">'my-validation'</span>);
+
+<span class="hljs-comment">// Remove by id (searches all events)</span>
+hookified.<span class="hljs-title function_">removeHookById</span>(<span class="hljs-string">'my-validation'</span>);
+
+<span class="hljs-comment">// Remove multiple by ids</span>
+hookified.<span class="hljs-title function_">removeHookById</span>([<span class="hljs-string">'hook-a'</span>, <span class="hljs-string">'hook-b'</span>]);
+</code></pre>
+<p>The <code>Hook</code> class also accepts an optional <code>id</code> parameter:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> hook = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hook</span>(<span class="hljs-string">'before:save'</span>, handler, <span class="hljs-string">'my-custom-id'</span>);
+</code></pre>
+<h3 id="removeeventhooks-method"><code>removeEventHooks</code> method</h3>
+<p>A new <code>removeEventHooks(event)</code> method removes all hooks for a specific event and returns the removed hooks as an <code>IHook[]</code> array.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> removed = hookified.<span class="hljs-title function_">removeEventHooks</span>(<span class="hljs-string">'before:save'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(removed.<span class="hljs-property">length</span>); <span class="hljs-comment">// number of hooks removed</span>
+</code></pre>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>Hookified is written in TypeScript and tests are written with <code>vitest</code>. To setup the environment and run the tests:</p>
+<pre><code class="hljs language-bash">pnpm i &#x26;&#x26; pnpm <span class="hljs-built_in">test</span>
+</code></pre>
+<p>Note that we are using <code>pnpm</code> as our package manager. If you don't have it installed, you can install it globally with:</p>
+<pre><code class="hljs language-bash">npm install -g pnpm
+</code></pre>
+<p>To contribute follow the <a href="CONTRIBUTING.md">Contributing Guidelines</a> and <a href="CODE_OF_CONDUCT.md">Code of Conduct</a>.</p>
+<h1 id="license-and-copyright">License and Copyright</h1>
+<p><a href="LICENSE">MIT &#x26; © Jared Wray</a></p>

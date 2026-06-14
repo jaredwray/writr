@@ -1,0 +1,164 @@
+<p>import FlagdContent from '@site/src/components/custom/tutorial/flagd-content.mdx';
+import FlagdChangeContent from '@site/src/components/custom/tutorial/flagd-change-content.mdx';
+import WhyDefaultContent from '@site/src/components/custom/tutorial/why-default-content.mdx';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';</p>
+<h1 id="getting-started-with-the-openfeature-java-sdk-and-spring-boot">Getting Started with the OpenFeature Java SDK and Spring Boot</h1>
+<h2 id="introduction">Introduction</h2>
+<p>This walk-through teaches you the basics of using OpenFeature in Java in the context of a Spring Boot Web application.</p>
+<p>You'll learn how to:</p>
+<ul>
+<li>Integrate the OpenFeature Java SDK</li>
+<li>Install and configure the OpenFeature provider</li>
+<li>Perform basic feature flagging</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<p>This walk-through assumes that:</p>
+<ul>
+<li>You have a basic knowledge of Java and Spring Boot</li>
+<li>You have Java 8 or later</li>
+<li>You have Docker installed and running on the host system</li>
+</ul>
+<h2 id="walk-through">Walk-through</h2>
+<h3 id="step-1-create-a-spring-boot-web-application">Step 1: Create a Spring Boot Web application</h3>
+<p>To get started, visit <a href="https://start.spring.io/">Spring Initializer</a>.
+This website allows you to download a pre-configured
+Spring boot application.</p>
+<p>For our use case, add <strong>Spring Web</strong> from the dependencies section and set the following <strong>project metadata</strong> values,</p>
+<ul>
+<li>Group: com</li>
+<li>Artifact: demo</li>
+</ul>
+<p>Select a Java version matching your installation and download the application using the <strong>GENERATE</strong> button.
+Extract the archive and open it in your favorite editor.</p>
+<h3 id="step-2-add-dependencies">Step 2: Add dependencies</h3>
+<p>Based on the selected build system for Spring Boot application, add OpenFeature Java SDK and flagd provider dependencies
+to existing dependency management configuration.</p>
+<p>Given below are dependencies for Maven and Gradle with the latest dependency versions at the time of writing this walk-through.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">dependency</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">groupId</span>></span>dev.openfeature<span class="hljs-tag">&#x3C;/<span class="hljs-name">groupId</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">artifactId</span>></span>sdk<span class="hljs-tag">&#x3C;/<span class="hljs-name">artifactId</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">version</span>></span>1.15.1<span class="hljs-tag">&#x3C;/<span class="hljs-name">version</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">dependency</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">dependency</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">groupId</span>></span>dev.openfeature.contrib.providers<span class="hljs-tag">&#x3C;/<span class="hljs-name">groupId</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">artifactId</span>></span>flagd<span class="hljs-tag">&#x3C;/<span class="hljs-name">artifactId</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">version</span>></span>0.11.10<span class="hljs-tag">&#x3C;/<span class="hljs-name">version</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">dependency</span>></span>
+</code></pre>
+<pre><code class="hljs language-groovy">implementation 'dev.openfeature:sdk:1.15.1'
+implementation 'dev.openfeature.contrib.providers:flagd:0.11.10'
+</code></pre>
+<h3 id="step-3-add-code">Step 3: Add code</h3>
+<p>The <code>OpenFeatureAPI</code> class is the main access point to OpenFeature SDK.
+This class is designed to act as a singleton.
+Let's define
+a simple bean configuration class called <code>OpenFeatureBeans</code>, that allows us to inject the <code>OpenFeatureAPI</code> singleton into desired Spring components.</p>
+<p>Create the Java class <code>OpenFeatureBeans.java</code> inside the package <code>com.demo</code> and add the following code,</p>
+<pre><code class="hljs language-java"><span class="hljs-keyword">package</span> com.demo;
+
+<span class="hljs-keyword">import</span> dev.openfeature.sdk.OpenFeatureAPI;
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Bean;
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Configuration;
+
+<span class="hljs-meta">@Configuration</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OpenFeatureBeans</span> {
+
+    <span class="hljs-meta">@Bean</span>
+    <span class="hljs-keyword">public</span> OpenFeatureAPI <span class="hljs-title function_">openFeatureAPI</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">final</span> <span class="hljs-type">OpenFeatureAPI</span> <span class="hljs-variable">openFeatureAPI</span> <span class="hljs-operator">=</span> OpenFeatureAPI.getInstance();
+
+        <span class="hljs-keyword">return</span> openFeatureAPI;
+    }
+}
+</code></pre>
+<p>Then we can add the REST endpoint definition of <code>/hello</code> endpoint, along with dependency injection for <code>OpenFeatureAPI</code> instance.</p>
+<p>Create the Java class <code>RestHello.java</code> inside the package <code>com.demo</code> and add the following code.</p>
+<pre><code class="hljs language-java"><span class="hljs-keyword">package</span> com.demo;
+
+<span class="hljs-keyword">import</span> dev.openfeature.sdk.Client;
+<span class="hljs-keyword">import</span> dev.openfeature.sdk.OpenFeatureAPI;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.GetMapping;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RestController;
+
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">RestHello</span> {
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> OpenFeatureAPI openFeatureAPI;
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-title function_">RestHello</span><span class="hljs-params">(OpenFeatureAPI OFApi)</span> {
+        <span class="hljs-built_in">this</span>.openFeatureAPI = OFApi;
+    }
+
+    <span class="hljs-meta">@GetMapping("/hello")</span>
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getHello</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">final</span> <span class="hljs-type">Client</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> openFeatureAPI.getClient();
+
+        <span class="hljs-comment">// Evaluate welcome-message feature flag</span>
+        <span class="hljs-keyword">if</span> (client.getBooleanValue(<span class="hljs-string">"welcome-message"</span>, <span class="hljs-literal">false</span>)) {
+            <span class="hljs-keyword">return</span> <span class="hljs-string">"Hello, welcome to this OpenFeature-enabled website!"</span>;
+        }
+
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Hello!"</span>;
+    }
+}
+</code></pre>
+<p>At this point, we are ready to run the initial version of our application.</p>
+<h3 id="step-4-run-the-initial-application">Step 4: Run the initial application</h3>
+<p>Let's compile and run the application.</p>
+<pre><code class="hljs language-shell">mvn clean install
+java -jar target/demo-0.0.1-SNAPSHOT.jar
+</code></pre>
+<pre><code class="hljs language-shell">./gradlew clean build
+java -jar build/libs/demo-0.0.1-SNAPSHOT.jar
+</code></pre>
+<p>Now you can visit the url <a href="http://localhost:8080/hello">http://localhost:8080/hello</a> and observe the message <strong>Hello!</strong>.</p>
+<h3 id="step-5-configure-a-provider-flagd">Step 5: Configure a provider (flagd)</h3>
+<p>Finally, let's add the required code change to <code>OpenFeatureBeans.java</code> class.</p>
+<pre><code class="hljs language-java"><span class="hljs-keyword">package</span> com.demo;
+
+<span class="hljs-comment">// diff-add</span>
+<span class="hljs-keyword">import</span> dev.openfeature.contrib.providers.flagd.FlagdProvider;
+<span class="hljs-comment">// diff-add</span>
+<span class="hljs-keyword">import</span> dev.openfeature.sdk.exceptions.OpenFeatureError;
+<span class="hljs-keyword">import</span> dev.openfeature.sdk.OpenFeatureAPI;
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Bean;
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Configuration;
+
+<span class="hljs-meta">@Configuration</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OpenFeatureBeans</span> {
+
+    <span class="hljs-meta">@Bean</span>
+    <span class="hljs-keyword">public</span> OpenFeatureAPI <span class="hljs-title function_">OpenFeatureAPI</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">final</span> <span class="hljs-type">OpenFeatureAPI</span> <span class="hljs-variable">openFeatureAPI</span> <span class="hljs-operator">=</span> OpenFeatureAPI.getInstance();
+
+<span class="hljs-comment">// diff-add-block-start</span>
+        <span class="hljs-comment">// Use flagd as the OpenFeature provider and use default configurations</span>
+        <span class="hljs-keyword">try</span> {
+            openFeatureAPI.setProviderAndWait(<span class="hljs-keyword">new</span> <span class="hljs-title class_">FlagdProvider</span>());
+        } <span class="hljs-keyword">catch</span> (OpenFeatureError e) {
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RuntimeException</span>(<span class="hljs-string">"Failed to set OpenFeature provider"</span>, e);
+        }
+
+<span class="hljs-comment">// diff-add-block-end</span>
+        <span class="hljs-keyword">return</span> openFeatureAPI;
+    }
+}
+</code></pre>
+<h3 id="step-6-rerun-the-application">Step 6: Rerun the application</h3>
+<p>Let's rerun our Java Spring Boot application.</p>
+<pre><code class="hljs language-shell">mvn clean install
+java -jar target/demo-0.0.1-SNAPSHOT.jar
+</code></pre>
+<pre><code class="hljs language-shell">./gradlew clean build
+java -jar build/libs/demo-0.0.1-SNAPSHOT.jar
+</code></pre>
+<p>Revisit the endpoint <a href="http://localhost:8080/hello">http://localhost:8080/hello</a> and you will see the same value.</p>
+<p>Revisit the endpoint <a href="http://localhost:8080/hello">http://localhost:8080/hello</a> and you will be greeted with <code>Hello, welcome to this OpenFeature-enabled website!</code></p>
+<h2 id="conclusion">Conclusion</h2>
+<p>This walk-through introduced you to the OpenFeature Java SDK and how it can be easily integrated into well-known frameworks
+such as Spring Boot.
+It covered how a provider can be configured to perform the flag evaluation and introduced basic feature
+flagging concepts.
+It also showcased how feature flags can be updated at runtime, without requiring a code change and a redeployment.</p>

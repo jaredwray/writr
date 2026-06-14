@@ -1,0 +1,18 @@
+<h1 id="building-multiple-pages">Building Multiple Pages</h1>
+<p>If you want to build multiple pages you can easily do that by adding in a <code>docs</code> folder to the root of the site folder. Inside of that folder you can add as many pages as you like. Each page will be a markdown file and it will generate a table of contents for you. Here is an example of what it looks like:</p>
+<pre><code>site
+├───site.css
+├───logo.png
+├───favicon.ico
+├───docula.config.mjs
+├───docs
+│   ├───getting-started.md
+│   ├───contributing.md
+│   ├───license.md
+│   ├───code-of-conduct.md
+</code></pre>
+<p>Files in the <code>docs</code> directory become documentation pages. An <code>index.md</code> file inside <code>docs</code> will serve as the main page for the documentation section (e.g., at <code>/docs/</code>). The rest of the files will be added to the navigation. If you want to control the title or order of the pages you can do so by setting the <code>title</code> and <code>order</code> properties in the front matter of each markdown file. Here is an example:</p>
+<pre><code class="hljs language-md">title: Getting Started
+order: 2
+</code></pre>
+<p>If you want your docs to be the root home page (<code>/</code>) instead of the template landing page, simply remove the <code>README.md</code> file from your site directory. Docula will automatically use the first doc as <code>/index.html</code>.</p>

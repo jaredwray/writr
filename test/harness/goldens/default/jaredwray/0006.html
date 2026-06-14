@@ -1,1 +1,76 @@
-<p>@AGENTS.md</p>
+<blockquote>
+<p><strong>Availability:</strong> Registered in both the Node and browser builds.</p>
+</blockquote>
+<h2 id="collection">collection</h2>
+<h3 id="isempty">{{isEmpty}}</h3>
+<p>Inline, subexpression, or block helper that returns true (or the block) if the given collection is empty, or false (or the inverse block, if supplied) if the collection is not empty.</p>
+<p>A collection is considered empty if:</p>
+<ul>
+<li>It is <code>null</code> or <code>undefined</code></li>
+<li>It is an array with length 0</li>
+<li>It is an object with no keys</li>
+</ul>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>collection</code> <strong>{Array|Object}</strong>: The collection to check</li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- array: [] -->
+{{#if (isEmpty array)}}
+  Array is empty
+{{else}}
+  Array has items
+{{/if}}
+&#x3C;!-- results in: 'Array is empty' -->
+
+&#x3C;!-- object: {} -->
+{{#if (isEmpty object)}}
+  Object is empty
+{{/if}}
+
+&#x3C;!-- array: ['a', 'b'] -->
+{{#if (isEmpty array)}}
+  Empty
+{{else}}
+  Has {{array.length}} items
+{{/if}}
+&#x3C;!-- results in: 'Has 2 items' -->
+</code></pre>
+<h3 id="iterate">{{iterate}}</h3>
+<p>Block helper that iterates over an array or object. If an array is given, it iterates over each element with its index. If an object is given, it iterates over each key-value pair. If the collection is null/undefined or not iterable, the inverse block is returned.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>collection</code> <strong>{Object|Array}</strong>: The collection to iterate over</li>
+<li><code>fn</code> <strong>{Function}</strong>: The block function called for each item, receives <code>(value, key/index)</code></li>
+<li><code>inverse</code> <strong>{Function}</strong>: Optional inverse block if collection is empty or invalid</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- array: ['a', 'b', 'c'] -->
+{{#iterate array}}
+  Index {{@index}}: {{this}}
+{{/iterate}}
+&#x3C;!-- results in:
+  Index 0: a
+  Index 1: b
+  Index 2: c
+-->
+
+&#x3C;!-- object: {name: 'John', age: 30} -->
+{{#iterate object}}
+  {{@key}}: {{this}}
+{{/iterate}}
+&#x3C;!-- results in:
+  name: John
+  age: 30
+-->
+
+&#x3C;!-- With inverse block for empty/invalid collections -->
+{{#iterate emptyArray}}
+  {{this}}
+{{else}}
+  No items found
+{{/iterate}}
+&#x3C;!-- results in: 'No items found' -->
+</code></pre>

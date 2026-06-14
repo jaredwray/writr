@@ -1,0 +1,479 @@
+<p><a href="https://github.com/jaredwray/cacheable"></a></p>
+<h1 id="cache-manager">cache-manager</h1>
+<p><a href="https://codecov.io/gh/jaredwray/cacheable"><img src="https://codecov.io/gh/jaredwray/cacheable/branch/main/graph/badge.svg?token=lWZ9OBQ7GM" alt="codecov"></a>
+<a href="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://npmjs.com/package/cache-manager"><img src="https://img.shields.io/npm/dm/cache-manager" alt="npm"></a>
+<a href="https://npmjs.com/package/cache-manager"><img src="https://img.shields.io/npm/v/cache-manager" alt="npm"></a>
+<a href="https://github.com/jaredwray/cacheable/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/cacheable" alt="license"></a></p>
+<h1 id="simple-and-fast-nodejs-caching-module">Simple and fast NodeJS caching module.</h1>
+<p>A cache module for NodeJS that allows easy wrapping of functions in cache, tiered caches, and a consistent interface.</p>
+<ul>
+<li>Made with Typescript and compatible with <a href="https://nodejs.org/docs/latest-v14.x/api/esm.html">ESModules</a>.</li>
+<li>Easy way to wrap any function in cache, supports a mechanism to refresh expiring cache keys in background.</li>
+<li>Tiered caches -- data gets stored in each cache and fetched from the highest priority cache(s) first.</li>
+<li><code>nonBlocking</code> option that optimizes how the system handles multiple stores.</li>
+<li>Use with any <a href="https://keyv.org/">Keyv</a> compatible storage adapter.</li>
+<li>100% test coverage via <a href="https://github.com/vitest-dev/vitest">vitest</a>.</li>
+</ul>
+<p>We moved to using <a href="https://keyv.org/">Keyv</a> which are more actively maintained and have a larger community.</p>
+<p>A special thanks to <a href="https://github.com/timphandev">Tim Phan</a> who took <code>cache-manager</code> v5 and ported it to <a href="https://keyv.org/">Keyv</a> which is the foundation of v6. 🎉 Another special thanks to <a href="https://github.com/douglascayers">Doug Ayers</a> who wrote <code>promise-coalesce</code> which was used in v5 and now embedded in v6.</p>
+<h1 id="migration-from-v6-to-v7">Migration from v6 to v7</h1>
+<p><code>v7</code> has only one breaking change which is changing the return type from <code>null</code> to <code>undefined</code> when there is no data to return. This is to align with the <a href="https://keyv.org">Keyv</a> API and to make it more consistent with the rest of the methods. Below is an example of how to migrate from <code>v6</code> to <code>v7</code>:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { createCache } <span class="hljs-keyword">from</span> <span class="hljs-string">'cache-manager'</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createCache</span>();
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>);
+<span class="hljs-comment">// result will be undefined if the key is not found or expired</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result); <span class="hljs-comment">// undefined</span>
+</code></pre>
+<h1 id="migration-from-v5-to-v6">Migration from v5 to v6</h1>
+<p><code>v6</code> is a major update and has breaking changes primarily around the storage adapters. We have moved to using <a href="https://keyv.org/">Keyv</a> which are more actively maintained and have a larger community. Below are the changes you need to make to migrate from <code>v5</code> to <code>v6</code>. In <code>v5</code> the <code>memoryStore</code> was used to create a memory store, in <code>v6</code> you can use any storage adapter that Keyv supports. Below is an example of how to migrate from <code>v5</code> to <code>v6</code>:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { createCache, memoryStore } <span class="hljs-keyword">from</span> <span class="hljs-string">'cache-manager'</span>;
+
+<span class="hljs-comment">// Create memory cache synchronously</span>
+<span class="hljs-keyword">const</span> memoryCache = <span class="hljs-title function_">createCache</span>(<span class="hljs-title function_">memoryStore</span>({
+  <span class="hljs-attr">max</span>: <span class="hljs-number">100</span>,
+  <span class="hljs-attr">ttl</span>: <span class="hljs-number">10</span> * <span class="hljs-number">1000</span> <span class="hljs-comment">/*milliseconds*/</span>,
+}));
+</code></pre>
+<p>In <code>v6</code> you can use any storage adapter that Keyv supports. Below is an example of using the in memory store with <code>Keyv</code>:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { createCache } <span class="hljs-keyword">from</span> <span class="hljs-string">'cache-manager'</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createCache</span>();
+</code></pre>
+<p>If you would like to do multiple stores you can do the following:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { createCache } <span class="hljs-keyword">from</span> <span class="hljs-string">'cache-manager'</span>;
+<span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> { createKeyv <span class="hljs-keyword">as</span> createKeyvRedis } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> memoryStore = <span class="hljs-title function_">createKeyv</span>();
+<span class="hljs-keyword">const</span> redisStore = <span class="hljs-title function_">createKeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createCache</span>({
+  <span class="hljs-attr">stores</span>: [memoryStore, redisStore],
+});
+</code></pre>
+<p>When doing in memory caching and getting errors on <code>symbol</code> or if the object is coming back wrong like on <code>Uint8Array</code> you will want to set the <code>serialization</code> and <code>deserialization</code> options in Keyv to <code>undefined</code> as it will try to do json serialization.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { createCache } <span class="hljs-keyword">from</span> <span class="hljs-string">"cache-manager"</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"keyv"</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+keyv.<span class="hljs-property">serialize</span> = <span class="hljs-literal">undefined</span>;
+keyv.<span class="hljs-property">deserialize</span> = <span class="hljs-literal">undefined</span>;
+
+<span class="hljs-keyword">const</span> memoryCache = <span class="hljs-title function_">createCache</span>({
+	<span class="hljs-attr">stores</span>: [keyv],
+});
+</code></pre>
+<p>The other option is to set the serialization to something that is not <code>JSON.stringify</code>. You can read more about it here: <a href="https://keyv.org/docs/keyv/#custom-serializers">https://keyv.org/docs/keyv/#custom-serializers</a></p>
+<p>If you would like a more robust in memory storage adapter you can use <code>CacheableMemory</code> from Cacheable. Below is an example of how to migrate from <code>v5</code> to <code>v6</code> using <code>CacheableMemory</code>:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { createCache } <span class="hljs-keyword">from</span> <span class="hljs-string">'cache-manager'</span>;
+<span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createCache</span>({
+  <span class="hljs-attr">stores</span>: [<span class="hljs-title function_">createKeyv</span>({ <span class="hljs-attr">ttl</span>: <span class="hljs-number">60000</span>, <span class="hljs-attr">lruSize</span>: <span class="hljs-number">5000</span> })],
+});
+</code></pre>
+<p>To learn more about <code>CacheableMemory</code> please visit: <a href="http://cacheable.org/docs/cacheable/#cacheablememory---in-memory-cache">http://cacheable.org/docs/cacheable/#cacheablememory---in-memory-cache</a></p>
+<p>If you are still wanting to use the legacy storage adapters you can use the <code>KeyvAdapter</code> to wrap the storage adapter. Below is an example of how to migrate from <code>v5</code> to <code>v6</code> using <code>cache-manager-redis-yet</code> by going to <a href="#using-legacy-storage-adapters">Using Legacy Storage Adapters</a>.</p>
+<p>If you are looking for older documentation you can find it here:</p>
+<ul>
+<li><a href="https://github.com/jaredwray/cacheable/blob/main/packages/cache-manager/READMEv5.md">v5 Documentation</a></li>
+<li><a href="https://github.com/jaredwray/cacheable/blob/main/packages/cache-manager/READMEv4.md">v4 Documentation</a></li>
+</ul>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#quick-start">Quick start</a></li>
+<li><a href="#using-cacheablememory-or-lru-cache-as-storage-adapter">Using CacheableMemory or lru-cache as storage adapter</a>
+<ul>
+<li><a href="#options">Options</a></li>
+</ul>
+</li>
+<li><a href="#methods">Methods</a>
+<ul>
+<li><a href="#set">set</a></li>
+<li><a href="#mset">mset</a></li>
+<li><a href="#get">get</a></li>
+<li><a href="#mget">mget</a></li>
+<li><a href="#ttl">ttl</a></li>
+<li><a href="#del">del</a></li>
+<li><a href="#mdel">mdel</a></li>
+<li><a href="#clear">clear</a></li>
+<li><a href="#wrap">wrap</a></li>
+<li><a href="#disconnect">disconnect</a></li>
+</ul>
+</li>
+<li><a href="#properties">Properties</a>
+<ul>
+<li><a href="#cacheid">cacheId</a></li>
+<li><a href="#stores">stores</a></li>
+</ul>
+</li>
+<li><a href="#events">Events</a>
+<ul>
+<li><a href="#set-1">set</a></li>
+<li><a href="#del-1">del</a></li>
+<li><a href="#clear-1">clear</a></li>
+<li><a href="#refresh">refresh</a></li>
+</ul>
+</li>
+<li><a href="#doing-iteration-on-stores">Doing Iteration on Stores</a></li>
+<li><a href="#update-on-redis-and-ioredis-support">Update on redis and ioredis Support</a></li>
+<li><a href="#using-legacy-storage-adapters">Using Legacy Storage Adapters</a></li>
+<li><a href="#contribute">Contribute</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h1 id="installation">Installation</h1>
+<pre><code class="hljs language-sh">npm install cache-manager
+</code></pre>
+<p>By default, everything is stored in memory; you can optionally also install a storage adapter; choose one from any of the storage adapters supported by Keyv:</p>
+<pre><code class="hljs language-sh">npm install @keyv/redis
+npm install @keyv/memcache
+npm install @keyv/mongo
+npm install @keyv/sqlite
+npm install @keyv/postgres
+npm install @keyv/mysql
+npm install @keyv/etcd
+</code></pre>
+<p>In addition Keyv supports other storage adapters such as <code>lru-cache</code> and <code>CacheableMemory</code> from Cacheable (more examples below). Please read <a href="https://keyv.org/docs/">Keyv document</a> for more information.</p>
+<h1 id="quick-start">Quick start</h1>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> { createCache } <span class="hljs-keyword">from</span> <span class="hljs-string">'cache-manager'</span>;
+
+<span class="hljs-comment">// Memory store by default</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createCache</span>()
+
+<span class="hljs-comment">// Single store which is in memory</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createCache</span>({
+  <span class="hljs-attr">stores</span>: [<span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>()],
+})
+</code></pre>
+<p>Here is an example of doing layer 1 and layer 2 caching with the in-memory being <code>CacheableMemory</code> from Cacheable and the second layer being <code>@keyv/redis</code>:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> { createCache } <span class="hljs-keyword">from</span> <span class="hljs-string">'cache-manager'</span>;
+
+<span class="hljs-comment">// Multiple stores</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createCache</span>({
+  <span class="hljs-attr">stores</span>: [
+    <span class="hljs-comment">//  High performance in-memory cache with LRU and TTL</span>
+    <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({
+      <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>({ <span class="hljs-attr">ttl</span>: <span class="hljs-number">60000</span>, <span class="hljs-attr">lruSize</span>: <span class="hljs-number">5000</span> }),
+    }),
+
+    <span class="hljs-comment">//  Redis Store</span>
+    <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({
+      <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>),
+    }),
+  ],
+})
+</code></pre>
+<p>Once it is created, you can use the cache object to set, get, delete, and wrap functions in cache.</p>
+<pre><code class="hljs language-ts">
+<span class="hljs-comment">// With default ttl and refreshThreshold</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createCache</span>({
+  <span class="hljs-attr">ttl</span>: <span class="hljs-number">10000</span>,
+  <span class="hljs-attr">refreshThreshold</span>: <span class="hljs-number">3000</span>,
+})
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>)
+<span class="hljs-comment">// => bar</span>
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>)
+<span class="hljs-comment">// => bar</span>
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">del</span>(<span class="hljs-string">'foo'</span>)
+<span class="hljs-comment">// => true</span>
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>)
+<span class="hljs-comment">// => null</span>
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">wrap</span>(<span class="hljs-string">'key'</span>, <span class="hljs-function">() =></span> <span class="hljs-string">'value'</span>)
+<span class="hljs-comment">// => value</span>
+</code></pre>
+<h1 id="using-cacheablememory-or-lru-cache-as-storage-adapter">Using CacheableMemory or lru-cache as storage adapter</h1>
+<p>Because we are using <a href="https://keyv.org/">Keyv</a>, you can use any storage adapter that Keyv supports such as <code>lru-cache</code> or <code>CacheableMemory</code> from Cacheable. Below is an example of using <code>CacheableMemory</code>:</p>
+<p>In this example we are using <code>CacheableMemory</code> from Cacheable which is a fast in-memory cache that supports LRU and and TTL expiration.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { createCache } <span class="hljs-keyword">from</span> <span class="hljs-string">'cache-manager'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">KeyvCacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvCacheableMemory</span>({ <span class="hljs-attr">ttl</span>: <span class="hljs-number">60000</span>, <span class="hljs-attr">lruSize</span>: <span class="hljs-number">5000</span> });
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store });
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createCache</span>({ <span class="hljs-attr">stores</span>: [keyv] });
+</code></pre>
+<p>Here is an example using <code>lru-cache</code>:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { createCache } <span class="hljs-keyword">from</span> <span class="hljs-string">'cache-manager'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-variable constant_">LRU</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'lru-cache'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title function_">LRU</span>({ <span class="hljs-attr">max</span>: <span class="hljs-number">5000</span>, <span class="hljs-attr">maxAge</span>: <span class="hljs-number">60000</span> }) });
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createCache</span>({ <span class="hljs-attr">stores</span>: [keyv] });
+</code></pre>
+<h2 id="options">Options</h2>
+<ul>
+<li>
+<p><strong>stores</strong>?: Keyv[]</p>
+<p>List of Keyv instance. Please refer to the <a href="https://keyv.org/docs/#3.-create-a-new-keyv-instance">Keyv document</a> for more information.</p>
+</li>
+<li>
+<p><strong>ttl</strong>?: number - Default time to live in milliseconds.</p>
+<p>The time to live in milliseconds. This is the maximum amount of time that an item can be in the cache before it is removed.</p>
+</li>
+<li>
+<p><strong>refreshThreshold</strong>?: number | (value:T) => number - Default refreshThreshold in milliseconds. You can also provide a function that will return the refreshThreshold based on the value.</p>
+<p>If the remaining TTL is less than <strong>refreshThreshold</strong>, the system will update the value asynchronously in background.</p>
+</li>
+<li>
+<p><strong>refreshAllStores</strong>?: boolean - Default false</p>
+<p>If set to true, the system will update the value of all stores when the refreshThreshold is met. Otherwise, it will only update from the top to the store that triggered the refresh.</p>
+</li>
+<li>
+<p><strong>nonBlocking</strong>?: boolean - Default false</p>
+<p>If set to true, the system will not block when multiple stores are used. Here is how it affects the type of functions:</p>
+<ul>
+<li><code>set and mset</code> - will not wait for all stores to finish.</li>
+<li><code>get and mget</code> - will return the first (fastest) value found.</li>
+<li><code>del and mdel</code> - will not wait for all stores to finish.</li>
+<li><code>clear</code> - will not wait for all stores to finish.</li>
+<li><code>wrap</code> - will do the same as <code>get</code> and <code>set</code> (return the first value found and not wait for all stores to finish).</li>
+</ul>
+</li>
+<li>
+<p><strong>cacheId</strong>?: string - Defaults to random string</p>
+<p>Unique identifier for the cache instance. This is primarily used to not have conflicts when using <code>wrap</code> with multiple cache instances.</p>
+</li>
+</ul>
+<h1 id="methods">Methods</h1>
+<h2 id="set">set</h2>
+<p><code>set(key, value, [ttl]): Promise&#x3C;value></code></p>
+<p>Sets a key value pair. It is possible to define a ttl (in milliseconds). An error will be throw on any failed</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key-1'</span>, <span class="hljs-string">'value 1'</span>)
+
+<span class="hljs-comment">// expires after 5 seconds</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key 2'</span>, <span class="hljs-string">'value 2'</span>, <span class="hljs-number">5000</span>)
+</code></pre>
+<p>See unit tests in <a href="./test/set.test.ts"><code>test/set.test.ts</code></a> for more information.</p>
+<h2 id="mset">mset</h2>
+<p><code>mset(keys: [ { key, value, ttl } ]): Promise&#x3C;true></code></p>
+<p>Sets multiple key value pairs. It is possible to define a ttl (in milliseconds). An error will be throw on any failed</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">mset</span>([
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key-1'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value 1'</span> },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key-2'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value 2'</span>, <span class="hljs-attr">ttl</span>: <span class="hljs-number">5000</span> },
+]);
+</code></pre>
+<h2 id="get">get</h2>
+<p><code>get(key): Promise&#x3C;value></code></p>
+<p>Gets a saved value from the cache. Returns a null if not found or expired. If the value was found it returns the value.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>)
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>)
+<span class="hljs-comment">// => value</span>
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>)
+<span class="hljs-comment">// => null</span>
+</code></pre>
+<p>See unit tests in <a href="./test/get.test.ts"><code>test/get.test.ts</code></a> for more information.</p>
+<h2 id="mget">mget</h2>
+<p><code>mget(keys: [key]): Promise&#x3C;value[]></code></p>
+<p>Gets multiple saved values from the cache. Returns a null if not found or expired. If the value was found it returns the value.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">mset</span>([
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key-1'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value 1'</span> },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key-2'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value 2'</span> },
+]);
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">mget</span>([<span class="hljs-string">'key-1'</span>, <span class="hljs-string">'key-2'</span>, <span class="hljs-string">'key-3'</span>])
+<span class="hljs-comment">// => ['value 1', 'value 2', null]</span>
+</code></pre>
+<h2 id="ttl">ttl</h2>
+<p><code>ttl(key): Promise&#x3C;number | null></code></p>
+<p>Gets the expiration time of a key in milliseconds. Returns a null if not found or expired.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>, <span class="hljs-number">1000</span>); <span class="hljs-comment">// expires after 1 second</span>
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">ttl</span>(<span class="hljs-string">'key'</span>); <span class="hljs-comment">// => the expiration time in milliseconds</span>
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// => null</span>
+</code></pre>
+<p>See unit tests in <a href="./test/ttl.test.ts"><code>test/ttl.test.ts</code></a> for more information.</p>
+<h2 id="del">del</h2>
+<p><code>del(key): Promise&#x3C;true></code></p>
+<p>Delete a key, an error will be throw on any failed.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>)
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>)
+<span class="hljs-comment">// => value</span>
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">del</span>(<span class="hljs-string">'key'</span>)
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>)
+<span class="hljs-comment">// => null</span>
+</code></pre>
+<p>See unit tests in <a href="./test/del.test.ts"><code>test/del.test.ts</code></a> for more information.</p>
+<h2 id="mdel">mdel</h2>
+<p><code>mdel(keys: [key]): Promise&#x3C;true></code></p>
+<p>Delete multiple keys, an error will be throw on any failed.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">mset</span>([
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key-1'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value 1'</span> },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key-2'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value 2'</span> },
+]);
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">mdel</span>([<span class="hljs-string">'key-1'</span>, <span class="hljs-string">'key-2'</span>])
+</code></pre>
+<h2 id="clear">clear</h2>
+<p><code>clear(): Promise&#x3C;true></code></p>
+<p>Flush all data, an error will be throw on any failed.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key-1'</span>, <span class="hljs-string">'value 1'</span>)
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key-2'</span>, <span class="hljs-string">'value 2'</span>)
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key-1'</span>)
+<span class="hljs-comment">// => value 1</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key-2'</span>)
+<span class="hljs-comment">// => value 2</span>
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">clear</span>()
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key-1'</span>)
+<span class="hljs-comment">// => null</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key-2'</span>)
+<span class="hljs-comment">// => null</span>
+</code></pre>
+<p>See unit tests in <a href="./test/clear.test.ts"><code>test/clear.test.ts</code></a> for more information.</p>
+<h2 id="wrap">wrap</h2>
+<p><code>wrap(key, fn: async () => value, [ttl], [refreshThreshold]): Promise&#x3C;value></code></p>
+<p>Alternatively, with optional parameters as options object supporting a <code>raw</code> parameter:</p>
+<p><code>wrap(key, fn: async () => value, { ttl?: number, refreshThreshold?: number, raw?: true }): Promise&#x3C;value></code></p>
+<p>Wraps a function in cache. The first time the function is run, its results are stored in cache so subsequent calls retrieve from cache instead of calling the function.</p>
+<p>If <code>refreshThreshold</code> is set and the remaining TTL is less than <code>refreshThreshold</code>, the system will update the value asynchronously. In the meantime, the system will return the old value until expiration. You can also provide a function that will return the refreshThreshold based on the value <code>(value:T) => number</code>.</p>
+<p>If the object format for the optional parameters is used, an additional <code>raw</code> parameter can be applied, changing the function return type to raw data including expiration timestamp as <code>{ value: [data], expires: [timestamp] }</code>.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">wrap</span>(<span class="hljs-string">'key'</span>, <span class="hljs-function">() =></span> <span class="hljs-number">1</span>, <span class="hljs-number">5000</span>, <span class="hljs-number">3000</span>)
+<span class="hljs-comment">// call function then save the result to cache</span>
+<span class="hljs-comment">// =>  1</span>
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">wrap</span>(<span class="hljs-string">'key'</span>, <span class="hljs-function">() =></span> <span class="hljs-number">2</span>, <span class="hljs-number">5000</span>, <span class="hljs-number">3000</span>)
+<span class="hljs-comment">// return data from cache, function will not be called again</span>
+<span class="hljs-comment">// => 1</span>
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">wrap</span>(<span class="hljs-string">'key'</span>, <span class="hljs-function">() =></span> <span class="hljs-number">2</span>, { <span class="hljs-attr">ttl</span>: <span class="hljs-number">5000</span>, <span class="hljs-attr">refreshThreshold</span>: <span class="hljs-number">3000</span>, <span class="hljs-attr">raw</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-comment">// returns raw data including expiration timestamp</span>
+<span class="hljs-comment">// => { value: 1, expires: [timestamp] }</span>
+
+<span class="hljs-comment">// wait 3 seconds</span>
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">sleep</span>(<span class="hljs-number">3000</span>)
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">wrap</span>(<span class="hljs-string">'key'</span>, <span class="hljs-function">() =></span> <span class="hljs-number">2</span>, <span class="hljs-number">5000</span>, <span class="hljs-number">3000</span>)
+<span class="hljs-comment">// return data from cache, call function in background and save the result to cache</span>
+<span class="hljs-comment">// =>  1</span>
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">wrap</span>(<span class="hljs-string">'key'</span>, <span class="hljs-function">() =></span> <span class="hljs-number">3</span>, <span class="hljs-number">5000</span>, <span class="hljs-number">3000</span>)
+<span class="hljs-comment">// return data from cache, function will not be called</span>
+<span class="hljs-comment">// =>  2</span>
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">wrap</span>(<span class="hljs-string">'key'</span>, <span class="hljs-function">() =></span> <span class="hljs-number">4</span>, <span class="hljs-number">5000</span>, <span class="hljs-function">() =></span> <span class="hljs-number">3000</span>);
+<span class="hljs-comment">// return data from cache, function will not be called</span>
+<span class="hljs-comment">// =>  4</span>
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">wrap</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'failed'</span>)
+})
+<span class="hljs-comment">// => error</span>
+</code></pre>
+<p><strong>NOTES:</strong></p>
+<ul>
+<li>The store that will be checked for refresh is the one where the key will be found first (highest priority).</li>
+<li>If the threshold is low and the worker function is slow, the key may expire and you may encounter a racing condition with updating values.</li>
+<li>If no <code>ttl</code> is set for the key, the refresh mechanism will not be triggered.</li>
+</ul>
+<p>See unit tests in <a href="./test/wrap.test.ts"><code>test/wrap.test.ts</code></a> for more information.</p>
+<h2 id="disconnect">disconnect</h2>
+<p><code>disconnect(): Promise&#x3C;void></code></p>
+<p>Will disconnect from the relevant store(s). It is highly recommended to use this when using a <a href="https://keyv.org/">Keyv</a> storage adapter that requires a disconnect. For each storage adapter, the use case for when to use disconnect is different. An example is that <code>@keyv/redis</code> should be used only when you are done with the cache.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<p>See unit tests in <a href="./test/disconnect.test.ts"><code>test/disconnect.test.ts</code></a> for more information.</p>
+<h1 id="properties">Properties</h1>
+<h2 id="cacheid">cacheId</h2>
+<p><code>cacheId(): string</code></p>
+<p>Returns cache instance id. This is primarily used to not have conflicts when using <code>wrap</code> with multiple cache instances.</p>
+<h2 id="stores">stores</h2>
+<p><code>stores(): Keyv[]</code></p>
+<p>Returns the list of Keyv instances. This can be used to get the list of stores and then use the Keyv API to interact with the store directly.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createCache</span>({<span class="hljs-attr">cacheId</span>: <span class="hljs-string">'my-cache-id'</span>});
+cache.<span class="hljs-title function_">cacheId</span>(); <span class="hljs-comment">// => 'my-cache-id'</span>
+</code></pre>
+<p>See unit tests in <a href="./test/cache-id.test.ts"><code>test/cache-id.test.ts</code></a> for more information.</p>
+<h1 id="events">Events</h1>
+<h2 id="set-1">set</h2>
+<p>Fired when a key has been added or changed.</p>
+<pre><code class="hljs language-ts">cache.<span class="hljs-title function_">on</span>(<span class="hljs-string">'set'</span>, <span class="hljs-function">(<span class="hljs-params">{ key, value, error }</span>) =></span> {
+	<span class="hljs-comment">// ... do something ...</span>
+})
+</code></pre>
+<h2 id="del-1">del</h2>
+<p>Fired when a key has been removed manually.</p>
+<pre><code class="hljs language-ts">cache.<span class="hljs-title function_">on</span>(<span class="hljs-string">'del'</span>, <span class="hljs-function">(<span class="hljs-params">{ key, error }</span>) =></span> {
+	<span class="hljs-comment">// ... do something ...</span>
+})
+</code></pre>
+<h2 id="clear-1">clear</h2>
+<p>Fired when the cache has been flushed.</p>
+<pre><code class="hljs language-ts">cache.<span class="hljs-title function_">on</span>(<span class="hljs-string">'clear'</span>, <span class="hljs-function">(<span class="hljs-params">error</span>) =></span> {
+  <span class="hljs-keyword">if</span> (error) {
+    <span class="hljs-comment">// ... do something ...</span>
+  }
+})
+</code></pre>
+<h2 id="refresh">refresh</h2>
+<p>Fired when the cache has been refreshed in the background.</p>
+<pre><code class="hljs language-ts">cache.<span class="hljs-title function_">on</span>(<span class="hljs-string">'refresh'</span>, <span class="hljs-function">(<span class="hljs-params">{ key, value, error }</span>) =></span> {
+  <span class="hljs-keyword">if</span> (error) {
+    <span class="hljs-comment">// ... do something ...</span>
+  }
+})
+</code></pre>
+<p>See unit tests in <a href="./test/events.test.ts"><code>test/events.test.ts</code></a> for more information.</p>
+<h1 id="doing-iteration-on-stores">Doing Iteration on Stores</h1>
+<p>You can use the <code>stores</code> method to get the list of stores and then use the Keyv API to interact with the store directly. Below is an example of iterating over all stores and getting all keys:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">import</span> { createCache } <span class="hljs-keyword">from</span> <span class="hljs-string">'cache-manager'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+<span class="hljs-keyword">const</span> keyvRedis = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createCache</span>({
+  <span class="hljs-attr">stores</span>: [keyv, keyvRedis],
+});
+
+<span class="hljs-comment">// add some data</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key-1'</span>, <span class="hljs-string">'value 1'</span>);
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key-2'</span>, <span class="hljs-string">'value 2'</span>);
+
+<span class="hljs-comment">// get the store you want to iterate over. In this example we are using the second store (redis)</span>
+<span class="hljs-keyword">const</span> store = cache.<span class="hljs-property">stores</span>[<span class="hljs-number">1</span>];
+
+<span class="hljs-keyword">if</span>(store?.<span class="hljs-property">iterator</span>) {
+  <span class="hljs-keyword">for</span> <span class="hljs-title function_">await</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> store.<span class="hljs-title function_">iterator</span>({})) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key, value);
+  }
+}
+</code></pre>
+<p>WARNING: Be careful when using <code>iterator</code> as it can cause major performance issues with the amount of data being retrieved. Also, Not all storage adapters support <code>iterator</code> so you may need to check the documentation for the storage adapter you are using.</p>
+<h1 id="update-on-redis-and-ioredis-support">Update on redis and ioredis Support</h1>
+<p>We will not be supporting <code>cache-manager-ioredis-yet</code> or <code>cache-manager-redis-yet</code> in the future as we have moved to using <code>Keyv</code> as the storage adapter <code>@keyv/redis</code>.</p>
+<h1 id="using-legacy-storage-adapters">Using Legacy Storage Adapters</h1>
+<p>There are many storage adapters built for <code>cache-manager</code> and because of that we wanted to provide a way to use them with <code>KeyvAdapter</code>. Below is an example of using <code>cache-manager-redis-yet</code>:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { createCache, <span class="hljs-title class_">KeyvAdapter</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cache-manager'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> { redisStore } <span class="hljs-keyword">from</span> <span class="hljs-string">'cache-manager-redis-yet'</span>;
+
+<span class="hljs-keyword">const</span> adapter = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvAdapter</span>( <span class="hljs-keyword">await</span> <span class="hljs-title function_">redisStore</span>() );
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: adapter });
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createCache</span>({ <span class="hljs-attr">stores</span>: [keyv]});
+</code></pre>
+<p>This adapter will allow you to add in any storage adapter. If there are issues it needs to follow <code>CacheManagerStore</code> interface.</p>
+<h1 id="contribute">Contribute</h1>
+<p>If you would like to contribute to the project, please read how to contribute here <a href="https://github.com/jaredwray/cacheable/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>.</p>
+<h1 id="license">License</h1>
+<p><a href="./LICENSE">MIT © Jared Wray </a></p>

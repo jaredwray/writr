@@ -1,0 +1,31 @@
+<h1 id="v4-to-v5-migration">v4 to v5 Migration</h1>
+<p>Keyv v5 is a major release with breaking changes. The biggest breaking changes are the removal of the URI. Here is how you can change your code to work with Keyv v5.</p>
+<h2 id="before-with-v4">Before with v4</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+</code></pre>
+<p>In the past this would have worked but now you need to pass in the store either directly to the constructor like below or via the options object parameter called <code>store</code>. The constructor will take the storage adapter or the options as the first parameter.</p>
+<h2 id="now-with-v5">Now with v5</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>));
+</code></pre>
+<h2 id="an-example-with-options">An example with options</h2>
+<p>When passing in options you can do the following using the <code>store</code> parameter:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>,{ <span class="hljs-attr">namespace</span>: <span class="hljs-string">'my-namespace'</span> }));
+</code></pre>
+<h2 id="removing-support-for-nodejs-18-and-below">Removing support for Nodejs 18 and below</h2>
+<p>We have stopped testing on Nodejs 18 and below and while we do not force or require you to use Nodejs 20+ we do recommend it.</p>
+<h1 id="new-features">New Features</h1>
+<p>Here are a list of new features in Keyv v5:</p>
+<ul>
+<li><strong>Typescript Support</strong>: Keyv v5 is written in Typescript and has full typescript support.</li>
+<li><strong>ESM Support</strong>: Keyv v5 is written in ESM and has full ESM support.</li>
+<li><strong>Event Emitter</strong>: Keyv v5 is now an event emitter and emits events for <code>set</code>, <code>delete</code>, <code>clear</code>, and <code>error</code> with no reliance on third party libraries.</li>
+<li><strong>Built in Statistics</strong>: Keyv v5 has built in statistics for <code>hits</code>, <code>misses</code>, <code>sets</code>, <code>deletes</code>, and <code>errors</code>.</li>
+<li><strong>Hooks</strong>: Keyv v5 has hooks for pre and post processing on <code>set()</code>, <code>get()</code>, <code>getMany()</code>, and <code>delete()</code>.</li>
+</ul>
+<p>You can learn about any of these features in the Keyv API documentation.</p>

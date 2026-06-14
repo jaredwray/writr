@@ -1,0 +1,94 @@
+<h1 id="including-assets-in-markdown">Including Assets in Markdown</h1>
+<p>Non-markdown files placed inside the <code>docs/</code> or <code>changelog/</code> directories are automatically copied to the build output, preserving their relative paths. This lets you keep images and other assets alongside the markdown that references them.</p>
+<p>For <code>docs/</code>, only assets that are actually referenced in a document's markdown content are copied. If a file exists in the <code>docs/</code> directory but is not referenced by any document, it will not be included in the build output. For <code>changelog/</code>, all assets are copied regardless of whether they are referenced.</p>
+<pre><code>site
+├───docs
+│   ├───getting-started.md
+│   ├───images
+│   │   ├───architecture.png
+│   │   └───screenshot.jpg
+│   └───assets
+│       └───example.pdf
+├───changelog
+│   ├───2025-01-15-initial-release.md
+│   └───images
+│       └───release-banner.png
+</code></pre>
+<p>After building, these files appear at the same relative paths under <code>dist/</code>:</p>
+<pre><code>dist
+├───docs
+│   ├───getting-started
+│   │   └───index.html
+│   ├───images
+│   │   ├───architecture.png
+│   │   └───screenshot.jpg
+│   └───assets
+│       └───example.pdf
+├───changelog
+│   ├───initial-release
+│   │   └───index.html
+│   └───images
+│       └───release-banner.png
+</code></pre>
+<p>Reference assets from your markdown using relative paths:</p>
+<pre><code class="hljs language-md">![<span class="hljs-string">Architecture</span>](<span class="hljs-link">images/architecture.png</span>)
+[<span class="hljs-string">Download PDF</span>](<span class="hljs-link">assets/example.pdf</span>)
+</code></pre>
+<h2 id="supported-extensions">Supported Extensions</h2>
+<p>By default the following file extensions are copied:</p>
+<ul>
+<li><strong>Images:</strong> <code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.gif</code>, <code>.svg</code>, <code>.webp</code>, <code>.avif</code>, <code>.ico</code></li>
+<li><strong>Documents:</strong> <code>.pdf</code>, <code>.zip</code>, <code>.tar</code>, <code>.gz</code></li>
+<li><strong>Media:</strong> <code>.mp4</code>, <code>.webm</code>, <code>.ogg</code>, <code>.mp3</code>, <code>.wav</code></li>
+<li><strong>Data:</strong> <code>.json</code>, <code>.xml</code>, <code>.csv</code>, <code>.txt</code></li>
+</ul>
+<p>Files with extensions not in this list are ignored. To customize the list, set <code>allowedAssets</code> in your config:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">allowedAssets</span>: [<span class="hljs-string">'.png'</span>, <span class="hljs-string">'.jpg'</span>, <span class="hljs-string">'.gif'</span>, <span class="hljs-string">'.svg'</span>, <span class="hljs-string">'.pdf'</span>, <span class="hljs-string">'.custom'</span>],
+};
+</code></pre>
+<h1 id="public-folder">Public Folder</h1>
+<p>If you have static assets like images, fonts, or other files that need to be copied directly to your built site, you can use a <code>public</code> folder. Any files placed in the <code>public</code> folder within your site directory will be automatically copied to the root of your <code>dist</code> output folder during the build process.</p>
+<h2 id="usage">Usage</h2>
+<p>Create a <code>public</code> folder inside your site directory:</p>
+<pre><code>site
+├───public
+│   ├───images
+│   │   ├───screenshot.png
+│   │   └───banner.jpg
+│   ├───fonts
+│   │   └───custom-font.woff2
+│   └───downloads
+│       └───example.pdf
+├───docs
+├───logo.svg
+├───favicon.ico
+└───docula.config.mjs
+</code></pre>
+<p>When you run the build command, all contents of the <code>public</code> folder will be copied to the <code>dist</code> folder:</p>
+<pre><code>dist
+├───images
+│   ├───screenshot.png
+│   └───banner.jpg
+├───fonts
+│   └───custom-font.woff2
+├───downloads
+│   └───example.pdf
+├───index.html
+└───...
+</code></pre>
+<p>The build output will show each file being copied:</p>
+<pre><code>Public folder found, copying contents to dist...
+  Copied: images/screenshot.png
+  Copied: images/banner.jpg
+  Copied: fonts/custom-font.woff2
+  Copied: downloads/example.pdf
+Build completed in 1234ms
+</code></pre>
+<p>This is useful for:</p>
+<ul>
+<li>Images referenced in your documentation</li>
+<li>Downloadable files (PDFs, zip archives, etc.)</li>
+<li>Custom fonts</li>
+<li>Any other static assets that need to be served from your site</li>
+</ul>

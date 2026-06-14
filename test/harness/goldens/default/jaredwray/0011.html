@@ -1,37 +1,203 @@
-<h1 id="keyvpostgres">@keyv/postgres</h1>
-<blockquote>
-<p>PostgreSQL storage adapter for Keyv</p>
-</blockquote>
-<p><a href="https://github.com/jaredwray/keyv/actions/workflows/btestsuild.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
-<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
-<a href="https://www.npmjs.com/package/@keyv/postgres"><img src="https://img.shields.io/npm/v/@keyv/postgres.svg" alt="npm"></a>
-<a href="https://npmjs.com/package/@keyv/postgres"><img src="https://img.shields.io/npm/dm/@keyv/postgres" alt="npm"></a></p>
-<p>PostgreSQL storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a>.</p>
-<p>Requires Postgres 9.5 or newer for <code>ON CONFLICT</code> support to allow performant upserts. <a href="https://stackoverflow.com/questions/17267417/how-to-upsert-merge-insert-on-duplicate-update-in-postgresql/17267423#17267423">Why?</a></p>
-<h2 id="install">Install</h2>
-<pre><code class="hljs language-shell">npm install --save keyv @keyv/postgres
+<p>import FlagdContent from '@site/src/components/custom/tutorial/flagd-content.mdx';
+import FlagdChangeContent from '@site/src/components/custom/tutorial/flagd-change-content.mdx';</p>
+<h1 id="getting-started-with-the-openfeature-net-sdk">Getting Started with the OpenFeature .NET SDK</h1>
+<h2 id="introduction">Introduction</h2>
+<p>This walk-through teaches you the basics of using OpenFeature in .NET within a ASP.NET Core Web application.</p>
+<p>You'll learn how to:</p>
+<ul>
+<li>Integrate the OpenFeature .NET SDK</li>
+<li>Install and configure the OpenFeature provider</li>
+<li>Perform basic feature flagging</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<p>This walk-through assumes that:</p>
+<ul>
+<li>You have a basic knowledge of C# and .NET</li>
+<li>You have installed the <a href="https://dotnet.microsoft.com/en-us/">.NET 8</a> or later SDK</li>
+<li>You have Docker installed and running on the host system</li>
+</ul>
+<h2 id="walk-through">Walk-through</h2>
+<h3 id="step-1-create-a-net-8-web-application">Step 1: Create a .NET 8 Web application</h3>
+<p>To get started you can use the .NET SDK to initialise a web application.
+Open a terminal (<strong>shell</strong>, <strong>Command Prompt</strong>, or <strong>bash</strong>) and paste the following commands:</p>
+<pre><code class="hljs language-shell">dotnet new webapi -o openfeature-dotnet-sample
+cd openfeature-dotnet-sample
+dotnet run
 </code></pre>
-<h2 id="usage">Usage</h2>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'keyv'</span>);
+<h3 id="step-2-add-dependencies">Step 2: Add dependencies</h3>
+<p>With NuGet you can install the latest <a href="https://www.nuget.org/packages/OpenFeature">OpenFeature</a> package into your .NET web application.</p>
+<pre><code class="hljs language-shell">dotnet add package OpenFeature
+dotnet add package OpenFeature.Hosting
+</code></pre>
+<h3 id="step-3-add-code">Step 3: Add code</h3>
+<p>The following will initialise an <code>InMemoryProvider</code> for use within the web application.
+Open a code editor and add the C# code below to the Program.cs.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// diff-add-block-start</span>
+<span class="hljs-keyword">using</span> Microsoft.AspNetCore.Mvc;
+<span class="hljs-keyword">using</span> OpenFeature;
+<span class="hljs-keyword">using</span> OpenFeature.Hosting.Providers.Memory;
+<span class="hljs-keyword">using</span> OpenFeature.Providers.Memory;
+<span class="hljs-comment">// diff-add-block-end</span>
 
-<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>);
-keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, handleConnectionError);
+<span class="hljs-keyword">var</span> builder = WebApplication.CreateBuilder(<span class="hljs-keyword">args</span>);
+
+<span class="hljs-comment">// Add services to the container.</span>
+<span class="hljs-comment">// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi</span>
+builder.Services.AddOpenApi();
+
+<span class="hljs-comment">// diff-add-block-start</span>
+<span class="hljs-comment">// Register your feature flag provider</span>
+builder.Services.AddOpenFeature(featureBuilder =>
+{
+    featureBuilder
+        .AddInMemoryProvider(_ => <span class="hljs-keyword">new</span> Dictionary&#x3C;<span class="hljs-built_in">string</span>, Flag>()
+        {
+            {
+                <span class="hljs-string">"welcome-message"</span>, <span class="hljs-keyword">new</span> Flag&#x3C;<span class="hljs-built_in">bool</span>>(
+                    <span class="hljs-keyword">new</span> Dictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">bool</span>> { { <span class="hljs-string">"show"</span>, <span class="hljs-literal">true</span> }, { <span class="hljs-string">"hide"</span>, <span class="hljs-literal">false</span> } }, <span class="hljs-string">"show"</span>)
+            }
+        });
+});
+<span class="hljs-comment">// diff-add-block-end</span>
+
+<span class="hljs-keyword">var</span> app = builder.Build();
+
+<span class="hljs-comment">// Configure the HTTP request pipeline.</span>
+<span class="hljs-keyword">if</span> (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+}
+
+app.UseHttpsRedirection();
+
+<span class="hljs-comment">//diff-remove-block-start</span>
+<span class="hljs-keyword">var</span> summaries = <span class="hljs-keyword">new</span>[]
+{
+    <span class="hljs-string">"Freezing"</span>, <span class="hljs-string">"Bracing"</span>, <span class="hljs-string">"Chilly"</span>, <span class="hljs-string">"Cool"</span>, <span class="hljs-string">"Mild"</span>, <span class="hljs-string">"Warm"</span>, <span class="hljs-string">"Balmy"</span>, <span class="hljs-string">"Hot"</span>, <span class="hljs-string">"Sweltering"</span>, <span class="hljs-string">"Scorching"</span>
+};
+<span class="hljs-comment">//diff-remove-block-end</span>
+
+<span class="hljs-comment">//diff-remove-block-start</span>
+app.MapGet(<span class="hljs-string">"/weatherforecast"</span>, () =>
+{
+    <span class="hljs-keyword">var</span> forecast = Enumerable.Range(<span class="hljs-number">1</span>, <span class="hljs-number">5</span>).Select(index =>
+        <span class="hljs-keyword">new</span> WeatherForecast
+        (
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Random.Shared.Next(<span class="hljs-number">-20</span>, <span class="hljs-number">55</span>),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+    <span class="hljs-keyword">return</span> forecast;
+})
+.WithName(<span class="hljs-string">"GetWeatherForecast"</span>);
+<span class="hljs-comment">//diff-remove-block-end</span>
+<span class="hljs-comment">//diff-add-block-start</span>
+app.MapGet(<span class="hljs-string">"/hello"</span>, <span class="hljs-keyword">async</span> ([FromServices] IFeatureClient featureClient) =>
+{
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">await</span> featureClient.GetBooleanValueAsync(<span class="hljs-string">"welcome-message"</span>, <span class="hljs-literal">false</span>))
+    {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Hello, welcome to this OpenFeature-enabled website!"</span>;
+    }
+
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"Hello!"</span>;
+})
+.WithName(<span class="hljs-string">"GetHello"</span>);
+<span class="hljs-comment">//diff-add-block-end</span>
+
+app.Run();
+
+<span class="hljs-comment">//diff-remove-block-start</span>
+<span class="hljs-keyword">record</span> <span class="hljs-title">WeatherForecast</span>(<span class="hljs-title">DateOnly</span> <span class="hljs-title">Date</span>, <span class="hljs-title">int</span> <span class="hljs-title">TemperatureC</span>, <span class="hljs-title">string</span>? <span class="hljs-title">Summary</span>)
+{
+    <span class="hljs-keyword">public</span> <span class="hljs-built_in">int</span> TemperatureF => <span class="hljs-number">32</span> + (<span class="hljs-built_in">int</span>)(TemperatureC / <span class="hljs-number">0.5556</span>);
+}
+<span class="hljs-comment">//diff-remove-block-end</span>
 </code></pre>
-<p>You can specify the <code>table</code> option.</p>
-<p>e.g:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>, { <span class="hljs-attr">table</span>: <span class="hljs-string">'cache'</span> });
+<p>At this point, we are ready to run the initial version of our application.</p>
+<h3 id="step-4-run-the-initial-application">Step 4: Run the initial application</h3>
+<p>Let's compile and run the application.</p>
+<pre><code class="hljs language-shell">dotnet build
+dotnet run
 </code></pre>
-<p>You can specify the <code>schema</code> option (default is <code>public</code>).</p>
-<p>e.g:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>, { <span class="hljs-attr">schema</span>: <span class="hljs-string">'keyv'</span> });
+<p>In the logs you should see a line with the following <code>Now listening on: http://localhost:5251</code>, although the port number may differ.
+You can visit the following URL in your browser <a href="http://localhost:5251/hello">http://localhost:5251/hello</a> (adjust port number as necessary) to view the hello world message.
+You should see the message "Hello!".</p>
+<p>"Why I'm I seeing that value?", you may ask.
+Well, it's because a provider hasn't been configured yet.
+Without a provider to actually evaluate flags, OpenFeature will return the default value.
+In the next step, you'll learn how to add a provider.</p>
+<h3 id="step-5-configure-a-provider-flagd">Step 5: Configure a provider (flagd)</h3>
+<p>Before we can use the Flagd provider in .NET we need to install the <a href="https://www.nuget.org/packages/OpenFeature.Contrib.Providers.Flagd/">.NET OpenFeature Flagd</a> package.</p>
+<pre><code class="hljs language-shell">dotnet add package OpenFeature.Contrib.Providers.Flagd
 </code></pre>
-<h2 id="testing">Testing</h2>
-<p>When testing you can use our <code>docker-compose</code> postgresql instance by having docker installed and running. This will start a postgres server, run the tests, and stop the server:</p>
-<p>At the root of the Keyv mono repo:</p>
-<pre><code class="hljs language-shell">yarn test:services:start
+<p>Finally, let's add the required code change to enable the flagd provider in our .NET application.</p>
+<pre><code class="hljs language-csharp">
+<span class="hljs-keyword">using</span> Microsoft.AspNetCore.Mvc;
+<span class="hljs-keyword">using</span> OpenFeature;
+<span class="hljs-comment">//diff-add-block-start</span>
+<span class="hljs-keyword">using</span> OpenFeature.DependencyInjection.Providers.Flagd;
+<span class="hljs-comment">//diff-add-block-end</span>
+<span class="hljs-comment">//diff-remove-block-start</span>
+<span class="hljs-keyword">using</span> OpenFeature.Providers.Memory;
+<span class="hljs-keyword">using</span> OpenFeature.Hosting.Providers.Memory;
+<span class="hljs-comment">//diff-remove-block-end</span>
+
+<span class="hljs-keyword">var</span> builder = WebApplication.CreateBuilder(<span class="hljs-keyword">args</span>);
+
+<span class="hljs-comment">// Add services to the container.</span>
+<span class="hljs-comment">// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi</span>
+builder.Services.AddOpenApi();
+
+<span class="hljs-keyword">var</span> app = builder.Build();
+
+<span class="hljs-comment">// Register your feature flag provider</span>
+builder.Services.AddOpenFeature(featureBuilder =>
+{
+    featureBuilder
+        .AddInMemoryProvider(_ => <span class="hljs-keyword">new</span> Dictionary&#x3C;<span class="hljs-built_in">string</span>, Flag>()
+        {
+            {
+                <span class="hljs-string">"welcome-message"</span>, <span class="hljs-keyword">new</span> Flag&#x3C;<span class="hljs-built_in">bool</span>>(
+                    <span class="hljs-keyword">new</span> Dictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">bool</span>> { { <span class="hljs-string">"show"</span>, <span class="hljs-literal">true</span> }, { <span class="hljs-string">"hide"</span>, <span class="hljs-literal">false</span> } }, <span class="hljs-string">"show"</span>)
+            }
+        });
+<span class="hljs-comment">//diff-add-block-start</span>
+        .AddFlagdProvider();
+<span class="hljs-comment">//diff-add-block-end</span>
+});
+
+<span class="hljs-comment">// Configure the HTTP request pipeline.</span>
+<span class="hljs-keyword">if</span> (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+}
+
+app.UseHttpsRedirection();
+
+app.MapGet(<span class="hljs-string">"/hello"</span>, <span class="hljs-keyword">async</span> ([FromServices] IFeatureClient featureClient) =>
+{
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">await</span> featureClient.GetBooleanValueAsync(<span class="hljs-string">"welcome-message"</span>, <span class="hljs-literal">false</span>))
+    {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Hello, welcome to this OpenFeature-enabled website!"</span>;
+    }
+
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"Hello!"</span>;
+})
+.WithName(<span class="hljs-string">"GetHello"</span>);
+
+app.Run();
 </code></pre>
-<p>To just test the postgres adapter go to the postgres directory (packages/postgres) and run:</p>
-<pre><code class="hljs language-shell">yarn test
+<h3 id="step-6-rerun-the-application">Step 6: Rerun the application</h3>
+<p>We can use the .NET CLI to build and run our application.</p>
+<pre><code class="hljs language-shell">dotnet build
+dotnet run
 </code></pre>
-<h2 id="license">License</h2>
-<p>MIT © Jared Wray</p>
+<p>You can visit the following URL in your browser <a href="http://localhost:5251/hello">http://localhost:5251/hello</a> (adjust port number as necessary) to view the hello world message.
+You should see the message "Hello!".</p>
+<p>Revisit the endpoint <a href="http://localhost:5251/hello">http://localhost:5251/hello</a> and you will be greeted with <code>Hello, welcome to this OpenFeature-enabled website!</code></p>
+<h2 id="conclusion">Conclusion</h2>
+<p>This walk-through introduced you to the OpenFeature .NET SDK.
+It covered how a provider can be configured to perform the flag evaluation and introduced basic feature
+flagging concepts.
+It also showcased how feature flags can be updated at runtime, without requiring a code change and a redeployment.</p>

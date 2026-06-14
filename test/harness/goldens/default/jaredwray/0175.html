@@ -1,0 +1,25 @@
+<h1 id="keyvcompress-gzip-">@keyv/compress-gzip <a href="https://github.com/jaredwray/keyv"></a></h1>
+<blockquote>
+<p>Gzip compression for Keyv</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://www.npmjs.com/package/@keyv/compress-gzip"><img src="https://img.shields.io/npm/v/@keyv/compress-gzip.svg" alt="npm"></a>
+<a href="https://npmjs.com/package/@keyv/compress-gzip"><img src="https://img.shields.io/npm/dm/@keyv/compress-gzip" alt="npm"></a></p>
+<p>Gzip compression for <a href="https://github.com/jaredwray/keyv">Keyv</a>.</p>
+<h2 id="install">Install</h2>
+<pre><code class="hljs language-shell">npm install --save keyv @keyv/compress-gzip
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvGzip</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/compress-gzip'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({<span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>(), <span class="hljs-attr">compression</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvGzip</span>()});
+
+</code></pre>
+<h2 id="api">API</h2>
+<h3 id="keyvcompress-gzipoptions">@keyv/compress-gzip([options])</h3>
+<h4 id="options">options</h4>
+<p>All options for <code>@keyv/compress-gzip</code> are based on the package <a href="https://github.com/nodeca/pako#readme">compress-gzip</a></p>
+<h2 id="license">License</h2>
+<p><a href="LICENSE">MIT © Jared Wray</a></p>

@@ -1,0 +1,59 @@
+<h1 id="getting-started">Getting Started</h1>
+<h2 id="install-docula-via-init">Install docula via init</h2>
+<blockquote>
+<p>npx docula init</p>
+</blockquote>
+<p>This will create a folder called site with the following structure:</p>
+<pre><code>site
+├───logo.png
+├───favicon.ico
+├───README.md
+├───docula.config.mjs
+</code></pre>
+<p>If your project has a <code>tsconfig.json</code>, docula will automatically generate a TypeScript config (<code>docula.config.ts</code>). To explicitly choose, use <code>docula init --typescript</code> or <code>docula init --javascript</code>.</p>
+<h2 id="add-your-content">Add your content</h2>
+<p>Simply replace the logo, favicon, and css file with your own. The readme is your root project readme and you just need to at build time move it over to the site folder. If you have it at the root of the project and this is a folder inside just delete the README.md file in the site folder and docula will copy it over for you automatically.</p>
+<h2 id="build-your-site">Build your site</h2>
+<blockquote>
+<p>npx docula</p>
+</blockquote>
+<p>This will build your site and place it in the <code>dist</code> folder. You can then host it anywhere you like.</p>
+<h2 id="single-page-vs-multi-page">Single Page vs Multi Page</h2>
+<p>Docula supports two modes for organizing your site content:</p>
+<h3 id="single-page">Single Page</h3>
+<p>By default, if no <code>docs/</code> folder exists in your site directory, Docula renders a single home page using your <code>README.md</code> as the content. This is the simplest setup — no extra configuration needed.</p>
+<pre><code>site
+├───logo.png
+├───favicon.ico
+├───variables.css
+├───README.md
+└───docula.config.mjs
+</code></pre>
+<h3 id="multi-page">Multi Page</h3>
+<p>To build a site with multiple documentation pages, add a <code>docs/</code> folder to your site directory. Docula automatically detects the folder and generates individual pages with sidebar navigation.</p>
+<pre><code>site
+├───logo.png
+├───favicon.ico
+├───variables.css
+├───docula.config.mjs
+└───docs
+    ├───index.md
+    ├───configuration.md
+    └───guides
+        ├───getting-started.md
+        └───advanced.md
+</code></pre>
+<p>Each markdown file becomes its own page. Use front matter to control the title and ordering:</p>
+<pre><code class="hljs language-md">---
+title: Configuration
+<span class="hljs-section">order: 2
+---</span>
+</code></pre>
+<p>Subdirectories inside <code>docs/</code> automatically become sections in the sidebar navigation.</p>
+<h3 id="automatic-starting-view">Automatic Starting View</h3>
+<p>Docula automatically detects what content exists and picks the starting view for your site:</p>
+<ul>
+<li><strong>README.md exists</strong> — A dedicated landing page renders at <code>/</code> using <code>home.hbs</code>, and docs are available at <code>/docs/</code>.</li>
+<li><strong>No README.md, but docs exist</strong> — The first doc page renders directly as <code>/index.html</code>.</li>
+<li><strong>No README.md, no docs, but <code>api/swagger.json</code> exists</strong> — The API page renders as <code>/index.html</code>.</li>
+</ul>

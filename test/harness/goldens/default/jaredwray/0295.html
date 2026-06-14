@@ -1,0 +1,147 @@
+<blockquote>
+<p><strong>Availability:</strong> Registered in both the Node and browser builds.</p>
+</blockquote>
+<h2 id="object">object</h2>
+<h3 id="extend">{{extend}}</h3>
+<p>Extend the context with the properties of other objects.
+A shallow merge is performed to avoid mutating the context.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>objects</code> <strong>{Object}</strong>: One or more objects to extend.</li>
+<li><code>returns</code> <strong>{Object}</strong></li>
+</ul>
+<h3 id="forin">{{forIn}}</h3>
+<p>Block helper that iterates over the properties of
+an object, exposing each key and value on the context.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>context</code> <strong>{Object}</strong></li>
+<li><code>options</code> <strong>{Object}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<h3 id="forown">{{forOwn}}</h3>
+<p>Block helper that iterates over the <strong>own</strong> properties of
+an object, exposing each key and value on the context.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>obj</code> <strong>{Object}</strong>: The object to iterate over.</li>
+<li><code>options</code> <strong>{Object}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<h3 id="topath">{{toPath}}</h3>
+<p>Take arguments and, if they are string or number, convert them to a dot-delineated object property path.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>prop</code> <strong>{String|Number}</strong>: The property segments to assemble (can be multiple).</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<h3 id="get">{{get}}</h3>
+<p>Use property paths (<code>a.b.c</code>) to get a value or nested value from
+the context. Works as a regular helper or block helper.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>prop</code> <strong>{String}</strong>: The property to get, optionally using dot notation for nested properties.</li>
+<li><code>context</code> <strong>{Object}</strong>: The context object</li>
+<li><code>options</code> <strong>{Object}</strong>: The handlebars options object, if used as a block helper.</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<h3 id="getobject">{{getObject}}</h3>
+<p>Use property paths (<code>a.b.c</code>) to get an object from
+the context. Differs from the <code>get</code> helper in that this
+helper will return the actual object, including the
+given property key. Also, this helper does not work as a
+block helper.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>prop</code> <strong>{String}</strong>: The property to get, optionally using dot notation for nested properties.</li>
+<li><code>context</code> <strong>{Object}</strong>: The context object</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<h3 id="hasown">{{hasOwn}}</h3>
+<p>Return true if <code>key</code> is an own, enumerable property of the given <code>context</code> object.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>key</code> <strong>{String}</strong></li>
+<li><code>context</code> <strong>{Object}</strong>: The context object.</li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{hasOwn context key}}
+</code></pre>
+<h3 id="isobject">{{isObject}}</h3>
+<p>Return true if <code>value</code> is an object.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>value</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{isObject "foo"}}
+//=> false
+</code></pre>
+<h3 id="jsonparse">{{JSONparse}}</h3>
+<p>Parses the given string using <code>JSON.parse</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong>: The string to parse</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- string: '{"foo": "bar"}' --></span>
+{{JSONparse string}}
+<span class="hljs-comment">&#x3C;!-- results in: { foo: 'bar' } --></span>
+</code></pre>
+<h3 id="parsejson">{{parseJSON}}</h3>
+<p>Alias for <code>JSONparse</code>. Parses the given string using <code>JSON.parse</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong>: The string to parse</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- string: '{"foo": "bar"}' --></span>
+{{parseJSON string}}
+<span class="hljs-comment">&#x3C;!-- results in: { foo: 'bar' } --></span>
+</code></pre>
+<h3 id="jsonstringify">{{JSONstringify}}</h3>
+<p>Stringify an object using <code>JSON.stringify</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>obj</code> <strong>{Object}</strong>: Object to stringify</li>
+<li><code>indent</code> <strong>{Number}</strong>: Optional number of spaces for indentation</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- object: { foo: 'bar' } --></span>
+{{JSONstringify object}}
+<span class="hljs-comment">&#x3C;!-- results in: '{"foo": "bar"}' --></span>
+</code></pre>
+<h3 id="stringify">{{stringify}}</h3>
+<p>Alias for <code>JSONstringify</code>. Stringify an object using <code>JSON.stringify</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>obj</code> <strong>{Object}</strong>: Object to stringify</li>
+<li><code>indent</code> <strong>{Number}</strong>: Optional number of spaces for indentation</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- object: { foo: 'bar' } --></span>
+{{stringify object}}
+<span class="hljs-comment">&#x3C;!-- results in: '{"foo":"bar"}' --></span>
+</code></pre>
+<h3 id="merge">{{merge}}</h3>
+<p>Deeply merge the properties of the given <code>objects</code> with the
+context object.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>object</code> <strong>{Object}</strong>: The target object. Pass an empty object to shallow clone.</li>
+<li><code>objects</code> <strong>{Object}</strong></li>
+<li><code>returns</code> <strong>{Object}</strong></li>
+</ul>
+<h3 id="pick">{{pick}}</h3>
+<p>Pick properties from the context object.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>properties</code> <strong>{Array|String}</strong>: One or more properties to pick.</li>
+<li><code>context</code> <strong>{Object}</strong></li>
+<li><code>options</code> <strong>{Object}</strong>: Handlebars options object.</li>
+<li><code>returns</code> <strong>{Object}</strong>: Returns an object with the picked values. If used as a block helper, the values are passed as context to the inner block. If no values are found, the context is passed to the inverse block.</li>
+</ul>

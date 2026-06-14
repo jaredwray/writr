@@ -1,0 +1,255 @@
+<blockquote>
+<p><strong>Availability</strong></p>
+<table>
+<thead>
+<tr>
+<th>Helper</th>
+<th align="center">Node</th>
+<th align="center">Browser</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>attr</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>css</code></td>
+<td align="center">✅</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td><code>js</code></td>
+<td align="center">✅</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td><code>ol</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>sanitize</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>thumbnailImage</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>ul</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+<h3 id="attr">{{attr}}</h3>
+<p>Stringify attributes from the options hash into an HTML attribute string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>options</code> <strong>{Object}</strong>: Options object with a <code>hash</code> property containing key-value pairs</li>
+<li><code>returns</code> <strong>{String}</strong>: Space-prefixed attribute string, or empty string if no attributes</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">&#x3C;div{{attr class="container" id="main"}}>&#x3C;/div>
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"container"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"main"</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span>
+</code></pre>
+<p>You can also use variables:</p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- With context: { btnClass: "btn-primary" } -->
+&#x3C;button{{attr class=btnClass type="submit"}}>Click&#x3C;/button>
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">button</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"btn-primary"</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"submit"</span>></span>Click<span class="hljs-tag">&#x3C;/<span class="hljs-name">button</span>></span>
+</code></pre>
+<h3 id="css">{{css}}</h3>
+<p>Generate <code>&#x3C;link></code> tags for stylesheets. Supports both CSS and LESS files.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>list</code> <strong>{String|Array}</strong>: One or more stylesheet paths/URLs</li>
+<li><code>returns</code> <strong>{String}</strong>: One or more <code>&#x3C;link></code> tags</li>
+</ul>
+<p><strong>Example</strong></p>
+<p>Single stylesheet:</p>
+<pre><code class="hljs language-handlebars">{{css "styles/main.css"}}
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">link</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/css"</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"styles/main.css"</span>></span>
+</code></pre>
+<p>Multiple stylesheets:</p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- With context: { stylesheets: ["reset.css", "theme.css", "app.css"] } -->
+{{css stylesheets}}
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">link</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/css"</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"reset.css"</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">link</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/css"</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"theme.css"</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">link</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/css"</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"app.css"</span>></span>
+</code></pre>
+<p>LESS files are automatically detected:</p>
+<pre><code class="hljs language-handlebars">{{css "styles/theme.less"}}
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">link</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/css"</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet/less"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"styles/theme.less"</span>></span>
+</code></pre>
+<h3 id="js">{{js}}</h3>
+<p>Generate <code>&#x3C;script></code> tags for JavaScript files.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>context</code> <strong>{String|Array|Object}</strong>: Script path(s) or options object with <code>src</code> attribute</li>
+<li><code>returns</code> <strong>{String}</strong>: One or more <code>&#x3C;script></code> tags</li>
+</ul>
+<p><strong>Example</strong></p>
+<p>Single script:</p>
+<pre><code class="hljs language-handlebars">{{js "app.js"}}
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"app.js"</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">script</span>></span>
+</code></pre>
+<p>Multiple scripts:</p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- With context: { scripts: ["vendor.js", "utils.js", "app.js"] } -->
+{{js scripts}}
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"vendor.js"</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">script</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"utils.js"</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">script</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"app.js"</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">script</span>></span>
+</code></pre>
+<p>Using the <code>src</code> attribute:</p>
+<pre><code class="hljs language-handlebars">{{js src="bundle.js"}}
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"bundle.js"</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">script</span>></span>
+</code></pre>
+<h3 id="sanitize">{{sanitize}}</h3>
+<p>Strip all HTML tags from a string, preserving only the text content.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>str</code> <strong>{String}</strong>: The string containing HTML to sanitize</li>
+<li><code>returns</code> <strong>{String}</strong>: Plain text with all HTML tags removed</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{sanitize "&#x3C;p>Hello &#x3C;strong>World&#x3C;/strong>!&#x3C;/p>"}}
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code>Hello World!
+</code></pre>
+<p>Extracting text from HTML markup:</p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- With context: { richText: "&#x3C;div class='note'>&#x3C;em>Important:&#x3C;/em> Check the &#x3C;a href='/docs'>docs&#x3C;/a>&#x3C;/div>" } -->
+&#x3C;p>{{sanitize richText}}&#x3C;/p>
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Important: Check the docs<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>
+</code></pre>
+<p><strong>Note:</strong> This helper removes HTML tags but preserves all text content, including text inside <code>&#x3C;script></code> or <code>&#x3C;style></code> tags. It is not a security sanitizer for untrusted input.</p>
+<h3 id="ul">{{ul}}</h3>
+<p>Block helper for creating unordered lists.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>context</code> <strong>{Array}</strong>: Array of items to render as list items</li>
+<li><code>options</code> <strong>{Object}</strong>: Options object; supports HTML attributes via hash</li>
+<li><code>returns</code> <strong>{String}</strong>: Complete <code>&#x3C;ul></code> element with <code>&#x3C;li></code> children</li>
+</ul>
+<p><strong>Example</strong></p>
+<p>With an array of strings:</p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- With context: { fruits: ["Apple", "Banana", "Cherry"] } -->
+{{#ul fruits}}{{this}}{{/ul}}
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">ul</span>></span><span class="hljs-tag">&#x3C;<span class="hljs-name">li</span>></span>Apple<span class="hljs-tag">&#x3C;/<span class="hljs-name">li</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">li</span>></span>Banana<span class="hljs-tag">&#x3C;/<span class="hljs-name">li</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">li</span>></span>Cherry<span class="hljs-tag">&#x3C;/<span class="hljs-name">li</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">ul</span>></span>
+</code></pre>
+<p>With objects and custom attributes:</p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- With context: { users: [{name: "Alice"}, {name: "Bob"}] } -->
+{{#ul users class="user-list"}}{{name}}{{/ul}}
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">ul</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"user-list"</span>></span><span class="hljs-tag">&#x3C;<span class="hljs-name">li</span>></span>Alice<span class="hljs-tag">&#x3C;/<span class="hljs-name">li</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">li</span>></span>Bob<span class="hljs-tag">&#x3C;/<span class="hljs-name">li</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">ul</span>></span>
+</code></pre>
+<h3 id="ol">{{ol}}</h3>
+<p>Block helper for creating ordered lists.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>context</code> <strong>{Array}</strong>: Array of items to render as list items</li>
+<li><code>options</code> <strong>{Object}</strong>: Options object; supports HTML attributes via hash</li>
+<li><code>returns</code> <strong>{String}</strong>: Complete <code>&#x3C;ol></code> element with <code>&#x3C;li></code> children</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- With context: { steps: ["Mix ingredients", "Bake at 350°F", "Let cool"] } -->
+{{#ol steps class="recipe-steps"}}{{this}}{{/ol}}
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">ol</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"recipe-steps"</span>></span><span class="hljs-tag">&#x3C;<span class="hljs-name">li</span>></span>Mix ingredients<span class="hljs-tag">&#x3C;/<span class="hljs-name">li</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">li</span>></span>Bake at 350°F<span class="hljs-tag">&#x3C;/<span class="hljs-name">li</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">li</span>></span>Let cool<span class="hljs-tag">&#x3C;/<span class="hljs-name">li</span>></span><span class="hljs-tag">&#x3C;/<span class="hljs-name">ol</span>></span>
+</code></pre>
+<h3 id="thumbnailimage">{{thumbnailImage}}</h3>
+<p>Generate a <code>&#x3C;figure></code> element with a thumbnail image, optional link to full-size image, and optional caption.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>context</code> <strong>{Object}</strong>: Configuration object with the following properties:
+<ul>
+<li><code>id</code> <strong>{String}</strong>: Unique identifier for the figure element</li>
+<li><code>alt</code> <strong>{String}</strong>: Alt text for the image</li>
+<li><code>thumbnail</code> <strong>{String}</strong>: URL of the thumbnail image</li>
+<li><code>size</code> <strong>{Object}</strong>: Object with <code>width</code> and <code>height</code> properties</li>
+<li><code>full</code> <strong>{String}</strong> <em>(optional)</em>: URL of the full-size image (creates a link if provided)</li>
+<li><code>caption</code> <strong>{String}</strong> <em>(optional)</em>: Caption text for the image</li>
+<li><code>classes</code> <strong>{Object}</strong> <em>(optional)</em>: CSS classes for <code>figure</code>, <code>image</code>, and <code>link</code> elements</li>
+</ul>
+</li>
+<li><code>returns</code> <strong>{String}</strong>: Complete <code>&#x3C;figure></code> element</li>
+</ul>
+<p><strong>Example</strong></p>
+<p>Basic thumbnail with link and caption:</p>
+<pre><code class="hljs language-handlebars">{{thumbnailImage image}}
+</code></pre>
+<p>With context:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"image"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"hero"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"alt"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Mountain landscape"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"thumbnail"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"/images/mountain-thumb.jpg"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"size"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span> <span class="hljs-attr">"width"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">200</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"height"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">150</span> <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"full"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"/images/mountain-full.jpg"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"caption"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"View from the summit"</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">figure</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"image-hero"</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"/images/mountain-full.jpg"</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"thumbnail"</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">img</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">"Mountain landscape"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"/images/mountain-thumb.jpg"</span> <span class="hljs-attr">width</span>=<span class="hljs-string">"200"</span> <span class="hljs-attr">height</span>=<span class="hljs-string">"150"</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">a</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">figcaption</span>></span>View from the summit<span class="hljs-tag">&#x3C;/<span class="hljs-name">figcaption</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">figure</span>></span>
+</code></pre>
+<p>With custom CSS classes:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"image"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"profile"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"alt"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"User avatar"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"thumbnail"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"/avatars/user.jpg"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"size"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span> <span class="hljs-attr">"width"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">100</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"height"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">100</span> <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"full"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"/avatars/user-large.jpg"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"classes"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"figure"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"avatar-container"</span><span class="hljs-punctuation">,</span> <span class="hljs-string">"rounded"</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"image"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"avatar-img"</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"link"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"avatar-link"</span><span class="hljs-punctuation">]</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p><strong>Output</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">figure</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"image-profile"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"avatar-container rounded"</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"/avatars/user-large.jpg"</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"thumbnail"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"avatar-link"</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">img</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">"User avatar"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"/avatars/user.jpg"</span> <span class="hljs-attr">width</span>=<span class="hljs-string">"100"</span> <span class="hljs-attr">height</span>=<span class="hljs-string">"100"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"avatar-img"</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">a</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">figure</span>></span>
+</code></pre>

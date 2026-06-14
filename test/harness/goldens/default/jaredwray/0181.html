@@ -1,0 +1,109 @@
+<h2 id="beautiful-website-for-your-projects">Beautiful Website for Your Projects</h2>
+<p><a href="https://github.com/jaredwray/docula/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/docula/actions/workflows/tests.yml/badge.svg" alt="Build"></a>
+<a href="https://github.com/jaredwray/docula/blob/master/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/docula" alt="GitHub license"></a>
+<a href="https://codecov.io/gh/jaredwray/docula"><img src="https://codecov.io/gh/jaredwray/docula/branch/master/graph/badge.svg?token=1YdMesM07X" alt="codecov"></a>
+<a href="https://npmjs.com/package/docula"><img src="https://img.shields.io/npm/dm/docula" alt="npm"></a></p>
+<hr>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#features">Features</a></li>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#1-install-docula">1. Install docula</a></li>
+<li><a href="#2-add-your-content">2. Add your content</a></li>
+<li><a href="#3-build-your-site">3. Build your site</a></li>
+<li><a href="#using-your-own-template">Using Your own Template</a></li>
+<li><a href="#building-multiple-pages">Building Multiple Pages</a></li>
+<li><a href="#helper-functions-for-markdown">Helper Functions for Markdown</a>
+<ul>
+<li><a href="#remove-html-content">Remove html content</a></li>
+<li><a href="#get-and-set-the-front-matter-of-a-markdown-file">Get and Set the Front Matter of a Markdown File</a></li>
+</ul>
+</li>
+<li><a href="#code-of-conduct-and-contributing">Code of Conduct and Contributing</a></li>
+<li><a href="#what-happened-to-it-generating-a-blog">What Happened to it Generating a Blog</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h2 id="features">Features</h2>
+<ul>
+<li>No configuration requrired. Just setup the folder structure with a logo, favicon, and css file.</li>
+<li>Builds a static website that can be hosted anywhere.</li>
+<li>For more complex projects easily add a <code>docula.config.mjs</code> file to customize the build process.</li>
+<li>Support for single page with readme or multiple pages with a table of contents.</li>
+<li>Will generate a sitemap.xml, robots.txt, and  file for SEO.</li>
+<li>Uses Github release notes to generate a changelog page.</li>
+<li>Uses Github to show contributors and link to their profiles.</li>
+<li>Simple search is provided by default out of the box.</li>
+</ul>
+<h2 id="getting-started">Getting Started</h2>
+<h2 id="1-install-docula">1. Install docula</h2>
+<blockquote>
+<p>npx docula init</p>
+</blockquote>
+<p>This will create a folder called site with the following structure:</p>
+<pre><code>site
+├───site.css
+├───logo.png
+├───favicon.ico
+├───README.md
+├───docula.json
+</code></pre>
+<h2 id="2-add-your-content">2. Add your content</h2>
+<p>Simply replace the logo, favicon, and css file with your own. The readme is your root project readme and you just need to at build time move it over to the site folder. If you have it at the root of the project and this is a folder inside just delete the  README.md file in the site folder and docula will copy it over for you automatically.</p>
+<h2 id="3-build-your-site">3. Build your site</h2>
+<blockquote>
+<p>npx docula</p>
+</blockquote>
+<p>This will build your site and place it in the <code>dist</code> folder. You can then host it anywhere you like.</p>
+<h2 id="using-your-own-template">Using Your own Template</h2>
+<p>If you want to use your own template you can do so by adding a <code>docula.json</code> file to the root of your project. This file will be used to configure the build process. Here is an example of what it looks like:</p>
+<pre><code class="hljs language-js">{
+    <span class="hljs-attr">template</span>: <span class="hljs-string">'path/to/template'</span>,
+}
+</code></pre>
+<p>or at the command line:</p>
+<blockquote>
+<p>npx docula --template path/to/template</p>
+</blockquote>
+<h2 id="building-multiple-pages">Building Multiple Pages</h2>
+<p>If you want to build multiple pages you can easily do that by adding in a <code>docs</code> folder to the root of the site folder. Inside of that folder you can add as many pages as you like. Each page will be a markdown file and it will generate a table of contents for you. Here is an example of what it looks like:</p>
+<pre><code>site
+├───site.css
+├───logo.png
+├───favicon.ico
+├───docula.json
+├───docs
+│   ├───readme.md
+│   ├───getting-started.md
+│   ├───contributing.md
+│   ├───license.md
+│   ├───code-of-conduct.md
+</code></pre>
+<p>The <code>readme.md</code> file will be the root page and the rest will be added to the table of contents. If you want to control the title or order of the pages you can do so by setting the <code>title</code> and <code>order</code> properties in the front matter of the markdown file. Here is an example:</p>
+<pre><code class="hljs language-md">---
+title: Getting Started
+<span class="hljs-section">order: 2
+---</span>
+</code></pre>
+<h2 id="helper-functions-for-markdown">Helper Functions for Markdown</h2>
+<p>docula comes with some helper functions that you can use in your markdown files.</p>
+<ul>
+<li><code>docula.helpers.getFrontMatter(fileName)</code> - Gets the front matter of a markdown file.</li>
+<li><code>docula.helpers.setFrontMatter(fileName, frontMatter)</code> - Sets the front matter of a markdown file.</li>
+<li><code>docula.helpers.createDoc(source, destination, frontMatter?, contentFn[]?)</code> - Creates a markdown file with the specified front matter and content. The contentFn is a function that is executed on the original content of the file. This is useful if you want to remove content from the original file.</li>
+</ul>
+<h3 id="remove-html-content">Remove html content</h3>
+<p>In some cases your markdown file will have html content in it such as the logo of your project or a badge. You can use the <code>wrtir.helpers.removeHtmlContent()</code> helper function to remove that content from the page. Here is an example:</p>
+<pre><code class="hljs language-js">docula.<span class="hljs-property">helpers</span>.<span class="hljs-title function_">removeHtmlContent</span>(<span class="hljs-string">'../readme.md'</span>, <span class="hljs-string">'&#x3C;img src='</span>);
+</code></pre>
+<h3 id="get-and-set-the-front-matter-of-a-markdown-file">Get and Set the Front Matter of a Markdown File</h3>
+<p>You can use the <code>docula.helpers.getFrontMatter()</code> and <code>docula.helpers.setFrontMatter()</code> helper functions to get and set the front matter of a markdown file. Here is an example:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> frontMatter = docula.<span class="hljs-property">helpers</span>.<span class="hljs-title function_">getFrontMatter</span>(<span class="hljs-string">'../readme.md'</span>);
+frontMatter.<span class="hljs-property">title</span> = <span class="hljs-string">'My Title'</span>;
+docula.<span class="hljs-property">helpers</span>.<span class="hljs-title function_">setFrontMatter</span>(<span class="hljs-string">'../readme.md'</span>, frontMatter);
+</code></pre>
+<h2 id="code-of-conduct-and-contributing">Code of Conduct and Contributing</h2>
+<p>Please read our <a href="CODE_OF_CONDUCT.md">Code of Conduct</a> and <a href="CONTRIBUTING.md">Contributing</a> guidelines.</p>
+<h2 id="what-happened-to-it-generating-a-blog">What Happened to it Generating a Blog</h2>
+<p>The original version of docula was a blog generator. Since there are plenty of blog generators out there we made the decision to make it a static site generator for open source projects. This is something that we constantly need and we hope you find it useful as well.</p>
+<h2 id="license">License</h2>
+<p>MIT © <a href="https://jaredwray.com">Jared Wray</a></p>

@@ -1,0 +1,76 @@
+<h1 id="http-cache">http-cache</h1>
+<blockquote>
+<p>A modern HTTP caching gateway — from the makers of <a href="https://github.com/jaredwray/keyv">keyv</a> and <a href="https://github.com/jaredwray/cacheable">cacheable</a>.</p>
+</blockquote>
+<p><code>http-cache</code> is a gateway that gives you full control over your caching system: pick
+any storage backend (Redis, Memcache, MongoDB, …) via providers, get L1/L2 in-memory
+caching at the gateway, push live changes over socket.io, and scale with <strong>global load
+balancing</strong> instead of old-school clustering.</p>
+<p>This repository is a <strong>pnpm monorepo</strong>. Its first deliverable is the architecture
+specification, published as a documentation website built with
+<a href="https://github.com/jaredwray/docula">docula</a>.</p>
+<blockquote>
+<p>📖 Read the full specification at the docs site (built from <a href="./website"><code>website/</code></a>).</p>
+</blockquote>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Node.js <code>^22.18.0 || >=24</code></li>
+<li><a href="https://pnpm.io">pnpm</a></li>
+</ul>
+<h2 id="getting-started">Getting started</h2>
+<pre><code class="hljs language-bash">pnpm install
+</code></pre>
+<h2 id="documentation-website">Documentation website</h2>
+<p>The docs live in <a href="./website/site"><code>website/site</code></a> as a multi-doc docula site.</p>
+<table>
+<thead>
+<tr>
+<th>Script</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pnpm website:dev</code></td>
+<td>Build, watch, and serve the docs locally (<a href="http://localhost:3000">http://localhost:3000</a>)</td>
+</tr>
+<tr>
+<td><code>pnpm website:serve</code></td>
+<td>Build and serve the docs</td>
+</tr>
+<tr>
+<td><code>pnpm website:build</code></td>
+<td>Build the static site to <code>website/site/dist</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>The docs build fetches repository metadata (contributors) from the GitHub API. Set a
+<code>GITHUB_TOKEN</code> environment variable to avoid anonymous rate limits — CI provides this
+automatically.</p>
+</blockquote>
+<h2 id="quality">Quality</h2>
+<table>
+<thead>
+<tr>
+<th>Script</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pnpm lint</code></td>
+<td>Lint and format-check with <a href="https://biomejs.dev">Biome</a></td>
+</tr>
+<tr>
+<td><code>pnpm format</code></td>
+<td>Auto-format with Biome</td>
+</tr>
+<tr>
+<td><code>pnpm test</code></td>
+<td>Run Biome checks + <a href="https://vitest.dev">Vitest</a> with coverage</td>
+</tr>
+</tbody>
+</table>
+<h2 id="license">License</h2>
+<p><a href="./LICENSE">MIT</a> © Jared Wray</p>

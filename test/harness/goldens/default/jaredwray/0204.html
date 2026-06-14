@@ -1,0 +1,299 @@
+<p>import FlagdContent from '@site/src/components/custom/tutorial/flagd-content.mdx';
+import FlagdChangeContent from '@site/src/components/custom/tutorial/flagd-change-content.mdx';
+import WhyDefaultContent from '@site/src/components/custom/tutorial/why-default-content.mdx';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';</p>
+<h1 id="getting-started-with-the-openfeature-java-sdk-and-dropwizard">Getting Started with the OpenFeature Java SDK and Dropwizard</h1>
+<h2 id="introduction">Introduction</h2>
+<p>This walk-through teaches you the basics of using OpenFeature in Java in the context of a Dropwizard application.</p>
+<p>You'll learn how to:</p>
+<ul>
+<li>Integrate the OpenFeature Java SDK</li>
+<li>Install and configure the OpenFeature provider</li>
+<li>Perform basic feature flagging</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<p>This walk-through assumes that:</p>
+<ul>
+<li>You have a basic knowledge of Java and Dropwizard</li>
+<li>You have Java 8 or later</li>
+<li>You have Docker installed and running on the host system</li>
+</ul>
+<p>This guide uses Java 21 syntax, adjustments might be needed for earlier Java versions.</p>
+<h2 id="walk-through">Walk-through</h2>
+<h3 id="step-1-create-a-dropwizard-application">Step 1: Create a Dropwizard application</h3>
+<p>Create a new Dropwizard application following the guide on <a href="https://www.dropwizard.io/en/stable/getting-started.html">dropwizard.io</a>.</p>
+<p>For this example we are using the maven archetype</p>
+<pre><code class="hljs language-shell"><span class="hljs-meta prompt_">$ </span><span class="bash">mvn archetype:generate -DarchetypeGroupId=io.dropwizard.archetypes -DarchetypeArtifactId=java-simple -DarchetypeVersion=4.0.13</span>
+...
+Define value for property 'name': OpenFeatureExample
+...
+Define value for property 'groupId': dev.openfeature
+Define value for property 'artifactId': openfeature-example
+Define value for property 'version' 1.0-SNAPSHOT:
+Define value for property 'package' dev.openfeature:
+Confirm properties configuration:
+name: OpenFeatureExample
+description: null
+shaded: true
+groupId: dev.openfeature
+artifactId: openfeature-example
+version: 1.0-SNAPSHOT
+package: dev.openfeature
+ Y: Y
+...
+</code></pre>
+<p>We now have an application we can open</p>
+<pre><code class="hljs language-shell">cd openfeature-example
+</code></pre>
+<h3 id="step-2-add-dependencies">Step 2: Add dependencies</h3>
+<p>For dropwizard we can either use the SDK directly, or use a community module <a href="https://github.com/sideshowcoder/dropwizard-openfeature">dropwizard-openfeature</a>,
+and while dropwizard-openfeature provides some benefits like built-in healthchecks, and managing the startup and shutdown of resources associated with the
+OpenFeature Java SDK, it is not however not officially supported, so use at your own risk.</p>
+<p>Depending what you choose add the following to your <code>pom.xml</code></p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">dependency</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">groupId</span>></span>dev.openfeature<span class="hljs-tag">&#x3C;/<span class="hljs-name">groupId</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">artifactId</span>></span>sdk<span class="hljs-tag">&#x3C;/<span class="hljs-name">artifactId</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">version</span>></span>1.15.1<span class="hljs-tag">&#x3C;/<span class="hljs-name">version</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">dependency</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">dependency</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">groupId</span>></span>dev.openfeature.contrib.providers<span class="hljs-tag">&#x3C;/<span class="hljs-name">groupId</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">artifactId</span>></span>flagd<span class="hljs-tag">&#x3C;/<span class="hljs-name">artifactId</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">version</span>></span>0.11.8<span class="hljs-tag">&#x3C;/<span class="hljs-name">version</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">dependency</span>></span>
+</code></pre>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">dependency</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">groupId</span>></span>io.github.sideshowcoder<span class="hljs-tag">&#x3C;/<span class="hljs-name">groupId</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">artifactId</span>></span>dropwizard-openfeature<span class="hljs-tag">&#x3C;/<span class="hljs-name">artifactId</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">version</span>></span>1.0.1<span class="hljs-tag">&#x3C;/<span class="hljs-name">version</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">dependency</span>></span>
+</code></pre>
+<h3 id="step-3-create-a-resource">Step 3: Create a resource</h3>
+<p>We create a resource to serve the <code>/welcome</code> endpoint.
+Depending on the value of the feature flag named <code>"welcome-message"</code>, it serves different messages.</p>
+<pre><code class="hljs language-java"><span class="hljs-meta">@Path("/welcome")</span>
+<span class="hljs-meta">@Produces(TEXT_PLAIN)</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WelcomeResource</span> {
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Client client;
+
+    <span class="hljs-keyword">public</span> <span class="hljs-title function_">WelcomeResource</span><span class="hljs-params">(Client client)</span> {
+        <span class="hljs-built_in">this</span>.client = client;
+    }
+
+    <span class="hljs-meta">@GET</span>
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getWelcome</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">if</span>(client.getBooleanValue(<span class="hljs-string">"welcome-message"</span>, <span class="hljs-literal">false</span>)) {
+            <span class="hljs-keyword">return</span> <span class="hljs-string">"Welcome to OpenFeature in Dropwizard!\n"</span>;
+        }
+
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Welcome!\n"</span>;
+    }
+}
+</code></pre>
+<p>to make this resource available we need to register it, and inject the OpenFeature <code>Client</code>.</p>
+<pre><code class="hljs language-java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OpenFeatureExampleApplication</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Application</span>&#x3C;OpenFeatureExampleConfiguration> {
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-keyword">final</span> String[] args)</span> <span class="hljs-keyword">throws</span> Exception {
+        <span class="hljs-keyword">new</span> <span class="hljs-title class_">OpenFeatureExampleApplication</span>().run(args);
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getName</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"OpenFeatureExample"</span>;
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">initialize</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Bootstrap&#x3C;OpenFeatureExampleConfiguration> bootstrap)</span> {
+        <span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> application initialization</span>
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">(<span class="hljs-keyword">final</span> OpenFeatureExampleConfiguration configuration, <span class="hljs-keyword">final</span> Environment environment)</span> {
+        <span class="hljs-comment">// diff-remove</span>
+        <span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> implement application</span>
+        <span class="hljs-comment">// diff-add-block-start</span>
+        <span class="hljs-type">var</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> OpenFeatureAPI.getInstance().getClient(<span class="hljs-string">"dev.openfeature.OpenFeatureExample"</span>);
+        <span class="hljs-type">var</span> <span class="hljs-variable">welcomeResource</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">WelcomeResource</span>(client);
+        environment.jersey().register(welcomeResource);
+       <span class="hljs-comment">// diff-add-block-end</span>
+    }
+}
+</code></pre>
+<h3 id="step-4-run-the-application">Step 4: Run the application</h3>
+<p>Now we can build and run the initial version of the application.</p>
+<pre><code class="hljs language-shell"><span class="hljs-meta prompt_">$ </span><span class="bash">mvn clean package</span>
+<span class="hljs-meta prompt_">$ </span><span class="bash">java -jar target/openfeature-example-1.0-SNAPSHOT.jar server config.yml</span>
+INFO  [2025-06-13 10:00:00,000] io.dropwizard.core.server.DefaultServerFactory: Registering jersey handler with root path prefix: /
+INFO  [2025-06-13 10:00:00,000] io.dropwizard.core.server.DefaultServerFactory: Registering admin handler with root path prefix: /
+INFO  [2025-06-13 10:00:00,000] io.dropwizard.core.server.ServerFactory: Starting OpenFeatureExample
+================================================================================
+
+                              OpenFeatureExample
+
+================================================================================
+
+INFO  [2025-06-13 10:00:00,000] org.eclipse.jetty.setuid.SetUIDListener: Opened application@748e9b20{HTTP/1.1, (http/1.1)}{0.0.0.0:8080}
+INFO  [2025-06-13 10:00:00,000] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@2063c53e{HTTP/1.1, (http/1.1)}{0.0.0.0:8081}
+INFO  [2025-06-13 10:00:00,000] org.eclipse.jetty.server.Server: jetty-11.0.25; built: 2025-03-13T00:15:57.301Z; git: a2e9fae3ad8320f2a713d4fa29bba356a99d1295; jvm 21+35
+
+INFO  [2025-06-13 10:00:00,000] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+    GET     /welcome (com.sideshowcoder.resources.WelcomeResource)
+...
+</code></pre>
+<p>In the output we can see the resource being available under <code>/welcome</code> as well as the application listening to <code>http://0.0.0.0:8080</code>, where <code>0.0.0.0</code> refers to all interfaces.
+Using <code>curl</code>
+we can see the application working.</p>
+<pre><code class="hljs language-shell"><span class="hljs-meta prompt_">$ </span><span class="bash">curl -i http://localhost:8080/welcome</span>
+HTTP/1.1 200 OK
+Date: Fri, 13 Jun 2025 10:00:00 GMT
+Content-Type: text/plain
+Vary: Accept-Encoding
+Content-Length: 9
+
+Welcome!
+</code></pre>
+<h3 id="step-5-configure-flagd-as-a-provider">Step 5: Configure flagd as a provider</h3>
+<p>Now we configure flagd as the provider in our application</p>
+<pre><code class="hljs language-java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OpenFeatureExampleApplication</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Application</span>&#x3C;OpenFeatureExampleConfiguration> {
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-keyword">final</span> String[] args)</span> <span class="hljs-keyword">throws</span> Exception {
+        <span class="hljs-keyword">new</span> <span class="hljs-title class_">OpenFeatureExampleApplication</span>().run(args);
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getName</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"OpenFeatureExample"</span>;
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">initialize</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Bootstrap&#x3C;OpenFeatureExampleConfiguration> bootstrap)</span> {
+        <span class="hljs-comment">// nothing to do here</span>
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">(<span class="hljs-keyword">final</span> OpenFeatureExampleConfiguration configuration, <span class="hljs-keyword">final</span> Environment environment)</span> {
+        <span class="hljs-comment">// diff-add-block-start</span>
+        <span class="hljs-comment">// Use flagd as the OpenFeature provider and use default configurations</span>
+        <span class="hljs-keyword">try</span> {
+            OpenFeatureAPI.getInstance().setProviderAndWait(<span class="hljs-keyword">new</span> <span class="hljs-title class_">FlagdProvider</span>());
+        } <span class="hljs-keyword">catch</span> (OpenFeatureError e) {
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RuntimeException</span>(<span class="hljs-string">"Failed to set OpenFeature provider"</span>, e);
+        }
+        <span class="hljs-comment">// diff-add-block-end</span>
+
+        <span class="hljs-type">var</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> OpenFeatureAPI.getInstance().getClient(<span class="hljs-string">"dev.openfeature.OpenFeatureExample"</span>);
+        <span class="hljs-type">var</span> <span class="hljs-variable">welcomeResource</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">WelcomeResource</span>(client);
+        environment.jersey().register(welcomeResource);
+    }
+}
+</code></pre>
+<p>Add the bundle configuration to the existing application configuration</p>
+<pre><code class="hljs language-java"><span class="hljs-comment">// diff-remove</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OpenFeatureExampleConfiguration</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Configuration</span> {
+<span class="hljs-comment">// diff-add</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OpenFeatureExampleConfiguration</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Configuration</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">OpenFeatureBundleConfiguration</span> {
+    <span class="hljs-comment">// diff-remove</span>
+    <span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> implement service configuration</span>
+    <span class="hljs-comment">// diff-add-block-start</span>
+    <span class="hljs-meta">@Valid</span>
+    <span class="hljs-meta">@NotNull</span>
+    <span class="hljs-meta">@JsonProperty</span>
+    <span class="hljs-keyword">private</span> OpenFeatureConfiguration openfeature;
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> OpenFeatureConfiguration <span class="hljs-title function_">getOpenFeatureConfiguration</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> openfeature;
+    }
+    <span class="hljs-comment">// diff-add-block-end</span>
+}
+</code></pre>
+<p>add the bundle configuration to the <code>config.yml</code> file</p>
+<pre><code class="hljs language-yaml"><span class="hljs-meta">---</span>
+<span class="hljs-attr">logging:</span>
+  <span class="hljs-attr">level:</span> <span class="hljs-string">INFO</span>
+  <span class="hljs-attr">loggers:</span>
+    <span class="hljs-attr">dev.openfeature:</span> <span class="hljs-string">DEBUG</span>
+
+<span class="hljs-string">//</span> <span class="hljs-string">diff-add-block-start</span>
+<span class="hljs-attr">openfeature:</span>
+  <span class="hljs-attr">provider:</span> <span class="hljs-string">flagd</span>
+<span class="hljs-string">//</span> <span class="hljs-string">diff-add-block-end</span>
+</code></pre>
+<p>initialize the bundle</p>
+<pre><code class="hljs language-java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OpenFeatureExampleApplication</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Application</span>&#x3C;OpenFeatureExampleConfiguration> {
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-keyword">final</span> String[] args)</span> <span class="hljs-keyword">throws</span> Exception {
+        <span class="hljs-keyword">new</span> <span class="hljs-title class_">OpenFeatureExampleApplication</span>().run(args);
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getName</span><span class="hljs-params">()</span> {
+      <span class="hljs-keyword">return</span> <span class="hljs-string">"OpenFeatureExample"</span>;
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">initialize</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Bootstrap&#x3C;OpenFeatureExampleConfiguration> bootstrap)</span> {
+        <span class="hljs-comment">// diff-add-block-start</span>
+        bootstrap.addBundle(<span class="hljs-keyword">new</span> <span class="hljs-title class_">OpenFeatureBundle</span>());
+       <span class="hljs-comment">// diff-add-block-end</span>
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">(<span class="hljs-keyword">final</span> OpenFeatureExampleConfiguration configuration, <span class="hljs-keyword">final</span> Environment environment)</span> {
+        <span class="hljs-type">var</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> OpenFeatureAPI.getInstance().getClient(<span class="hljs-string">"dev.openfeature.OpenFeatureExample"</span>);
+        <span class="hljs-type">var</span> <span class="hljs-variable">welcomeResource</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">WelcomeResource</span>(client);
+        environment.jersey().register(welcomeResource);
+    }
+}
+</code></pre>
+<blockquote>
+<p>NOTE: dropwizard-openfeature not only configures the provider, but also adds a healthcheck and hooks the provider into the application startup and shutdown lifecycle.</p>
+</blockquote>
+<h3 id="step-6-rerun-the-application">Step 6: Rerun the application</h3>
+<p>We can now rerun the application</p>
+<pre><code class="hljs language-shell"><span class="hljs-meta prompt_">$ </span><span class="bash">mvn clean package</span>
+<span class="hljs-meta prompt_">$ </span><span class="bash">java -jar target/openfeature-example-1.0-SNAPSHOT.jar server config.yml</span>
+INFO  [2025-06-13 10:00:00,000] io.dropwizard.core.server.DefaultServerFactory: Registering jersey handler with root path prefix: /
+INFO  [2025-06-13 10:00:00,000] io.dropwizard.core.server.DefaultServerFactory: Registering admin handler with root path prefix: /
+INFO  [2025-06-13 10:00:00,000] io.dropwizard.core.server.ServerFactory: Starting OpenFeatureExample
+================================================================================
+
+OpenFeatureExample
+
+================================================================================
+
+INFO  [2025-06-13 10:00:00,000] org.eclipse.jetty.setuid.SetUIDListener: Opened application@748e9b20{HTTP/1.1, (http/1.1)}{0.0.0.0:8080}
+INFO  [2025-06-13 10:00:00,000] org.eclipse.jetty.setuid.SetUIDListener: Opened admin@2063c53e{HTTP/1.1, (http/1.1)}{0.0.0.0:8081}
+INFO  [2025-06-13 10:00:00,000] org.eclipse.jetty.server.Server: jetty-11.0.25; built: 2025-03-13T00:15:57.301Z; git: a2e9fae3ad8320f2a713d4fa29bba356a99d1295; jvm 21+35
+
+INFO  [2025-06-13 10:00:00,000] io.dropwizard.jersey.DropwizardResourceConfig: The following paths were found for the configured resources:
+
+GET     /welcome (com.sideshowcoder.resources.WelcomeResource)
+...
+</code></pre>
+<p>Using <code>curl</code> to again fetch the <code>/welcome</code> resource will show again the default message</p>
+<pre><code class="hljs language-shell"><span class="hljs-meta prompt_">$ </span><span class="bash">curl -i http://localhost:8080/welcome</span>
+HTTP/1.1 200 OK
+Date: Fri, 13 Jun 2025 10:00:00 GMT
+Content-Type: text/plain
+Vary: Accept-Encoding
+Content-Length: 9
+
+Welcome!
+</code></pre>
+<p>fetching <code>/welcome</code> now will show the message for <code>"welcome-message"</code> being <code>true</code>.</p>
+<pre><code class="hljs language-shell"><span class="hljs-meta prompt_">$ </span><span class="bash">curl -i http://localhost:8080/welcome</span>
+HTTP/1.1 200 OK
+Date: Fri, 13 Jun 2025 10:00:00 GMT
+Content-Type: text/plain
+Vary: Accept-Encoding
+Content-Length: 38
+
+Welcome to OpenFeature in Dropwizard!
+</code></pre>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this walkthrough we learned how to integrate OpenFeature into a Dropwizard application, using flagd to provide the feature flags at runtime.
+We saw how changing the flags
+definition can change the runtime behaviour of our application, without the need to redeploy or restart the application.</p>

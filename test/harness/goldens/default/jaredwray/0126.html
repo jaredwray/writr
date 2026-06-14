@@ -1,0 +1,98 @@
+<h1 id="gateway--api">Gateway &#x26; API</h1>
+<p>The gateway endpoint is <strong>REST by default</strong>, designed to be trivial for any client to
+use — from a backend service to a browser-based SPA.</p>
+<h2 id="rest-with-multiple-gateway-providers">REST, with multiple gateway providers</h2>
+<p>The default gateway speaks REST, but the gateway surface is itself a <strong>provider</strong>. That
+means you can run alternative gateway providers (for example a GraphQL or gRPC front
+end) against the same caching core when your clients need it — without changing the
+storage, memory, or stats layers underneath.</p>
+<h3 id="core-rest-surface">Core REST surface</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/cache/:key</code></td>
+<td>Read a value (served from L1/L2 on a hit).</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/cache/:key</code></td>
+<td>Store a value with an optional TTL.</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/cache/:key</code></td>
+<td>Invalidate a key across all tiers.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/cache:purge</code></td>
+<td>Bulk invalidate by prefix or tag.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/health</code></td>
+<td>Liveness/readiness probe — <strong>unauthenticated</strong> (see below).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="authentication-bearer-or-x-api-token">Authentication: Bearer or x-api-token</h2>
+<p>Auth is intentionally <strong>simple and fast</strong>. Send either header:</p>
+<pre><code class="hljs language-http">Authorization: Bearer &#x3C;token>
+</code></pre>
+<pre><code class="hljs language-http">x-api-token: &#x3C;token>
+</code></pre>
+<p>Token-based auth avoids the overhead of session lookups and cookies, which keeps the
+hot path fast. It is also <strong>CORS- and browser-friendly</strong>, which unlocks a major
+benefit.</p>
+<blockquote>
+<p><strong><code>/health</code> is exempt from authentication.</strong> Auth applies to the <code>/cache</code> surface, but
+the liveness/readiness probe is intentionally public so global load-balancer health
+checks (Cloudflare, Fastly, GCP, Azure, AWS) can reach it without credentials. It
+returns only status — never cached data.</p>
+</blockquote>
+<h3 id="scoped-tokens-read-only-vs-read-write">Scoped tokens: read-only vs. read-write</h3>
+<p>Tokens are <strong>scoped</strong>. Issue narrow tokens per use case so a token can only do what its
+holder needs:</p>
+<ul>
+<li><strong>Read-only / <code>GET</code>-only</strong> tokens — safe to expose to untrusted clients (browsers).</li>
+<li><strong>Read-write</strong> tokens (<code>PUT</code>, <code>DELETE</code>, <code>/cache:purge</code>) — privileged; <strong>must stay
+server-side</strong> and never be shipped to a browser.</li>
+</ul>
+<h2 id="a-huge-win-for-react--spa-caching">A huge win for React &#x26; SPA caching</h2>
+<p>Because auth is a single header and the API is plain REST + socket.io, you can read from
+<code>http-cache</code> <strong>directly in the browser</strong> with a <strong>read-only, scoped token</strong>. A React or
+SPA app can:</p>
+<ul>
+<li>read cache entries from the client without a bespoke backend proxy,</li>
+<li>subscribe to live invalidations so the UI updates the instant data changes,</li>
+<li>share a single, globally load-balanced cache tier across web and server clients.</li>
+</ul>
+<pre><code class="hljs language-ts"><span class="hljs-comment">// Browser: only ever ship a READ-ONLY token. Any value bundled into a frontend</span>
+<span class="hljs-comment">// (e.g. a Vite `VITE_`-prefixed variable) is fully visible to every visitor.</span>
+<span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">`https://cache.example.com/cache/feed:home`</span>, {
+  <span class="hljs-attr">headers</span>: { <span class="hljs-string">"x-api-token"</span>: <span class="hljs-keyword">import</span>.<span class="hljs-property">meta</span>.<span class="hljs-property">env</span>.<span class="hljs-property">VITE_CACHE_READONLY_TOKEN</span> },
+});
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Never expose a read-write token to the browser.</strong> <code>VITE_</code>-prefixed (and all
+client-side) variables are compiled into the bundle and readable by anyone. Since the
+API includes <code>PUT</code>, <code>DELETE</code>, and <code>/cache:purge</code>, a shared write token in the browser
+would let any visitor mutate or flush your cache. Keep write tokens on the server and
+have the browser hold only a read-only/scoped token (or proxy writes through your
+backend).</p>
+</blockquote>
+<p>This turns the cache into a first-class, real-time <em>read</em> layer for your frontend —
+while writes stay safely server-side.</p>
+<h2 id="related">Related</h2>
+<ul>
+<li><strong><a href="/docs/realtime-and-webhooks">Realtime &#x26; webhooks</a></strong> — socket.io push and webhooks.</li>
+<li><strong><a href="/docs/caching-layers">Caching layers</a></strong> — what happens on a hit vs a miss.</li>
+</ul>

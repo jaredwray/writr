@@ -1,0 +1,415 @@
+<h1 id="keyvpostgres-">@keyv/postgres <a href="https://github.com/jaredwray/keyv"></a></h1>
+<blockquote>
+<p>PostgreSQL storage adapter for Keyv</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://www.npmjs.com/package/@keyv/postgres"><img src="https://img.shields.io/npm/v/@keyv/postgres.svg" alt="npm"></a>
+<a href="https://npmjs.com/package/@keyv/postgres"><img src="https://img.shields.io/npm/dm/@keyv/postgres" alt="npm"></a></p>
+<p>PostgreSQL storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a>.</p>
+<p>Requires Postgres 9.5 or newer for <code>ON CONFLICT</code> support to allow performant upserts. <a href="https://stackoverflow.com/questions/17267417/how-to-upsert-merge-insert-on-duplicate-update-in-postgresql/17267423#17267423">Why?</a></p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#install">Install</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#migrating-to-v6">Migrating to v6</a>
+<ul>
+<li><a href="#breaking-changes">Breaking changes</a>
+<ul>
+<li><a href="#native-namespace-support">Native namespace support</a></li>
+<li><a href="#hookified-integration">Hookified integration</a></li>
+</ul>
+</li>
+<li><a href="#new-features">New features</a>
+<ul>
+<li><a href="#native-ttl-support-with-expires-column">Native TTL support with <code>expires</code> column</a></li>
+<li><a href="#clearexpired-method"><code>clearExpired()</code> method</a></li>
+<li><a href="#clearexpiredinterval-option"><code>clearExpiredInterval</code> option</a></li>
+<li><a href="#bulk-operations">Bulk operations</a></li>
+<li><a href="#createkeyv-helper"><code>createKeyv()</code> helper</a></li>
+<li><a href="#improved-iterator">Improved iterator</a></li>
+</ul>
+</li>
+<li><a href="#running-the-migration-script">Running the migration script</a></li>
+</ul>
+</li>
+<li><a href="#constructor-options">Constructor Options</a></li>
+<li><a href="#properties">Properties</a>
+<ul>
+<li><a href="#uri">uri</a></li>
+<li><a href="#table">table</a></li>
+<li><a href="#keylength">keyLength</a></li>
+<li><a href="#namespacelength">namespaceLength</a></li>
+<li><a href="#schema">schema</a></li>
+<li><a href="#ssl">ssl</a></li>
+<li><a href="#iterationlimit">iterationLimit</a></li>
+<li><a href="#useunloggedtable">useUnloggedTable</a></li>
+<li><a href="#clearexpiredinterval">clearExpiredInterval</a></li>
+<li><a href="#namespace">namespace</a></li>
+</ul>
+</li>
+<li><a href="#methods">Methods</a>
+<ul>
+<li><a href="#setkey-value-ttl">.set(key, value, ttl?)</a></li>
+<li><a href="#setmanyentries">.setMany(entries)</a></li>
+<li><a href="#getkey">.get(key)</a></li>
+<li><a href="#getmanykeys">.getMany(keys)</a></li>
+<li><a href="#haskey">.has(key)</a></li>
+<li><a href="#hasmanykeys">.hasMany(keys)</a></li>
+<li><a href="#deletekey">.delete(key)</a></li>
+<li><a href="#deletemanykeys">.deleteMany(keys)</a></li>
+<li><a href="#clear">.clear()</a></li>
+<li><a href="#clearexpired">.clearExpired()</a></li>
+<li><a href="#iterator">.iterator()</a></li>
+<li><a href="#disconnect">.disconnect()</a></li>
+</ul>
+</li>
+<li><a href="#using-an-unlogged-table-for-performance">Using an Unlogged Table for Performance</a></li>
+<li><a href="#connection-pooling">Connection Pooling</a></li>
+<li><a href="#ssltls-connections">SSL/TLS Connections</a></li>
+<li><a href="#testing">Testing</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h1 id="install">Install</h1>
+<pre><code class="hljs language-shell">npm install --save keyv @keyv/postgres
+</code></pre>
+<h1 id="usage">Usage</h1>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvPostgres</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/postgres'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>(<span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>) });
+keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, handleConnectionError);
+</code></pre>
+<p>You can specify the <code>table</code> and <code>schema</code> options:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> keyvPostgres = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>, <span class="hljs-attr">table</span>: <span class="hljs-string">'cache'</span>, <span class="hljs-attr">schema</span>: <span class="hljs-string">'keyv'</span> });
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: keyvPostgres });
+</code></pre>
+<p>You can also use the <code>createKeyv</code> helper function to create <code>Keyv</code> with <code>KeyvPostgres</code> store:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/postgres'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>, <span class="hljs-attr">table</span>: <span class="hljs-string">'cache'</span>, <span class="hljs-attr">schema</span>: <span class="hljs-string">'keyv'</span> });
+</code></pre>
+<h1 id="migrating-to-v6">Migrating to v6</h1>
+<h2 id="breaking-changes">Breaking changes</h2>
+<p>The <code>opts</code> getter still exists for backward compatibility but should not be used for new code.</p>
+<h3 id="native-namespace-support">Native namespace support</h3>
+<p>In v5, namespaces were stored as key prefixes in the <code>key</code> column (e.g. <code>key="myns:mykey"</code> with <code>namespace=NULL</code>). In v6, the namespace is stored in a dedicated <code>namespace</code> column (e.g. <code>key="mykey"</code>, <code>namespace="myns"</code>). This enables more efficient queries and proper namespace isolation.</p>
+<p>The adapter automatically adds the <code>namespace</code> column and creates the appropriate index when it connects, so no manual schema changes are needed for new installations.</p>
+<h3 id="hookified-integration">Hookified integration</h3>
+<p>The adapter now extends <a href="https://hookified.org">Hookified</a> instead of a custom EventEmitter. Events work the same (<code>on</code>, <code>emit</code>), but hooks are also available via the standard Hookified API.</p>
+<h2 id="new-features">New features</h2>
+<h3 id="native-ttl-support-with-expires-column">Native TTL support with <code>expires</code> column</h3>
+<p>v6 adds an <code>expires BIGINT</code> column to the table. When values are stored with a TTL via Keyv core, the adapter automatically extracts the <code>expires</code> timestamp from the serialized value and stores it in the column. A partial index is created on the <code>expires</code> column for efficient cleanup queries.</p>
+<p>The schema migration is automatic on connect — existing tables get the column added via <code>ADD COLUMN IF NOT EXISTS</code>.</p>
+<h3 id="clearexpired-method"><code>clearExpired()</code> method</h3>
+<p>A new utility method that deletes all rows where the <code>expires</code> column is set and the timestamp is in the past:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> store.<span class="hljs-title function_">clearExpired</span>();
+</code></pre>
+<h3 id="clearexpiredinterval-option"><code>clearExpiredInterval</code> option</h3>
+<p>Set an interval (in milliseconds) to automatically call <code>clearExpired()</code> on a schedule. Disabled by default (<code>0</code>). The timer uses <code>unref()</code> so it won't keep the Node.js process alive.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({
+  <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>,
+  <span class="hljs-attr">clearExpiredInterval</span>: <span class="hljs-number">60_000</span>, <span class="hljs-comment">// clean up every 60 seconds</span>
+});
+</code></pre>
+<h3 id="bulk-operations">Bulk operations</h3>
+<p>New methods for efficient multi-key operations:</p>
+<ul>
+<li><code>.setMany(entries)</code> — bulk upsert using PostgreSQL <code>UNNEST</code></li>
+<li><code>.getMany(keys)</code> — bulk retrieve using <code>ANY</code></li>
+<li><code>.deleteMany(keys)</code> — bulk delete using <code>ANY</code></li>
+<li><code>.hasMany(keys)</code> — bulk existence check</li>
+</ul>
+<h3 id="createkeyv-helper"><code>createKeyv()</code> helper</h3>
+<p>A convenience function to create a <code>Keyv</code> instance with <code>KeyvPostgres</code> as the store in one call:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/postgres'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span> });
+</code></pre>
+<h3 id="improved-iterator">Improved iterator</h3>
+<p>The iterator now uses cursor-based (keyset) pagination instead of <code>OFFSET</code>. This handles concurrent deletions during iteration without skipping entries and is more efficient for large datasets.</p>
+<h2 id="running-the-migration-script">Running the migration script</h2>
+<p>If you have existing data from v5, you need to run the migration script to move namespace prefixes from keys into the new <code>namespace</code> column. The script is located at <code>scripts/migrate-v6.ts</code> in the <code>@keyv/postgres</code> package.</p>
+<p>Preview the changes first with <code>--dry-run</code>:</p>
+<pre><code class="hljs language-shell">npx tsx scripts/migrate-v6.ts --uri postgresql://user:pass@localhost:5432/dbname --dry-run
+</code></pre>
+<p>Run the migration:</p>
+<pre><code class="hljs language-shell">npx tsx scripts/migrate-v6.ts --uri postgresql://user:pass@localhost:5432/dbname
+</code></pre>
+<p>You can also specify a custom table, schema, and column lengths:</p>
+<pre><code class="hljs language-shell">npx tsx scripts/migrate-v6.ts --uri postgresql://user:pass@localhost:5432/dbname --table cache --schema keyv
+npx tsx scripts/migrate-v6.ts --uri postgresql://user:pass@localhost:5432/dbname --keyLength 512 --namespaceLength 512
+</code></pre>
+<p>The migration runs inside a transaction and will roll back automatically if anything fails.</p>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>The script only migrates rows where <code>namespace IS NULL</code>. Rows that already have a namespace value (e.g. from a partial earlier migration) are skipped.</li>
+<li>Keys are split on the first colon — the part before becomes the namespace, the rest becomes the key. Namespaces containing colons are not supported.</li>
+</ul>
+<h1 id="constructor-options">Constructor Options</h1>
+<p><code>KeyvPostgres</code> accepts a connection URI string or an options object. The options object accepts the following properties along with any <a href="https://node-postgres.com/apis/pool"><code>PoolConfig</code></a> properties from the <code>pg</code> library (e.g. <code>max</code>, <code>idleTimeoutMillis</code>, <code>connectionTimeoutMillis</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uri</code></td>
+<td><code>string</code></td>
+<td><code>'postgresql://localhost:5432'</code></td>
+<td>PostgreSQL connection URI</td>
+</tr>
+<tr>
+<td><code>table</code></td>
+<td><code>string</code></td>
+<td><code>'keyv'</code></td>
+<td>Table name for key-value storage</td>
+</tr>
+<tr>
+<td><code>keyLength</code></td>
+<td><code>number</code></td>
+<td><code>255</code></td>
+<td>Maximum key column length (VARCHAR length)</td>
+</tr>
+<tr>
+<td><code>namespaceLength</code></td>
+<td><code>number</code></td>
+<td><code>255</code></td>
+<td>Maximum namespace column length (VARCHAR length)</td>
+</tr>
+<tr>
+<td><code>schema</code></td>
+<td><code>string</code></td>
+<td><code>'public'</code></td>
+<td>PostgreSQL schema name (created automatically if it doesn't exist)</td>
+</tr>
+<tr>
+<td><code>ssl</code></td>
+<td><code>object</code></td>
+<td><code>undefined</code></td>
+<td>SSL/TLS configuration passed to the <code>pg</code> driver</td>
+</tr>
+<tr>
+<td><code>iterationLimit</code></td>
+<td><code>number</code></td>
+<td><code>10</code></td>
+<td>Number of rows fetched per batch during iteration</td>
+</tr>
+<tr>
+<td><code>useUnloggedTable</code></td>
+<td><code>boolean</code></td>
+<td><code>false</code></td>
+<td>Use a PostgreSQL UNLOGGED table for better write performance</td>
+</tr>
+<tr>
+<td><code>clearExpiredInterval</code></td>
+<td><code>number</code></td>
+<td><code>0</code></td>
+<td>Interval in milliseconds to automatically clear expired entries (0 = disabled)</td>
+</tr>
+</tbody>
+</table>
+<h1 id="properties">Properties</h1>
+<p>All configuration options are exposed as properties with getters and setters on the <code>KeyvPostgres</code> instance. You can read or update them after construction.</p>
+<h2 id="uri">uri</h2>
+<p>Get or set the PostgreSQL connection URI.</p>
+<ul>
+<li>Type: <code>string</code></li>
+<li>Default: <code>'postgresql://localhost:5432'</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">uri</span>); <span class="hljs-comment">// 'postgresql://user:pass@localhost:5432/dbname'</span>
+</code></pre>
+<h2 id="table">table</h2>
+<p>Get or set the table name used for storage.</p>
+<ul>
+<li>Type: <code>string</code></li>
+<li>Default: <code>'keyv'</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">table</span>); <span class="hljs-comment">// 'keyv'</span>
+store.<span class="hljs-property">table</span> = <span class="hljs-string">'cache'</span>;
+</code></pre>
+<h2 id="keylength">keyLength</h2>
+<p>Get or set the maximum key length (VARCHAR length) for the key column.</p>
+<ul>
+<li>Type: <code>number</code></li>
+<li>Default: <code>255</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>, <span class="hljs-attr">keyLength</span>: <span class="hljs-number">512</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">keyLength</span>); <span class="hljs-comment">// 512</span>
+</code></pre>
+<h2 id="namespacelength">namespaceLength</h2>
+<p>Get or set the maximum namespace length (VARCHAR length) for the namespace column.</p>
+<ul>
+<li>Type: <code>number</code></li>
+<li>Default: <code>255</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>, <span class="hljs-attr">namespaceLength</span>: <span class="hljs-number">512</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">namespaceLength</span>); <span class="hljs-comment">// 512</span>
+</code></pre>
+<h2 id="schema">schema</h2>
+<p>Get or set the PostgreSQL schema name. Non-public schemas are created automatically if they don't exist.</p>
+<ul>
+<li>Type: <code>string</code></li>
+<li>Default: <code>'public'</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>, <span class="hljs-attr">schema</span>: <span class="hljs-string">'keyv'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">schema</span>); <span class="hljs-comment">// 'keyv'</span>
+</code></pre>
+<h2 id="ssl">ssl</h2>
+<p>Get or set the SSL configuration for the PostgreSQL connection. Passed directly to the <code>pg</code> driver.</p>
+<ul>
+<li>Type: <code>object | undefined</code></li>
+<li>Default: <code>undefined</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({
+  <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>,
+  <span class="hljs-attr">ssl</span>: { <span class="hljs-attr">rejectUnauthorized</span>: <span class="hljs-literal">false</span> },
+});
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">ssl</span>); <span class="hljs-comment">// { rejectUnauthorized: false }</span>
+</code></pre>
+<h2 id="iterationlimit">iterationLimit</h2>
+<p>Get or set the number of rows to fetch per iteration batch.</p>
+<ul>
+<li>Type: <code>number</code></li>
+<li>Default: <code>10</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>, <span class="hljs-attr">iterationLimit</span>: <span class="hljs-number">50</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">iterationLimit</span>); <span class="hljs-comment">// 50</span>
+</code></pre>
+<h2 id="useunloggedtable">useUnloggedTable</h2>
+<p>Get or set whether to use a PostgreSQL unlogged table for better write performance. Unlogged tables are faster but data is lost on crash.</p>
+<ul>
+<li>Type: <code>boolean</code></li>
+<li>Default: <code>false</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>, <span class="hljs-attr">useUnloggedTable</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">useUnloggedTable</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<h2 id="clearexpiredinterval">clearExpiredInterval</h2>
+<p>Get or set the interval in milliseconds between automatic expired-entry cleanup runs. When set to a value greater than 0, the adapter will automatically call <code>clearExpired()</code> at the specified interval. The timer uses <code>unref()</code> so it won't keep the Node.js process alive. Setting to 0 disables the automatic cleanup.</p>
+<ul>
+<li>Type: <code>number</code></li>
+<li>Default: <code>0</code> (disabled)</li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-comment">// Clean up expired entries every 60 seconds</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>, <span class="hljs-attr">clearExpiredInterval</span>: <span class="hljs-number">60_000</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">clearExpiredInterval</span>); <span class="hljs-comment">// 60000</span>
+
+<span class="hljs-comment">// Disable it later</span>
+store.<span class="hljs-property">clearExpiredInterval</span> = <span class="hljs-number">0</span>;
+</code></pre>
+<h2 id="namespace">namespace</h2>
+<p>Get or set the namespace for the adapter. Used for key prefixing and scoping operations like <code>clear()</code>.</p>
+<ul>
+<li>Type: <code>string | undefined</code></li>
+<li>Default: <code>undefined</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span> });
+store.<span class="hljs-property">namespace</span> = <span class="hljs-string">'my-namespace'</span>;
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">namespace</span>); <span class="hljs-comment">// 'my-namespace'</span>
+</code></pre>
+<h1 id="methods">Methods</h1>
+<h2 id="setkey-value-ttl">.set(key, value, ttl?)</h2>
+<p>Set a key-value pair. Returns <code>true</code> on success, <code>false</code> on failure.</p>
+<ul>
+<li><code>key</code> <em>(string)</em> - The key to set.</li>
+<li><code>value</code> <em>(any)</em> - The value to store.</li>
+<li><code>ttl</code> <em>(number, optional)</em> - Time to live in milliseconds.</li>
+<li>Returns: <code>Promise&#x3C;boolean></code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">5000</span>); <span class="hljs-comment">// expires in 5 seconds</span>
+</code></pre>
+<h2 id="setmanyentries">.setMany(entries)</h2>
+<p>Set multiple key-value pairs at once using a single atomic PostgreSQL <code>INSERT ... UNNEST ... ON CONFLICT</code> statement. Each entry is a <code>KeyvEntry&#x3C;Value></code> object (<code>{ key: string, value: Value, ttl?: number }</code>), where <code>Value</code> is inferred from the entries provided. Returns a <code>boolean[]</code> indicating whether each entry was set successfully. Since the SQL statement is atomic, all entries either succeed (<code>true</code>) or all fail (<code>false</code>) together. On failure, an <code>error</code> event is emitted.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">setMany</span>([
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'foo'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'bar'</span> },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'baz'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'qux'</span> },
+]); <span class="hljs-comment">// [true, true]</span>
+</code></pre>
+<h2 id="getkey">.get(key)</h2>
+<p>Get a value by key. Returns <code>undefined</code> if the key does not exist.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar'</span>
+</code></pre>
+<h2 id="getmanykeys">.getMany(keys)</h2>
+<p>Get multiple values at once. Returns an array of values in the same order as the keys, with <code>undefined</code> for missing keys.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> values = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">getMany</span>([<span class="hljs-string">'foo'</span>, <span class="hljs-string">'baz'</span>]); <span class="hljs-comment">// ['bar', 'qux']</span>
+</code></pre>
+<h2 id="haskey">.has(key)</h2>
+<p>Check if a key exists. Returns a boolean.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> exists = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">has</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<h2 id="hasmanykeys">.hasMany(keys)</h2>
+<p>Check if multiple keys exist. Returns an array of booleans in the same order as the input keys.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'baz'</span>, <span class="hljs-string">'qux'</span>);
+
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">hasMany</span>([<span class="hljs-string">'foo'</span>, <span class="hljs-string">'baz'</span>, <span class="hljs-string">'unknown'</span>]); <span class="hljs-comment">// [true, true, false]</span>
+</code></pre>
+<h2 id="deletekey">.delete(key)</h2>
+<p>Delete a key. Returns <code>true</code> if the key existed, <code>false</code> otherwise.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> deleted = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<h2 id="deletemanykeys">.deleteMany(keys)</h2>
+<p>Delete multiple keys at once. Returns a <code>boolean[]</code> indicating whether each key existed.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">deleteMany</span>([<span class="hljs-string">'foo'</span>, <span class="hljs-string">'baz'</span>]); <span class="hljs-comment">// [true, true]</span>
+</code></pre>
+<h2 id="clear">.clear()</h2>
+<p>Clear all keys in the current namespace.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">clear</span>();
+</code></pre>
+<h2 id="clearexpired">.clearExpired()</h2>
+<p>Utility helper method to delete all expired entries from the store. This removes any rows where the <code>expires</code> column is set and the timestamp is in the past. This is useful for periodic cleanup of expired data.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">clearExpired</span>();
+</code></pre>
+<h2 id="iterator">.iterator()</h2>
+<p>Iterate over all key-value pairs. The iterator uses the namespace configured on the instance. Uses cursor-based pagination controlled by the <code>iterationLimit</code> property.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> iterator = keyv.<span class="hljs-title function_">iterator</span>();
+<span class="hljs-keyword">for</span> <span class="hljs-title function_">await</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> iterator) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key, value);
+}
+</code></pre>
+<h2 id="disconnect">.disconnect()</h2>
+<p>Disconnect from the PostgreSQL database and release the connection pool.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h1 id="using-an-unlogged-table-for-performance">Using an Unlogged Table for Performance</h1>
+<p>By default, the adapter creates a logged table. If you want to use an unlogged table for performance, you can pass the <code>useUnloggedTable</code> option to the constructor.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> keyvPostgres = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>, <span class="hljs-attr">useUnloggedTable</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: keyvPostgres });
+</code></pre>
+<p>From the <a href="https://www.postgresql.org/docs/current/sql-createtable.html#SQL-CREATETABLE-UNLOGGED">PostgreSQL documentation</a>:</p>
+<p>If specified, the table is created as an unlogged table. Data written to unlogged tables is not written to the write-ahead log (see Chapter 28), which makes them considerably faster than ordinary tables. However, they are not crash-safe: an unlogged table is automatically truncated after a crash or unclean shutdown. The contents of an unlogged table are also not replicated to standby servers. Any indexes created on an unlogged table are automatically unlogged as well.</p>
+<p>If this is specified, any sequences created together with the unlogged table (for identity or serial columns) are also created as unlogged.</p>
+<h1 id="connection-pooling">Connection Pooling</h1>
+<p>The adapter automatically uses the default settings on the <code>pg</code> package for connection pooling. You can override these settings by passing the options to the constructor such as setting the <code>max</code> pool size.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({ <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">20</span> }) });
+</code></pre>
+<h1 id="ssltls-connections">SSL/TLS Connections</h1>
+<p>You can configure SSL/TLS connections by passing the <code>ssl</code> option. This is passed directly to the underlying <code>pg</code> driver.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> keyvPostgres = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvPostgres</span>({
+  <span class="hljs-attr">uri</span>: <span class="hljs-string">'postgresql://user:pass@localhost:5432/dbname'</span>,
+  <span class="hljs-attr">ssl</span>: {
+    <span class="hljs-attr">rejectUnauthorized</span>: <span class="hljs-literal">false</span>,
+  },
+});
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: keyvPostgres });
+</code></pre>
+<p>For more details on SSL configuration, see the <a href="https://node-postgres.com/features/ssl">node-postgres SSL documentation</a>.</p>
+<h1 id="testing">Testing</h1>
+<p>When testing you can use our <code>docker compose</code> postgresql instance by having docker installed and running. This will start a postgres server, run the tests, and stop the server:</p>
+<p>At the root of the Keyv mono repo:</p>
+<pre><code class="hljs language-shell">pnpm test:services:start
+</code></pre>
+<p>To just test the postgres adapter go to the postgres directory (storage/postgres) and run:</p>
+<pre><code class="hljs language-shell">pnpm test
+</code></pre>
+<h1 id="license">License</h1>
+<p><a href="LISCENCE">MIT © Jared Wray</a></p>

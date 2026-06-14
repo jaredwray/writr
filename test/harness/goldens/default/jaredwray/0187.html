@@ -1,0 +1,36 @@
+<h1 id="agents">Agents</h1>
+<p>Cacheable is a caching monorepo providing a comprehensive suite of caching packages for Node.js built on Keyv.</p>
+<h2 id="packages">Packages</h2>
+<ul>
+<li><code>cacheable</code> - Layer 1/2 caching framework with distributed cache support</li>
+<li><code>cache-manager</code> - High-level cache manager (used by NestJS)</li>
+<li><code>cacheable-request</code> - RFC 7234 compliant HTTP request caching</li>
+<li><code>flat-cache</code> - File-based persistent caching</li>
+<li><code>file-entry-cache</code> - File metadata cache</li>
+<li><code>@cacheable/memory</code> - In-memory caching with LRU support</li>
+<li><code>@cacheable/node-cache</code> - Node-cache replacement</li>
+<li><code>@cacheable/utils</code> - Shared utilities (hashing, time parsing, memoization)</li>
+</ul>
+<h2 id="commands">Commands</h2>
+<ul>
+<li><code>pnpm test</code> - Run linting and tests with coverage (use after making changes)</li>
+<li><code>pnpm build</code> - Build all packages (TypeScript to dist/)</li>
+<li><code>pnpm lint</code> - Run Biome linting with auto-fix</li>
+<li><code>pnpm clean</code> - Clean all packages</li>
+<li><code>pnpm test:services:start</code> - Start Redis for testing</li>
+<li><code>pnpm test:services:stop</code> - Stop Redis</li>
+</ul>
+<h2 id="testing">Testing</h2>
+<ul>
+<li>Always run <code>pnpm test</code> after making changes</li>
+<li>Goal: 100% code coverage</li>
+<li>Tests use Vitest with v8 coverage</li>
+<li>Redis container via Docker for integration tests</li>
+</ul>
+<h2 id="code-style">Code Style</h2>
+<ul>
+<li>TypeScript strict mode</li>
+<li>Biome: tabs, double quotes</li>
+<li>ES modules (ESM)</li>
+<li>Build with tsdown (CJS + ESM output)</li>
+</ul>

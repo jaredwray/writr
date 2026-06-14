@@ -1,0 +1,761 @@
+<p>import MCPInstall from '@site/src/partials/mcp-install';</p>
+<p><a href="https://github.com/open-feature/spec/releases/tag/v0.8.0"><img src="https://img.shields.io/static/v1?label=specification&#x26;message=v0.8.0&#x26;color=yellow&#x26;style=for-the-badge" alt="Specification"></a>
+<a href="https://github.com/open-feature/dotnet-sdk/releases/tag/v2.9.0">
+<img src="https://img.shields.io/static/v1?label=release&#x26;message=v2.9.0&#x26;color=blue&#x26;style=for-the-badge" alt="Release">
+</a></p>
+<p><a href="https://cloud-native.slack.com/archives/C0344AANLA1"><img src="https://img.shields.io/badge/slack-%40cncf%2Fopenfeature-brightgreen?style=flat&#x26;logo=slack" alt="Slack"></a>
+<a href="https://codecov.io/gh/open-feature/dotnet-sdk"><img src="https://codecov.io/gh/open-feature/dotnet-sdk/branch/main/graph/badge.svg?token=MONAVJBXUJ" alt="Codecov"></a>
+<a href="https://www.nuget.org/packages/OpenFeature"><img src="https://img.shields.io/nuget/vpre/OpenFeature" alt="NuGet"></a>
+<a href="https://www.bestpractices.dev/en/projects/6250"><img src="https://bestpractices.coreinfrastructure.org/projects/6250/badge" alt="CII Best Practices"></a></p>
+<h2 id="quick-start">Quick start</h2>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li>.NET 8+</li>
+<li>.NET Framework 4.6.2+</li>
+</ul>
+<p>Note that the packages will aim to support all current .NET versions. Refer to the currently supported versions <a href="https://dotnet.microsoft.com/download/dotnet">.NET</a> and <a href="https://dotnet.microsoft.com/download/dotnet-framework">.NET Framework</a> excluding .NET Framework 3.5</p>
+<h3 id="nativeaot-support">NativeAOT Support</h3>
+<p>✅ <strong>Full NativeAOT Compatibility</strong> - The OpenFeature .NET SDK is fully compatible with .NET NativeAOT compilation for fast startup and small deployment size. See the <a href="https://github.com/open-feature/dotnet-sdk/blob/main/docs/AOT_COMPATIBILITY.md">AOT Compatibility Guide</a> for detailed instructions.</p>
+<blockquote>
+<p>While the core OpenFeature SDK is fully NativeAOT compatible, contrib and community-provided providers, hooks, and extensions may not be. Please check with individual provider/hook documentation for their NativeAOT compatibility status.</p>
+</blockquote>
+<h3 id="install">Install</h3>
+<p>Use the following to initialize your project:</p>
+<pre><code class="hljs language-sh">dotnet new console
+</code></pre>
+<p>and install OpenFeature:</p>
+<pre><code class="hljs language-sh">dotnet add package OpenFeature
+</code></pre>
+<h3 id="usage">Usage</h3>
+<pre><code class="hljs language-csharp"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">async</span> Task <span class="hljs-title">Example</span>()</span>
+{
+    <span class="hljs-comment">// Register your feature flag provider</span>
+    <span class="hljs-keyword">try</span>
+    {
+        <span class="hljs-keyword">await</span> Api.Instance.SetProviderAsync(<span class="hljs-keyword">new</span> InMemoryProvider());
+    }
+    <span class="hljs-keyword">catch</span> (Exception ex)
+    {
+        <span class="hljs-comment">// Log error</span>
+    }
+
+    <span class="hljs-comment">// Create a new client</span>
+    FeatureClient client = Api.Instance.GetClient();
+
+    <span class="hljs-comment">// Evaluate your feature flag</span>
+    <span class="hljs-built_in">bool</span> v2Enabled = <span class="hljs-keyword">await</span> client.GetBooleanValueAsync(<span class="hljs-string">"v2_enabled"</span>, <span class="hljs-literal">false</span>);
+
+    <span class="hljs-keyword">if</span> ( v2Enabled )
+    {
+        <span class="hljs-comment">// Do some work</span>
+    }
+}
+</code></pre>
+<h3 id="samples">Samples</h3>
+<p>The <a href="https://github.com/open-feature/dotnet-sdk/blob/main/samples"><code>samples/</code></a> folder contains example applications demonstrating how to use OpenFeature in different .NET scenarios.</p>
+<table>
+<thead>
+<tr>
+<th>Sample Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/open-feature/dotnet-sdk/blob/main/samples/AspNetCore/README.md">AspNetCore</a></td>
+<td>Feature flags in an ASP.NET Core Web API.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Getting Started with a Sample:</strong></p>
+<ol>
+<li>
+<p>Navigate to the sample directory</p>
+<pre><code class="hljs language-shell">cd samples/AspNetCore
+</code></pre>
+</li>
+<li>
+<p>Restore dependencies and run</p>
+<pre><code class="hljs language-shell">dotnet run
+</code></pre>
+</li>
+</ol>
+<p>Want to contribute a new sample? See our <a href="https://github.com/open-feature/dotnet-sdk/blob/main/CONTRIBUTING.md">CONTRIBUTING</a> guide!</p>
+<h2 id="features">Features</h2>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Features</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✅</td>
+<td><a href="#providers">Providers</a></td>
+<td>Integrate with a commercial, open source, or in-house feature management tool.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#targeting">Targeting</a></td>
+<td>Contextually-aware flag evaluation using <a href="/docs/reference/concepts/evaluation-context">evaluation context</a>.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#hooks">Hooks</a></td>
+<td>Add functionality to various stages of the flag evaluation life-cycle.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#tracking">Tracking</a></td>
+<td>Associate user actions with feature flag evaluations.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#logging">Logging</a></td>
+<td>Integrate with popular logging packages.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#domains">Domains</a></td>
+<td>Logically bind clients with providers.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#eventing">Eventing</a></td>
+<td>React to state changes in the provider or flag management system.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#shutdown">Shutdown</a></td>
+<td>Gracefully clean up a provider during application shutdown.</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#transaction-context-propagation">Transaction Context Propagation</a></td>
+<td>Set a specific <a href="/docs/reference/concepts/evaluation-context">evaluation context</a> for a transaction (e.g. an HTTP request or a thread).</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><a href="#extending">Extending</a></td>
+<td>Extend OpenFeature with custom providers and hooks.</td>
+</tr>
+<tr>
+<td>🔬</td>
+<td><a href="#multi-provider">Multi-Provider</a></td>
+<td>Use multiple feature flag providers simultaneously with configurable evaluation strategies.</td>
+</tr>
+<tr>
+<td>🔬</td>
+<td><a href="#dependency-injection">DependencyInjection</a></td>
+<td>Integrate OpenFeature with .NET's dependency injection for streamlined provider setup.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Implemented: ✅ | In-progress: ⚠️ | Not implemented yet: ❌ | Experimental: 🔬</p>
+</blockquote>
+<h3 id="providers">Providers</h3>
+<p><a href="/docs/reference/concepts/provider">Providers</a> are an abstraction between a flag management system and the OpenFeature SDK.
+Here is <a href="/ecosystem?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Provider&#x26;instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=.NET">a complete list of available providers</a>.</p>
+<p>If the provider you're looking for hasn't been created yet, see the <a href="#develop-a-provider">develop a provider</a> section to learn how to build it yourself.</p>
+<p>Once you've added a provider as a dependency, it can be registered with OpenFeature like this:</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">try</span>
+{
+    <span class="hljs-keyword">await</span> Api.Instance.SetProviderAsync(<span class="hljs-keyword">new</span> MyProvider());
+}
+<span class="hljs-keyword">catch</span> (Exception ex)
+{
+    <span class="hljs-comment">// Log error</span>
+}
+</code></pre>
+<p>When calling <code>SetProviderAsync</code> an exception may be thrown if the provider cannot be initialized. This may occur if the provider has not been configured correctly. See the documentation for the provider you are using for more information on how to configure the provider correctly.</p>
+<p>In some situations, it may be beneficial to register multiple providers in the same application.
+This is possible using <a href="#domains">domains</a>, which is covered in more detail below.</p>
+<h3 id="targeting">Targeting</h3>
+<p>Sometimes, the value of a flag must consider some dynamic criteria about the application or user such as the user's location, IP, email address, or the server's location.
+In OpenFeature, we refer to this as <a href="/specification/glossary#targeting">targeting</a>.
+If the flag management system you're using supports targeting, you can provide the input data using the <a href="/docs/reference/concepts/evaluation-context">evaluation context</a>.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// set a value to the global context</span>
+EvaluationContextBuilder builder = EvaluationContext.Builder();
+builder.Set(<span class="hljs-string">"region"</span>, <span class="hljs-string">"us-east-1"</span>);
+EvaluationContext apiCtx = builder.Build();
+Api.Instance.SetContext(apiCtx);
+
+<span class="hljs-comment">// set a value to the client context</span>
+builder = EvaluationContext.Builder();
+builder.Set(<span class="hljs-string">"region"</span>, <span class="hljs-string">"us-east-1"</span>);
+EvaluationContext clientCtx = builder.Build();
+<span class="hljs-keyword">var</span> client = Api.Instance.GetClient();
+client.SetContext(clientCtx);
+
+<span class="hljs-comment">// set a value to the invocation context</span>
+builder = EvaluationContext.Builder();
+builder.Set(<span class="hljs-string">"region"</span>, <span class="hljs-string">"us-east-1"</span>);
+EvaluationContext reqCtx = builder.Build();
+
+<span class="hljs-built_in">bool</span> flagValue = <span class="hljs-keyword">await</span> client.GetBooleanValuAsync(<span class="hljs-string">"some-flag"</span>, <span class="hljs-literal">false</span>, reqCtx);
+
+</code></pre>
+<h3 id="hooks">Hooks</h3>
+<p><a href="/docs/reference/concepts/hooks">Hooks</a> allow for custom logic to be added at well-defined points of the flag evaluation life-cycle.
+Look <a href="/ecosystem/?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Hook&#x26;instant_search%5BrefinementList%5D%5Bcategory%5D%5B0%5D=Server-side&#x26;instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=.NET">here</a> for a complete list of available hooks.
+If the hook you're looking for hasn't been created yet, see the <a href="#develop-a-hook">develop a hook</a> section to learn how to build it yourself.</p>
+<p>Once you've added a hook as a dependency, it can be registered at the global, client, or flag invocation level.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// add a hook globally, to run on all evaluations</span>
+Api.Instance.AddHooks(<span class="hljs-keyword">new</span> ExampleGlobalHook());
+
+<span class="hljs-comment">// add a hook on this client, to run on all evaluations made by this client</span>
+<span class="hljs-keyword">var</span> client = Api.Instance.GetClient();
+client.AddHooks(<span class="hljs-keyword">new</span> ExampleClientHook());
+
+<span class="hljs-comment">// add a hook for this evaluation only</span>
+<span class="hljs-keyword">var</span> <span class="hljs-keyword">value</span> = <span class="hljs-keyword">await</span> client.GetBooleanValueAsync(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>, context, <span class="hljs-keyword">new</span> FlagEvaluationOptions(<span class="hljs-keyword">new</span> ExampleInvocationHook()));
+</code></pre>
+<h3 id="logging">Logging</h3>
+<p>The .NET SDK uses Microsoft.Extensions.Logging. See the <a href="https://learn.microsoft.com/en-us/dotnet/core/extensions/logging?tabs=command-line">manual</a> for complete documentation.
+Note that in accordance with the OpenFeature specification, the SDK doesn't generally log messages during flag evaluation. If you need further troubleshooting, please look into the <code>Logging Hook</code> section.</p>
+<h4 id="logging-hook">Logging Hook</h4>
+<p>The .NET SDK includes a LoggingHook, which logs detailed information at key points during flag evaluation, using Microsoft.Extensions.Logging structured logging API. This hook can be particularly helpful for troubleshooting and debugging; simply attach it at the global, client or invocation level and ensure your log level is set to "debug".</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">using</span> <span class="hljs-keyword">var</span> loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+<span class="hljs-keyword">var</span> logger = loggerFactory.CreateLogger(<span class="hljs-string">"Program"</span>);
+
+<span class="hljs-keyword">var</span> client = Api.Instance.GetClient();
+client.AddHooks(<span class="hljs-keyword">new</span> LoggingHook(logger));
+</code></pre>
+<p>See <a href="#hooks">hooks</a> for more information on configuring hooks.</p>
+<h3 id="domains">Domains</h3>
+<p>Clients can be assigned to a domain.
+A domain is a logical identifier which can be used to associate clients with a particular provider.
+If a domain has no associated provider, the default provider is used.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">try</span>
+{
+    <span class="hljs-comment">// registering the default provider</span>
+    <span class="hljs-keyword">await</span> Api.Instance.SetProviderAsync(<span class="hljs-keyword">new</span> LocalProvider());
+
+    <span class="hljs-comment">// registering a provider to a domain</span>
+    <span class="hljs-keyword">await</span> Api.Instance.SetProviderAsync(<span class="hljs-string">"clientForCache"</span>, <span class="hljs-keyword">new</span> CachedProvider());
+}
+<span class="hljs-keyword">catch</span> (Exception ex)
+{
+    <span class="hljs-comment">// Log error</span>
+}
+
+<span class="hljs-comment">// a client backed by default provider</span>
+FeatureClient clientDefault = Api.Instance.GetClient();
+
+<span class="hljs-comment">// a client backed by CachedProvider</span>
+FeatureClient scopedClient = Api.Instance.GetClient(<span class="hljs-string">"clientForCache"</span>);
+</code></pre>
+<p>Domains can be defined on a provider during registration.
+For more details, please refer to the <a href="#providers">providers</a> section.</p>
+<h3 id="eventing">Eventing</h3>
+<p>Events allow you to react to state changes in the provider or underlying flag management system, such as flag definition changes,
+provider readiness, or error conditions.
+Initialization events (<code>PROVIDER_READY</code> on success, <code>PROVIDER_ERROR</code> on failure) are dispatched for every provider.
+Some providers support additional events, such as <code>PROVIDER_CONFIGURATION_CHANGED</code>.</p>
+<p>Please refer to the documentation of the provider you're using to see what events are supported.</p>
+<p>Example usage of an Event handler:</p>
+<pre><code class="hljs language-csharp"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">EventHandler</span>(<span class="hljs-params">ProviderEventPayload eventDetails</span>)</span>
+{
+    Console.WriteLine(eventDetails.Type);
+}
+</code></pre>
+<pre><code class="hljs language-csharp">EventHandlerDelegate callback = EventHandler;
+<span class="hljs-comment">// add an implementation of the EventHandlerDelegate for the PROVIDER_READY event</span>
+Api.Instance.AddHandler(ProviderEventTypes.ProviderReady, callback);
+</code></pre>
+<p>It is also possible to register an event handler for a specific client, as in the following example:</p>
+<pre><code class="hljs language-csharp">EventHandlerDelegate callback = EventHandler;
+
+<span class="hljs-keyword">var</span> myClient = Api.Instance.GetClient(<span class="hljs-string">"my-client"</span>);
+
+<span class="hljs-keyword">try</span>
+{
+    <span class="hljs-keyword">var</span> provider = <span class="hljs-keyword">new</span> ExampleProvider();
+    <span class="hljs-keyword">await</span> Api.Instance.SetProviderAsync(myClient.GetMetadata().Name, provider);
+}
+<span class="hljs-keyword">catch</span> (Exception ex)
+{
+    <span class="hljs-comment">// Log error</span>
+}
+
+myClient.AddHandler(ProviderEventTypes.ProviderReady, callback);
+</code></pre>
+<h3 id="tracking">Tracking</h3>
+<p>The <a href="/specification/sections/tracking">tracking API</a> allows you to use OpenFeature abstractions and objects to associate user actions with feature flag evaluations.
+This is essential for robust experimentation powered by feature flags.
+For example, a flag enhancing the appearance of a UI component might drive user engagement to a new feature; to test this hypothesis, telemetry collected by a hook(#hooks) or provider(#providers) can be associated with telemetry reported in the client's <code>track</code> function.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">var</span> client = Api.Instance.GetClient();
+client.Track(<span class="hljs-string">"visited-promo-page"</span>, trackingEventDetails: <span class="hljs-keyword">new</span> TrackingEventDetailsBuilder().SetValue(<span class="hljs-number">99.77</span>).Set(<span class="hljs-string">"currency"</span>, <span class="hljs-string">"USD"</span>).Build());
+</code></pre>
+<p>Note that some providers may not support tracking; check the documentation for your provider for more information.</p>
+<h3 id="shutdown">Shutdown</h3>
+<p>The OpenFeature API provides a close function to perform a cleanup of all registered providers. This should only be called when your application is in the process of shutting down.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// Shut down all providers</span>
+<span class="hljs-keyword">await</span> Api.Instance.ShutdownAsync();
+</code></pre>
+<h3 id="transaction-context-propagation">Transaction Context Propagation</h3>
+<p>Transaction context is a container for transaction-specific evaluation context (e.g. user id, user agent, IP).
+Transaction context can be set where specific data is available (e.g. an auth service or request handler) and by using the transaction context propagator it will automatically be applied to all flag evaluations within a transaction (e.g. a request or thread).
+By default, the <code>NoOpTransactionContextPropagator</code> is used, which doesn't store anything.
+To register a <a href="https://learn.microsoft.com/en-us/dotnet/api/system.threading.asynclocal-1">AsyncLocal</a> context propagator, you can use the <code>SetTransactionContextPropagator</code> method as shown below.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// registering the AsyncLocalTransactionContextPropagator</span>
+Api.Instance.SetTransactionContextPropagator(<span class="hljs-keyword">new</span> AsyncLocalTransactionContextPropagator());
+</code></pre>
+<p>Once you've registered a transaction context propagator, you can propagate the data into request-scoped transaction context.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// adding userId to transaction context</span>
+EvaluationContext transactionContext = EvaluationContext.Builder()
+    .Set(<span class="hljs-string">"userId"</span>, userId)
+    .Build();
+Api.Instance.SetTransactionContext(transactionContext);
+</code></pre>
+<p>Additionally, you can develop a custom transaction context propagator by implementing the <code>TransactionContextPropagator</code> interface and registering it as shown above.</p>
+<h2 id="extending">Extending</h2>
+<h3 id="develop-a-provider">Develop a provider</h3>
+<p>To develop a provider, you need to create a new project and include the OpenFeature SDK as a dependency.
+This can be a new repository or included in <a href="https://github.com/open-feature/dotnet-sdk-contrib">the existing contrib repository</a> available under the OpenFeature organization.
+You’ll then need to write the provider by implementing the <code>FeatureProvider</code> interface exported by the OpenFeature SDK.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">MyProvider</span> : <span class="hljs-title">FeatureProvider</span>
+{
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Metadata <span class="hljs-title">GetMetadata</span>()</span>
+    {
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Metadata(<span class="hljs-string">"My Provider"</span>);
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Task&#x3C;ResolutionDetails&#x3C;<span class="hljs-built_in">bool</span>>> ResolveBooleanValueAsync(<span class="hljs-built_in">string</span> flagKey, <span class="hljs-built_in">bool</span> defaultValue, EvaluationContext? context = <span class="hljs-literal">null</span>, CancellationToken cancellationToken = <span class="hljs-literal">default</span>)
+    {
+        <span class="hljs-comment">// resolve a boolean flag value</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Task&#x3C;ResolutionDetails&#x3C;<span class="hljs-built_in">string</span>>> ResolveStringValueAsync(<span class="hljs-built_in">string</span> flagKey, <span class="hljs-built_in">string</span> defaultValue, EvaluationContext? context = <span class="hljs-literal">null</span>, CancellationToken cancellationToken = <span class="hljs-literal">default</span>)
+    {
+        <span class="hljs-comment">// resolve a string flag value</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Task&#x3C;ResolutionDetails&#x3C;<span class="hljs-built_in">int</span>>> ResolveIntegerValueAsync(<span class="hljs-built_in">string</span> flagKey, <span class="hljs-built_in">int</span> defaultValue, EvaluationContext context = <span class="hljs-literal">null</span>)
+    {
+        <span class="hljs-comment">// resolve an int flag value</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Task&#x3C;ResolutionDetails&#x3C;<span class="hljs-built_in">double</span>>> ResolveDoubleValueAsync(<span class="hljs-built_in">string</span> flagKey, <span class="hljs-built_in">double</span> defaultValue, EvaluationContext? context = <span class="hljs-literal">null</span>, CancellationToken cancellationToken = <span class="hljs-literal">default</span>)
+    {
+        <span class="hljs-comment">// resolve a double flag value</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">override</span> Task&#x3C;ResolutionDetails&#x3C;Value>> ResolveStructureValueAsync(<span class="hljs-built_in">string</span> flagKey, Value defaultValue, EvaluationContext? context = <span class="hljs-literal">null</span>, CancellationToken cancellationToken = <span class="hljs-literal">default</span>)
+    {
+        <span class="hljs-comment">// resolve an object flag value</span>
+    }
+}
+</code></pre>
+<h3 id="develop-a-hook">Develop a hook</h3>
+<p>To develop a hook, you need to create a new project and include the OpenFeature SDK as a dependency.
+This can be a new repository or included in <a href="https://github.com/open-feature/dotnet-sdk-contrib">the existing contrib repository</a> available under the OpenFeature organization.
+Implement your own hook by conforming to the <code>Hook interface</code>.
+To satisfy the interface, all methods (<code>Before</code>/<code>After</code>/<code>Finally</code>/<code>Error</code>) need to be defined.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">MyHook</span> : <span class="hljs-title">Hook</span>
+{
+  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">ValueTask</span>&#x3C;<span class="hljs-title">EvaluationContext</span>> <span class="hljs-title">BeforeAsync</span>&#x3C;<span class="hljs-title">T</span>>(<span class="hljs-params">HookContext&#x3C;T> context,
+      IReadOnlyDictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">object</span>> hints = <span class="hljs-literal">null</span></span>)</span>
+  {
+    <span class="hljs-comment">// code to run before flag evaluation</span>
+  }
+
+  <span class="hljs-function"><span class="hljs-keyword">public</span> ValueTask <span class="hljs-title">AfterAsync</span>&#x3C;<span class="hljs-title">T</span>>(<span class="hljs-params">HookContext&#x3C;T> context, FlagEvaluationDetails&#x3C;T> details,
+      IReadOnlyDictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">object</span>>? hints = <span class="hljs-literal">null</span></span>)</span>
+  {
+    <span class="hljs-comment">// code to run after successful flag evaluation</span>
+  }
+
+  <span class="hljs-function"><span class="hljs-keyword">public</span> ValueTask <span class="hljs-title">ErrorAsync</span>&#x3C;<span class="hljs-title">T</span>>(<span class="hljs-params">HookContext&#x3C;T> context, Exception error,
+      IReadOnlyDictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">object</span>>? hints = <span class="hljs-literal">null</span></span>)</span>
+  {
+    <span class="hljs-comment">// code to run if there's an error during before hooks or during flag evaluation</span>
+  }
+
+  <span class="hljs-function"><span class="hljs-keyword">public</span> ValueTask <span class="hljs-title">FinallyAsync</span>&#x3C;<span class="hljs-title">T</span>>(<span class="hljs-params">HookContext&#x3C;T> context, FlagEvaluationDetails&#x3C;T> evaluationDetails, IReadOnlyDictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">object</span>> hints = <span class="hljs-literal">null</span></span>)</span>
+  {
+    <span class="hljs-comment">// code to run after all other stages, regardless of success/failure</span>
+  }
+}
+</code></pre>
+<p>Hooks support passing per-evaluation data between that stages using <code>hook data</code>. The below example hook uses <code>hook data</code> to measure the duration between the execution of the <code>before</code> and <code>after</code> stage.</p>
+<pre><code class="hljs language-csharp">    <span class="hljs-keyword">class</span> <span class="hljs-title">TimingHook</span> : <span class="hljs-title">Hook</span>
+    {
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">ValueTask</span>&#x3C;<span class="hljs-title">EvaluationContext</span>> <span class="hljs-title">BeforeAsync</span>&#x3C;<span class="hljs-title">T</span>>(<span class="hljs-params">HookContext&#x3C;T> context,
+            IReadOnlyDictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">object</span>>? hints = <span class="hljs-literal">null</span></span>)</span>
+        {
+            context.Data.Set(<span class="hljs-string">"beforeTime"</span>, DateTime.Now);
+            <span class="hljs-keyword">return</span> ValueTask.FromResult(context.EvaluationContext);
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">public</span> ValueTask <span class="hljs-title">AfterAsync</span>&#x3C;<span class="hljs-title">T</span>>(<span class="hljs-params">HookContext&#x3C;T> context, FlagEvaluationDetails&#x3C;T> details,
+            IReadOnlyDictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">object</span>>? hints = <span class="hljs-literal">null</span></span>)</span>
+        {
+            <span class="hljs-keyword">var</span> beforeTime = context.Data.Get(<span class="hljs-string">"beforeTime"</span>) <span class="hljs-keyword">as</span> DateTime?;
+            <span class="hljs-keyword">var</span> duration = DateTime.Now - beforeTime;
+            Console.WriteLine(<span class="hljs-string">$"Duration: <span class="hljs-subst">{duration}</span>"</span>);
+            <span class="hljs-keyword">return</span> ValueTask.CompletedTask;
+        }
+    }
+</code></pre>
+<p>Built a new hook? <a href="https://github.com/open-feature/openfeature.dev/issues/new?assignees=&#x26;labels=hook&#x26;projects=&#x26;template=document-hook.yaml&#x26;title=%5BHook%5D%3A+">Let us know</a> so we can add it to the docs!</p>
+<h3 id="multi-provider">Multi-Provider</h3>
+<div class="markdown-alert markdown-alert-note" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>NOTE</p>
+<p>The Multi-Provider feature is currently experimental.</p>
+</div>
+<p>The Multi-Provider enables the use of multiple underlying feature flag providers simultaneously, allowing different providers to be used for different flag keys or based on specific evaluation strategies.</p>
+<p>The Multi-Provider supports provider hooks and executes them in accordance with the OpenFeature specification. Each provider's hooks are executed with context isolation, ensuring that context modifications by one provider's hooks do not affect other providers.</p>
+<h4 id="basic-usage">Basic Usage</h4>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">using</span> OpenFeature.Providers.MultiProvider;
+<span class="hljs-keyword">using</span> OpenFeature.Providers.MultiProvider.Models;
+<span class="hljs-keyword">using</span> OpenFeature.Providers.MultiProvider.Strategies;
+
+<span class="hljs-comment">// Create provider entries</span>
+<span class="hljs-keyword">var</span> providerEntries = <span class="hljs-keyword">new</span> List&#x3C;ProviderEntry>
+{
+    <span class="hljs-keyword">new</span>(<span class="hljs-keyword">new</span> InMemoryProvider(provider1Flags), <span class="hljs-string">"Provider1"</span>),
+    <span class="hljs-keyword">new</span>(<span class="hljs-keyword">new</span> InMemoryProvider(provider2Flags), <span class="hljs-string">"Provider2"</span>)
+};
+
+<span class="hljs-comment">// Create multi-provider with FirstMatchStrategy (default)</span>
+<span class="hljs-keyword">var</span> multiProvider = <span class="hljs-keyword">new</span> MultiProvider(providerEntries, <span class="hljs-keyword">new</span> FirstMatchStrategy());
+
+<span class="hljs-comment">// Set as the default provider</span>
+<span class="hljs-keyword">await</span> Api.Instance.SetProviderAsync(multiProvider);
+
+<span class="hljs-comment">// Use normally - the multi-provider will handle delegation</span>
+<span class="hljs-keyword">var</span> client = Api.Instance.GetClient();
+<span class="hljs-keyword">var</span> flagValue = <span class="hljs-keyword">await</span> client.GetBooleanValueAsync(<span class="hljs-string">"my-flag"</span>, <span class="hljs-literal">false</span>);
+</code></pre>
+<h4 id="evaluation-strategies">Evaluation Strategies</h4>
+<p>The Multi-Provider supports different evaluation strategies that determine how multiple providers are used:</p>
+<h5 id="firstmatchstrategy-default">FirstMatchStrategy (Default)</h5>
+<p>Evaluates providers sequentially and returns the first result that is not "flag not found". If any provider returns an error, that error is returned immediately.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">var</span> multiProvider = <span class="hljs-keyword">new</span> MultiProvider(providerEntries, <span class="hljs-keyword">new</span> FirstMatchStrategy());
+</code></pre>
+<h5 id="firstsuccessfulstrategy">FirstSuccessfulStrategy</h5>
+<p>Evaluates providers sequentially and returns the first successful result, ignoring errors. Only if all providers fail will errors be returned.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">var</span> multiProvider = <span class="hljs-keyword">new</span> MultiProvider(providerEntries, <span class="hljs-keyword">new</span> FirstSuccessfulStrategy());
+</code></pre>
+<h5 id="comparisonstrategy">ComparisonStrategy</h5>
+<p>Evaluates all providers in parallel and compares results. If values agree, returns the agreed value. If they disagree, returns the fallback provider's value (or first provider if no fallback is specified) and optionally calls a mismatch callback.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// Basic comparison</span>
+<span class="hljs-keyword">var</span> multiProvider = <span class="hljs-keyword">new</span> MultiProvider(providerEntries, <span class="hljs-keyword">new</span> ComparisonStrategy());
+
+<span class="hljs-comment">// With fallback provider</span>
+<span class="hljs-keyword">var</span> multiProvider = <span class="hljs-keyword">new</span> MultiProvider(providerEntries,
+    <span class="hljs-keyword">new</span> ComparisonStrategy(fallbackProvider: provider1));
+
+<span class="hljs-comment">// With mismatch callback</span>
+<span class="hljs-keyword">var</span> multiProvider = <span class="hljs-keyword">new</span> MultiProvider(providerEntries,
+    <span class="hljs-keyword">new</span> ComparisonStrategy(onMismatch: (mismatchDetails) => {
+        <span class="hljs-comment">// Log or handle mismatches between providers</span>
+        <span class="hljs-keyword">foreach</span> (<span class="hljs-keyword">var</span> kvp <span class="hljs-keyword">in</span> mismatchDetails)
+        {
+            Console.WriteLine(<span class="hljs-string">$"Provider <span class="hljs-subst">{kvp.Key}</span>: <span class="hljs-subst">{kvp.Value}</span>"</span>);
+        }
+    }));
+</code></pre>
+<h4 id="evaluation-modes">Evaluation Modes</h4>
+<p>The Multi-Provider supports two evaluation modes:</p>
+<ul>
+<li><strong>Sequential</strong>: Providers are evaluated one after another (used by <code>FirstMatchStrategy</code> and <code>FirstSuccessfulStrategy</code>)</li>
+<li><strong>Parallel</strong>: All providers are evaluated simultaneously (used by <code>ComparisonStrategy</code>)</li>
+</ul>
+<h4 id="limitations">Limitations</h4>
+<ul>
+<li><strong>Experimental status</strong>: The API may change in future releases</li>
+</ul>
+<p>For a complete example, see the <a href="https://github.com/open-feature/dotnet-sdk/blob/main/samples/AspNetCore/README.md">AspNetCore sample</a> which demonstrates Multi-Provider usage.</p>
+<h3 id="dependency-injection">Dependency Injection</h3>
+<div class="markdown-alert markdown-alert-note" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>NOTE</p>
+<p>The OpenFeature.Hosting package is currently experimental. The Hosting package streamlines the integration of OpenFeature within .NET applications, allowing for seamless configuration and lifecycle management of feature flag providers using dependency injection and hosting services.</p>
+</div>
+<h4 id="installation">Installation</h4>
+<p>To set up dependency injection and hosting capabilities for OpenFeature, install the following package:</p>
+<pre><code class="hljs language-sh">dotnet add package OpenFeature.Hosting
+</code></pre>
+<h4 id="usage-examples">Usage Examples</h4>
+<p>For a basic configuration, you can use the InMemoryProvider. This provider is simple and well-suited for development and testing purposes.</p>
+<p><strong>Basic Configuration:</strong></p>
+<pre><code class="hljs language-csharp">builder.Services.AddOpenFeature(featureBuilder => {
+    featureBuilder
+        .AddInMemoryProvider();
+});
+</code></pre>
+<p>You can add EvaluationContext, hooks, and handlers at a global/API level as needed.</p>
+<pre><code class="hljs language-csharp">builder.Services.AddOpenFeature(featureBuilder => {
+    featureBuilder
+        .AddContext((contextBuilder, serviceProvider) => { <span class="hljs-comment">/* Custom context configuration */</span> })
+        .AddHook&#x3C;LoggingHook>()
+        .AddHandler(ProviderEventTypes.ProviderReady, (eventDetails) => { <span class="hljs-comment">/* Handle event */</span> });
+});
+</code></pre>
+<p><strong>Domain-Scoped Provider Configuration:</strong>
+To set up multiple providers with a selection policy, define logic for choosing the default provider. This example designates <code>name1</code> as the default provider:</p>
+<pre><code class="hljs language-csharp">builder.Services.AddOpenFeature(featureBuilder => {
+    featureBuilder
+        .AddContext((contextBuilder, serviceProvider) => { <span class="hljs-comment">/* Custom context configuration */</span> })
+        .AddHook((serviceProvider) => <span class="hljs-keyword">new</span> LoggingHook( <span class="hljs-comment">/* Custom configuration */</span> ))
+        .AddHook(<span class="hljs-keyword">new</span> MetricsHook())
+        .AddInMemoryProvider(<span class="hljs-string">"name1"</span>)
+        .AddInMemoryProvider(<span class="hljs-string">"name2"</span>)
+        .AddPolicyName(options => {
+            <span class="hljs-comment">// Custom logic to select a default provider</span>
+            options.DefaultNameSelector = serviceProvider => <span class="hljs-string">"name1"</span>;
+        });
+});
+</code></pre>
+<h3 id="registering-a-custom-provider">Registering a Custom Provider</h3>
+<p>You can register a custom provider, such as <code>InMemoryProvider</code>, with OpenFeature using the <code>AddProvider</code> method. This approach allows you to dynamically resolve services or configurations during registration.</p>
+<pre><code class="hljs language-csharp">services.AddOpenFeature(builder =>
+{
+    builder.AddProvider(provider =>
+    {
+        <span class="hljs-comment">// Resolve services or configurations as needed</span>
+        <span class="hljs-keyword">var</span> variants = <span class="hljs-keyword">new</span> Dictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">bool</span>> { { <span class="hljs-string">"on"</span>, <span class="hljs-literal">true</span> } };
+        <span class="hljs-keyword">var</span> flags = <span class="hljs-keyword">new</span> Dictionary&#x3C;<span class="hljs-built_in">string</span>, Flag>
+        {
+            { <span class="hljs-string">"feature-key"</span>, <span class="hljs-keyword">new</span> Flag&#x3C;<span class="hljs-built_in">bool</span>>(variants, <span class="hljs-string">"on"</span>) }
+        };
+
+        <span class="hljs-comment">// Register a custom provider, such as InMemoryProvider</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> InMemoryProvider(flags);
+    });
+});
+</code></pre>
+<h4 id="adding-a-domain-scoped-provider">Adding a Domain-Scoped Provider</h4>
+<p>You can also register a domain-scoped custom provider, enabling configurations specific to each domain:</p>
+<pre><code class="hljs language-csharp">services.AddOpenFeature(builder =>
+{
+    builder.AddProvider(<span class="hljs-string">"my-domain"</span>, (provider, domain) =>
+    {
+        <span class="hljs-comment">// Resolve services or configurations as needed for the domain</span>
+        <span class="hljs-keyword">var</span> variants = <span class="hljs-keyword">new</span> Dictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">bool</span>> { { <span class="hljs-string">"on"</span>, <span class="hljs-literal">true</span> } };
+        <span class="hljs-keyword">var</span> flags = <span class="hljs-keyword">new</span> Dictionary&#x3C;<span class="hljs-built_in">string</span>, Flag>
+        {
+            { <span class="hljs-string">$"<span class="hljs-subst">{domain}</span>-feature-key"</span>, <span class="hljs-keyword">new</span> Flag&#x3C;<span class="hljs-built_in">bool</span>>(variants, <span class="hljs-string">"on"</span>) }
+        };
+
+        <span class="hljs-comment">// Register a domain-scoped custom provider such as InMemoryProvider</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> InMemoryProvider(flags);
+    });
+});
+</code></pre>
+<h3 id="trace-enricher-hook">Trace Enricher Hook</h3>
+<p>The <code>TraceEnricherHook</code> enriches telemetry traces with additional information during the feature flag evaluation lifecycle. This hook adds relevant flag evaluation details as tags and events to the current <code>Activity</code> for tracing purposes.</p>
+<p>For this hook to function correctly, an active span must be set in the current <code>Activity</code>, otherwise the hook will no-op.</p>
+<p>Below are the tags added to the trace event:</p>
+<table>
+<thead>
+<tr>
+<th>Tag Name</th>
+<th>Description</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>feature_flag.key</td>
+<td>The lookup key of the feature flag</td>
+<td>Hook context flag key</td>
+</tr>
+<tr>
+<td>feature_flag.provider.name</td>
+<td>The name of the feature flag provider</td>
+<td>Provider metadata</td>
+</tr>
+<tr>
+<td>feature_flag.result.reason</td>
+<td>The reason code which shows how a feature flag value was determined</td>
+<td>Evaluation details</td>
+</tr>
+<tr>
+<td>feature_flag.result.variant</td>
+<td>A semantic identifier for an evaluated flag value</td>
+<td>Evaluation details</td>
+</tr>
+<tr>
+<td>feature_flag.result.value</td>
+<td>The evaluated value of the feature flag</td>
+<td>Evaluation details</td>
+</tr>
+<tr>
+<td>feature_flag.context.id</td>
+<td>The unique identifier for the flag evaluation context</td>
+<td>Flag metadata (if available)</td>
+</tr>
+<tr>
+<td>feature_flag.set.id</td>
+<td>The identifier of the flag set to which the feature flag belongs</td>
+<td>Flag metadata (if available)</td>
+</tr>
+<tr>
+<td>feature_flag.version</td>
+<td>The version of the ruleset used during the evaluation</td>
+<td>Flag metadata (if available)</td>
+</tr>
+<tr>
+<td>error.type</td>
+<td>Describes a class of error the operation ended with</td>
+<td>Evaluation details (if error)</td>
+</tr>
+<tr>
+<td>error.message</td>
+<td>A message explaining the nature of an error occurring during flag evaluation</td>
+<td>Evaluation details (if error)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="example">Example</h4>
+<p>The following example demonstrates the use of the <code>TraceEnricherHook</code> with the <code>OpenFeature dotnet-sdk</code>. The traces are sent to a <code>jaeger</code> OTLP collector running at <code>localhost:4317</code>.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">using</span> OpenFeature.Contrib.Providers.Flagd;
+<span class="hljs-keyword">using</span> OpenFeature.Hooks;
+<span class="hljs-keyword">using</span> OpenTelemetry.Exporter;
+<span class="hljs-keyword">using</span> OpenTelemetry.Resources;
+<span class="hljs-keyword">using</span> OpenTelemetry;
+<span class="hljs-keyword">using</span> OpenTelemetry.Trace;
+
+<span class="hljs-keyword">namespace</span> <span class="hljs-title">OpenFeatureTestApp</span>
+{
+    <span class="hljs-keyword">class</span> <span class="hljs-title">Hello</span> {
+        <span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">Main</span>(<span class="hljs-params"><span class="hljs-built_in">string</span>[] <span class="hljs-keyword">args</span></span>)</span> {
+
+            <span class="hljs-comment">// set up the OpenTelemetry OTLP exporter</span>
+            <span class="hljs-keyword">var</span> tracerProvider = Sdk.CreateTracerProviderBuilder()
+                    .AddSource(<span class="hljs-string">"my-tracer"</span>)
+                    .ConfigureResource(r => r.AddService(<span class="hljs-string">"jaeger-test"</span>))
+                    .AddOtlpExporter(o =>
+                    {
+                        o.ExportProcessorType = ExportProcessorType.Simple;
+                    })
+                    .Build();
+
+            <span class="hljs-comment">// add the TraceEnricherHook to the OpenFeature instance</span>
+            OpenFeature.Api.Instance.AddHooks(<span class="hljs-keyword">new</span> TraceEnricherHook());
+
+            <span class="hljs-keyword">var</span> flagdProvider = <span class="hljs-keyword">new</span> FlagdProvider(<span class="hljs-keyword">new</span> Uri(<span class="hljs-string">"http://localhost:8013"</span>));
+
+            <span class="hljs-comment">// Set the flagdProvider as the provider for the OpenFeature SDK</span>
+            OpenFeature.Api.Instance.SetProvider(flagdProvider);
+
+            <span class="hljs-keyword">var</span> client = OpenFeature.Api.Instance.GetClient(<span class="hljs-string">"my-app"</span>);
+
+            <span class="hljs-keyword">var</span> val = client.GetBooleanValueAsync(<span class="hljs-string">"myBoolFlag"</span>, <span class="hljs-literal">false</span>, <span class="hljs-literal">null</span>);
+
+            <span class="hljs-comment">// Print the value of the 'myBoolFlag' feature flag</span>
+            System.Console.WriteLine(val.Result.ToString());
+        }
+    }
+}
+</code></pre>
+<p>After running this example, you will be able to see the traces, including the events sent by the hook in your Jaeger UI.</p>
+<p>You can specify custom tags on spans created by the <code>TraceEnricherHook</code> by providing <code>TraceEnricherHookOptions</code> when adding the hook:</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">var</span> options = TraceEnricherHookOptions.CreateBuilder()
+    .WithTag(<span class="hljs-string">"custom_dimension_key"</span>, <span class="hljs-string">"custom_dimension_value"</span>)
+    .Build();
+
+OpenFeature.Api.Instance.AddHooks(<span class="hljs-keyword">new</span> TraceEnricherHook(options));
+</code></pre>
+<p>You can also write your own extraction logic against the Flag metadata by providing a callback to <code>WithFlagEvaluationMetadata</code>. The below example will add a tag to the span with the key <code>boolean</code> and a value specified by the callback.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">var</span> options = TraceEnricherHookOptions.CreateBuilder()
+    .WithFlagEvaluationMetadata(<span class="hljs-string">"boolean"</span>, s => s.GetBool(<span class="hljs-string">"boolean"</span>))
+    .Build();
+</code></pre>
+<h3 id="metrics-hook">Metrics Hook</h3>
+<p>For this hook to function correctly a global <code>MeterProvider</code> must be set.
+<code>MetricsHook</code> performs metric collection by tapping into various hook stages.</p>
+<p>Below are the metrics extracted by this hook and dimensions they carry:</p>
+<table>
+<thead>
+<tr>
+<th>Metric key</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Dimensions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>feature_flag.evaluation_requests_total</td>
+<td>Number of evaluation requests</td>
+<td>request</td>
+<td>key, provider name</td>
+</tr>
+<tr>
+<td>feature_flag.evaluation_success_total</td>
+<td>Flag evaluation successes</td>
+<td>impression</td>
+<td>key, provider name, reason</td>
+</tr>
+<tr>
+<td>feature_flag.evaluation_error_total</td>
+<td>Flag evaluation errors</td>
+<td>1</td>
+<td>key, provider name, exception</td>
+</tr>
+<tr>
+<td>feature_flag.evaluation_active_count</td>
+<td>Active flag evaluations counter</td>
+<td>1</td>
+<td>key, provider name</td>
+</tr>
+</tbody>
+</table>
+<p>Consider the following code example for usage.</p>
+<h4 id="example-1">Example</h4>
+<p>The following example demonstrates the use of the <code>MetricsHook</code> with the <code>OpenFeature dotnet-sdk</code>. The metrics are sent to the <code>console</code>.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">using</span> OpenFeature.Contrib.Providers.Flagd;
+<span class="hljs-keyword">using</span> OpenFeature;
+<span class="hljs-keyword">using</span> OpenFeature.Hooks;
+<span class="hljs-keyword">using</span> OpenTelemetry;
+<span class="hljs-keyword">using</span> OpenTelemetry.Metrics;
+
+<span class="hljs-keyword">namespace</span> <span class="hljs-title">OpenFeatureTestApp</span>
+{
+    <span class="hljs-keyword">class</span> <span class="hljs-title">Hello</span> {
+        <span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">Main</span>(<span class="hljs-params"><span class="hljs-built_in">string</span>[] <span class="hljs-keyword">args</span></span>)</span> {
+
+            <span class="hljs-comment">// set up the OpenTelemetry OTLP exporter</span>
+            <span class="hljs-keyword">var</span> meterProvider = Sdk.CreateMeterProviderBuilder()
+                    .AddMeter(<span class="hljs-string">"OpenFeature"</span>)
+                    .ConfigureResource(r => r.AddService(<span class="hljs-string">"openfeature-test"</span>))
+                    .AddConsoleExporter()
+                    .Build();
+
+            <span class="hljs-comment">// add the MetricsHook to the OpenFeature instance</span>
+            OpenFeature.Api.Instance.AddHooks(<span class="hljs-keyword">new</span> MetricsHook());
+
+            <span class="hljs-keyword">var</span> flagdProvider = <span class="hljs-keyword">new</span> FlagdProvider(<span class="hljs-keyword">new</span> Uri(<span class="hljs-string">"http://localhost:8013"</span>));
+
+            <span class="hljs-comment">// Set the flagdProvider as the provider for the OpenFeature SDK</span>
+            OpenFeature.Api.Instance.SetProvider(flagdProvider);
+
+            <span class="hljs-keyword">var</span> client = OpenFeature.Api.Instance.GetClient(<span class="hljs-string">"my-app"</span>);
+
+            <span class="hljs-keyword">var</span> val = client.GetBooleanValueAsync(<span class="hljs-string">"myBoolFlag"</span>, <span class="hljs-literal">false</span>, <span class="hljs-literal">null</span>);
+
+            <span class="hljs-comment">// Print the value of the 'myBoolFlag' feature flag</span>
+            System.Console.WriteLine(val.Result.ToString());
+        }
+    }
+}
+</code></pre>
+<p>After running this example, you should be able to see some metrics being generated into the console.</p>
+<p>You can specify custom dimensions on all instruments by the <code>MetricsHook</code> by providing <code>MetricsHookOptions</code> when adding the hook:</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">var</span> options = MetricsHookOptions.CreateBuilder()
+    .WithCustomDimension(<span class="hljs-string">"custom_dimension_key"</span>, <span class="hljs-string">"custom_dimension_value"</span>)
+    .Build();
+
+OpenFeature.Api.Instance.AddHooks(<span class="hljs-keyword">new</span> MetricsHook(options));
+</code></pre>
+<p>You can also write your own extraction logic against the Flag metadata by providing a callback to <code>WithFlagEvaluationMetadata</code>.</p>
+<pre><code class="hljs language-csharp"><span class="hljs-keyword">var</span> options = MetricsHookOptions.CreateBuilder()
+    .WithFlagEvaluationMetadata(<span class="hljs-string">"boolean"</span>, s => s.GetBool(<span class="hljs-string">"boolean"</span>))
+    .Build();
+</code></pre>

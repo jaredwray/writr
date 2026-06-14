@@ -1,0 +1,71 @@
+<blockquote>
+<p><strong>Availability</strong></p>
+<table>
+<thead>
+<tr>
+<th>Helper</th>
+<th align="center">Node</th>
+<th align="center">Browser</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>embed</code></td>
+<td align="center">✅</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td><code>gist</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>jsfiddle</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+<h1 id="code-helpers">Code Helpers</h1>
+<h3 id="embed">{{embed}}</h3>
+<p>Embed code from an external file as preformatted text.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>filepath</code> <strong>{String}</strong>: filepath to the file to embed.</li>
+<li><code>language</code> <strong>{String}</strong>: Optionally specify the language to use for syntax highlighting.</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{embed 'path/to/file.js'}}
+<span class="hljs-comment">&#x3C;!-- optionally specify the language to use --></span>
+{{embed 'path/to/file.hbs' 'html'}}
+</code></pre>
+<h3 id="gist">{{gist}}</h3>
+<p>Embed a GitHub Gist using only the id of the Gist</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>id</code> <strong>{String}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{gist "12345"}}
+</code></pre>
+<h3 id="jsfiddle">{{jsfiddle}}</h3>
+<p>Generate the HTML for a jsFiddle iframe with the given options.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>id</code> <strong>{String}</strong>: The jsFiddle id (required)</li>
+<li><code>width</code> <strong>{String}</strong>: Width of the iframe (default: "100%")</li>
+<li><code>height</code> <strong>{String}</strong>: Height of the iframe (default: "300")</li>
+<li><code>skin</code> <strong>{String}</strong>: Skin path (default: "/presentation/")</li>
+<li><code>tabs</code> <strong>{String}</strong>: Tabs to display (default: "result,js,html,css")</li>
+<li><code>allowfullscreen</code> <strong>{String}</strong>: Allowfullscreen attribute (default: "allowfullscreen")</li>
+<li><code>frameborder</code> <strong>{String}</strong>: Frameborder attribute (default: "0")</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{jsfiddle id="0dfk10ks"}}
+<span class="hljs-comment">&#x3C;!-- with custom options --></span>
+{{jsfiddle id="0dfk10ks" height="500" tabs="js,result"}}
+</code></pre>

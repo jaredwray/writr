@@ -1,4 +1,30 @@
-<p><strong>Describe the bug</strong>
-A clear and concise description of what the bug is.</p>
-<p><strong>How To Reproduce (best to provide workable code or tests!)</strong>
-Please provide code that can be ran in a stand alone fashion that will reproduce the error. If you can provide a test that will be even better. If you can't provide code, please provide a detailed description of how to reproduce the error.</p>
+<h1 id="home-page-announcements">Home Page Announcements</h1>
+<p>You can display an announcement banner on your home page by creating an <code>announcement.md</code> file in your site directory. This is useful for highlighting important updates, new releases, or any time-sensitive information.</p>
+<h2 id="usage">Usage</h2>
+<p>Create an <code>announcement.md</code> file in your site folder:</p>
+<pre><code>site
+├───announcement.md
+├───docs
+├───logo.svg
+├───favicon.ico
+└───docula.config.mjs
+</code></pre>
+<p>Add your announcement content using markdown:</p>
+<pre><code class="hljs language-md"><span class="hljs-strong">**New Release:**</span> Version 2.0 is now available! Check out the [<span class="hljs-string">release notes</span>](<span class="hljs-link">/releases</span>) for details.
+</code></pre>
+<p>The announcement will automatically appear on the home page above the "Documentation" button, styled as an alert box with a colored left border.</p>
+<h2 id="styling">Styling</h2>
+<p>The announcement uses your theme's CSS variables and displays with:</p>
+<ul>
+<li>A subtle background using <code>--sidebar-background</code></li>
+<li>A prominent left border using <code>--color-secondary</code></li>
+<li>Links styled with <code>--color-primary</code></li>
+</ul>
+<p>You can customize the appearance by overriding the <code>.announcement</code> class in your <code>variables.css</code>:</p>
+<pre><code class="hljs language-css"><span class="hljs-selector-class">.announcement</span> {
+  <span class="hljs-attribute">background-color</span>: <span class="hljs-number">#fff3cd</span>;
+  <span class="hljs-attribute">border-left-color</span>: <span class="hljs-number">#ffc107</span>;
+}
+</code></pre>
+<h2 id="removing-the-announcement">Removing the Announcement</h2>
+<p>Simply delete the <code>announcement.md</code> file when you no longer need the announcement. The home page will automatically return to its normal layout.</p>

@@ -1,0 +1,585 @@
+<p><a href="https://github.com/jaredwray/cacheable"></a></p>
+<h1 id="node-cache">Node-Cache</h1>
+<blockquote>
+<p>Simple and Maintained fast Node.js caching</p>
+</blockquote>
+<p><a href="https://codecov.io/gh/jaredwray/cacheable"><img src="https://codecov.io/gh/jaredwray/cacheable/branch/main/graph/badge.svg?token=lWZ9OBQ7GM" alt="codecov"></a>
+<a href="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://www.npmjs.com/package/@cacheable/node-cache"><img src="https://img.shields.io/npm/dm/@cacheable/node-cache.svg" alt="npm"></a>
+<a href="https://www.npmjs.com/package/@cacheable/node-cache"><img src="https://img.shields.io/npm/v/@cacheable/node-cache" alt="npm"></a>
+<a href="https://github.com/jaredwray/cacheable/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/cacheable" alt="license"></a></p>
+<p><code>@cacheable/node-cache</code> is compatible with the <a href="https://www.npmjs.com/package/node-cache">node-cache</a> package with regular maintenance and additional functionality (async/await and storage adapters) via <code>{NodeCacheStore}</code>. The only thing not implemented is the <code>enableLegacyCallbacks</code> option and functions. If you need them we are happy to take a PR to add them.</p>
+<ul>
+<li>Fully Compatible with <code>node-cache</code> using <code>{NodeCache}</code></li>
+<li>Faster than the original <code>node-cache</code> package 🚀</li>
+<li>Storage Adapters via <a href="https://keyv.org">Keyv</a></li>
+<li>Async/Await functionality with <code>{NodeCacheStore}</code></li>
+<li>Lightweight - uses <code>@cacheable/utils</code> for utilities</li>
+<li>Maintained and Updated Regularly! 🎉</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#basic-usage">Basic Usage</a></li>
+<li><a href="#nodecache-performance">NodeCache Performance</a></li>
+<li><a href="#nodecache-api">NodeCache API</a>
+<ul>
+<li><a href="#constructoroptions-nodecacheoptions"><code>constructor(options?: NodeCacheOptions)</code></a></li>
+<li><a href="#setkey-string--number-value-any-ttl-number--string-boolean"><code>set(key: string | number, value: any, ttl?: number | string): boolean</code></a></li>
+<li><a href="#msetdata-arraypartialnodecacheitem-boolean"><code>mset(data: Array&#x3C;PartialNodeCacheItem>): boolean</code></a></li>
+<li><a href="#gettkey-string--number-t--undefined"><code>get&#x3C;T>(key: string | number): T | undefined</code></a></li>
+<li><a href="#mgettkeys-arraystring--number-recordstring-t--undefined"><code>mget&#x3C;T>(keys: Array&#x3C;string | number>): Record&#x3C;string, T | undefined></code></a></li>
+<li><a href="#taketkey-string--number-t--undefined"><code>take&#x3C;T>(key: string | number): T | undefined</code></a></li>
+<li><a href="#delkey-string--number--arraystring--number-number"><code>del(key: string | number | Array&#x3C;string | number>): number</code></a></li>
+<li><a href="#mdelkeys-arraystring--number-number"><code>mdel(keys: Array&#x3C;string | number>): number</code></a></li>
+<li><a href="#ttlkey-string--number-ttl-number--string-boolean"><code>ttl(key: string | number, ttl?: number | string): boolean</code></a></li>
+<li><a href="#getttlkey-string--number-number--undefined"><code>getTtl(key: string | number): number | undefined</code></a></li>
+<li><a href="#haskey-string--number-boolean"><code>has(key: string | number): boolean</code></a></li>
+<li><a href="#keys-string"><code>keys(): string[]</code></a></li>
+<li><a href="#getstats-nodecachestats"><code>getStats(): NodeCacheStats</code></a></li>
+<li><a href="#flushall-void"><code>flushAll(): void</code></a></li>
+<li><a href="#flushstats-void"><code>flushStats(): void</code></a></li>
+<li><a href="#onevent-string-callback-function-void"><code>on(event: string, callback: Function): void</code></a></li>
+<li><a href="#close-void"><code>close(): void</code></a></li>
+<li><a href="#store-mapstring-nodecacheitemt"><code>store: Map&#x3C;string, NodeCacheItem&#x3C;T>></code></a></li>
+<li><a href="#getintervalid-number--nodejstimeout"><code>getIntervalId(): number | NodeJS.Timeout</code></a></li>
+<li><a href="#startinterval-void"><code>startInterval(): void</code></a></li>
+<li><a href="#stopinterval-void"><code>stopInterval(): void</code></a></li>
+</ul>
+</li>
+<li><a href="#nodecachestore">NodeCacheStore</a>
+<ul>
+<li><a href="#nodecachestore-api">NodeCacheStore API</a>
+<ul>
+<li><a href="#setkey-value-ttl-promiseboolean"><code>set(key, value, ttl?): Promise&#x3C;boolean></code></a></li>
+<li><a href="#msetdata-promisevoid"><code>mset(data): Promise&#x3C;void></code></a></li>
+<li><a href="#gettkey-promiset--undefined"><code>get&#x3C;T>(key): Promise&#x3C;T | undefined></code></a></li>
+<li><a href="#mgettkeys-promiserecordstring-t--undefined"><code>mget&#x3C;T>(keys): Promise&#x3C;Record&#x3C;string, T | undefined>></code></a></li>
+<li><a href="#taketkey-promiset--undefined"><code>take&#x3C;T>(key): Promise&#x3C;T | undefined></code></a></li>
+<li><a href="#delkey-promiseboolean"><code>del(key): Promise&#x3C;boolean></code></a></li>
+<li><a href="#mdelkeys-promiseboolean"><code>mdel(keys): Promise&#x3C;boolean></code></a></li>
+<li><a href="#haskey-promiseboolean"><code>has(key): Promise&#x3C;boolean></code></a></li>
+<li><a href="#keys-promisestring"><code>keys(): Promise&#x3C;string[]></code></a></li>
+<li><a href="#getttlkey-promisenumber--undefined"><code>getTtl(key): Promise&#x3C;number | undefined></code></a></li>
+<li><a href="#setttlkey-ttl-promiseboolean"><code>setTtl(key, ttl?): Promise&#x3C;boolean></code></a></li>
+<li><a href="#clear-promisevoid"><code>clear(): Promise&#x3C;void></code></a></li>
+<li><a href="#flushall-promisevoid"><code>flushAll(): Promise&#x3C;void></code></a></li>
+<li><a href="#getstats-nodecachestats-1"><code>getStats(): NodeCacheStats</code></a></li>
+<li><a href="#flushstats-void-1"><code>flushStats(): void</code></a></li>
+<li><a href="#close-void-1"><code>close(): void</code></a></li>
+<li><a href="#disconnect-promisevoid"><code>disconnect(): Promise&#x3C;void></code></a></li>
+<li><a href="#events">Events</a></li>
+<li><a href="#properties">Properties</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#migrating-to-v2">Migrating to v2</a>
+<ul>
+<li><a href="#nodecachestore-changes">NodeCacheStore Changes</a>
+<ul>
+<li><a href="#removed-cache-property">Removed <code>cache</code> Property</a></li>
+<li><a href="#removed-storage-tiering-primarysecondary">Removed Storage Tiering (primary/secondary)</a></li>
+<li><a href="#internal-dependency-change">Internal Dependency Change</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#migrating-to-v3">Migrating to v3</a>
+<ul>
+<li><a href="#removed-maxkeys-from-nodecachestore">Removed <code>maxKeys</code> from NodeCacheStore</a></li>
+<li><a href="#removed-stats-from-nodecachestore">Removed <code>stats</code> from NodeCacheStore</a></li>
+<li><a href="#upgraded-hookified-to-v2">Upgraded <code>hookified</code> to v2</a></li>
+</ul>
+</li>
+<li><a href="#how-to-contribute">How to Contribute</a></li>
+<li><a href="#license-and-copyright">License and Copyright</a></li>
+</ul>
+<h1 id="getting-started">Getting Started</h1>
+<pre><code class="hljs language-bash">npm install @cacheable/node-cache --save
+</code></pre>
+<h1 id="basic-usage">Basic Usage</h1>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">NodeCache</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/node-cache'</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NodeCache</span>();
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar'</span>
+
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">10</span>); <span class="hljs-comment">// 10 seconds</span>
+
+cache.<span class="hljs-title function_">del</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 1</span>
+
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'bar'</span>, <span class="hljs-string">'baz'</span>, <span class="hljs-string">'35m'</span>); <span class="hljs-comment">// 35 minutes using shorthand</span>
+</code></pre>
+<p>The <code>NodeCache</code> is not the default export, so you need to import it like this:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> {<span class="hljs-title class_">NodeCache</span>} <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/node-cache'</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NodeCache</span>();
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar'</span>
+</code></pre>
+<p><code>NodeCache</code> also offers the ability to set the type of values that can be cached in Typescript environments.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> {<span class="hljs-title class_">NodeCache</span>} <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/node-cache'</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NodeCache</span>&#x3C;<span class="hljs-built_in">string</span>>();
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar'</span>
+</code></pre>
+<h1 id="nodecache-performance">NodeCache Performance</h1>
+<p>The performance is comparable if not faster to the original <code>node-cache</code> package, but with additional features and improvements.</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cacheable NodeCache - set / get</td>
+<td align="center">🥇</td>
+<td align="right">117K</td>
+<td align="right">9µs</td>
+<td align="center">±1.01%</td>
+<td align="right">111K</td>
+</tr>
+<tr>
+<td>Node Cache - set / get</td>
+<td align="center">-4.6%</td>
+<td align="right">112K</td>
+<td align="right">9µs</td>
+<td align="center">±1.31%</td>
+<td align="right">106K</td>
+</tr>
+</tbody>
+</table>
+<h1 id="nodecache-api">NodeCache API</h1>
+<h2 id="constructoroptions-nodecacheoptions"><code>constructor(options?: NodeCacheOptions)</code></h2>
+<p>Create a new cache instance. You can pass in options to set the configuration:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">export</span> type <span class="hljs-title class_">NodeCacheOptions</span> = {
+	stdTTL?: number | string;
+	checkperiod?: number;
+	useClones?: boolean;
+	deleteOnExpire?: boolean;
+	maxKeys?: number;
+};
+</code></pre>
+<p>Here is a description of the options:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default Setting</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stdTTL</code></td>
+<td><code>0</code></td>
+<td>The standard time to live (TTL) in seconds for every generated cache element. If set to <code>0</code>, it means unlimited. If a string is provided, it will be parsed as shorthand and default to milliseconds if it is a number as a string.</td>
+</tr>
+<tr>
+<td><code>checkperiod</code></td>
+<td><code>600</code></td>
+<td>The interval in seconds to check for expired keys. If set to <code>0</code>, it means no periodic check will be performed.</td>
+</tr>
+<tr>
+<td><code>useClones</code></td>
+<td><code>true</code></td>
+<td>If set to <code>true</code>, the cache will clone the returned items via <code>get()</code> functions. This means that every time you set a value into the cache, <code>node-cache</code> makes a deep clone of it. When you get that value back, you receive another deep clone. This mimics the behavior of an external cache like Redis or Memcached, meaning mutations to the returned object do not affect the cached copy (and vice versa). If set to <code>false</code>, the original object will be returned, and mutations will affect the cached copy.</td>
+</tr>
+<tr>
+<td><code>deleteOnExpire</code></td>
+<td><code>true</code></td>
+<td>If set to <code>true</code>, the key will be deleted when it expires. If set to <code>false</code>, the key will remain in the cache, but the value returned by <code>get()</code> will be <code>undefined</code>. You can manage the key with the <code>on('expired')</code> event.</td>
+</tr>
+<tr>
+<td><code>maxKeys</code></td>
+<td><code>-1</code></td>
+<td>If set to a positive number, it will limit the number of keys in the cache. If the number of keys exceeds this limit, it will throw an error when trying to set more keys than the maximum. If set to <code>-1</code>, it means unlimited keys are allowed.</td>
+</tr>
+</tbody>
+</table>
+<p>When initializing the cache you can pass in the options to set the configuration like the example below where we set the <code>stdTTL</code> to 10 seconds and <code>checkperiod</code> to 5 seconds.:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NodeCache</span>({<span class="hljs-attr">stdTTL</span>: <span class="hljs-number">10</span>, <span class="hljs-attr">checkperiod</span>: <span class="hljs-number">5</span>});
+</code></pre>
+<p>When setting <code>deleteOnExpire</code> to <code>true</code> it will delete the key when it expires. If you set it to <code>false</code> it will keep the key but the value on <code>get()</code> will be <code>undefined</code>. You can manage the key with <code>on('expired')</code> event.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NodeCache</span>({<span class="hljs-attr">deleteOnExpire</span>: <span class="hljs-literal">false</span>});
+cache.<span class="hljs-title function_">on</span>(<span class="hljs-string">'expired'</span>, <span class="hljs-function">(<span class="hljs-params">key, value</span>) =></span> {
+	<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Key <span class="hljs-subst">${key}</span> has expired with value <span class="hljs-subst">${value}</span>`</span>);
+});
+</code></pre>
+<h2 id="setkey-string--number-value-any-ttl-number--string-boolean"><code>set(key: string | number, value: any, ttl?: number | string): boolean</code></h2>
+<p>Set a key value pair with an optional ttl (in seconds). Will return true on success. If the ttl is not set it will default to 0 (no ttl).</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">10</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<h2 id="msetdata-arraypartialnodecacheitem-boolean"><code>mset(data: Array&#x3C;PartialNodeCacheItem>): boolean</code></h2>
+<p>Set multiple key value pairs at once. This will take an array of objects with the key, value, and optional ttl.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">mset</span>([{<span class="hljs-attr">key</span>: <span class="hljs-string">'foo'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'bar'</span>, <span class="hljs-attr">ttl</span>: <span class="hljs-number">10</span>}, {<span class="hljs-attr">key</span>: <span class="hljs-string">'bar'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'baz'</span>}]); <span class="hljs-comment">// true</span>
+</code></pre>
+<p>the <code>PartialNodeCacheItem</code> is defined as:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">export</span> type <span class="hljs-title class_">PartialNodeCacheItem</span> = {
+	<span class="hljs-attr">key</span>: string | number;
+	<span class="hljs-attr">value</span>: any;
+	ttl?: number;
+};
+</code></pre>
+<h2 id="gettkey-string--number-t--undefined"><code>get&#x3C;T>(key: string | number): T | undefined</code></h2>
+<p>Get a value from the cache by key. If the key does not exist it will return <code>undefined</code>.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar'</span>
+</code></pre>
+<h2 id="mgettkeys-arraystring--number-recordstring-t--undefined"><code>mget&#x3C;T>(keys: Array&#x3C;string | number>): Record&#x3C;string, T | undefined></code></h2>
+<p>Get multiple values from the cache by keys. This will return an object with the keys and values.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> obj = { <span class="hljs-attr">my</span>: <span class="hljs-string">'value'</span>, <span class="hljs-attr">my2</span>: <span class="hljs-string">'value2'</span> };
+<span class="hljs-keyword">const</span> obj2 = { <span class="hljs-attr">special</span>: <span class="hljs-string">'value3'</span>, <span class="hljs-attr">life</span>: <span class="hljs-string">'value4'</span> };
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'my'</span>, obj);
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'my2'</span>, obj2);
+cache.<span class="hljs-title function_">mget</span>([<span class="hljs-string">'my'</span>, <span class="hljs-string">'my2'</span>]); <span class="hljs-comment">// { my: { my: 'value', my2: 'value2' }, my2: { special: 'value3', life: 'value4' } }</span>
+</code></pre>
+<h2 id="taketkey-string--number-t--undefined"><code>take&#x3C;T>(key: string | number): T | undefined</code></h2>
+<p>Get a value from the cache by key and delete it. If the key does not exist it will return <code>undefined</code>.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+cache.<span class="hljs-title function_">take</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar'</span>
+cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// undefined</span>
+</code></pre>
+<h2 id="delkey-string--number--arraystring--number-number"><code>del(key: string | number | Array&#x3C;string | number>): number</code></h2>
+<p>Delete a key from the cache. Will return the number of deleted entries and never fail. You can also pass in an array of keys to delete multiple keys. All examples assume that you have initialized the cache like <code>const cache = new NodeCache();</code>.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">del</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 1</span>
+</code></pre>
+<p>passing in an array of keys:</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">del</span>([<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>]); <span class="hljs-comment">// 2</span>
+</code></pre>
+<h2 id="mdelkeys-arraystring--number-number"><code>mdel(keys: Array&#x3C;string | number>): number</code></h2>
+<p>Delete multiple keys from the cache. Will return the number of deleted entries and never fail.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">mdel</span>([<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>]); <span class="hljs-comment">// 2</span>
+</code></pre>
+<h2 id="ttlkey-string--number-ttl-number--string-boolean"><code>ttl(key: string | number, ttl?: number | string): boolean</code></h2>
+<p>Redefine the ttl of a key. Returns true if the key has been found and changed. Otherwise returns false. If the ttl-argument isn't passed the default-TTL will be used.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">ttl</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-number">10</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<h2 id="getttlkey-string--number-number--undefined"><code>getTtl(key: string | number): number | undefined</code></h2>
+<p>Get the ttl expiration from <code>Date.now()</code> of a key. If the key does not exist it will return <code>undefined</code>.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">getTtl</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 1725993344859</span>
+</code></pre>
+<h2 id="haskey-string--number-boolean"><code>has(key: string | number): boolean</code></h2>
+<p>Check if a key exists in the cache.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+cache.<span class="hljs-title function_">has</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<h2 id="keys-string"><code>keys(): string[]</code></h2>
+<p>Get all keys from the cache.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">keys</span>(); <span class="hljs-comment">// ['foo', 'bar']</span>
+</code></pre>
+<h2 id="getstats-nodecachestats"><code>getStats(): NodeCacheStats</code></h2>
+<p>Get the stats of the cache.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">getStats</span>(); <span class="hljs-comment">// {hits: 1, misses: 1, keys: 1, ksize: 2, vsize: 3}</span>
+</code></pre>
+<h2 id="flushall-void"><code>flushAll(): void</code></h2>
+<p>Flush the cache. Will remove all keys and reset the stats.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">flushAll</span>();
+cache.<span class="hljs-title function_">keys</span>(); <span class="hljs-comment">// []</span>
+cache.<span class="hljs-title function_">getStats</span>(); <span class="hljs-comment">// {hits: 0, misses: 0, keys: 0, ksize: 0, vsize: 0}</span>
+</code></pre>
+<h2 id="flushstats-void"><code>flushStats(): void</code></h2>
+<p>Flush the stats. Will reset the stats but keep the keys.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+cache.<span class="hljs-title function_">flushStats</span>();
+cache.<span class="hljs-title function_">getStats</span>(); <span class="hljs-comment">// {hits: 0, misses: 0, keys: 0, ksize: 0, vsize: 0}</span>
+cache.<span class="hljs-title function_">keys</span>(); <span class="hljs-comment">// ['foo']</span>
+</code></pre>
+<h2 id="onevent-string-callback-function-void"><code>on(event: string, callback: Function): void</code></h2>
+<p>Listen to events. Here are the events that you can listen to:</p>
+<ul>
+<li><code>set</code> - when a key is set and it will pass in the <code>key</code> and <code>value</code>.</li>
+<li><code>expired</code> - when a key is expired and it will pass in the <code>key</code> and <code>value</code>.</li>
+<li><code>flush</code> - when the cache is flushed</li>
+<li><code>flush_stats</code> - when the stats are flushed</li>
+<li><code>del</code> - when a key is deleted and it will pass in the <code>key</code> and <code>value</code>.</li>
+</ul>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">on</span>(<span class="hljs-string">'set'</span>, <span class="hljs-function">(<span class="hljs-params">key, value</span>) =></span> {
+	<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Key <span class="hljs-subst">${key}</span> has been set with value <span class="hljs-subst">${value}</span>`</span>);
+});
+</code></pre>
+<h2 id="close-void"><code>close(): void</code></h2>
+<p>Close the cache. This will stop the interval timeout which is set on the <code>checkperiod</code> option.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">close</span>();
+</code></pre>
+<h2 id="store-mapstring-nodecacheitemt"><code>store: Map&#x3C;string, NodeCacheItem&#x3C;T>></code></h2>
+<p>The internal store is a public readonly <code>Map</code> that holds all cached items. Each item includes the key, value, and TTL expiration timestamp.</p>
+<h2 id="getintervalid-number--nodejstimeout"><code>getIntervalId(): number | NodeJS.Timeout</code></h2>
+<p>Get the interval ID for the expiration checker.</p>
+<h2 id="startinterval-void"><code>startInterval(): void</code></h2>
+<p>Start the interval for checking expired keys based on the <code>checkperiod</code> option.</p>
+<h2 id="stopinterval-void"><code>stopInterval(): void</code></h2>
+<p>Stop the interval for checking expired keys.</p>
+<h1 id="nodecachestore">NodeCacheStore</h1>
+<p><code>NodeCacheStore</code> has a similar API to <code>NodeCache</code> but it is using <code>async / await</code> as it uses <a href="https://keyv.org">Keyv</a> under the hood. This means that you can use any storage adapter that is available in <code>Keyv</code> and it will work seamlessly with the <code>NodeCacheStore</code>. To learn more about the <code>Keyv</code> storage adapters you can check out the <a href="https://keyv.org">Keyv documentation</a>.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> {<span class="hljs-title class_">NodeCacheStore</span>} <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/node-cache'</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NodeCacheStore</span>();
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar'</span>
+</code></pre>
+<p>Here is an example of how to use the <code>NodeCacheStore</code> with a Redis storage adapter:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> {<span class="hljs-title class_">NodeCacheStore</span>} <span class="hljs-keyword">from</span> <span class="hljs-string">'@cacheable/node-cache'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({<span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>)});
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NodeCacheStore</span>({<span class="hljs-attr">store</span>: keyv});
+
+<span class="hljs-comment">// with storage you have the same functionality as the NodeCache but will be using async/await</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar'</span>
+</code></pre>
+<p>When initializing the cache you can pass in the options below:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">export</span> type <span class="hljs-title class_">NodeCacheStoreOptions</span> = {
+	ttl?: number | string; <span class="hljs-comment">// The standard ttl as number in milliseconds. 0 = unlimited. Supports shorthand like '1h'.</span>
+	store?: <span class="hljs-title class_">Keyv</span>; <span class="hljs-comment">// The storage adapter (defaults to in-memory Keyv)</span>
+	useClones?: boolean; <span class="hljs-comment">// Clone values on get/set via structuredClone. Default: false</span>
+	checkperiod?: number; <span class="hljs-comment">// Interval in seconds to check for expired items. 0 = disabled. Default: 0</span>
+	deleteOnExpire?: boolean; <span class="hljs-comment">// Delete expired items when detected. Default: true</span>
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ttl</code></td>
+<td><code>undefined</code></td>
+<td>The standard TTL in milliseconds for every cache element. <code>undefined</code> or <code>0</code> = unlimited. Supports shorthand strings like <code>'1h'</code>, <code>'30m'</code>, <code>'5s'</code>.</td>
+</tr>
+<tr>
+<td><code>store</code></td>
+<td><code>new Keyv()</code></td>
+<td>The Keyv storage adapter. Pass any Keyv-compatible store (Redis, MongoDB, etc.).</td>
+</tr>
+<tr>
+<td><code>useClones</code></td>
+<td><code>false</code></td>
+<td>If <code>true</code>, values are deep-cloned via <code>structuredClone</code> on both <code>set()</code> and <code>get()</code>. This prevents mutations to the returned object from affecting the cached copy and vice versa.</td>
+</tr>
+<tr>
+<td><code>checkperiod</code></td>
+<td><code>0</code></td>
+<td>The interval in seconds to check for expired items. <code>0</code> = disabled (expiration is checked lazily on access).</td>
+</tr>
+<tr>
+<td><code>deleteOnExpire</code></td>
+<td><code>true</code></td>
+<td>If <code>true</code>, expired keys are automatically deleted. If <code>false</code>, expired keys remain in the store but <code>get()</code> returns <code>undefined</code> and <code>has()</code> returns <code>false</code>. You can handle them via the <code>expired</code> event.</td>
+</tr>
+</tbody>
+</table>
+<p>Note: the <code>ttl</code> is now in milliseconds and not seconds like <code>stdTTL</code> in <code>NodeCache</code>. You can also use shorthand notation for TTL values. Here is an example:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NodeCacheStore</span>({<span class="hljs-attr">ttl</span>: <span class="hljs-number">60000</span> }); <span class="hljs-comment">// 1 minute as it defaults to milliseconds</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-string">'1h'</span>); <span class="hljs-comment">// 1 hour</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'longfoo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-string">'1d'</span>); <span class="hljs-comment">// 1 day</span>
+</code></pre>
+<h2 id="nodecachestore-api">NodeCacheStore API</h2>
+<h3 id="setkey-value-ttl-promiseboolean"><code>set(key, value, ttl?): Promise&#x3C;boolean></code></h3>
+<p>Set a key value pair with an optional ttl (in milliseconds or shorthand string). Returns <code>true</code> on success.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">5000</span>); <span class="hljs-comment">// 5 seconds in milliseconds</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-string">'1h'</span>); <span class="hljs-comment">// 1 hour using shorthand</span>
+</code></pre>
+<h3 id="msetdata-promisevoid"><code>mset(data): Promise&#x3C;void></code></h3>
+<p>Set multiple key value pairs at once.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">mset</span>([{<span class="hljs-attr">key</span>: <span class="hljs-string">'foo'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'bar'</span>}, {<span class="hljs-attr">key</span>: <span class="hljs-string">'baz'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'qux'</span>, <span class="hljs-attr">ttl</span>: <span class="hljs-number">5000</span>}]);
+</code></pre>
+<h3 id="gettkey-promiset--undefined"><code>get&#x3C;T>(key): Promise&#x3C;T | undefined></code></h3>
+<p>Get a value from the cache by key. Returns <code>undefined</code> if the key does not exist or has expired.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar'</span>
+</code></pre>
+<h3 id="mgettkeys-promiserecordstring-t--undefined"><code>mget&#x3C;T>(keys): Promise&#x3C;Record&#x3C;string, T | undefined>></code></h3>
+<p>Get multiple values from the cache by keys.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">mget</span>([<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>]); <span class="hljs-comment">// { foo: 'value1', bar: 'value2' }</span>
+</code></pre>
+<h3 id="taketkey-promiset--undefined"><code>take&#x3C;T>(key): Promise&#x3C;T | undefined></code></h3>
+<p>Get a value from the cache by key and delete it. Useful for single-use values like OTPs.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">take</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar'</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// undefined</span>
+</code></pre>
+<h3 id="delkey-promiseboolean"><code>del(key): Promise&#x3C;boolean></code></h3>
+<p>Delete a key from the cache. Returns <code>true</code> if the key was deleted.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">del</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<h3 id="mdelkeys-promiseboolean"><code>mdel(keys): Promise&#x3C;boolean></code></h3>
+<p>Delete multiple keys from the cache.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">mdel</span>([<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>]); <span class="hljs-comment">// true</span>
+</code></pre>
+<h3 id="haskey-promiseboolean"><code>has(key): Promise&#x3C;boolean></code></h3>
+<p>Check if a key exists in the cache and is not expired.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">has</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// true</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">has</span>(<span class="hljs-string">'missing'</span>); <span class="hljs-comment">// false</span>
+</code></pre>
+<h3 id="keys-promisestring"><code>keys(): Promise&#x3C;string[]></code></h3>
+<p>Get all keys from the cache.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">keys</span>(); <span class="hljs-comment">// ['foo', 'bar']</span>
+</code></pre>
+<h3 id="getttlkey-promisenumber--undefined"><code>getTtl(key): Promise&#x3C;number | undefined></code></h3>
+<p>Get the TTL expiration timestamp of a key. Returns <code>0</code> if the key has no TTL (unlimited), <code>undefined</code> if the key does not exist, or a timestamp in milliseconds of when the key will expire.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">5000</span>);
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">getTtl</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 1725993344859 (timestamp)</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'bar'</span>, <span class="hljs-string">'baz'</span>);
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">getTtl</span>(<span class="hljs-string">'bar'</span>); <span class="hljs-comment">// 0 (unlimited)</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">getTtl</span>(<span class="hljs-string">'missing'</span>); <span class="hljs-comment">// undefined</span>
+</code></pre>
+<h3 id="setttlkey-ttl-promiseboolean"><code>setTtl(key, ttl?): Promise&#x3C;boolean></code></h3>
+<p>Set the TTL of an existing key. Returns <code>true</code> if the key was found and updated.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">setTtl</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-number">10000</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<h3 id="clear-promisevoid"><code>clear(): Promise&#x3C;void></code></h3>
+<p>Clear the cache. Removes all keys and resets store-related stats (keys, ksize, vsize) but preserves hit/miss counts.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">clear</span>();
+</code></pre>
+<h3 id="flushall-promisevoid"><code>flushAll(): Promise&#x3C;void></code></h3>
+<p>Flush the entire cache. Removes all keys and resets all stats. Emits a <code>flush</code> event.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">flushAll</span>();
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">keys</span>(); <span class="hljs-comment">// []</span>
+cache.<span class="hljs-title function_">getStats</span>(); <span class="hljs-comment">// {hits: 0, misses: 0, keys: 0, ksize: 0, vsize: 0}</span>
+</code></pre>
+<h3 id="getstats-nodecachestats-1"><code>getStats(): NodeCacheStats</code></h3>
+<p>Get the stats of the cache.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">getStats</span>(); <span class="hljs-comment">// {hits: 1, misses: 0, keys: 2, ksize: 12, vsize: 24}</span>
+</code></pre>
+<h3 id="flushstats-void-1"><code>flushStats(): void</code></h3>
+<p>Flush the stats. Resets all stats but keeps the cached data.</p>
+<h3 id="close-void-1"><code>close(): void</code></h3>
+<p>Stop the check interval timer. Use this to clean up when you're done with the cache.</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">close</span>();
+</code></pre>
+<h3 id="disconnect-promisevoid"><code>disconnect(): Promise&#x3C;void></code></h3>
+<p>Disconnect the storage adapter and stop the check interval.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h3 id="events">Events</h3>
+<p>Listen to events using <code>on()</code>:</p>
+<pre><code class="hljs language-javascript">cache.<span class="hljs-title function_">on</span>(<span class="hljs-string">'set'</span>, <span class="hljs-function">(<span class="hljs-params">key, value</span>) =></span> {
+	<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Key <span class="hljs-subst">${key}</span> has been set with value <span class="hljs-subst">${value}</span>`</span>);
+});
+
+cache.<span class="hljs-title function_">on</span>(<span class="hljs-string">'del'</span>, <span class="hljs-function">(<span class="hljs-params">key, value</span>) =></span> {
+	<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Key <span class="hljs-subst">${key}</span> has been deleted`</span>);
+});
+
+cache.<span class="hljs-title function_">on</span>(<span class="hljs-string">'expired'</span>, <span class="hljs-function">(<span class="hljs-params">key, value</span>) =></span> {
+	<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Key <span class="hljs-subst">${key}</span> has expired`</span>);
+});
+
+cache.<span class="hljs-title function_">on</span>(<span class="hljs-string">'flush'</span>, <span class="hljs-function">() =></span> {
+	<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Cache has been flushed'</span>);
+});
+
+cache.<span class="hljs-title function_">on</span>(<span class="hljs-string">'flush_stats'</span>, <span class="hljs-function">() =></span> {
+	<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Stats have been flushed'</span>);
+});
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Arguments</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>set</code></td>
+<td><code>key, value</code></td>
+<td>Emitted when a key is set</td>
+</tr>
+<tr>
+<td><code>del</code></td>
+<td><code>key, value</code></td>
+<td>Emitted when a key is deleted (including via <code>take()</code> and <code>mdel()</code>)</td>
+</tr>
+<tr>
+<td><code>expired</code></td>
+<td><code>key, value</code></td>
+<td>Emitted when an expired key is detected</td>
+</tr>
+<tr>
+<td><code>flush</code></td>
+<td>—</td>
+<td>Emitted when <code>flushAll()</code> is called</td>
+</tr>
+<tr>
+<td><code>flush_stats</code></td>
+<td>—</td>
+<td>Emitted when <code>flushStats()</code> is called</td>
+</tr>
+</tbody>
+</table>
+<h3 id="properties">Properties</h3>
+<ul>
+<li><code>ttl</code>: <code>number | string | undefined</code> - The standard ttl for every generated cache element. <code>undefined</code> = unlimited</li>
+<li><code>store</code>: <code>Keyv</code> - The storage adapter (read-only)</li>
+<li><code>useClones</code>: <code>boolean</code> - Whether values are cloned on get/set</li>
+<li><code>deleteOnExpire</code>: <code>boolean</code> - Whether expired items are automatically deleted</li>
+</ul>
+<h1 id="migrating-to-v2">Migrating to v2</h1>
+<p>The main <code>NodeCache</code> class API has not changed and remains fully compatible. The primary internal change is that it now uses Keyv as the underlying store.</p>
+<h2 id="nodecachestore-changes">NodeCacheStore Changes</h2>
+<h3 id="removed-cache-property">Removed <code>cache</code> Property</h3>
+<ul>
+<li><strong>V1</strong>: <code>nodeCache.cache</code> returned a <code>Cacheable</code> instance</li>
+<li><strong>V2</strong>: Use <code>nodeCache.store</code> which returns a <code>Keyv</code> instance</li>
+</ul>
+<h3 id="removed-storage-tiering-primarysecondary">Removed Storage Tiering (primary/secondary)</h3>
+<ul>
+<li><strong>V1</strong>: Supported <code>primary</code> and <code>secondary</code> store options for multi-tier caching</li>
+<li><strong>V2</strong>: Uses single <code>store</code> option only</li>
+</ul>
+<p><strong>Migration:</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// V1</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NodeCacheStore</span>({ <span class="hljs-attr">primary</span>: keyv1, <span class="hljs-attr">secondary</span>: keyv2 });
+
+<span class="hljs-comment">// V2 - use single store</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NodeCacheStore</span>({ <span class="hljs-attr">store</span>: keyv });
+</code></pre>
+<p>If you need storage tiering functionality, use the <code>cacheable</code> package instead which supports primary and secondary stores.</p>
+<h3 id="internal-dependency-change">Internal Dependency Change</h3>
+<ul>
+<li>V2 uses <code>@cacheable/utils</code> instead of the <code>cacheable</code> package for a lighter footprint</li>
+</ul>
+<h1 id="migrating-to-v3">Migrating to v3</h1>
+<h2 id="removed-maxkeys-from-nodecachestore">Removed <code>maxKeys</code> from NodeCacheStore</h2>
+<p>The <code>maxKeys</code> option has been removed from <code>NodeCacheStore</code>. It does not make sense for a store backed by external services (Redis, MongoDB, etc.) where the backend manages its own capacity.</p>
+<p>The <code>maxKeys</code> option remains available on the in-memory <code>NodeCache</code> class.</p>
+<p><strong>Migration:</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// V2 - maxKeys was accepted but not meaningful for external stores</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NodeCacheStore</span>({ <span class="hljs-attr">maxKeys</span>: <span class="hljs-number">100</span> });
+
+<span class="hljs-comment">// V3 - remove maxKeys from NodeCacheStore options</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NodeCacheStore</span>();
+</code></pre>
+<p>If you need key limits with an external store, configure the limit at the storage layer instead.</p>
+<h2 id="removed-stats-from-nodecachestore">Removed <code>stats</code> from NodeCacheStore</h2>
+<p>The <code>stats</code> option and internal stats tracking have been removed from <code>NodeCacheStore</code>. The stats were collected internally but never exposed via a public API, making them effectively unused.</p>
+<h2 id="upgraded-hookified-to-v2">Upgraded <code>hookified</code> to v2</h2>
+<p>The underlying <code>hookified</code> dependency has been upgraded from v1 to v2. Both <code>NodeCache</code> and <code>NodeCacheStore</code> extend <code>Hookified</code>. Key changes in hookified v2:</p>
+<ul>
+<li><code>logger</code> property renamed to <code>eventLogger</code></li>
+<li><code>Hook</code> type renamed to <code>HookFn</code></li>
+<li><code>onHook</code> signature changed to handle <code>IHook</code> interface</li>
+<li>Removed <code>throwHookErrors</code> configuration option</li>
+<li><code>throwOnEmptyListeners</code> default changed to <code>true</code></li>
+</ul>
+<p>If you use hooks or advanced event features from the <code>Hookified</code> base class directly, review the <a href="https://github.com/jaredwray/hookified">hookified v2 changelog</a> for details.</p>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>You can contribute by forking the repo and submitting a pull request. Please make sure to add tests and update the documentation. To learn more about how to contribute go to our main README <a href="https://github.com/jaredwray/cacheable">https://github.com/jaredwray/cacheable</a>. This will talk about how to <code>Open a Pull Request</code>, <code>Ask a Question</code>, or <code>Post an Issue</code>.</p>
+<h1 id="license-and-copyright">License and Copyright</h1>
+<p><a href="./LICENSE">MIT © Jared Wray</a></p>

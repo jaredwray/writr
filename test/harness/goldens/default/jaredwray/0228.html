@@ -1,0 +1,581 @@
+<p><a href="https://github.com/jaredwray/cacheable"></a></p>
+<h1 id="file-entry-cache">file-entry-cache</h1>
+<blockquote>
+<p>A lightweight cache for file metadata, ideal for processes that work on a specific set of files and only need to reprocess files that have changed since the last run</p>
+</blockquote>
+<p><a href="https://codecov.io/gh/jaredwray/cacheable"><img src="https://codecov.io/gh/jaredwray/cacheable/branch/main/graph/badge.svg?token=lWZ9OBQ7GM" alt="codecov"></a>
+<a href="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://www.npmjs.com/package/file-entry-cache"><img src="https://img.shields.io/npm/dm/file-entry-cache.svg" alt="npm"></a>
+<a href="https://www.npmjs.com/package/file-entry-cache"><img src="https://img.shields.io/npm/v/file-entry-cache" alt="npm"></a>
+<a href="https://github.com/jaredwray/cacheable/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/cacheable" alt="license"></a></p>
+<h1 id="features">Features</h1>
+<ul>
+<li>Lightweight cache for file metadata</li>
+<li>Ideal for processes that work on a specific set of files</li>
+<li>Persists cache to Disk via <code>reconcile()</code> or <code>persistInterval</code> on <code>cache</code> options.</li>
+<li>Uses <code>checksum</code> to determine if a file has changed</li>
+<li>Supports <code>relative</code> and <code>absolute</code> paths with configurable current working directory</li>
+<li>Portable cache files when using relative paths</li>
+<li>ESM and CommonJS support with Typescript</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#changes-from-v10-to-v11">Changes from v10 to v11</a></li>
+<li><a href="#changes-from-v9-to-v10">Changes from v9 to v10</a></li>
+<li><a href="#global-default-functions">Global Default Functions</a>
+<ul>
+<li><a href="#createoptions-type">CreateOptions Type</a></li>
+</ul>
+</li>
+<li><a href="#fileentrycache-options-fileentrycacheoptions">FileEntryCache Options (FileEntryCacheOptions)</a></li>
+<li><a href="#api">API</a></li>
+<li><a href="#get-file-descriptor">Get File Descriptor</a>
+<ul>
+<li><a href="#path-handling-and-current-working-directory">Path Handling and Current Working Directory</a>
+<ul>
+<li><a href="#cache-portability">Cache Portability</a></li>
+<li><a href="#maximum-portability-with-checksums">Maximum Portability with Checksums</a></li>
+<li><a href="#handling-project-relocations">Handling Project Relocations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#path-security-and-traversal-prevention">Path Security and Traversal Prevention</a>
+<ul>
+<li><a href="#basic-usage">Basic Usage</a></li>
+<li><a href="#security-features">Security Features</a></li>
+<li><a href="#use-cases">Use Cases</a>
+<ul>
+<li><a href="#build-tools-with-untrusted-input">Build Tools with Untrusted Input</a></li>
+<li><a href="#cicd-environments">CI/CD Environments</a></li>
+<li><a href="#dynamic-security-control">Dynamic Security Control</a></li>
+</ul>
+</li>
+<li><a href="#default-behavior">Default Behavior</a>
+<ul>
+<li><a href="#migrating-from-v10-or-earlier">Migrating from v10 or Earlier</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#using-checksums-to-determine-if-a-file-has-changed-usechecksum">Using Checksums to Determine if a File has Changed (useCheckSum)</a></li>
+<li><a href="#setting-additional-meta-data">Setting Additional Meta Data</a></li>
+<li><a href="#logger-support">Logger Support</a>
+<ul>
+<li><a href="#logger-interface">Logger Interface</a></li>
+<li><a href="#using-pino-logger">Using Pino Logger</a></li>
+<li><a href="#log-levels">Log Levels</a></li>
+<li><a href="#example-with-custom-log-levels">Example with Custom Log Levels</a></li>
+<li><a href="#debugging-cache-operations">Debugging Cache Operations</a></li>
+</ul>
+</li>
+<li><a href="#how-to-contribute">How to Contribute</a></li>
+<li><a href="#license-and-copyright">License and Copyright</a></li>
+</ul>
+<h1 id="installation">Installation</h1>
+<pre><code class="hljs language-bash">npm install file-entry-cache
+</code></pre>
+<h1 id="getting-started">Getting Started</h1>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> fileEntryCache <span class="hljs-keyword">from</span> <span class="hljs-string">'file-entry-cache'</span>;
+<span class="hljs-keyword">const</span> cache = fileEntryCache.<span class="hljs-title function_">create</span>(<span class="hljs-string">'cache1'</span>);
+
+<span class="hljs-comment">// Using relative paths</span>
+<span class="hljs-keyword">let</span> fileDescriptor = cache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/file.txt'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(fileDescriptor.<span class="hljs-property">changed</span>); <span class="hljs-comment">// true as it is the first time</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(fileDescriptor.<span class="hljs-property">key</span>); <span class="hljs-comment">// './src/file.txt' (stored as provided)</span>
+
+<span class="hljs-comment">// Repeated calls keep reporting `changed: true` until you persist the state</span>
+<span class="hljs-comment">// with reconcile(); only then does the file become the cached baseline.</span>
+cache.<span class="hljs-title function_">reconcile</span>();
+
+fileDescriptor = cache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/file.txt'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(fileDescriptor.<span class="hljs-property">changed</span>); <span class="hljs-comment">// false as it has not changed since reconcile()</span>
+
+<span class="hljs-comment">// do something to change the file</span>
+fs.<span class="hljs-title function_">writeFileSync</span>(<span class="hljs-string">'./src/file.txt'</span>, <span class="hljs-string">'new data foo bar'</span>);
+
+<span class="hljs-comment">// check if the file has changed</span>
+fileDescriptor = cache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/file.txt'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(fileDescriptor.<span class="hljs-property">changed</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<p>Using <code>create()</code> with options for more control:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> fileEntryCache <span class="hljs-keyword">from</span> <span class="hljs-string">'file-entry-cache'</span>;
+
+<span class="hljs-comment">// Create cache with options</span>
+<span class="hljs-keyword">const</span> cache = fileEntryCache.<span class="hljs-title function_">create</span>(<span class="hljs-string">'myCache'</span>, <span class="hljs-string">'./.cache'</span>, {
+  <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">true</span>,              <span class="hljs-comment">// Use checksums for more reliable change detection</span>
+  <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/path/to/project'</span>,        <span class="hljs-comment">// Custom working directory</span>
+  <span class="hljs-attr">restrictAccessToCwd</span>: <span class="hljs-literal">false</span>,     <span class="hljs-comment">// Allow access outside cwd (use with caution)</span>
+  <span class="hljs-attr">useAbsolutePathAsKey</span>: <span class="hljs-literal">false</span>     <span class="hljs-comment">// Store relative paths in cache</span>
+});
+
+<span class="hljs-keyword">let</span> fileDescriptor = cache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/file.txt'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(fileDescriptor.<span class="hljs-property">changed</span>); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(fileDescriptor.<span class="hljs-property">meta</span>.<span class="hljs-property">hash</span>); <span class="hljs-comment">// checksum hash</span>
+</code></pre>
+<p>Save it to Disk and Reconcile files that are no longer found</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> fileEntryCache <span class="hljs-keyword">from</span> <span class="hljs-string">'file-entry-cache'</span>;
+<span class="hljs-keyword">const</span> cache = fileEntryCache.<span class="hljs-title function_">create</span>(<span class="hljs-string">'cache1'</span>);
+<span class="hljs-keyword">let</span> fileDescriptor = cache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/file.txt'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(fileDescriptor.<span class="hljs-property">changed</span>); <span class="hljs-comment">// true as it is the first time</span>
+cache.<span class="hljs-title function_">reconcile</span>(); <span class="hljs-comment">// save the cache to disk and remove files that are no longer found</span>
+</code></pre>
+<p>Load the cache from a file:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> fileEntryCache <span class="hljs-keyword">from</span> <span class="hljs-string">'file-entry-cache'</span>;
+
+<span class="hljs-comment">// Basic usage</span>
+<span class="hljs-keyword">const</span> cache = fileEntryCache.<span class="hljs-title function_">createFromFile</span>(<span class="hljs-string">'/path/to/cache/file'</span>);
+<span class="hljs-keyword">let</span> fileDescriptor = cache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/file.txt'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(fileDescriptor.<span class="hljs-property">changed</span>); <span class="hljs-comment">// false as it has not changed from the saved cache.</span>
+
+<span class="hljs-comment">// With options</span>
+<span class="hljs-keyword">const</span> cache2 = fileEntryCache.<span class="hljs-title function_">createFromFile</span>(<span class="hljs-string">'/path/to/cache/file'</span>, {
+  <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/path/to/project'</span>
+});
+</code></pre>
+<h1 id="changes-from-v10-to-v11">Changes from v10 to v11</h1>
+<p><strong>BREAKING CHANGES:</strong></p>
+<ul>
+<li>
+<p><strong><code>create()</code> and <code>createFromFile()</code> now use <code>CreateOptions</code> object</strong> - The function signatures have changed to accept an options object instead of individual parameters for better extensibility and clarity.</p>
+<p><strong>Old API (v10):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// v10 - positional parameters</span>
+<span class="hljs-keyword">const</span> cache = fileEntryCache.<span class="hljs-title function_">create</span>(cacheId, cacheDirectory, useCheckSum, cwd);
+<span class="hljs-keyword">const</span> cache2 = fileEntryCache.<span class="hljs-title function_">createFromFile</span>(filePath, useCheckSum, cwd);
+</code></pre>
+<p><strong>New API (v11):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// v11 - options object</span>
+<span class="hljs-keyword">const</span> cache = fileEntryCache.<span class="hljs-title function_">create</span>(cacheId, cacheDirectory, {
+  <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/path/to/project'</span>,
+  <span class="hljs-attr">restrictAccessToCwd</span>: <span class="hljs-literal">false</span>
+});
+
+<span class="hljs-keyword">const</span> cache2 = fileEntryCache.<span class="hljs-title function_">createFromFile</span>(filePath, {
+  <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/path/to/project'</span>,
+  <span class="hljs-attr">restrictAccessToCwd</span>: <span class="hljs-literal">false</span>
+});
+</code></pre>
+</li>
+<li>
+<p><strong>Renamed <code>strictPaths</code> to <code>restrictAccessToCwd</code></strong> - For better clarity and self-documentation, the option that restricts file access to the current working directory has been renamed.</p>
+<p><strong>Migration:</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Old</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>({ <span class="hljs-attr">strictPaths</span>: <span class="hljs-literal">true</span> });
+cache.<span class="hljs-property">strictPaths</span> = <span class="hljs-literal">false</span>;
+
+<span class="hljs-comment">// New</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>({ <span class="hljs-attr">restrictAccessToCwd</span>: <span class="hljs-literal">true</span> });
+cache.<span class="hljs-property">restrictAccessToCwd</span> = <span class="hljs-literal">false</span>;
+</code></pre>
+</li>
+<li>
+<p><strong>Renamed <code>currentWorkingDirectory</code> to <code>cwd</code></strong> - For consistency with common conventions and brevity, the property has been renamed to <code>cwd</code>.</p>
+<p><strong>Migration:</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Old</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>({ <span class="hljs-attr">currentWorkingDirectory</span>: <span class="hljs-string">'/path/to/project'</span> });
+cache.<span class="hljs-property">currentWorkingDirectory</span> = <span class="hljs-string">'/new/path'</span>;
+
+<span class="hljs-comment">// New</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>({ <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/path/to/project'</span> });
+cache.<span class="hljs-property">cwd</span> = <span class="hljs-string">'/new/path'</span>;
+</code></pre>
+</li>
+</ul>
+<p><strong>NEW FEATURES:</strong></p>
+<ul>
+<li><strong>Added <code>cwd</code> option</strong> - You can now specify a custom current working directory for resolving relative paths</li>
+<li><strong>Added <code>restrictAccessToCwd</code> option</strong> - Provides protection against path traversal attacks (disabled by default for backwards compatibility)</li>
+<li><strong>Added <code>useAbsolutePathAsKey</code> option</strong> - When <code>true</code>, cache keys use absolute paths instead of the provided paths. Default is <code>false</code> for better cache portability with relative paths</li>
+<li><strong>Added <code>logger</code> option</strong> - Support for Pino-compatible logger instances to enable debugging and monitoring of cache operations. See <a href="#logger-support">Logger Support</a> section for details</li>
+<li><strong>Improved cache portability</strong> - When using relative paths with the same <code>cwd</code>, cache files are portable across different environments</li>
+</ul>
+<h1 id="changes-from-v9-to-v10">Changes from v9 to v10</h1>
+<p>There have been many features added and changes made to the <code>file-entry-cache</code> class. Here are the main changes:</p>
+<ul>
+<li>Added <code>cache</code> object to the options to allow for more control over the cache</li>
+<li>Added <code>hashAlgorithm</code> to the options to allow for different checksum algorithms. Note that if you load from file it most likely will break if the value was something before.</li>
+<li>Migrated to Typescript with ESM and CommonJS support. This allows for better type checking and support for both ESM and CommonJS.</li>
+<li>Once options are passed in they get assigned as properties such as <code>hashAlgorithm</code>. For the Cache options they are assigned to <code>cache</code> such as <code>cache.ttl</code> and <code>cache.lruSize</code>.</li>
+<li>Added <code>cache.persistInterval</code> to allow for saving the cache to disk at a specific interval. This will save the cache to disk at the interval specified instead of calling <code>reconsile()</code> to save. (<code>off</code> by default)</li>
+<li>Added <code>getFileDescriptorsByPath(filePath: string): FileEntryDescriptor[]</code> to get all the file descriptors that start with the path specified. This is useful when you want to get all the files in a directory or a specific path.</li>
+<li>Using <code>flat-cache</code> v6 which is a major update. This allows for better performance and more control over the cache.</li>
+<li>On <code>FileEntryDescriptor.meta</code> if using typescript you need to use the <code>meta.data</code> to set additional information. This is to allow for better type checking and to avoid conflicts with the <code>meta</code> object which was <code>any</code>.</li>
+</ul>
+<h1 id="global-default-functions">Global Default Functions</h1>
+<ul>
+<li><code>create(cacheId: string, cacheDirectory?: string, options?: CreateOptions)</code> - Creates a new instance of the <code>FileEntryCache</code> class</li>
+<li><code>createFromFile(filePath: string, options?: CreateOptions)</code> - Creates a new instance of the <code>FileEntryCache</code> class and loads the cache from a file.</li>
+</ul>
+<h2 id="createoptions-type">CreateOptions Type</h2>
+<p>All options from <code>FileEntryCacheOptions</code> except <code>cache</code>:</p>
+<ul>
+<li><code>useCheckSum?</code> - If <code>true</code> it will use a checksum to determine if the file has changed. Default is <code>false</code></li>
+<li><code>hashAlgorithm?</code> - The algorithm to use for the checksum. Default is <code>md5</code></li>
+<li><code>cwd?</code> - The current working directory for resolving relative paths. Default is <code>process.cwd()</code></li>
+<li><code>restrictAccessToCwd?</code> - If <code>true</code> restricts file access to within <code>cwd</code> boundaries. Default is <code>false</code></li>
+<li><code>useAbsolutePathAsKey?</code> - If <code>true</code> uses absolute paths as cache keys. Default is <code>false</code></li>
+<li><code>logger?</code> - A logger instance for debugging. Default is <code>undefined</code></li>
+</ul>
+<h1 id="fileentrycache-options-fileentrycacheoptions">FileEntryCache Options (FileEntryCacheOptions)</h1>
+<ul>
+<li><code>useModifiedTime?</code> - If <code>true</code> it will use the modified time to determine if the file has changed. Default is <code>true</code></li>
+<li><code>useCheckSum?</code> - If <code>true</code> it will use a checksum to determine if the file has changed. Default is <code>false</code></li>
+<li><code>hashAlgorithm?</code> - The algorithm to use for the checksum. Default is <code>md5</code> but can be any algorithm supported by <code>crypto.createHash</code></li>
+<li><code>cwd?</code> - The current working directory for resolving relative paths. Default is <code>process.cwd()</code></li>
+<li><code>restrictAccessToCwd?</code> - If <code>true</code> restricts file access to within <code>cwd</code> boundaries, preventing path traversal attacks. Default is <code>true</code></li>
+<li><code>logger?</code> - A logger instance compatible with Pino logger interface for debugging and monitoring. Default is <code>undefined</code></li>
+<li><code>cache.ttl?</code> - The time to live for the cache in milliseconds. Default is <code>0</code> which means no expiration</li>
+<li><code>cache.lruSize?</code> - The number of items to keep in the cache. Default is <code>0</code> which means no limit</li>
+<li><code>cache.useClone?</code> - If <code>true</code> it will clone the data before returning it. Default is <code>false</code></li>
+<li><code>cache.expirationInterval?</code> - The interval to check for expired items in the cache. Default is <code>0</code> which means no expiration</li>
+<li><code>cache.persistInterval?</code> - The interval to save the data to disk. Default is <code>0</code> which means no persistence</li>
+<li><code>cache.cacheDir?</code> - The directory to save the cache files. Default is <code>./cache</code></li>
+<li><code>cache.cacheId?</code> - The id of the cache. Default is <code>cache1</code></li>
+<li><code>cache.parse?</code> - The function to parse the data. Default is <code>flatted.parse</code></li>
+<li><code>cache.stringify?</code> - The function to stringify the data. Default is <code>flatted.stringify</code></li>
+</ul>
+<h1 id="api">API</h1>
+<ul>
+<li><code>constructor(options?: FileEntryCacheOptions)</code> - Creates a new instance of the <code>FileEntryCache</code> class</li>
+<li><code>useCheckSum: boolean</code> - If <code>true</code> it will use a checksum to determine if the file has changed. Default is <code>false</code></li>
+<li><code>hashAlgorithm: string</code> - The algorithm to use for the checksum. Default is <code>md5</code> but can be any algorithm supported by <code>crypto.createHash</code></li>
+<li><code>getHash(buffer: Buffer): string</code> - Gets the hash of a buffer used for checksums</li>
+<li><code>cwd: string</code> - The current working directory for resolving relative paths. Default is <code>process.cwd()</code></li>
+<li><code>restrictAccessToCwd: boolean</code> - If <code>true</code> restricts file access to within <code>cwd</code> boundaries. Default is <code>true</code></li>
+<li><code>useAbsolutePathAsKey: boolean</code> - If <code>true</code> uses absolute paths as cache keys. Default is <code>false</code> to maintain better cache portability</li>
+<li><code>logger: ILogger | undefined</code> - A logger instance for debugging and monitoring cache operations</li>
+<li><code>createFileKey(filePath: string): string</code> - Returns the cache key for the file path (returns the path exactly as provided when <code>useAbsolutePathAsKey</code> is <code>false</code>, otherwise returns the absolute path).</li>
+<li><code>deleteCacheFile(): boolean</code> - Deletes the cache file from disk</li>
+<li><code>destroy(): void</code> - Destroys the cache. This will clear the cache in memory. If using cache persistence it will stop the interval.</li>
+<li><code>removeEntry(filePath: string): void</code> - Removes an entry from the cache.</li>
+<li><code>reconcile(): void</code> - Saves the cache to disk and removes any files that are no longer found.</li>
+<li><code>hasFileChanged(filePath: string): boolean</code> - Checks if the file has changed. This will return <code>true</code> if the file has changed.</li>
+<li><code>getFileDescriptor(filePath: string, options?: { useModifiedTime?: boolean, useCheckSum?: boolean }): FileEntryDescriptor</code> - Gets the file descriptor for the file. Please refer to the entire section on <code>Get File Descriptor</code> for more information.</li>
+<li><code>normalizeEntries(files?: string[]): FileDescriptor[]</code> - Normalizes the entries. If no files are provided, it will return all cached entries.</li>
+<li><code>analyzeFiles(files: string[])</code> will return <code>AnalyzedFiles</code> object with <code>changedFiles</code>, <code>notFoundFiles</code>, and <code>notChangedFiles</code> as FileDescriptor arrays.</li>
+<li><code>getUpdatedFiles(files: string[])</code> will return an array of <code>FileEntryDescriptor</code> objects that have changed.</li>
+<li><code>getFileDescriptorsByPath(filePath: string): FileEntryDescriptor[]</code> will return an array of <code>FileEntryDescriptor</code> objects that starts with the path prefix specified.</li>
+<li><code>getAbsolutePath(filePath: string): string</code> - Resolves a relative path to absolute using the configured <code>cwd</code>. Returns absolute paths unchanged. When <code>restrictAccessToCwd</code> is enabled, throws an error if the path resolves outside <code>cwd</code>.</li>
+<li><code>getAbsolutePathWithCwd(filePath: string, cwd: string): string</code> - Resolves a relative path to absolute using a custom working directory. When <code>restrictAccessToCwd</code> is enabled, throws an error if the path resolves outside the provided <code>cwd</code>.</li>
+</ul>
+<h1 id="get-file-descriptor">Get File Descriptor</h1>
+<p>The <code>getFileDescriptor(filePath: string, options?: { useCheckSum?: boolean, useModifiedTime?: boolean }): FileEntryDescriptor</code> function is used to get the file descriptor for the file. This function will return a <code>FileEntryDescriptor</code> object that has the following properties:</p>
+<ul>
+<li><code>key: string</code> - The cache key for the file. This is exactly the path that was provided (relative or absolute).</li>
+<li><code>changed: boolean</code> - If the file has changed since the last time it was analyzed.</li>
+<li><code>notFound: boolean</code> - If the file was not found.</li>
+<li><code>meta: FileEntryMeta</code> - The meta data for the file. This has the following properties: <code>size</code>, <code>mtime</code>, <code>hash</code>, <code>data</code>. Note that <code>data</code> is an object that can be used to store additional information.</li>
+<li><code>err</code> - If there was an error analyzing the file.</li>
+</ul>
+<h2 id="path-handling-and-current-working-directory">Path Handling and Current Working Directory</h2>
+<p>The cache stores paths exactly as they are provided (relative or absolute). When checking if files have changed, relative paths are resolved using the configured <code>cwd</code> (current working directory):</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Default: uses process.cwd()</span>
+<span class="hljs-keyword">const</span> cache1 = fileEntryCache.<span class="hljs-title function_">create</span>(<span class="hljs-string">'cache1'</span>);
+
+<span class="hljs-comment">// Custom working directory using options object</span>
+<span class="hljs-keyword">const</span> cache2 = fileEntryCache.<span class="hljs-title function_">create</span>(<span class="hljs-string">'cache2'</span>, <span class="hljs-string">'./cache'</span>, {
+  <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/project/root'</span>
+});
+
+<span class="hljs-comment">// Or using the class constructor directly</span>
+<span class="hljs-keyword">const</span> cache3 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>({ <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/project/root'</span> });
+
+<span class="hljs-comment">// The cache key is always the provided path</span>
+<span class="hljs-keyword">const</span> descriptor = cache2.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/file.txt'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(descriptor.<span class="hljs-property">key</span>); <span class="hljs-comment">// './src/file.txt'</span>
+<span class="hljs-comment">// But file operations resolve from: '/project/root/src/file.txt'</span>
+</code></pre>
+<h3 id="cache-portability">Cache Portability</h3>
+<p>Using relative paths with a consistent <code>cwd</code> (defaults to <code>process.cwd()</code>) makes cache files portable across different machines and environments. This is especially useful for CI/CD pipelines and team development.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// On machine A (project at /home/user/project)</span>
+<span class="hljs-keyword">const</span> cacheA = fileEntryCache.<span class="hljs-title function_">create</span>(<span class="hljs-string">'build-cache'</span>, <span class="hljs-string">'./cache'</span>, {
+  <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/home/user/project'</span>
+});
+cacheA.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/index.js'</span>); <span class="hljs-comment">// Resolves to /home/user/project/src/index.js</span>
+cacheA.<span class="hljs-title function_">reconcile</span>();
+
+<span class="hljs-comment">// On machine B (project at /workspace/project)</span>
+<span class="hljs-keyword">const</span> cacheB = fileEntryCache.<span class="hljs-title function_">create</span>(<span class="hljs-string">'build-cache'</span>, <span class="hljs-string">'./cache'</span>, {
+  <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/workspace/project'</span>
+});
+cacheB.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/index.js'</span>); <span class="hljs-comment">// Resolves to /workspace/project/src/index.js</span>
+<span class="hljs-comment">// Cache hit! File hasn't changed since machine A</span>
+</code></pre>
+<h3 id="maximum-portability-with-checksums">Maximum Portability with Checksums</h3>
+<p>For maximum cache portability across different environments, use checksums (<code>useCheckSum: true</code>) along with relative paths and <code>cwd</code> which defaults to <code>process.cwd()</code>. This ensures that cache validity is determined by file content rather than modification times, which can vary across systems:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Development machine</span>
+<span class="hljs-keyword">const</span> devCache = fileEntryCache.<span class="hljs-title function_">create</span>(<span class="hljs-string">'.buildcache'</span>, <span class="hljs-string">'./cache'</span>, {
+  <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">true</span>  <span class="hljs-comment">// Use checksums for content-based comparison</span>
+});
+
+<span class="hljs-comment">// Process files using relative paths</span>
+<span class="hljs-keyword">const</span> descriptor = devCache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/index.js'</span>);
+<span class="hljs-keyword">if</span> (descriptor.<span class="hljs-property">changed</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Building ./src/index.js...'</span>);
+    <span class="hljs-comment">// Build process here</span>
+}
+devCache.<span class="hljs-title function_">reconcile</span>(); <span class="hljs-comment">// Save cache</span>
+
+<span class="hljs-comment">// CI/CD Pipeline or another developer's machine</span>
+<span class="hljs-keyword">const</span> ciCache = fileEntryCache.<span class="hljs-title function_">create</span>(<span class="hljs-string">'.buildcache'</span>, <span class="hljs-string">'./node_modules/.cache'</span>, {
+  <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">true</span>,      <span class="hljs-comment">// Same checksum setting</span>
+  <span class="hljs-attr">cwd</span>: process.<span class="hljs-title function_">cwd</span>()      <span class="hljs-comment">// Different absolute path, same relative structure</span>
+});
+
+<span class="hljs-comment">// Same relative path works across environments</span>
+<span class="hljs-keyword">const</span> descriptor2 = ciCache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/index.js'</span>);
+<span class="hljs-keyword">if</span> (!descriptor2.<span class="hljs-property">changed</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Using cached result for ./src/index.js'</span>);
+    <span class="hljs-comment">// Skip rebuild - file content unchanged</span>
+}
+</code></pre>
+<h3 id="handling-project-relocations">Handling Project Relocations</h3>
+<p>Cache remains valid even when projects are moved or renamed:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Original location: /projects/my-app</span>
+<span class="hljs-keyword">const</span> cache1 = fileEntryCache.<span class="hljs-title function_">create</span>(<span class="hljs-string">'.cache'</span>, <span class="hljs-string">'./cache'</span>, {
+  <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/projects/my-app'</span>
+});
+cache1.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/app.js'</span>);
+cache1.<span class="hljs-title function_">reconcile</span>();
+
+<span class="hljs-comment">// After moving project to: /archived/2024/my-app</span>
+<span class="hljs-keyword">const</span> cache2 = fileEntryCache.<span class="hljs-title function_">create</span>(<span class="hljs-string">'.cache'</span>, <span class="hljs-string">'./cache'</span>, {
+  <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/archived/2024/my-app'</span>
+});
+cache2.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/app.js'</span>); <span class="hljs-comment">// Still finds cached entry!</span>
+<span class="hljs-comment">// Cache valid as long as relative structure unchanged</span>
+</code></pre>
+<p>If there is an error when trying to get the file descriptor it will return a <code>notFound</code> and <code>err</code> property with the error.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> fileEntryCache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>();
+<span class="hljs-keyword">const</span> fileDescriptor = fileEntryCache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'no-file'</span>);
+<span class="hljs-keyword">if</span> (fileDescriptor.<span class="hljs-property">err</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(fileDescriptor.<span class="hljs-property">err</span>);
+}
+
+<span class="hljs-keyword">if</span> (fileDescriptor.<span class="hljs-property">notFound</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'File not found'</span>);
+}
+</code></pre>
+<h1 id="path-security-and-traversal-prevention">Path Security and Traversal Prevention</h1>
+<p>The <code>restrictAccessToCwd</code> option provides security against path traversal attacks by restricting file access to within the configured <code>cwd</code> boundaries. <strong>This is enabled by default (since v11)</strong> to ensure secure defaults when processing untrusted input or when running in security-sensitive environments.</p>
+<h2 id="basic-usage">Basic Usage</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// restrictAccessToCwd is enabled by default for security</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>({
+    <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/project/root'</span>
+});
+
+<span class="hljs-comment">// This will work - file is within cwd</span>
+<span class="hljs-keyword">const</span> descriptor = cache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/index.js'</span>);
+
+<span class="hljs-comment">// This will throw an error - attempts to access parent directory</span>
+<span class="hljs-keyword">try</span> {
+    cache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'../../../etc/passwd'</span>);
+} <span class="hljs-keyword">catch</span> (error) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(error); <span class="hljs-comment">// Path traversal attempt blocked</span>
+}
+
+<span class="hljs-comment">// To allow parent directory access (not recommended for untrusted input)</span>
+<span class="hljs-keyword">const</span> unsafeCache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>({
+    <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/project/root'</span>,
+    <span class="hljs-attr">restrictAccessToCwd</span>: <span class="hljs-literal">false</span>  <span class="hljs-comment">// Explicitly disable protection</span>
+});
+</code></pre>
+<h2 id="security-features">Security Features</h2>
+<p>When <code>restrictAccessToCwd</code> is enabled:</p>
+<ul>
+<li><strong>Path Traversal Prevention</strong>: Blocks attempts to access files outside the working directory using <code>../</code> sequences</li>
+<li><strong>Null Byte Protection</strong>: Automatically removes null bytes from paths to prevent injection attacks</li>
+<li><strong>Path Normalization</strong>: Cleans and normalizes paths to prevent bypass attempts</li>
+</ul>
+<h2 id="use-cases">Use Cases</h2>
+<h3 id="build-tools-with-untrusted-input">Build Tools with Untrusted Input</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Secure build tool configuration</span>
+<span class="hljs-keyword">const</span> cache = fileEntryCache.<span class="hljs-title function_">create</span>(<span class="hljs-string">'.buildcache'</span>, <span class="hljs-string">'./cache'</span>, {
+  <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">cwd</span>: process.<span class="hljs-title function_">cwd</span>(),
+  <span class="hljs-attr">restrictAccessToCwd</span>: <span class="hljs-literal">true</span>  <span class="hljs-comment">// Enable strict path checking for security</span>
+});
+
+<span class="hljs-comment">// Process user-provided file paths safely</span>
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">processUserFile</span>(<span class="hljs-params">userProvidedPath</span>) {
+    <span class="hljs-keyword">try</span> {
+        <span class="hljs-keyword">const</span> descriptor = cache.<span class="hljs-title function_">getFileDescriptor</span>(userProvidedPath);
+        <span class="hljs-comment">// Safe to process - file is within boundaries</span>
+        <span class="hljs-keyword">return</span> descriptor;
+    } <span class="hljs-keyword">catch</span> (error) {
+        <span class="hljs-keyword">if</span> (error.<span class="hljs-property">message</span>.<span class="hljs-title function_">includes</span>(<span class="hljs-string">'Path traversal attempt blocked'</span>)) {
+            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">warn</span>(<span class="hljs-string">'Security: Blocked access to:'</span>, userProvidedPath);
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+        }
+        <span class="hljs-keyword">throw</span> error;
+    }
+}
+</code></pre>
+<h3 id="cicd-environments">CI/CD Environments</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Strict security for CI/CD pipelines</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>({
+    <span class="hljs-attr">cwd</span>: process.<span class="hljs-property">env</span>.<span class="hljs-property">GITHUB_WORKSPACE</span> || process.<span class="hljs-title function_">cwd</span>(),
+    <span class="hljs-attr">restrictAccessToCwd</span>: <span class="hljs-literal">true</span>,  <span class="hljs-comment">// Prevent access outside workspace</span>
+    <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">true</span>   <span class="hljs-comment">// Content-based validation</span>
+});
+
+<span class="hljs-comment">// All file operations are now restricted to the workspace</span>
+cache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/app.js'</span>);  <span class="hljs-comment">// ✓ Allowed</span>
+cache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'/etc/passwd'</span>);   <span class="hljs-comment">// ✗ Blocked (absolute path outside cwd)</span>
+cache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'../../../root'</span>); <span class="hljs-comment">// ✗ Blocked (path traversal)</span>
+</code></pre>
+<h3 id="dynamic-security-control">Dynamic Security Control</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>({ <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/safe/directory'</span> });
+
+<span class="hljs-comment">// Start with relaxed mode for trusted operations</span>
+cache.<span class="hljs-property">restrictAccessToCwd</span> = <span class="hljs-literal">false</span>;
+<span class="hljs-title function_">processInternalFiles</span>();
+
+<span class="hljs-comment">// Enable strict mode for untrusted input</span>
+cache.<span class="hljs-property">restrictAccessToCwd</span> = <span class="hljs-literal">true</span>;
+<span class="hljs-title function_">processUserUploadedPaths</span>();
+
+<span class="hljs-comment">// Return to relaxed mode if needed</span>
+cache.<span class="hljs-property">restrictAccessToCwd</span> = <span class="hljs-literal">false</span>;
+</code></pre>
+<h2 id="default-behavior">Default Behavior</h2>
+<p><strong>As of v11, <code>restrictAccessToCwd</code> is enabled by default</strong> to provide secure defaults. This means:</p>
+<ul>
+<li>Path traversal attempts using <code>../</code> are blocked</li>
+<li>File access is restricted to within the configured <code>cwd</code></li>
+<li>Null bytes in paths are automatically sanitized</li>
+</ul>
+<h3 id="migrating-from-v10-or-earlier">Migrating from v10 or Earlier</h3>
+<p>If you're upgrading from v10 or earlier and need to maintain the previous behavior (for example, if your code legitimately accesses parent directories), you can explicitly disable strict paths:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>({
+    <span class="hljs-attr">cwd</span>: process.<span class="hljs-title function_">cwd</span>(),
+    <span class="hljs-attr">restrictAccessToCwd</span>: <span class="hljs-literal">false</span>  <span class="hljs-comment">// Restore v10 behavior</span>
+});
+</code></pre>
+<p>However, we strongly recommend keeping <code>restrictAccessToCwd: true</code> and adjusting your code to work within the security boundaries, especially when processing any untrusted input.</p>
+<h1 id="using-checksums-to-determine-if-a-file-has-changed-usechecksum">Using Checksums to Determine if a File has Changed (useCheckSum)</h1>
+<p>By default the <code>useCheckSum</code> is <code>false</code>. This means that the <code>FileEntryCache</code> will use the <code>mtime</code> and <code>ctime</code> to determine if the file has changed. If you set <code>useCheckSum</code> to <code>true</code> it will use a checksum to determine if the file has changed. This is useful when you want to make sure that the file has not changed at all.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> fileEntryCache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>();
+<span class="hljs-keyword">const</span> fileDescriptor = fileEntryCache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'file.txt'</span>, { <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">true</span> });
+</code></pre>
+<p>You can pass <code>useCheckSum</code> in the FileEntryCache options, as a property <code>.useCheckSum</code> to make it default for all files, or in the <code>getFileDescriptor</code> function. Here is an example where you set it globally but then override it for a specific file:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> fileEntryCache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>({ <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-keyword">const</span> fileDescriptor = fileEntryCache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'file.txt'</span>, { <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<h1 id="setting-additional-meta-data">Setting Additional Meta Data</h1>
+<p>In the past we have seen people do random values on the <code>meta</code> object. This can cause issues with the <code>meta</code> object. To avoid this we have <code>data</code> which can be anything.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> fileEntryCache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>();
+<span class="hljs-keyword">const</span> fileDescriptor = fileEntryCache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'file.txt'</span>);
+fileDescriptor.<span class="hljs-property">meta</span>.<span class="hljs-property">data</span> = { <span class="hljs-attr">myData</span>: <span class="hljs-string">'myData'</span> }; <span class="hljs-comment">//anything you want</span>
+</code></pre>
+<h1 id="logger-support">Logger Support</h1>
+<p>The <code>FileEntryCache</code> supports logging through a Pino-compatible logger interface. This is useful for debugging and monitoring cache operations in production environments.</p>
+<h2 id="logger-interface">Logger Interface</h2>
+<p>The logger must implement the following interface:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">ILogger</span> {
+  <span class="hljs-attr">level</span>?: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">trace</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span> | <span class="hljs-built_in">object</span>, ...<span class="hljs-attr">args</span>: <span class="hljs-built_in">unknown</span>[]</span>) =></span> <span class="hljs-built_in">void</span>;
+  <span class="hljs-attr">debug</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span> | <span class="hljs-built_in">object</span>, ...<span class="hljs-attr">args</span>: <span class="hljs-built_in">unknown</span>[]</span>) =></span> <span class="hljs-built_in">void</span>;
+  <span class="hljs-attr">info</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span> | <span class="hljs-built_in">object</span>, ...<span class="hljs-attr">args</span>: <span class="hljs-built_in">unknown</span>[]</span>) =></span> <span class="hljs-built_in">void</span>;
+  <span class="hljs-attr">warn</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span> | <span class="hljs-built_in">object</span>, ...<span class="hljs-attr">args</span>: <span class="hljs-built_in">unknown</span>[]</span>) =></span> <span class="hljs-built_in">void</span>;
+  <span class="hljs-attr">error</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span> | <span class="hljs-built_in">object</span>, ...<span class="hljs-attr">args</span>: <span class="hljs-built_in">unknown</span>[]</span>) =></span> <span class="hljs-built_in">void</span>;
+  <span class="hljs-attr">fatal</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span> | <span class="hljs-built_in">object</span>, ...<span class="hljs-attr">args</span>: <span class="hljs-built_in">unknown</span>[]</span>) =></span> <span class="hljs-built_in">void</span>;
+}
+</code></pre>
+<h2 id="using-pino-logger">Using Pino Logger</h2>
+<p>You can pass a Pino logger instance to the <code>FileEntryCache</code> constructor or set it via the <code>logger</code> property:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> pino <span class="hljs-keyword">from</span> <span class="hljs-string">'pino'</span>;
+<span class="hljs-keyword">import</span> fileEntryCache <span class="hljs-keyword">from</span> <span class="hljs-string">'file-entry-cache'</span>;
+
+<span class="hljs-comment">// Create a Pino logger</span>
+<span class="hljs-keyword">const</span> logger = <span class="hljs-title function_">pino</span>({
+  <span class="hljs-attr">level</span>: <span class="hljs-string">'debug'</span>,
+  <span class="hljs-attr">transport</span>: {
+    <span class="hljs-attr">target</span>: <span class="hljs-string">'pino-pretty'</span>,
+    <span class="hljs-attr">options</span>: {
+      <span class="hljs-attr">colorize</span>: <span class="hljs-literal">true</span>
+    }
+  }
+});
+
+<span class="hljs-comment">// Pass logger in constructor</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> fileEntryCache.<span class="hljs-title class_">FileEntryCache</span>({
+  logger,
+  <span class="hljs-attr">cacheId</span>: <span class="hljs-string">'my-cache'</span>
+});
+
+<span class="hljs-comment">// Or set it after creation</span>
+cache.<span class="hljs-property">logger</span> = logger;
+
+<span class="hljs-comment">// Now all cache operations will be logged</span>
+<span class="hljs-keyword">const</span> descriptor = cache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/file.txt'</span>);
+</code></pre>
+<h2 id="log-levels">Log Levels</h2>
+<p>The logger will output different levels of information:</p>
+<ul>
+<li><strong>trace</strong>: Detailed internal operations (key creation, cached meta lookup, file stats)</li>
+<li><strong>debug</strong>: Method entry, checksum settings, change detection, file status</li>
+<li><strong>info</strong>: Important state changes (file has changed)</li>
+<li><strong>error</strong>: File read errors and exceptions</li>
+</ul>
+<h2 id="example-with-custom-log-levels">Example with Custom Log Levels</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> pino <span class="hljs-keyword">from</span> <span class="hljs-string">'pino'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">FileEntryCache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'file-entry-cache'</span>;
+
+<span class="hljs-comment">// Create logger with specific level</span>
+<span class="hljs-keyword">const</span> logger = <span class="hljs-title function_">pino</span>({ <span class="hljs-attr">level</span>: <span class="hljs-string">'info'</span> });
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>({
+  logger,
+  <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">true</span>
+});
+
+<span class="hljs-comment">// This will log at info level when files change</span>
+<span class="hljs-keyword">const</span> files = [<span class="hljs-string">'./src/index.js'</span>, <span class="hljs-string">'./src/utils.js'</span>];
+files.<span class="hljs-title function_">forEach</span>(<span class="hljs-function"><span class="hljs-params">file</span> =></span> {
+  <span class="hljs-keyword">const</span> descriptor = cache.<span class="hljs-title function_">getFileDescriptor</span>(file);
+  <span class="hljs-keyword">if</span> (descriptor.<span class="hljs-property">changed</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Processing changed file: <span class="hljs-subst">${file}</span>`</span>);
+  }
+});
+
+cache.<span class="hljs-title function_">reconcile</span>();
+</code></pre>
+<h2 id="debugging-cache-operations">Debugging Cache Operations</h2>
+<p>For detailed debugging, set the logger level to <code>debug</code> or <code>trace</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> pino <span class="hljs-keyword">from</span> <span class="hljs-string">'pino'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">FileEntryCache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'file-entry-cache'</span>;
+
+<span class="hljs-keyword">const</span> logger = <span class="hljs-title function_">pino</span>({
+  <span class="hljs-attr">level</span>: <span class="hljs-string">'trace'</span>,
+  <span class="hljs-attr">transport</span>: {
+    <span class="hljs-attr">target</span>: <span class="hljs-string">'pino-pretty'</span>
+  }
+});
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileEntryCache</span>({
+  logger,
+  <span class="hljs-attr">useCheckSum</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">cwd</span>: <span class="hljs-string">'/project/root'</span>
+});
+
+<span class="hljs-comment">// Will log detailed information about:</span>
+<span class="hljs-comment">// - File path resolution</span>
+<span class="hljs-comment">// - Cache key creation</span>
+<span class="hljs-comment">// - Cached metadata lookup</span>
+<span class="hljs-comment">// - File stats reading</span>
+<span class="hljs-comment">// - Hash calculation (if using checksums)</span>
+<span class="hljs-comment">// - Change detection logic</span>
+<span class="hljs-keyword">const</span> descriptor = cache.<span class="hljs-title function_">getFileDescriptor</span>(<span class="hljs-string">'./src/app.js'</span>);
+</code></pre>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>You can contribute by forking the repo and submitting a pull request. Please make sure to add tests and update the documentation. To learn more about how to contribute go to our main README <a href="https://github.com/jaredwray/cacheable">https://github.com/jaredwray/cacheable</a>. This will talk about how to <code>Open a Pull Request</code>, <code>Ask a Question</code>, or <code>Post an Issue</code>.</p>
+<h1 id="license-and-copyright">License and Copyright</h1>
+<p><a href="./LICENSE">MIT © Jared Wray</a></p>

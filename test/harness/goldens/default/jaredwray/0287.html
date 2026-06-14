@@ -1,0 +1,254 @@
+<p><img src="https://airhorn.org/logo.svg" alt="Airhorn" title="Airhorn"></p>
+<hr>
+<p><a href="https://github.com/jaredwray/airhorn/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/airhorn/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://codecov.io/gh/jaredwray/airhorn"><img src="https://codecov.io/gh/jaredwray/airhorn/branch/main/graph/badge.svg?token=4OJEEB67Q5" alt="codecov"></a>
+<a href="https://github.com/jaredwray/airhorn/blob/master/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/airhorn" alt="license"></a>
+<a href="https://npmjs.com/package/@airhornjs/aws"><img src="https://img.shields.io/npm/dm/@airhornjs/aws" alt="npm"></a>
+<a href="https://npmjs.com/package/@airhornjs/aws"><img src="https://img.shields.io/npm/v/@airhornjs/aws" alt="npm"></a></p>
+<h1 id="airhornjsaws">@airhornjs/aws</h1>
+<p>AWS SNS and SES provider for Airhorn.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="hljs language-bash">npm install airhorn @airhornjs/aws
+</code></pre>
+<h2 id="features">Features</h2>
+<ul>
+<li>SMS sending via Amazon SNS (Simple Notification Service)</li>
+<li>Email sending via Amazon SES (Simple Email Service)</li>
+<li>Automatic error handling and retry support</li>
+<li>Integration with Airhorn's notification system</li>
+<li>Support for AWS credentials from environment variables or explicit configuration</li>
+</ul>
+<h2 id="usage">Usage</h2>
+<h3 id="sms-with-amazon-sns">SMS with Amazon SNS</h3>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'airhorn'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">AirhornAws</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@airhornjs/aws'</span>;
+
+<span class="hljs-comment">// Create AWS provider for SMS</span>
+<span class="hljs-keyword">const</span> awsProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornAws</span>({
+  <span class="hljs-attr">region</span>: <span class="hljs-string">'us-east-1'</span>,
+  <span class="hljs-attr">accessKeyId</span>: <span class="hljs-string">'your-access-key'</span>, <span class="hljs-comment">// Optional, uses AWS SDK credential chain</span>
+  <span class="hljs-attr">secretAccessKey</span>: <span class="hljs-string">'your-secret-key'</span>, <span class="hljs-comment">// Optional, uses AWS SDK credential chain</span>
+});
+
+<span class="hljs-comment">// Create Airhorn instance with AWS provider</span>
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>({
+  <span class="hljs-attr">providers</span>: [awsProvider],
+});
+
+<span class="hljs-comment">// Send SMS</span>
+<span class="hljs-keyword">const</span> message = {
+  <span class="hljs-attr">from</span>: <span class="hljs-string">'+1234567890'</span>, <span class="hljs-comment">// Your sender ID or phone number</span>
+  <span class="hljs-attr">content</span>: <span class="hljs-string">'Hello John!, your order #12345 has been shipped!'</span>,
+  <span class="hljs-attr">type</span>: <span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">SMS</span>,
+};
+
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(
+  <span class="hljs-string">'+0987654321'</span>, <span class="hljs-comment">// to</span>
+  message,
+);
+</code></pre>
+<h3 id="email-with-amazon-ses">Email with Amazon SES</h3>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'airhorn'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">AirhornAws</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@airhornjs/aws'</span>;
+
+<span class="hljs-comment">// Create AWS provider with SES support</span>
+<span class="hljs-keyword">const</span> awsProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornAws</span>({
+  <span class="hljs-attr">region</span>: <span class="hljs-string">'us-east-1'</span>,
+  <span class="hljs-attr">accessKeyId</span>: <span class="hljs-string">'your-access-key'</span>, <span class="hljs-comment">// Optional</span>
+  <span class="hljs-attr">secretAccessKey</span>: <span class="hljs-string">'your-secret-key'</span>, <span class="hljs-comment">// Optional</span>
+});
+
+<span class="hljs-comment">// Create Airhorn instance</span>
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>({
+  <span class="hljs-attr">providers</span>: [awsProvider],
+});
+
+<span class="hljs-keyword">const</span> data = {
+  <span class="hljs-attr">orderId</span>: <span class="hljs-string">'656565'</span>,
+  <span class="hljs-attr">customerName</span>: <span class="hljs-string">'John'</span>,
+};
+
+<span class="hljs-comment">// Send Email</span>
+<span class="hljs-keyword">const</span> template = {
+  <span class="hljs-attr">from</span>: <span class="hljs-string">'sender@example.com'</span>, <span class="hljs-comment">// Must be verified in SES</span>
+  <span class="hljs-attr">subject</span>: <span class="hljs-string">'Order &#x3C;%= orderId %> Confirmation'</span>,
+  <span class="hljs-attr">content</span>: <span class="hljs-string">'&#x3C;h1>Hello &#x3C;%= customerName %>&#x3C;/h1>&#x3C;p>Your order #&#x3C;%= orderId %> has been confirmed!&#x3C;/p>'</span>,
+};
+
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(
+  <span class="hljs-string">'recipient@example.com'</span>, <span class="hljs-comment">// to</span>
+  template,
+  data,
+  <span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">Email</span>
+);
+</code></pre>
+<h3 id="both-sms-and-email">Both SMS and Email</h3>
+<p>By default, the provider supports both SMS and email notifications:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornAws</span>({
+  <span class="hljs-attr">region</span>: <span class="hljs-string">'us-east-1'</span>,
+  <span class="hljs-comment">// AWS credentials can be provided explicitly or loaded from environment</span>
+  <span class="hljs-attr">accessKeyId</span>: <span class="hljs-string">'your-access-key'</span>,
+  <span class="hljs-attr">secretAccessKey</span>: <span class="hljs-string">'your-secret-key'</span>,
+  <span class="hljs-attr">sessionToken</span>: <span class="hljs-string">'your-session-token'</span>, <span class="hljs-comment">// Optional for temporary credentials</span>
+});
+
+<span class="hljs-comment">// Provider capabilities will include both 'sms' and 'email' by default</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(provider.<span class="hljs-property">capabilities</span>); <span class="hljs-comment">// ['sms', 'email']</span>
+</code></pre>
+<h3 id="custom-capabilities">Custom Capabilities</h3>
+<p>You can specify which services to enable using the <code>capabilities</code> option:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// SMS only</span>
+<span class="hljs-keyword">const</span> smsProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornAws</span>({
+  <span class="hljs-attr">region</span>: <span class="hljs-string">'us-east-1'</span>,
+  <span class="hljs-attr">capabilities</span>: [<span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">SMS</span>],
+});
+
+<span class="hljs-comment">// Email only</span>
+<span class="hljs-keyword">const</span> emailProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornAws</span>({
+  <span class="hljs-attr">region</span>: <span class="hljs-string">'us-east-1'</span>,
+  <span class="hljs-attr">capabilities</span>: [<span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">Email</span>],
+});
+
+<span class="hljs-comment">// Both (explicit)</span>
+<span class="hljs-keyword">const</span> bothProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornAws</span>({
+  <span class="hljs-attr">region</span>: <span class="hljs-string">'us-east-1'</span>,
+  <span class="hljs-attr">capabilities</span>: [<span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">SMS</span>, <span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">Email</span>],
+});
+</code></pre>
+<h3 id="push-notifications-to-mobile-devices-iosandroid">Push Notifications to Mobile Devices (iOS/Android)</h3>
+<p>Amazon SNS can send push notifications to mobile devices through platform application endpoints. Here's how to send notifications to Apple (APNs) and Android (FCM/GCM) devices:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Airhorn</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'airhorn'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">AirhornAws</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@airhornjs/aws'</span>;
+
+<span class="hljs-keyword">const</span> awsProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AirhornAws</span>({
+  <span class="hljs-attr">region</span>: <span class="hljs-string">'us-east-1'</span>,
+  <span class="hljs-attr">capabilities</span>: [<span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">SMS</span>], <span class="hljs-comment">// SNS handles mobile push</span>
+});
+
+<span class="hljs-keyword">const</span> airhorn = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Airhorn</span>({
+  <span class="hljs-attr">providers</span>: [awsProvider],
+});
+
+<span class="hljs-keyword">const</span> data = {
+  <span class="hljs-attr">orderId</span>: <span class="hljs-string">'12345'</span>,
+};
+
+<span class="hljs-comment">// Send to iOS device via APNs</span>
+<span class="hljs-keyword">const</span> template = {
+  <span class="hljs-attr">from</span>: <span class="hljs-string">'YourApp'</span>, <span class="hljs-comment">// Sender ID</span>
+  <span class="hljs-attr">content</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>({
+    <span class="hljs-attr">aps</span>: {
+      <span class="hljs-attr">alert</span>: {
+        <span class="hljs-attr">title</span>: <span class="hljs-string">'New Order'</span>,
+        <span class="hljs-attr">body</span>: <span class="hljs-string">'You have a new order #&#x3C;%= orderId %>'</span>,
+      },
+      <span class="hljs-attr">badge</span>: <span class="hljs-number">1</span>,
+      <span class="hljs-attr">sound</span>: <span class="hljs-string">'default'</span>,
+    },
+    <span class="hljs-comment">// Custom data</span>
+    <span class="hljs-attr">orderId</span>: <span class="hljs-string">'12345'</span>,
+  }),
+};
+
+<span class="hljs-comment">// Send to Apple device endpoint ARN</span>
+<span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(
+  <span class="hljs-string">'arn:aws:sns:us-east-1:123456789012:endpoint/APNS/YourApp/abc123'</span>, <span class="hljs-comment">// iOS endpoint ARN</span>
+  template,
+  <span class="hljs-title class_">AirhornSendType</span>.<span class="hljs-property">MobilePush</span>,
+  {
+    <span class="hljs-title class_">MessageStructure</span>: <span class="hljs-string">'json'</span>, <span class="hljs-comment">// Required for platform-specific payloads</span>
+    <span class="hljs-title class_">MessageAttributes</span>: {
+      <span class="hljs-string">'AWS.SNS.MOBILE.APNS.PUSH_TYPE'</span>: {
+        <span class="hljs-title class_">DataType</span>: <span class="hljs-string">'String'</span>,
+        <span class="hljs-title class_">StringValue</span>: <span class="hljs-string">'alert'</span>, <span class="hljs-comment">// or 'background'</span>
+      },
+    },
+  },
+);
+</code></pre>
+<p><strong>Note</strong>: Before sending push notifications, you need to:</p>
+<ol>
+<li>Create platform applications in SNS for APNs/FCM</li>
+<li>Register device tokens and create platform endpoints</li>
+<li>Optionally create SNS topics for broadcasting</li>
+<li>Configure proper IAM permissions for SNS platform endpoints</li>
+</ol>
+<h2 id="configuration">Configuration</h2>
+<h3 id="airhornawsoptions">AirhornAwsOptions</h3>
+<ul>
+<li><code>region</code> (required): AWS region (e.g., 'us-east-1', 'eu-west-1')</li>
+<li><code>accessKeyId</code> (optional): AWS access key ID (uses AWS SDK credential chain if not provided)</li>
+<li><code>secretAccessKey</code> (optional): AWS secret access key (uses AWS SDK credential chain if not provided)</li>
+<li><code>sessionToken</code> (optional): AWS session token for temporary credentials</li>
+<li><code>capabilities</code> (optional): Array of <code>AirhornSendType</code> values to specify which services to enable (defaults to both SMS and Email)</li>
+</ul>
+<h2 id="additional-options">Additional Options</h2>
+<p>You can pass additional provider-specific options as the second parameter to the send method:</p>
+<h3 id="amazon-sns-options">Amazon SNS Options</h3>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(to, message, {
+  <span class="hljs-attr">smsType</span>: <span class="hljs-string">'Promotional'</span>, <span class="hljs-comment">// or 'Transactional' (default)</span>
+  <span class="hljs-attr">maxPrice</span>: <span class="hljs-string">'0.50'</span>, <span class="hljs-comment">// Maximum price in USD</span>
+  <span class="hljs-comment">// ... other SNS PublishCommand options</span>
+});
+</code></pre>
+<h3 id="amazon-ses-options">Amazon SES Options</h3>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">await</span> airhorn.<span class="hljs-title function_">send</span>(to, message, {
+  <span class="hljs-attr">ccAddresses</span>: [<span class="hljs-string">'cc@example.com'</span>],
+  <span class="hljs-attr">bccAddresses</span>: [<span class="hljs-string">'bcc@example.com'</span>],
+  <span class="hljs-attr">replyToAddresses</span>: [<span class="hljs-string">'reply@example.com'</span>],
+  <span class="hljs-attr">returnPath</span>: <span class="hljs-string">'bounces@example.com'</span>,
+  <span class="hljs-attr">configurationSetName</span>: <span class="hljs-string">'my-configuration-set'</span>,
+  <span class="hljs-attr">tags</span>: [
+    { <span class="hljs-title class_">Name</span>: <span class="hljs-string">'campaign'</span>, <span class="hljs-title class_">Value</span>: <span class="hljs-string">'summer-sale'</span> },
+    { <span class="hljs-title class_">Name</span>: <span class="hljs-string">'customer'</span>, <span class="hljs-title class_">Value</span>: <span class="hljs-string">'vip'</span> }
+  ],
+  <span class="hljs-comment">// ... other SES SendEmailCommand options</span>
+});
+</code></pre>
+<h2 id="prerequisites">Prerequisites</h2>
+<h3 id="aws-credentials">AWS Credentials</h3>
+<p>The AWS SDK will automatically look for credentials in the following order:</p>
+<ol>
+<li>Credentials passed explicitly in <code>AirhornAwsOptions</code></li>
+<li>Environment variables (<code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code>)</li>
+<li>Shared credentials file (<code>~/.aws/credentials</code>)</li>
+<li>IAM role (when running on EC2, ECS, Lambda, etc.)</li>
+</ol>
+<h3 id="amazon-sns-setup">Amazon SNS Setup</h3>
+<ol>
+<li>Ensure your AWS account has SNS permissions</li>
+<li>Configure SMS settings in SNS console if needed</li>
+<li>Note that SMS capabilities and pricing vary by region</li>
+</ol>
+<h3 id="amazon-ses-setup">Amazon SES Setup</h3>
+<ol>
+<li>Verify your sender email address or domain in SES</li>
+<li>Request production access (SES starts in sandbox mode)</li>
+<li>Configure any necessary SES settings (configuration sets, etc.)</li>
+</ol>
+<h2 id="iam-permissions">IAM Permissions</h2>
+<p>Minimum required IAM permissions:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"Version"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"2012-10-17"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"Statement"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"Effect"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Allow"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"Action"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+        <span class="hljs-string">"sns:Publish"</span>
+      <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"Resource"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"*"</span>
+    <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"Effect"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Allow"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"Action"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+        <span class="hljs-string">"ses:SendEmail"</span>
+      <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"Resource"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"*"</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>Now that you've set up your workspace, you're ready to contribute changes to the <code>airhorn</code> repository you can refer to the <a href="CONTRIBUTING.md">CONTRIBUTING</a> guide. If you have any questions please feel free to ask by creating an issue and label it <code>question</code>.</p>
+<h1 id="licensing-and-copyright">Licensing and Copyright</h1>
+<p>This project is <a href="LICENSE">MIT License © Jared Wray</a></p>

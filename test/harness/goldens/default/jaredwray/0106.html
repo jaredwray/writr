@@ -1,0 +1,17 @@
+<p>Let's change the feature flag in our <code>flags.flagd.json</code>, making <code>defaultVariant</code> to <code>on</code></p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"flags"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"welcome-message"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"variants"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+        <span class="hljs-attr">"on"</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">"off"</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span>
+      <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"state"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"ENABLED"</span><span class="hljs-punctuation">,</span>
+<span class="hljs-comment">// diff-remove</span>
+      <span class="hljs-attr">"defaultVariant"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"off"</span>
+<span class="hljs-comment">// diff-add</span>
+      <span class="hljs-attr">"defaultVariant"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"on"</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>

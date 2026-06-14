@@ -1,0 +1,15 @@
+<h1 id="sdk-paradigms">SDK Paradigms</h1>
+<p>OpenFeature SDKs come in two "flavors"; those intended for use in server applications and those intended for use in client applications.
+The primary difference between these two paradigms has to do with the way they model <a href="/specification/sections/evaluation-context">evaluation context</a>.</p>
+<h2 id="dynamic-context-paradigm-server-side-sdks">Dynamic Context Paradigm (Server-side SDKs)</h2>
+<p>In server usage, the evaluation context changes frequently, as often as every evaluation.
+Though some context data may remain static for the entire application lifecycle (such as the hostname or application version) much of it may be dynamic.
+For instance, on a web-server, the context might contain the remote IP of the connected client or the session-id or email address of the logged-in user.
+For this reason, the evaluation API defines a parameter for the evaluation context which can be provided at each evaluation.</p>
+<h2 id="static-context-paradigms-client-side-sdks">Static Context Paradigms (Client-side SDKs)</h2>
+<p>In client-side usage, the evaluation context changes less frequently, often in response to user actions or UI events.
+In this case, the context frequently corresponds to a single user, and the context data represents facts about them (such as their name or subscription level) or the application state (if the user has items in their cart).
+When the context data changes, it's often necessary for the provider to update it's cache of evaluated flags, or request an updated ruleset from the server; we refer to this as <em>context reconciliation</em>.
+SDKs using the static-context paradigm define a <code>context changed handler</code> for providers to implement which runs any time the context is modified.
+Client-side implementations include some additional event types: <a href="/docs/reference/concepts/events#provider_reconciling-static-contextclient-side-only">PROVIDER_RECONCILING</a> and <a href="/docs/reference/concepts/events#provider_context_changed-static-contextclient-side-only">PROVIDER_CONTEXT_CHANGED</a>.
+These are emitted when the provider's context is invalidated, and after it's subsequently reconciled, accordingly.</p>

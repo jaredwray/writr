@@ -1,0 +1,196 @@
+<p>The OpenFeature CLI is a command-line tool designed to improve the developer experience when working with feature flags.
+It helps developers manage feature flags consistently across different environments and programming languages by providing powerful utilities for code generation, flag validation, and more.</p>
+<p>The CLI bridges the gap between feature flag management systems and your application code by generating strongly typed flag accessors from a flag manifest. This approach provides:</p>
+<ul>
+<li><strong>Type Safety</strong>: Generate strongly-typed flag accessors for your preferred language</li>
+<li><strong>Developer Experience</strong>: Reduce errors and improve IDE autocomplete support</li>
+<li><strong>Language Support</strong>: Generate code for TypeScript, JavaScript, React, Go, C#, and more</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<h3 id="via-curl">via curl</h3>
+<p>The OpenFeature CLI can be installed using a shell command.
+This method is suitable for most Unix-like operating systems.</p>
+<pre><code class="hljs language-bash">curl -fsSL https://openfeature.dev/scripts/install_cli.sh | sh
+</code></pre>
+<h3 id="via-docker">via Docker</h3>
+<p>The OpenFeature CLI is available as a Docker image in the <a href="https://github.com/open-feature/cli/pkgs/container/cli">GitHub Container Registry</a>.</p>
+<p>You can run the CLI in a Docker container using the following command:</p>
+<pre><code class="hljs language-bash">docker run -it -v $(<span class="hljs-built_in">pwd</span>):/local -w /local ghcr.io/open-feature/cli:latest
+</code></pre>
+<h3 id="via-go">via Go</h3>
+<p>If you have <code>Go >= 1.23</code> installed, you can install the CLI using the following command:</p>
+<pre><code class="hljs language-bash">go install github.com/open-feature/cli/cmd/openfeature@latest
+</code></pre>
+<h3 id="via-pre-built-binaries">via pre-built binaries</h3>
+<p>Download the appropriate pre-built binary from the <a href="https://github.com/open-feature/cli/releases">releases page</a>.</p>
+<h2 id="quick-start">Quick Start</h2>
+<ol>
+<li>Create a flag manifest file in your project root:</li>
+</ol>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">cat</span> > flags.json &#x3C;&#x3C; <span class="hljs-string">EOL
+{
+  "$schema": "https://raw.githubusercontent.com/open-feature/cli/refs/heads/main/schema/v0/flag-manifest.json",
+  "flags": {
+    "enableMagicButton": {
+      "flagType": "boolean",
+      "defaultValue": false,
+      "description": "Activates a special button that enhances user interaction with magical, intuitive functionalities."
+    }
+  }
+}
+EOL</span>
+</code></pre>
+<div class="markdown-alert markdown-alert-note" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>NOTE</p>
+<p>This is for demonstration purposes only.
+In a real-world scenario, you would typically want to fetch this file from a remote flag management service.
+See <a href="https://github.com/open-feature/cli/issues/3">here</a>, more details.</p>
+</div>
+<ol start="2">
+<li>Generate code for your preferred language:</li>
+</ol>
+<pre><code class="hljs language-bash">openfeature generate react
+</code></pre>
+<p>See <a href="https://github.com/open-feature/cli/blob/main/docs/commands/openfeature_generate.md">here</a> for all available options.</p>
+<ol start="3">
+<li>View the generated code:</li>
+</ol>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">cat</span> openfeature.ts
+</code></pre>
+<p><strong>Congratulations!</strong>
+You have successfully generated your first strongly typed flag accessors.
+You can now use the generated code in your application to access the feature flags.
+This is just scratching the surface of what the OpenFeature CLI can do.
+For more advanced usage, read on!</p>
+<h2 id="commands">Commands</h2>
+<p>The OpenFeature CLI provides the following commands:</p>
+<h3 id="init"><code>init</code></h3>
+<p>Initialize a new flag manifest in your project.</p>
+<pre><code class="hljs language-bash">openfeature init
+</code></pre>
+<p>This command creates a <code>flags.json</code> file in your current directory with the proper schema reference.
+You can customize the manifest path using configuration options.</p>
+<p>See <a href="https://github.com/open-feature/cli/blob/main/docs/commands/openfeature_init.md">here</a> for all available options.</p>
+<h3 id="generate"><code>generate</code></h3>
+<p>Generate strongly typed flag accessors for your project.</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># List available languages</span>
+openfeature generate
+
+<span class="hljs-comment"># Generate for a specific language</span>
+openfeature generate typescript
+
+<span class="hljs-comment"># With custom output directory</span>
+openfeature generate typescript --output ./src/flags
+</code></pre>
+<p><strong>Supported Languages:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Language</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>typescript</code></td>
+<td>TypeScript flag accessors</td>
+</tr>
+<tr>
+<td><code>javascript</code></td>
+<td>JavaScript flag accessors</td>
+</tr>
+<tr>
+<td><code>react</code></td>
+<td>React hooks for feature flags</td>
+</tr>
+<tr>
+<td><code>go</code></td>
+<td>Go flag accessors</td>
+</tr>
+<tr>
+<td><code>csharp</code></td>
+<td>C# flag accessors</td>
+</tr>
+<tr>
+<td><code>java</code></td>
+<td>Java flag accessors</td>
+</tr>
+<tr>
+<td><code>python</code></td>
+<td>Python flag accessors</td>
+</tr>
+<tr>
+<td><code>nestjs</code></td>
+<td>NestJS flag accessors</td>
+</tr>
+<tr>
+<td><code>nodejs</code></td>
+<td>Node.js flag accessors</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="https://github.com/open-feature/cli/blob/main/docs/commands/openfeature_generate.md">here</a> for all available options.</p>
+<h3 id="version"><code>version</code></h3>
+<p>Print the version number of the OpenFeature CLI.</p>
+<pre><code class="hljs language-bash">openfeature version
+</code></pre>
+<p>See <a href="https://github.com/open-feature/cli/blob/main/docs/commands/openfeature_version.md">here</a> for all available options.</p>
+<h2 id="flag-manifest">Flag Manifest</h2>
+<p>The flag manifest is a JSON file that defines your feature flags and their properties.
+It serves as the source of truth for your feature flags and is used by the CLI to generate strongly typed accessors.
+The manifest file should be named <code>flags.json</code> and placed in the root of your project.</p>
+<h3 id="flag-manifest-structure">Flag Manifest Structure</h3>
+<p>The flag manifest file should follow the <a href="https://raw.githubusercontent.com/open-feature/cli/refs/heads/main/schema/v0/flag-manifest.json">JSON schema</a> with the following properties:</p>
+<ul>
+<li><code>$schema</code> - The URL of the JSON schema for validation</li>
+<li><code>flags</code> - An object containing the feature flags
+<ul>
+<li><code>flagKey</code> - A unique key for the flag
+<ul>
+<li><code>description</code> - A description of what the flag does</li>
+<li><code>type</code> - The type of the flag (<code>boolean</code>, <code>string</code>, <code>number</code>, <code>object</code>)</li>
+<li><code>defaultValue</code> - The default value of the flag</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="example-flag-manifest">Example Flag Manifest</h3>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"$schema"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"https://raw.githubusercontent.com/open-feature/cli/refs/heads/main/schema/v0/flag-manifest.json"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"flags"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"uniqueFlagKey"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"description"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Description of what this flag does"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"type"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"boolean|string|number|object"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"defaultValue"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"default-value"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h2 id="configuration">Configuration</h2>
+<p>The OpenFeature CLI uses an optional configuration file to override default settings and customize behavior.
+This file can be in JSON or YAML format and should be named either <code>.openfeature.json</code> or <code>.openfeature.yaml</code>.</p>
+<h3 id="configuration-file-structure">Configuration File Structure</h3>
+<pre><code class="hljs language-yaml"><span class="hljs-comment"># Example .openfeature.yaml</span>
+<span class="hljs-attr">manifest:</span> <span class="hljs-string">"flags/manifest.json"</span> <span class="hljs-comment"># Overrides the default manifest path</span>
+<span class="hljs-attr">generate:</span>
+  <span class="hljs-attr">output:</span> <span class="hljs-string">"src/flags"</span> <span class="hljs-comment"># Overrides the default output directory</span>
+  <span class="hljs-comment"># Any language-specific options can be specified here</span>
+  <span class="hljs-comment"># For example, for React:</span>
+  <span class="hljs-attr">react:</span>
+    <span class="hljs-attr">output:</span> <span class="hljs-string">"src/flags/react"</span> <span class="hljs-comment"># Overrides the default React output directory</span>
+  <span class="hljs-comment"># For Go:</span>
+  <span class="hljs-attr">go:</span>
+    <span class="hljs-attr">package:</span> <span class="hljs-string">"github.com/myorg/myrepo/flags"</span> <span class="hljs-comment"># Overrides the default Go package name</span>
+    <span class="hljs-attr">output:</span> <span class="hljs-string">"src/flags/go"</span> <span class="hljs-comment"># Overrides the default Go output directory</span>
+</code></pre>
+<h3 id="configuration-priority">Configuration Priority</h3>
+<p>The CLI uses a layered approach to configuration, allowing you to override settings at different levels.
+The configuration is applied in the following order:</p>
+<pre><code class="hljs language-mermaid">flowchart LR
+  default("Default Config")
+  config("Config File")
+  args("Command Line Args")
+  default --> config
+  config --> args
+</code></pre>

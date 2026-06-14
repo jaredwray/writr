@@ -1,0 +1,565 @@
+<h1 id="keyvbigmap-">@keyv/bigmap <a href="https://github.com/jaredwray/keyv"></a></h1>
+<blockquote>
+<p>Bigmap for Keyv</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://www.npmjs.com/package/@keyv/bigmap"><img src="https://img.shields.io/npm/v/@keyv/bigmap.svg" alt="npm"></a>
+<a href="https://npmjs.com/package/@keyv/bigmap"><img src="https://img.shields.io/npm/dm/@keyv/bigmap" alt="npm"></a></p>
+<h1 id="features">Features</h1>
+<ul>
+<li>Based on the Map interface and uses the same API.</li>
+<li>Lightweight and easy to use.</li>
+<li>Scales to past the 17 million key limit of a regular Map.</li>
+<li>Ability to use your own hash function.</li>
+<li>Built in Typescript and Generics for type safety.</li>
+<li>Used in <code>@cacheable/memory</code> for scalable in-memory caching.</li>
+<li>Maintained regularly with a focus on performance and reliability.</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#basic-usage">Basic Usage</a></li>
+<li><a href="#custom-store-size">Custom Store Size</a></li>
+<li><a href="#custom-hash-function">Custom Hash Function</a>
+<ul>
+<li><a href="#using-hashery-for-hash-functions">Using Hashery for Hash Functions</a></li>
+</ul>
+</li>
+<li><a href="#iteration">Iteration</a>
+<ul>
+<li><a href="#forof-loop">For...of Loop</a></li>
+<li><a href="#foreach">forEach</a></li>
+<li><a href="#keys-values-and-entries">Keys, Values, and Entries</a></li>
+</ul>
+</li>
+<li><a href="#advanced-features">Advanced Features</a>
+<ul>
+<li><a href="#type-safety-with-generics">Type Safety with Generics</a></li>
+<li><a href="#large-scale-data">Large-Scale Data</a></li>
+</ul>
+</li>
+<li><a href="#using-with-keyv">Using with Keyv</a>
+<ul>
+<li><a href="#createkeyv">createKeyv</a></li>
+<li><a href="#with-custom-options">With Custom Options</a></li>
+<li><a href="#type-safety">Type Safety</a></li>
+</ul>
+</li>
+<li><a href="#integration-with-keyv-ecosystem">Integration with Keyv Ecosystem</a></li>
+<li><a href="#api">API</a>
+<ul>
+<li><a href="#constructor">Constructor</a></li>
+<li><a href="#properties">Properties</a></li>
+<li><a href="#methods">Methods</a>
+<ul>
+<li><a href="#set">set</a></li>
+<li><a href="#get">get</a></li>
+<li><a href="#has">has</a></li>
+<li><a href="#delete">delete</a></li>
+<li><a href="#clear">clear</a></li>
+<li><a href="#foreach-1">forEach</a></li>
+<li><a href="#keys">keys</a></li>
+<li><a href="#values">values</a></li>
+<li><a href="#entries">entries</a></li>
+<li><a href="#symboliterator">Symbol.iterator</a></li>
+<li><a href="#getstore">getStore</a></li>
+<li><a href="#getstoremap">getStoreMap</a></li>
+<li><a href="#initstore">initStore</a></li>
+</ul>
+</li>
+<li><a href="#types">Types</a>
+<ul>
+<li><a href="#storehashfunction">StoreHashFunction</a></li>
+<li><a href="#defaulthashfunction">defaultHashFunction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#benchmark">Benchmark</a></li>
+<li><a href="#contributing">Contributing</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h1 id="installation">Installation</h1>
+<pre><code class="hljs language-bash">npm install --save keyv @keyv/bigmap
+</code></pre>
+<h1 id="overview">Overview</h1>
+<p>BigMap is a scalable Map implementation that overcomes JavaScript's built-in Map limit of approximately 17 million entries. It uses a distributed hash approach with multiple internal Map instances.</p>
+<h1 id="basic-usage">Basic Usage</h1>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">BigMap</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/bigmap'</span>;
+
+<span class="hljs-comment">// Create a new BigMap</span>
+<span class="hljs-keyword">const</span> bigMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BigMap</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">number</span>>();
+
+<span class="hljs-comment">// Set values</span>
+bigMap.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-number">100</span>);
+bigMap.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-number">200</span>);
+
+<span class="hljs-comment">// Get values</span>
+<span class="hljs-keyword">const</span> value = bigMap.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key1'</span>); <span class="hljs-comment">// 100</span>
+
+<span class="hljs-comment">// Check if key exists</span>
+bigMap.<span class="hljs-title function_">has</span>(<span class="hljs-string">'key1'</span>); <span class="hljs-comment">// true</span>
+
+<span class="hljs-comment">// Delete a key</span>
+bigMap.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'key1'</span>); <span class="hljs-comment">// true</span>
+
+<span class="hljs-comment">// Get size</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(bigMap.<span class="hljs-property">size</span>); <span class="hljs-comment">// 1</span>
+
+<span class="hljs-comment">// Clear all entries</span>
+bigMap.<span class="hljs-title function_">clear</span>();
+</code></pre>
+<h1 id="custom-store-size">Custom Store Size</h1>
+<p>By default, BigMap uses 2 internal Map instances. You can configure this:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> bigMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BigMap</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">number</span>>({ <span class="hljs-attr">storeSize</span>: <span class="hljs-number">10</span> });
+</code></pre>
+<p><strong>Note:</strong> Changing the <code>storeSize</code> after initialization will clear all entries.</p>
+<h1 id="custom-hash-function">Custom Hash Function</h1>
+<p>Provide your own hash function for key distribution:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> <span class="hljs-title function_">customHashFunction</span> = (<span class="hljs-params"><span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">storeSize</span>: <span class="hljs-built_in">number</span></span>) => {
+  <span class="hljs-keyword">return</span> key.<span class="hljs-property">length</span> % storeSize;
+};
+
+<span class="hljs-keyword">const</span> bigMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BigMap</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">string</span>>({
+  <span class="hljs-attr">storeHashFunction</span>: customHashFunction
+});
+</code></pre>
+<h2 id="using-hashery-for-hash-functions">Using Hashery for Hash Functions</h2>
+<p><a href="https://github.com/jaredwray/hashery">Hashery</a> is a powerful hashing library that provides multiple hash algorithms. You can use it for better key distribution and it is available as an export:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">BigMap</span>, <span class="hljs-title class_">Hashery</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/bigmap'</span>;
+
+<span class="hljs-keyword">const</span> hashery = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>();
+
+<span class="hljs-comment">// Using Hashery's toNumberSync for deterministic key distribution</span>
+<span class="hljs-keyword">const</span> bigMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BigMap</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">string</span>>({
+  <span class="hljs-attr">storeHashFunction</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">storeSize</span>: <span class="hljs-built_in">number</span></span>) =></span> {
+    <span class="hljs-keyword">return</span> hashery.<span class="hljs-title function_">toNumberSync</span>(key, { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: storeSize - <span class="hljs-number">1</span> });
+  }
+});
+
+<span class="hljs-comment">// You can also use different algorithms</span>
+<span class="hljs-keyword">const</span> hasheryFnv1 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hashery</span>({ <span class="hljs-attr">defaultAlgorithmSync</span>: <span class="hljs-string">'fnv1'</span> });
+
+<span class="hljs-keyword">const</span> bigMapWithFnv1 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BigMap</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">string</span>>({
+  <span class="hljs-attr">storeHashFunction</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">storeSize</span>: <span class="hljs-built_in">number</span></span>) =></span> {
+    <span class="hljs-keyword">return</span> hasheryFnv1.<span class="hljs-title function_">toNumberSync</span>(key, { <span class="hljs-attr">min</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">max</span>: storeSize - <span class="hljs-number">1</span> });
+  }
+});
+</code></pre>
+<p>Hashery supports multiple synchronous hash algorithms:</p>
+<ul>
+<li><strong>djb2</strong> - Fast hash function (default)</li>
+<li><strong>fnv1</strong> - Excellent distribution for hash tables</li>
+<li><strong>murmer</strong> - MurmurHash algorithm</li>
+<li><strong>crc32</strong> - Cyclic Redundancy Check</li>
+</ul>
+<h1 id="iteration">Iteration</h1>
+<p>BigMap supports all standard Map iteration methods:</p>
+<h2 id="forof-loop">For...of Loop</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> bigMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BigMap</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">number</span>>();
+bigMap.<span class="hljs-title function_">set</span>(<span class="hljs-string">'a'</span>, <span class="hljs-number">1</span>);
+bigMap.<span class="hljs-title function_">set</span>(<span class="hljs-string">'b'</span>, <span class="hljs-number">2</span>);
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> bigMap) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key, value);
+}
+</code></pre>
+<h2 id="foreach">forEach</h2>
+<pre><code class="hljs language-typescript">bigMap.<span class="hljs-title function_">forEach</span>(<span class="hljs-function">(<span class="hljs-params">value, key</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key, value);
+});
+
+<span class="hljs-comment">// With custom context</span>
+<span class="hljs-keyword">const</span> context = { <span class="hljs-attr">sum</span>: <span class="hljs-number">0</span> };
+bigMap.<span class="hljs-title function_">forEach</span>(<span class="hljs-keyword">function</span>(<span class="hljs-params">value</span>) {
+  <span class="hljs-variable language_">this</span>.<span class="hljs-property">sum</span> += value;
+}, context);
+</code></pre>
+<h2 id="keys-values-and-entries">Keys, Values, and Entries</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// Iterate over keys</span>
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">of</span> bigMap.<span class="hljs-title function_">keys</span>()) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key);
+}
+
+<span class="hljs-comment">// Iterate over values</span>
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> value <span class="hljs-keyword">of</span> bigMap.<span class="hljs-title function_">values</span>()) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(value);
+}
+
+<span class="hljs-comment">// Iterate over entries</span>
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> bigMap.<span class="hljs-title function_">entries</span>()) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key, value);
+}
+</code></pre>
+<h1 id="advanced-features">Advanced Features</h1>
+<h2 id="type-safety-with-generics">Type Safety with Generics</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">User</span> {
+  <span class="hljs-attr">id</span>: <span class="hljs-built_in">number</span>;
+  <span class="hljs-attr">name</span>: <span class="hljs-built_in">string</span>;
+}
+
+<span class="hljs-keyword">const</span> userMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BigMap</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-title class_">User</span>>();
+userMap.<span class="hljs-title function_">set</span>(<span class="hljs-string">'user1'</span>, { <span class="hljs-attr">id</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">'Alice'</span> });
+</code></pre>
+<h2 id="large-scale-data">Large-Scale Data</h2>
+<p>BigMap is designed to handle millions of entries:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> bigMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BigMap</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">number</span>>({ <span class="hljs-attr">storeSize</span>: <span class="hljs-number">16</span> });
+
+<span class="hljs-comment">// Add 20+ million entries without hitting Map limits</span>
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &#x3C; <span class="hljs-number">20000000</span>; i++) {
+  bigMap.<span class="hljs-title function_">set</span>(<span class="hljs-string">`key<span class="hljs-subst">${i}</span>`</span>, i);
+}
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(bigMap.<span class="hljs-property">size</span>); <span class="hljs-comment">// 20000000</span>
+</code></pre>
+<h1 id="using-with-keyv">Using with Keyv</h1>
+<p>BigMap can be used as a storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a>, providing a scalable in-memory store with TTL support.</p>
+<h2 id="createkeyv">createKeyv</h2>
+<p>The <code>createKeyv</code> function creates a Keyv instance with BigMap as the storage adapter.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>options</code> (optional): BigMap configuration options
+<ul>
+<li><code>storeSize</code> (number): Number of internal Map instances. Default: <code>2</code></li>
+<li><code>storeHashFunction</code> (StoreHashFunction): Custom hash function for key distribution</li>
+</ul>
+</li>
+</ul>
+<p><strong>Returns:</strong> <code>Keyv</code> instance with BigMap adapter</p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/bigmap'</span>;
+
+<span class="hljs-comment">// Basic usage</span>
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>();
+
+<span class="hljs-comment">// Set with TTL (in milliseconds)</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'user:123'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'Alice'</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">30</span> }, <span class="hljs-number">60000</span>); <span class="hljs-comment">// Expires in 60 seconds</span>
+
+<span class="hljs-comment">// Get value</span>
+<span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'user:123'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user); <span class="hljs-comment">// { name: 'Alice', age: 30 }</span>
+
+<span class="hljs-comment">// Check if key exists</span>
+<span class="hljs-keyword">const</span> exists = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">has</span>(<span class="hljs-string">'user:123'</span>);
+
+<span class="hljs-comment">// Delete key</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'user:123'</span>);
+
+<span class="hljs-comment">// Clear all keys</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">clear</span>();
+</code></pre>
+<h2 id="with-custom-options">With Custom Options</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/bigmap'</span>;
+
+<span class="hljs-comment">// Create with custom store size for better performance with millions of keys</span>
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>({ <span class="hljs-attr">storeSize</span>: <span class="hljs-number">16</span> });
+
+<span class="hljs-comment">// With custom hash function</span>
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>({
+  <span class="hljs-attr">storeSize</span>: <span class="hljs-number">8</span>,
+  <span class="hljs-attr">storeHashFunction</span>: <span class="hljs-function">(<span class="hljs-params">key, storeSize</span>) =></span> {
+    <span class="hljs-comment">// Custom distribution logic</span>
+    <span class="hljs-keyword">return</span> key.<span class="hljs-property">length</span> % storeSize;
+  }
+});
+</code></pre>
+<h2 id="type-safety">Type Safety</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/bigmap'</span>;
+
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">Product</span> {
+  <span class="hljs-attr">id</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">name</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">price</span>: <span class="hljs-built_in">number</span>;
+}
+
+<span class="hljs-keyword">const</span> keyv = createKeyv&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-title class_">Product</span>>();
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'product:1'</span>, {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'1'</span>,
+  <span class="hljs-attr">name</span>: <span class="hljs-string">'Laptop'</span>,
+  <span class="hljs-attr">price</span>: <span class="hljs-number">999</span>
+});
+
+<span class="hljs-keyword">const</span> product = <span class="hljs-keyword">await</span> keyv.<span class="hljs-property">get</span>&#x3C;<span class="hljs-title class_">Product</span>>(<span class="hljs-string">'product:1'</span>);
+</code></pre>
+<h1 id="integration-with-keyv-ecosystem">Integration with Keyv Ecosystem</h1>
+<p>BigMap works seamlessly with the Keyv ecosystem:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/bigmap'</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-title function_">createKeyv</span>({ <span class="hljs-attr">storeSize</span>: <span class="hljs-number">16</span> });
+
+<span class="hljs-comment">// Use with namespaces</span>
+<span class="hljs-keyword">const</span> users = cache.<span class="hljs-title function_">namespace</span>(<span class="hljs-string">'users'</span>);
+<span class="hljs-keyword">const</span> products = cache.<span class="hljs-title function_">namespace</span>(<span class="hljs-string">'products'</span>);
+
+<span class="hljs-keyword">await</span> users.<span class="hljs-title function_">set</span>(<span class="hljs-string">'123'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'Alice'</span> });
+<span class="hljs-keyword">await</span> products.<span class="hljs-title function_">set</span>(<span class="hljs-string">'456'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'Laptop'</span> });
+
+<span class="hljs-comment">// Iterate over keys</span>
+<span class="hljs-keyword">for</span> <span class="hljs-title function_">await</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> cache.<span class="hljs-title function_">iterator</span>()) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key, value);
+}
+</code></pre>
+<h1 id="api">API</h1>
+<h2 id="constructor">Constructor</h2>
+<p><code>new BigMap&#x3C;K, V>(options?)</code></p>
+<p>Creates a new BigMap instance.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>options</code> (optional): Configuration options
+<ul>
+<li><code>storeSize</code> (number): Number of internal Map instances to use. Default: <code>2</code>. Must be at least 1.</li>
+<li><code>storeHashFunction</code> (StoreHashFunction): Custom hash function for key distribution. Default: <code>defaultHashFunction</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> bigMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BigMap</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">number</span>>();
+<span class="hljs-keyword">const</span> customBigMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BigMap</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">number</span>>({
+  <span class="hljs-attr">storeSize</span>: <span class="hljs-number">10</span>,
+  <span class="hljs-attr">storeHashFunction</span>: <span class="hljs-function">(<span class="hljs-params">key, storeSize</span>) =></span> key.<span class="hljs-property">length</span> % storeSize
+});
+</code></pre>
+<h2 id="properties">Properties</h2>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Access</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>size</code></td>
+<td><code>number</code></td>
+<td>Read-only</td>
+<td>Gets the total number of entries in the BigMap.</td>
+</tr>
+<tr>
+<td><code>storeSize</code></td>
+<td><code>number</code></td>
+<td>Read/Write</td>
+<td>Gets or sets the number of internal Map instances. <strong>Note:</strong> Setting this will clear all entries. Default: <code>2</code></td>
+</tr>
+<tr>
+<td><code>storeHashFunction</code></td>
+<td><code>StoreHashFunction | undefined</code></td>
+<td>Read/Write</td>
+<td>Gets or sets the hash function used for key distribution.</td>
+</tr>
+<tr>
+<td><code>store</code></td>
+<td><code>Array&#x3C;Map&#x3C;K, V>></code></td>
+<td>Read-only</td>
+<td>Gets the internal array of Map instances.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> bigMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BigMap</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">number</span>>();
+
+<span class="hljs-comment">// size property</span>
+bigMap.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-number">100</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(bigMap.<span class="hljs-property">size</span>); <span class="hljs-comment">// 1</span>
+
+<span class="hljs-comment">// storeSize property</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(bigMap.<span class="hljs-property">storeSize</span>); <span class="hljs-comment">// 2 (default)</span>
+bigMap.<span class="hljs-property">storeSize</span> = <span class="hljs-number">8</span>; <span class="hljs-comment">// Changes size and clears all entries</span>
+
+<span class="hljs-comment">// storeHashFunction property</span>
+bigMap.<span class="hljs-property">storeHashFunction</span> = <span class="hljs-function">(<span class="hljs-params">key, storeSize</span>) =></span> key.<span class="hljs-property">length</span> % storeSize;
+
+<span class="hljs-comment">// store property</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(bigMap.<span class="hljs-property">store</span>.<span class="hljs-property">length</span>); <span class="hljs-comment">// 8</span>
+</code></pre>
+<h2 id="methods">Methods</h2>
+<h3 id="set">set</h3>
+<p>Sets the value for a key in the map.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>key</code> (K): The key to set</li>
+<li><code>value</code> (V): The value to associate with the key</li>
+</ul>
+<p><strong>Returns:</strong> <code>Map&#x3C;K, V></code> - The internal Map instance where the key was stored</p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript">bigMap.<span class="hljs-title function_">set</span>(<span class="hljs-string">'user123'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'Alice'</span> });
+</code></pre>
+<h3 id="get">get</h3>
+<p>Gets the value associated with a key.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>key</code> (K): The key to retrieve</li>
+</ul>
+<p><strong>Returns:</strong> <code>V | undefined</code> - The value, or undefined if not found</p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> value = bigMap.<span class="hljs-title function_">get</span>(<span class="hljs-string">'user123'</span>);
+</code></pre>
+<h3 id="has">has</h3>
+<p>Checks if a key exists in the map.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>key</code> (K): The key to check</li>
+</ul>
+<p><strong>Returns:</strong> <code>boolean</code> - True if the key exists, false otherwise</p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">if</span> (bigMap.<span class="hljs-title function_">has</span>(<span class="hljs-string">'user123'</span>)) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'User exists'</span>);
+}
+</code></pre>
+<h3 id="delete">delete</h3>
+<p>Deletes a key-value pair from the map.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>key</code> (K): The key to delete</li>
+</ul>
+<p><strong>Returns:</strong> <code>boolean</code> - True if the entry was deleted, false if the key was not found</p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> deleted = bigMap.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'user123'</span>);
+</code></pre>
+<h3 id="clear">clear</h3>
+<p>Removes all entries from the map.</p>
+<p><strong>Returns:</strong> <code>void</code></p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript">bigMap.<span class="hljs-title function_">clear</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(bigMap.<span class="hljs-property">size</span>); <span class="hljs-comment">// 0</span>
+</code></pre>
+<h3 id="foreach-1">forEach</h3>
+<p>Executes a provided function once for each key-value pair.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>callbackfn</code> (function): Function to execute for each entry
+<ul>
+<li><code>value</code> (V): The value of the current entry</li>
+<li><code>key</code> (K): The key of the current entry</li>
+<li><code>map</code> (<code>Map&#x3C;K, V></code>): The BigMap instance</li>
+</ul>
+</li>
+<li><code>thisArg</code> (optional): Value to use as <code>this</code> when executing the callback</li>
+</ul>
+<p><strong>Returns:</strong> <code>void</code></p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript">bigMap.<span class="hljs-title function_">forEach</span>(<span class="hljs-function">(<span class="hljs-params">value, key</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`<span class="hljs-subst">${key}</span>: <span class="hljs-subst">${value}</span>`</span>);
+});
+
+<span class="hljs-comment">// With custom context</span>
+<span class="hljs-keyword">const</span> context = { <span class="hljs-attr">total</span>: <span class="hljs-number">0</span> };
+bigMap.<span class="hljs-title function_">forEach</span>(<span class="hljs-keyword">function</span>(<span class="hljs-params">value</span>) {
+  <span class="hljs-variable language_">this</span>.<span class="hljs-property">total</span> += value;
+}, context);
+</code></pre>
+<h3 id="keys">keys</h3>
+<p>Returns an iterator of all keys in the map.</p>
+<p><strong>Returns:</strong> <code>IterableIterator&#x3C;K></code></p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">of</span> bigMap.<span class="hljs-title function_">keys</span>()) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key);
+}
+</code></pre>
+<h3 id="values">values</h3>
+<p>Returns an iterator of all values in the map.</p>
+<p><strong>Returns:</strong> <code>IterableIterator&#x3C;V></code></p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> value <span class="hljs-keyword">of</span> bigMap.<span class="hljs-title function_">values</span>()) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(value);
+}
+</code></pre>
+<h3 id="entries">entries</h3>
+<p>Returns an iterator of all key-value pairs in the map.</p>
+<p><strong>Returns:</strong> <code>IterableIterator&#x3C;[K, V]></code></p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> bigMap.<span class="hljs-title function_">entries</span>()) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key, value);
+}
+</code></pre>
+<h3 id="symboliterator">Symbol.iterator</h3>
+<p>Returns an iterator for the map (same as <code>entries()</code>). Enables <code>for...of</code> loops.</p>
+<p><strong>Returns:</strong> <code>IterableIterator&#x3C;[K, V]></code></p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> bigMap) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key, value);
+}
+</code></pre>
+<h3 id="getstore">getStore</h3>
+<p>Gets the internal Map instance for a specific key.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>key</code> (K): The key to find the store for</li>
+</ul>
+<p><strong>Returns:</strong> <code>Map&#x3C;K, V></code> - The internal Map instance</p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> store = bigMap.<span class="hljs-title function_">getStore</span>(<span class="hljs-string">'user123'</span>);
+</code></pre>
+<h3 id="getstoremap">getStoreMap</h3>
+<p>Gets the internal Map instance at a specific index.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>index</code> (number): The index of the Map to retrieve (0 to storeSize - 1)</li>
+</ul>
+<p><strong>Returns:</strong> <code>Map&#x3C;K, V></code> - The Map at the specified index</p>
+<p><strong>Throws:</strong> Error if index is out of bounds</p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> firstMap = bigMap.<span class="hljs-title function_">getStoreMap</span>(<span class="hljs-number">0</span>);
+</code></pre>
+<h3 id="initstore">initStore</h3>
+<p>Initializes the internal store with empty Map instances. Called automatically during construction.</p>
+<p><strong>Returns:</strong> <code>void</code></p>
+<h2 id="types">Types</h2>
+<h3 id="storehashfunction">StoreHashFunction</h3>
+<p>Type definition for custom hash functions.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">type</span> <span class="hljs-title class_">StoreHashFunction</span> = <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">storeSize</span>: <span class="hljs-built_in">number</span></span>) =></span> <span class="hljs-built_in">number</span>;
+</code></pre>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>key</code> (string): The key to hash (converted to string)</li>
+<li><code>storeSize</code> (number): The total number of stores</li>
+</ul>
+<p><strong>Returns:</strong> <code>number</code> - The index of the store to use (0 to storeSize - 1)</p>
+<h3 id="defaulthashfunction">defaultHashFunction</h3>
+<p>The built-in hash function used for distributing keys across stores. It uses a fast multiplicative hash with XOR mixing to produce a bucket index. You can override it via the <code>storeHashFunction</code> option.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { defaultHashFunction } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/bigmap'</span>;
+
+<span class="hljs-keyword">const</span> index = <span class="hljs-title function_">defaultHashFunction</span>(<span class="hljs-string">'myKey'</span>, <span class="hljs-number">2</span>);
+</code></pre>
+<h1 id="benchmark">Benchmark</h1>
+<p>This benchmark compares <code>BigMap</code> against the native JavaScript <code>Map</code> for combined <code>set</code> and <code>get</code> operations using 10,000 iterations of randomly generated data. BigMap trades raw single-threaded speed for the ability to scale past the ~16.7 million entry limit of a native Map by distributing keys across multiple internal Map instances via a hash function. For most workloads under that limit, native Map will be faster; BigMap is designed for scenarios where you need to go beyond it.</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th align="center">summary</th>
+<th align="right">ops/sec</th>
+<th align="right">time/op</th>
+<th align="center">margin</th>
+<th align="right">samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Map set / get</td>
+<td align="center">🥇</td>
+<td align="right">19M</td>
+<td align="right">64ns</td>
+<td align="center">±0.02%</td>
+<td align="right">16M</td>
+</tr>
+<tr>
+<td>BigMap set / get</td>
+<td align="center">-23%</td>
+<td align="right">14M</td>
+<td align="right">91ns</td>
+<td align="center">±0.03%</td>
+<td align="right">11M</td>
+</tr>
+</tbody>
+</table>
+<p>If you want to see comparable performance just set the <code>storeSize: 1</code> and it is <code>-1%</code> off from native <code>Map</code>.</p>
+<h1 id="contributing">Contributing</h1>
+<p>Please see our <a href="https://github.com/jaredwray/keyv/blob/main/CONTRIBUTING.md">contributing</a> guide.</p>
+<h1 id="license">License</h1>
+<p><a href="LICENSE">MIT © Jared Wray</a></p>

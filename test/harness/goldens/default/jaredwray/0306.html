@@ -1,0 +1,100 @@
+<h1 id="events">Events</h1>
+<p>import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';</p>
+<p>Events enable the ability to react to state changes in the provider or underlying flag management system.
+These include changes in provider readiness, error status, or perhaps most interestingly, flag configuration changes.</p>
+<h2 id="event-handlers">Event Handlers</h2>
+<p>Event handlers can be attached to a <code>client</code> or to the global API object, for any <a href="/specification/types#provider-events">provider event type</a>.
+Handlers attached to the global API object run when <em>any</em> provider emits the associated events; this makes global handlers ideal for configuration troubleshooting, monitoring and other cross-cutting concerns.
+Handlers attached to a client will run only when the provider bound with that client emits the associated event; this makes <code>client</code> handlers ideal for reacting to flag-state changes in an application domain logic.</p>
+<p>Handlers are passed an <a href="/specification/types#event-details">event details</a> structure, which contains data about the event, including a list of keys that have changed (if applicable and available).</p>
+<pre><code class="hljs language-ts"><span class="hljs-comment">// add an event handler to a client</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+client.<span class="hljs-title function_">addHandler</span>(<span class="hljs-title class_">ProviderEvents</span>.<span class="hljs-property">ConfigurationChanged</span>, <span class="hljs-function">(<span class="hljs-params">eventDetails</span>) =></span> {
+  <span class="hljs-comment">// do something when the provider's flag settings change</span>
+});
+
+<span class="hljs-comment">// add an event handler to the global API</span>
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">addHandler</span>(<span class="hljs-title class_">ProviderEvents</span>.<span class="hljs-property">Error</span>, <span class="hljs-function">(<span class="hljs-params">eventDetails</span>) =></span> {
+  <span class="hljs-comment">// do something when if the provider goes into an error state</span>
+});
+</code></pre>
+<pre><code class="hljs language-java"><span class="hljs-comment">// add an event handler to a client</span>
+<span class="hljs-type">Client</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> OpenFeatureAPI.getInstance().getClient();
+client.onProviderConfigurationChanged((EventDetails eventDetails) -> {
+    <span class="hljs-comment">// do something when the provider's flag settings change</span>
+});
+
+<span class="hljs-comment">// add an event handler to the global API</span>
+OpenFeatureAPI.getInstance().onProviderError((EventDetails eventDetails) -> {
+  <span class="hljs-comment">// do something when if the provider goes into an error state</span>
+});
+</code></pre>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// add an event handler to a client</span>
+<span class="hljs-keyword">var</span> client = Api.Instance.GetClient();
+client.AddHandler(ProviderEventTypes.ProviderConfigurationChanged, (ProviderEventPayload eventDetails) =>
+{
+  <span class="hljs-comment">// do something when the provider's flag settings change</span>
+});
+
+<span class="hljs-comment">// add an event handler to the global API</span>
+Api.Instance.AddHandler(ProviderEventTypes.ProviderError, (ProviderEventPayload eventDetails) =>
+{
+  <span class="hljs-comment">// do something when if the provider goes into an error state</span>
+});
+</code></pre>
+<pre><code class="hljs language-go"><span class="hljs-keyword">var</span> changedCallback = <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(details openfeature.EventDetails)</span></span> {
+  <span class="hljs-comment">// do something when the provider's flag settings change</span>
+}
+
+<span class="hljs-comment">// add an event handler to a client</span>
+client := openfeature.NewClient(<span class="hljs-string">"clientName"</span>)
+
+<span class="hljs-comment">// add an event handler to a client</span>
+client.AddHandler(openfeature.ProviderError, &#x26;changedCallback)
+
+<span class="hljs-keyword">var</span> errorCallback = <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(details openfeature.EventDetails)</span></span> {
+  <span class="hljs-comment">// do something when if the provider goes into an error state</span>
+}
+
+<span class="hljs-comment">// add an event handler to the global API</span>
+openfeature.AddHandler(openfeature.ProviderError, &#x26;errorCallback)
+</code></pre>
+<pre><code class="hljs language-python">client = api.get_client()
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">on_changed</span>(<span class="hljs-params">event_details: EventDetails</span>):
+  <span class="hljs-comment"># do something when the provider's flag settings change</span>
+
+<span class="hljs-comment"># add an event handler to a client</span>
+client.add_handler(ProviderEvent.PROVIDER_CONFIGURATION_CHANGED, on_changed)
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">on_error</span>(<span class="hljs-params">event_details: EventDetails</span>):
+  <span class="hljs-comment"># do something when if the provider goes into an error state</span>
+
+<span class="hljs-comment"># add an event handler to the global API</span>
+api.add_handler(ProviderEvent.PROVIDER_ERROR, on_error)
+</code></pre>
+<h2 id="event-types">Event Types</h2>
+<p>See <a href="/specification/types#provider-events">event types</a> specification.</p>
+<h3 id="provider_ready">PROVIDER_READY</h3>
+<p>The provider is ready to perform flag evaluations.</p>
+<p><em>Application authors</em> may wish to wait to evaluate flags until the provider has fully started.
+In that case, they can await the <code>PROVIDER_READY</code> event before evaluating any flags.
+This can be especially useful for hiding UI elements or otherwise deferring evaluation until associated flags can be resolved accurately.</p>
+<h3 id="provider_configuration_changed">PROVIDER_CONFIGURATION_CHANGED</h3>
+<p>A change was made to the backend flag configuration.</p>
+<p>If the flag management system supports it, providers may emit a <code>PROVIDER_CONFIGURATION_CHANGED</code> event signifying that flag configurations have changed.
+This might mean the value of a flag (or flags) have changed, or that a rule has been updated.
+Generally, the associated event details will indicate which flag (or flags) have been changed with the <code>flags changed</code> field.</p>
+<h3 id="provider_error">PROVIDER_ERROR</h3>
+<p>The provider signaled an error.</p>
+<p>If a provider becomes unavailable, evaluations will typically default.
+Handlers associated with <code>PROVIDER_ERROR</code> events can be used to alert monitoring systems about the provider failure, or enable custom fallback mechanisms.</p>
+<h3 id="provider_stale">PROVIDER_STALE</h3>
+<p>The provider's cached state is no longer valid and may not be up-to-date with the source of truth.</p>
+<p>Some providers maintain a connection to a management system, but are also tolerate of disconnection.
+The <code>PROVIDER_STALE</code> indicates this situation.</p>
+<h3 id="provider_reconciling-static-contextclient-side-only">PROVIDER_RECONCILING (Static-context/Client-side only)</h3>
+<p>The context associated with the provider has changed, and the provider has not yet <a href="/docs/reference/concepts/sdk-paradigms#static-context-paradigms-client-side-sdks">reconciled</a> its associated state.</p>
+<h3 id="provider_context_changed-static-contextclient-side-only">PROVIDER_CONTEXT_CHANGED (Static-context/Client-side only)</h3>
+<p>The context associated with the provider has changed, and the provider has <a href="/docs/reference/concepts/sdk-paradigms#static-context-paradigms-client-side-sdks">reconciled</a> its associated state.</p>

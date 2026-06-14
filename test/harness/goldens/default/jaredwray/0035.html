@@ -1,0 +1,212 @@
+<p>import FlagdContent from '@site/src/components/custom/tutorial/flagd-content.mdx';
+import FlagdChangeContent from '@site/src/components/custom/tutorial/flagd-change-content.mdx';
+import WhyDefaultContent from '@site/src/components/custom/tutorial/why-default-content.mdx';</p>
+<h1 id="getting-started-with-the-openfeature-go-sdk-and-go-gin">Getting Started with the OpenFeature Go SDK and Go Gin</h1>
+<h2 id="introduction">Introduction</h2>
+<p>This walk-through teaches you the basics of using OpenFeature in Go in the context of a Go Gin web application.</p>
+<p>You'll learn how to:</p>
+<ul>
+<li>Integrate the OpenFeature Go SDK</li>
+<li>Install and configure the OpenFeature provider</li>
+<li>Perform basic feature flagging</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<h2 id="walk-through">Walk-through</h2>
+<p>This walk-through assumes that:</p>
+<ul>
+<li>You have a basic knowledge of Go</li>
+<li>You have Go 1.17 or later</li>
+<li>You have Docker installed and running on the host system</li>
+</ul>
+<h3 id="step-1-create-a-new-go-project">Step 1: Create a new Go project</h3>
+<p>To get started, let's create a new folder and initialize the project.
+This can be done by running following commands.</p>
+<pre><code class="hljs language-shell">mkdir gostart
+cd gostart
+go mod init gostart
+</code></pre>
+<h3 id="step-2-set-up-the-application">Step 2: Set up the application</h3>
+<p>Let's initialize the application with logic to expose a minimal Go Gin web endpoint.</p>
+<p>First, create the file <code>main.go</code> and include the following code.</p>
+<pre><code class="hljs language-go"><span class="hljs-keyword">package</span> main
+
+<span class="hljs-keyword">import</span> (
+    <span class="hljs-string">"github.com/gin-gonic/gin"</span>
+    <span class="hljs-string">"net/http"</span>
+)
+
+<span class="hljs-keyword">const</span> defaultMessage = <span class="hljs-string">"Hello!"</span>
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
+    <span class="hljs-comment">// Initialize Go Gin</span>
+    engine := gin.Default()
+
+    <span class="hljs-comment">// Setup a simple endpoint</span>
+    engine.GET(<span class="hljs-string">"/hello"</span>, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(c *gin.Context)</span></span> {
+        c.JSON(http.StatusOK, defaultMessage)
+    })
+
+    engine.Run()
+}
+</code></pre>
+<p>To add Go Gin dependency to the application, run the following commands.</p>
+<pre><code class="hljs language-shell">go get github.com/gin-gonic/gin
+go mod tidy
+</code></pre>
+<h3 id="step-3-add-the-openfeature-sdk">Step 3: Add the OpenFeature SDK</h3>
+<p>Next, let's add logic to customize the response message based on the <code>boolean</code> <a href="/specification/glossary#flag-key">flag key</a> <code>welcome-message</code>.</p>
+<pre><code class="hljs language-go"><span class="hljs-keyword">package</span> main
+
+<span class="hljs-keyword">import</span> (
+<span class="hljs-comment">// diff-add</span>
+       <span class="hljs-string">"context"</span>
+       <span class="hljs-string">"github.com/gin-gonic/gin"</span>
+<span class="hljs-comment">// diff-add</span>
+       <span class="hljs-string">"github.com/open-feature/go-sdk/openfeature"</span>
+       <span class="hljs-string">"net/http"</span>
+)
+
+<span class="hljs-keyword">const</span> defaultMessage = <span class="hljs-string">"Hello!"</span>
+<span class="hljs-comment">// diff-add</span>
+<span class="hljs-keyword">const</span> newWelcomeMessage = <span class="hljs-string">"Hello, welcome to this OpenFeature-enabled website!"</span>
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
+<span class="hljs-comment">// diff-add-block-start</span>
+       <span class="hljs-comment">// Initialize OpenFeature client</span>
+       client := openfeature.NewClient(<span class="hljs-string">"GoStartApp"</span>)
+<span class="hljs-comment">// diff-add-block-end</span>
+
+       <span class="hljs-comment">// Initialize Go Gin</span>
+       engine := gin.Default()
+
+       <span class="hljs-comment">// Setup a simple endpoint</span>
+       engine.GET(<span class="hljs-string">"/hello"</span>, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(c *gin.Context)</span></span> {
+<span class="hljs-comment">// diff-remove-block-start</span>
+               c.JSON(http.StatusOK, defaultMessage)
+
+<span class="hljs-comment">// diff-remove-block-end</span>
+<span class="hljs-comment">// diff-add-block-start</span>
+               <span class="hljs-comment">// Evaluate welcome-message feature flag</span>
+               welcomeMessage, _ := client.BooleanValue(
+                       context.Background(), <span class="hljs-string">"welcome-message"</span>, <span class="hljs-literal">false</span>, openfeature.EvaluationContext{},
+               )
+
+               <span class="hljs-keyword">if</span> welcomeMessage {
+                       c.JSON(http.StatusOK, newWelcomeMessage)
+                       <span class="hljs-keyword">return</span>
+               } <span class="hljs-keyword">else</span> {
+                       c.JSON(http.StatusOK, defaultMessage)
+                       <span class="hljs-keyword">return</span>
+               }
+<span class="hljs-comment">// diff-add-block-end</span>
+       })
+
+       engine.Run()
+}
+</code></pre>
+<p>To add OpenFeature SDK dependency to the application, run the following commands.</p>
+<pre><code class="hljs language-shell">go get github.com/open-feature/go-sdk/openfeature
+go mod tidy
+</code></pre>
+<h3 id="step-4-run-the-initial-application">Step 4: Run the initial application</h3>
+<p>Let's start the application and see it in action.</p>
+<pre><code class="hljs language-shell">go run main.go
+</code></pre>
+<p>Now you can visit the url <a href="http://localhost:8080/hello">http://localhost:8080/hello</a> and observe the message <strong>Hello!</strong>.</p>
+<h3 id="step-5-configure-a-provider-flagd">Step 5: Configure a provider (flagd)</h3>
+<p>Now, let's make the required code changes in our application.</p>
+<pre><code class="hljs language-go"><span class="hljs-keyword">import</span> (
+       <span class="hljs-string">"context"</span>
+       <span class="hljs-string">"github.com/gin-gonic/gin"</span>
+<span class="hljs-comment">// diff-add</span>
+       flagd <span class="hljs-string">"github.com/open-feature/go-sdk-contrib/providers/flagd/pkg"</span>
+       <span class="hljs-string">"log"</span>
+<span class="hljs-comment">// diff-add-block-end</span>
+       <span class="hljs-string">"github.com/open-feature/go-sdk/openfeature"</span>
+       <span class="hljs-string">"net/http"</span>
+)
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
+<span class="hljs-comment">// diff-add-block-start</span>
+       <span class="hljs-comment">// Use flagd as the OpenFeature provider</span>
+       provider, err := flagd.NewProvider()
+       <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+           log.Fatalf(<span class="hljs-string">"failed to initialize flagd provider: %v"</span>, err)
+       }
+       <span class="hljs-keyword">if</span> err := openfeature.SetProviderAndWait(provider); err != <span class="hljs-literal">nil</span> {
+           <span class="hljs-comment">// If a provider initialization error occurs, log it and exit</span>
+           log.Fatalf(<span class="hljs-string">"Failed to set the OpenFeature provider: %v"</span>, err)
+       }
+<span class="hljs-comment">// diff-add-block-end</span>
+
+       <span class="hljs-comment">// Initialize OpenFeature client</span>
+       client := openfeature.NewClient(<span class="hljs-string">"GoStartApp"</span>)
+</code></pre>
+<p>Then, let's add <code>flagd provider</code> dependency with following commands.</p>
+<pre><code class="hljs language-shell">go get github.com/open-feature/go-sdk-contrib/providers/flagd
+go mod tidy
+</code></pre>
+<p>The complete <code>main.go</code> file is given below:</p>
+<pre><code class="hljs language-go"><span class="hljs-keyword">package</span> main
+
+<span class="hljs-keyword">import</span> (
+    <span class="hljs-string">"context"</span>
+    <span class="hljs-string">"log"</span>
+    <span class="hljs-string">"net/http"</span>
+    <span class="hljs-string">"github.com/gin-gonic/gin"</span>
+    flagd <span class="hljs-string">"github.com/open-feature/go-sdk-contrib/providers/flagd/pkg"</span>
+    <span class="hljs-string">"github.com/open-feature/go-sdk/openfeature"</span>
+)
+
+<span class="hljs-keyword">const</span> defaultMessage = <span class="hljs-string">"Hello!"</span>
+<span class="hljs-keyword">const</span> newWelcomeMessage = <span class="hljs-string">"Hello, welcome to this OpenFeature-enabled website!"</span>
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
+    <span class="hljs-comment">// Use flagd as the OpenFeature provider</span>
+    provider, err := flagd.NewProvider()
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        log.Fatalf(<span class="hljs-string">"failed to initialize flagd provider: %v"</span>, err)
+    }
+    <span class="hljs-keyword">if</span> err := openfeature.SetProviderAndWait(provider); err != <span class="hljs-literal">nil</span> {
+        <span class="hljs-comment">// If an error occurs, log it and exit</span>
+        log.Fatalf(<span class="hljs-string">"Failed to set the OpenFeature provider: %v"</span>, err)
+    }
+
+    <span class="hljs-comment">// Initialize OpenFeature client</span>
+    client := openfeature.NewClient(<span class="hljs-string">"GoStartApp"</span>)
+
+    <span class="hljs-comment">// Initialize Go Gin</span>
+    engine := gin.Default()
+
+    <span class="hljs-comment">// Setup a simple endpoint</span>
+    engine.GET(<span class="hljs-string">"/hello"</span>, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(c *gin.Context)</span></span> {
+
+        <span class="hljs-comment">// Evaluate welcome-message feature flag</span>
+        welcomeMessage, _ := client.BooleanValue(
+            context.Background(), <span class="hljs-string">"welcome-message"</span>, <span class="hljs-literal">false</span>, openfeature.EvaluationContext{},
+        )
+
+        <span class="hljs-keyword">if</span> welcomeMessage {
+            c.JSON(http.StatusOK, newWelcomeMessage)
+            <span class="hljs-keyword">return</span>
+        } <span class="hljs-keyword">else</span> {
+            c.JSON(http.StatusOK, defaultMessage)
+            <span class="hljs-keyword">return</span>
+        }
+    })
+
+    engine.Run()
+}
+</code></pre>
+<h3 id="step-6-rerun-the-application">Step 6: Rerun the application</h3>
+<p>Let's rerun the application with the following command.</p>
+<pre><code class="hljs language-shell">go run main.go
+</code></pre>
+<p>Revisit the endpoint <a href="http://localhost:8080/hello">http://localhost:8080/hello</a> and you will see the same value.</p>
+<p>Revisit the endpoint <a href="http://localhost:8080/hello">http://localhost:8080/hello</a> and you will be greeted with <code>Hello, welcome to this OpenFeature-enabled website!</code></p>
+<h2 id="conclusion">Conclusion</h2>
+<p>This walk-through introduced you to the OpenFeature Go SDK and how it can be easily integrated into well-known frameworks
+such as Go Gin.
+It covered how a provider can be configured to perform the flag evaluation and introduced basic feature
+flagging concepts.
+It also showcased how feature flags can be updated at runtime, without requiring a code change and a redeployment.</p>

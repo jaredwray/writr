@@ -1,0 +1,348 @@
+<h1 id="using-the-cli">Using the CLI</h1>
+<p>Docula provides a command-line interface for initializing, building, and serving your documentation site. All commands are available via <code>npx docula</code> or, if installed globally, just <code>docula</code>.</p>
+<h2 id="commands-overview">Commands Overview</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>init</code></td>
+<td>Initialize a new Docula project</td>
+</tr>
+<tr>
+<td><code>build</code></td>
+<td>Build the site (default if no command is specified)</td>
+</tr>
+<tr>
+<td><code>dev</code></td>
+<td>Build, watch, and serve the project</td>
+</tr>
+<tr>
+<td><code>start</code></td>
+<td>Build and serve the project</td>
+</tr>
+<tr>
+<td><code>serve</code></td>
+<td>Serve the site locally</td>
+</tr>
+<tr>
+<td><code>help</code> / <code>--help</code> / <code>-h</code></td>
+<td>Print help information</td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>Print the version number</td>
+</tr>
+<tr>
+<td><code>download</code></td>
+<td>Download template files to your site directory</td>
+</tr>
+</tbody>
+</table>
+<h2 id="common-options">Common Options</h2>
+<p>These options are shared across multiple commands:</p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-s, --site &#x3C;path></code></td>
+<td>Set the path where site files are located</td>
+<td><code>./site</code></td>
+</tr>
+<tr>
+<td><code>-c, --clean</code></td>
+<td>Clean the output directory before building</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-o, --output &#x3C;path></code></td>
+<td>Set the output directory</td>
+<td><code>./site/dist</code></td>
+</tr>
+<tr>
+<td><code>-p, --port &#x3C;number></code></td>
+<td>Set the port number</td>
+<td><code>3000</code></td>
+</tr>
+<tr>
+<td><code>-w, --watch</code></td>
+<td>Watch for file changes and rebuild automatically</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="help">help</h2>
+<p>Print usage information. Available as a subcommand or flag:</p>
+<pre><code class="hljs language-bash">npx docula <span class="hljs-built_in">help</span>
+npx docula --<span class="hljs-built_in">help</span>
+npx docula -h
+</code></pre>
+<h2 id="init">init</h2>
+<p>Scaffolds a new Docula project in the current directory. Creates a <code>site/</code> folder with starter files including a logo, favicon, CSS, README, and config file.</p>
+<pre><code class="hljs language-bash">npx docula init
+</code></pre>
+<p>By default, docula auto-detects whether your project uses TypeScript by checking for a <code>tsconfig.json</code> in the current directory. If found, it generates <code>docula.config.ts</code>; otherwise, it generates <code>docula.config.mjs</code>. You can override this with the <code>--typescript</code> or <code>--javascript</code> flags.</p>
+<h3 id="flags">Flags</h3>
+<p>In addition to the <a href="#common-options">Common Options</a>:</p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--typescript</code></td>
+<td>Force a TypeScript config file (<code>docula.config.ts</code>)</td>
+<td>auto-detect</td>
+</tr>
+<tr>
+<td><code>--javascript</code></td>
+<td>Force a JavaScript config file (<code>docula.config.mjs</code>)</td>
+<td>auto-detect</td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples">Examples</h3>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Initialize (auto-detects TypeScript from tsconfig.json)</span>
+npx docula init
+
+<span class="hljs-comment"># Force TypeScript config</span>
+npx docula init --typescript
+
+<span class="hljs-comment"># Force JavaScript config</span>
+npx docula init --javascript
+
+<span class="hljs-comment"># Initialize in a custom directory</span>
+npx docula init -s ./docs-site
+</code></pre>
+<h2 id="download">download</h2>
+<p>Downloads template files from the active template into your site directory. Use one of the subcommands below to choose what to download. If a target file or directory already exists, the command prints an error and exits. Use <code>--overwrite</code> to replace it.</p>
+<h3 id="subcommands">Subcommands</h3>
+<table>
+<thead>
+<tr>
+<th>Subcommand</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>variables</code></td>
+<td>Copy <code>variables.css</code> to <code>site/variables.css</code></td>
+</tr>
+<tr>
+<td><code>template</code></td>
+<td>Copy the full template to <code>site/templates/&#x3C;name>/</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="flags-1">Flags</h3>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--overwrite</code></td>
+<td>Overwrite existing files if they already exist</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples-1">Examples</h3>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Copy variables.css for the current (modern) template</span>
+npx docula download variables
+
+<span class="hljs-comment"># Copy variables.css in a custom site directory</span>
+npx docula download variables -s ./my-site
+
+<span class="hljs-comment"># Overwrite an existing variables.css</span>
+npx docula download variables --overwrite
+
+<span class="hljs-comment"># Copy the full modern template to site/templates/modern/</span>
+npx docula download template
+
+<span class="hljs-comment"># Copy the classic template</span>
+npx docula download template --template classic
+
+<span class="hljs-comment"># Overwrite an existing template copy</span>
+npx docula download template --overwrite
+</code></pre>
+<h2 id="build">build</h2>
+<p>Builds your site and outputs the result to the configured output directory. This is the default command — running <code>npx docula</code> without a subcommand is equivalent to <code>npx docula build</code>.</p>
+<pre><code class="hljs language-bash">npx docula build
+</code></pre>
+<h3 id="flags-2">Flags</h3>
+<p>In addition to the <a href="#common-options">Common Options</a>:</p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-t, --templatePath &#x3C;path></code></td>
+<td>Set a custom template directory path</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>-T, --template &#x3C;name></code></td>
+<td>Set the built-in template name (e.g., <code>modern</code>)</td>
+<td><code>modern</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples-2">Examples</h3>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Build with defaults</span>
+npx docula
+
+<span class="hljs-comment"># Build with a custom site path and output directory</span>
+npx docula build -s ./my-site -o ./my-site/dist
+
+<span class="hljs-comment"># Build with a custom template</span>
+npx docula build --template classic
+
+<span class="hljs-comment"># Clean build</span>
+npx docula build --clean
+</code></pre>
+<h2 id="dev">dev</h2>
+<p>Builds your site, starts watching for file changes, and serves it locally — all in one command. This is the recommended way to develop locally.</p>
+<pre><code class="hljs language-bash">npx docula dev
+</code></pre>
+<h3 id="flags-3">Flags</h3>
+<p>In addition to the <a href="#common-options">Common Options</a>:</p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-t, --templatePath &#x3C;path></code></td>
+<td>Set a custom template directory path</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>-T, --template &#x3C;name></code></td>
+<td>Set the built-in template name (e.g., <code>modern</code>)</td>
+<td><code>modern</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples-3">Examples</h3>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Build, watch, and serve on default port 3000</span>
+npx docula dev
+
+<span class="hljs-comment"># Serve on a custom port</span>
+npx docula dev -p 8080
+
+<span class="hljs-comment"># Clean build, watch, and serve</span>
+npx docula dev --clean
+</code></pre>
+<h2 id="start">start</h2>
+<p>Builds the site and serves it locally. By default it does not watch for file changes, but you can pass <code>--watch</code> to enable live rebuilds.</p>
+<pre><code class="hljs language-bash">npx docula start
+</code></pre>
+<p>All flags for <code>start</code> are covered by the <a href="#common-options">Common Options</a>.</p>
+<h3 id="examples-4">Examples</h3>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Build and serve on default port 3000</span>
+npx docula start
+
+<span class="hljs-comment"># Build and serve on a custom port</span>
+npx docula start -p 8080
+
+<span class="hljs-comment"># Clean build and serve</span>
+npx docula start --clean
+
+<span class="hljs-comment"># Build, serve, and watch for changes</span>
+npx docula start --watch
+</code></pre>
+<h2 id="serve">serve</h2>
+<p>Starts a local development server for your site. By default it listens on port 3000 and serves the existing output directory without running a build. Use <code>--build</code> to run a one-time build before serving, or <code>--watch</code> to build first and then automatically rebuild on file changes.</p>
+<pre><code class="hljs language-bash">npx docula serve
+</code></pre>
+<h3 id="flags-4">Flags</h3>
+<p>In addition to the <a href="#common-options">Common Options</a>:</p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-b, --build</code></td>
+<td>Build the site before serving</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples-5">Examples</h3>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Serve the existing build on default port 3000</span>
+npx docula serve
+
+<span class="hljs-comment"># Serve on a custom port</span>
+npx docula serve -p 8080
+
+<span class="hljs-comment"># Build once and serve</span>
+npx docula serve --build
+
+<span class="hljs-comment"># Build, serve, and watch for changes</span>
+npx docula serve --watch
+
+<span class="hljs-comment"># Clean build, serve, and watch for changes</span>
+npx docula serve --clean --watch
+</code></pre>
+<h2 id="watch-mode">Watch Mode</h2>
+<p>Use the <code>--watch</code> flag with either <code>build</code> or <code>serve</code> to automatically rebuild your site when files change:</p>
+<pre><code class="hljs language-bash">npx docula serve --watch
+</code></pre>
+<p>When watch mode is enabled:</p>
+<ol>
+<li>An initial build runs at startup</li>
+<li>The dev server starts and serves your site (when using <code>serve</code>)</li>
+<li>File changes in the site directory (e.g., <code>./site</code>) are detected and trigger an automatic rebuild</li>
+<li>Changes in the output directory are ignored to prevent rebuild loops</li>
+</ol>
+<p>This is useful during development when you want to see changes reflected immediately without manually re-running the build.</p>
+<h2 id="common-workflows">Common Workflows</h2>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Quick start: scaffold and develop (auto-detects TypeScript)</span>
+npx docula init
+npx docula download variables
+npx docula dev
+
+<span class="hljs-comment"># Production build</span>
+npx docula build --clean
+
+<span class="hljs-comment"># Force TypeScript config</span>
+npx docula init --typescript
+npx docula dev
+
+<span class="hljs-comment"># Custom paths</span>
+npx docula build -s ./website -o ./website/dist
+</code></pre>

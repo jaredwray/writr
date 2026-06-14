@@ -1,0 +1,19 @@
+<h1 id="security-policy">Security Policy</h1>
+<h2 id="reporting-a-vulnerability">Reporting a Vulnerability</h2>
+<p>To report a security vulnerability, please send an email to <a href="mailto:me@jaredwray.com">me@jaredwray.com</a>. Once the report has been validated, we will open a <a href="https://docs.github.com/en/code-security/repository-security-advisories/about-github-security-advisories-for-repositories">Github Security Advisory</a>, if necessary.</p>
+<h2 id="continuous-security-scanning">Continuous Security Scanning</h2>
+<p>We take the security of Docula seriously and have multiple layers of automated scanning in place to detect vulnerabilities as early as possible:</p>
+<ul>
+<li><strong>Aikido Security</strong>: We use <a href="https://www.aikido.dev/">Aikido</a> to continuously scan our codebase, dependencies, and infrastructure for vulnerabilities. You can review our public audit report by clicking the badge above.</li>
+<li><strong>Pull Request Scans</strong>: Every pull request opened against the <code>main</code> branch is automatically scanned for security issues before it can be merged. This ensures that no new code lands in <code>main</code> without first being reviewed for known vulnerabilities, insecure dependencies, and common security pitfalls.</li>
+<li><strong>CodeQL Analysis</strong>: We run <a href="https://codeql.github.com/">GitHub CodeQL</a> static analysis on pushes to <code>main</code> and on every pull request targeting <code>main</code> to identify potential security issues in our source code.</li>
+</ul>
+<h2 id="npm-package-provenance">npm Package Provenance</h2>
+<p>Docula is published to <a href="https://www.npmjs.com/package/docula">npmjs.org</a> with <a href="https://docs.npmjs.com/generating-provenance-statements">npm package provenance</a> enabled via GitHub Actions. Provenance statements provide cryptographically verifiable links between published packages and the source code and build process that produced them.</p>
+<p>This means that when you install Docula from npm, you can verify:</p>
+<ul>
+<li>The exact source repository and commit the package was built from.</li>
+<li>The GitHub Actions workflow that built and published the package.</li>
+<li>That the package has not been tampered with between build and publish.</li>
+</ul>
+<p>Our release workflow (<code>.github/workflows/release.yaml</code>) uses the <code>--provenance</code> flag when publishing, and the GitHub Actions runner is granted the <code>id-token: write</code> permission required to generate the signed provenance statement. You can verify the provenance of any published version directly on the <a href="https://www.npmjs.com/package/docula">Docula npm page</a> or via <code>npm audit signatures</code>.</p>

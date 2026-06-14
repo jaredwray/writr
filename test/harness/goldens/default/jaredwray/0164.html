@@ -1,0 +1,141 @@
+<h1 id="changelog">Changelog</h1>
+<p>Docula can generate a changelog section for your site from markdown files. This is useful for documenting release notes, updates, and changes to your project in a structured, browsable format.</p>
+<h2 id="setup">Setup</h2>
+<p>Create a <code>changelog</code> folder inside your site directory and add markdown (<code>.md</code> or <code>.mdx</code>) files for each entry:</p>
+<pre><code>site
+├───changelog
+│   ├───2025-01-15-initial-release.md
+│   ├───2025-02-01-new-features.md
+│   └───2025-03-10-bug-fixes.md
+├───logo.svg
+├───favicon.ico
+└───docula.config.mjs
+</code></pre>
+<h2 id="entry-format">Entry Format</h2>
+<p>Each changelog entry is a markdown file with front matter:</p>
+<pre><code class="hljs language-md">---
+title: "Initial Release"
+date: 2025-01-15
+<span class="hljs-section">tag: "Release"
+---</span>
+
+We're excited to announce the initial release! Here's what's included:
+
+<span class="hljs-bullet">-</span> Feature A
+<span class="hljs-bullet">-</span> Feature B
+<span class="hljs-bullet">-</span> Bug fix C
+</code></pre>
+<h3 id="front-matter-fields">Front Matter Fields</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>title</code></td>
+<td>No</td>
+<td>Display title for the entry. Defaults to the filename if not provided.</td>
+</tr>
+<tr>
+<td><code>date</code></td>
+<td>Yes</td>
+<td>Date of the entry (<code>YYYY-MM-DD</code>). Used for sorting (newest first).</td>
+</tr>
+<tr>
+<td><code>tag</code></td>
+<td>No</td>
+<td>A label displayed as a badge (e.g., <code>Release</code>, <code>Bug Fix</code>, <code>Feature</code>). Gets a CSS class based on its value for styling.</td>
+</tr>
+<tr>
+<td><code>draft</code></td>
+<td>No</td>
+<td>When <code>true</code>, the entry is excluded from the build output. Useful for work-in-progress entries.</td>
+</tr>
+<tr>
+<td><code>previewImage</code></td>
+<td>No</td>
+<td>Image URL displayed above the preview on the changelog listing page.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="draft-entries">Draft Entries</h2>
+<p>To hide a changelog entry from the build output, add <code>draft: true</code> to the front matter:</p>
+<pre><code class="hljs language-md">---
+title: "Upcoming Feature"
+date: 2025-04-01
+tag: "Feature"
+<span class="hljs-section">draft: true
+---</span>
+
+This entry won't appear on the site until <span class="hljs-code">`draft`</span> is removed or set to <span class="hljs-code">`false`</span>.
+</code></pre>
+<p>Draft entries are still parsed but excluded from the changelog listing, individual entry pages, sitemaps, and feeds. This is useful for preparing entries ahead of a release.</p>
+<h2 id="file-naming">File Naming</h2>
+<p>Files can optionally be prefixed with a date in <code>YYYY-MM-DD-</code> format. The date prefix is stripped to create the URL slug:</p>
+<ul>
+<li><code>2025-01-15-initial-release.md</code> → <code>/changelog/initial-release/</code></li>
+<li><code>new-features.md</code> → <code>/changelog/new-features/</code></li>
+</ul>
+<h2 id="generated-pages">Generated Pages</h2>
+<p>When changelog entries are found, Docula generates:</p>
+<ul>
+<li><strong>Changelog listing page</strong> at <code>/changelog/</code> — shows all entries sorted by date (newest first) with titles, dates, tags, and content</li>
+<li><strong>Individual entry pages</strong> at <code>/changelog/{slug}/</code> — a dedicated page for each entry with a back link to the listing</li>
+</ul>
+<p>Changelog URLs are also automatically added to the generated <code>sitemap.xml</code>.</p>
+<h2 id="json-feeds">JSON Feeds</h2>
+<p>When changelog entries exist, Docula automatically generates two JSON Feed files at the root of your output directory:</p>
+<ul>
+<li><strong><code>changelog.json</code></strong> — contains all changelog entries</li>
+<li><strong><code>changelog-latest.json</code></strong> — contains only the most recent entries, limited by the <code>changelogPerPage</code> setting (default 20)</li>
+</ul>
+<p>Both files follow the <a href="https://www.jsonfeed.org/version/1.1/">JSON Feed v1.1</a> specification and include full entry content in both HTML and markdown formats, making them useful for programmatic consumption, integrations, or building custom changelog UIs.</p>
+<h3 id="example-structure">Example Structure</h3>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"version"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"https://jsonfeed.org/version/1.1"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"title"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"My Project"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"description"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Project description"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"home_page_url"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"https://your-site.com/"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"feed_url"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"https://your-site.com/changelog.json"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"items"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"initial-release"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"title"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Initial Release"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"url"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"https://your-site.com/changelog/initial-release"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"date_published"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"2025-01-15"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"date_modified"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"2025-01-15"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"summary"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"We're excited to announce the initial release!"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"content_html"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"&#x3C;p>We're excited to announce the initial release!&#x3C;/p>"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"content_text"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"We're excited to announce the initial release!"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"tags"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"Release"</span><span class="hljs-punctuation">]</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h2 id="styling">Styling</h2>
+<p>Tags receive a CSS class based on their value (e.g., a tag of <code>"Bug Fix"</code> gets the class <code>changelog-tag-bug-fix</code>). You can style tags and other changelog elements by overriding these classes in your <code>variables.css</code>:</p>
+<pre><code class="hljs language-css"><span class="hljs-selector-class">.changelog-entry</span> {
+  <span class="hljs-attribute">border-bottom</span>: <span class="hljs-number">1px</span> solid <span class="hljs-built_in">var</span>(--border);
+  <span class="hljs-attribute">padding</span>: <span class="hljs-number">1.5rem</span> <span class="hljs-number">0</span>;
+}
+
+<span class="hljs-selector-class">.changelog-tag</span> {
+  <span class="hljs-attribute">font-size</span>: <span class="hljs-number">0.75rem</span>;
+  <span class="hljs-attribute">padding</span>: <span class="hljs-number">0.2rem</span> <span class="hljs-number">0.5rem</span>;
+  <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">4px</span>;
+}
+
+<span class="hljs-selector-class">.changelog-tag-release</span> {
+  <span class="hljs-attribute">background-color</span>: <span class="hljs-number">#d4edda</span>;
+  <span class="hljs-attribute">color</span>: <span class="hljs-number">#155724</span>;
+}
+
+<span class="hljs-selector-class">.changelog-tag-bug-fix</span> {
+  <span class="hljs-attribute">background-color</span>: <span class="hljs-number">#f8d7da</span>;
+  <span class="hljs-attribute">color</span>: <span class="hljs-number">#721c24</span>;
+}
+</code></pre>

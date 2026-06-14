@@ -1,0 +1,768 @@
+<h1 id="keyv-v6-in-progress">Keyv v6 (In Progress)</h1>
+<p>We are pleased to announce Keyv v6 with major enhancements and some breaking changes. This guide will help you understand how to migrate from v5 to v6. For most users, the transition will be straightforward.</p>
+<p><strong>Important:</strong> With the release of v6, Keyv v5 will move to maintenance mode. This means v5 will only receive security fixes and minor maintenance updates. We encourage all users to migrate to v6 to take advantage of the latest features and improvements. You can view the <code>v5</code> branch in the the mono repo.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#roadmap--progress">Roadmap &#x26; Progress</a></li>
+<li><a href="#quick-migration-guide">Quick Migration Guide</a></li>
+<li><a href="#breaking-changes">Breaking Changes</a>
+<ul>
+<li><a href="#namespace-overhaul">Namespace Overhaul</a></li>
+<li><a href="#opts-property-removed"><code>opts</code> Property Removed</a></li>
+<li><a href="#serialization-replaces-stringify-and-parse">Serialization Replaces <code>stringify</code> and <code>parse</code></a></li>
+<li><a href="#hookified-for-events-and-hooks">Hookified for Events and Hooks</a></li>
+<li><a href="#deletemany-returns-boolean"><code>deleteMany</code> Returns <code>boolean[]</code></a></li>
+<li><a href="#setmany-uses-keyventry-and-returns-boolean"><code>setMany</code> Uses <code>KeyvEntry[]</code> and Returns <code>boolean[]</code></a></li>
+<li><a href="#get-and-getmany-no-longer-support-raw"><code>get</code> and <code>getMany</code> No Longer Support Raw</a></li>
+<li><a href="#iterator-changes">Iterator Changes</a></li>
+<li><a href="#removed-ttlsupport-from-storage-adapters">Removed <code>.ttlSupport</code> from Storage Adapters</a></li>
+<li><a href="#returns-undefined-instead-of-null">Returns <code>undefined</code> Instead of <code>null</code></a></li>
+<li><a href="#compression-adapter-interface-change">Compression Adapter Interface Change</a></li>
+<li><a href="#keyvmemcache-moves-from-memjs-to-memcache"><code>@keyv/memcache</code> Moves from <code>memjs</code> to <code>memcache</code></a></li>
+</ul>
+</li>
+<li><a href="#new-features">New Features</a>
+<ul>
+<li><a href="#keyv-v6-versioning">Keyv v6 Versioning</a></li>
+<li><a href="#keyv-v5-maintenance-mode">Keyv v5 Maintenance Mode</a></li>
+<li><a href="#browser-compatibility">Browser Compatibility</a></li>
+<li><a href="#serialization-adapters">Serialization Adapters</a>
+<ul>
+<li><a href="#disabling-serialization">Disabling Serialization</a></li>
+<li><a href="#custom-serialization">Custom Serialization</a></li>
+</ul>
+</li>
+<li><a href="#encryption-adapters">Encryption Adapters</a>
+<ul>
+<li><a href="#custom-encryption">Custom Encryption</a></li>
+</ul>
+</li>
+<li><a href="#native-hashing-for-key-and-namespace">Native Hashing for Key and Namespace</a></li>
+<li><a href="#new-identification-functions">New Identification Functions</a>
+<ul>
+<li><a href="#iskeyv"><code>isKeyv</code></a></li>
+<li><a href="#iskeyvstorage"><code>isKeyvStorage</code></a></li>
+<li><a href="#additional-capability-checks">Additional Capability Checks</a></li>
+</ul>
+</li>
+<li><a href="#memory-adapter">Memory Adapter</a></li>
+</ul>
+</li>
+<li><a href="#getting-help">Getting Help</a></li>
+</ul>
+<h2 id="roadmap--progress">Roadmap &#x26; Progress</h2>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Remove <code>opts</code> property in Keyv and Storage Adapters</td>
+<td>IN PROGRESS</td>
+</tr>
+<tr>
+<td>Add encryption adapters</td>
+<td>NOT STARTED</td>
+</tr>
+<tr>
+<td>Browser compatibility</td>
+<td>NOT STARTED</td>
+</tr>
+<tr>
+<td>Stats System to be Event Driven</td>
+<td>NOT STARTED</td>
+</tr>
+<tr>
+<td>Test Suite Overhaul</td>
+<td>NOT STARTED</td>
+</tr>
+<tr>
+<td>Refactor iterator implementation</td>
+<td>COMPLETED</td>
+</tr>
+<tr>
+<td>Update <code>deleteMany</code> return type</td>
+<td>COMPLETED</td>
+</tr>
+<tr>
+<td>Update <code>setMany</code> signature and return type</td>
+<td>COMPLETED</td>
+</tr>
+<tr>
+<td>Add compression interface standardization</td>
+<td>COMPLETED</td>
+</tr>
+<tr>
+<td>Integrate Hookified library in Keyv</td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Keyv core does not do keyPrefixing</td>
+<td>COMPLETED</td>
+</tr>
+<tr>
+<td>Update <code>@keyv/sqlite</code></td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Update <code>@keyv/dynamo</code></td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Update <code>@keyv/etcd</code></td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Update <code>@keyv/valkey</code></td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Finalize namespace handling in storage adapters</td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Add <code>getRaw</code> and <code>getManyRaw</code> methods</td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Implement <code>KeyvMemoryAdapter</code></td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Add serialization adapters</td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Migrate <code>@keyv/memcache</code> from <code>memjs</code> to <code>memcache</code></td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Update <code>@keyv/bigmap</code></td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Update <code>@keyv/mongo</code></td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Update <code>@keyv/mysql</code></td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Update <code>@keyv/postgres</code></td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Update <code>@keyv/redis</code></td>
+<td>COMPLETE</td>
+</tr>
+<tr>
+<td>Add GitHub Actions release workflow</td>
+<td>COMPLETE</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="quick-migration-guide">Quick Migration Guide</h2>
+<p>For most users, migrating from v5 to v6 involves a few key changes:</p>
+<ol>
+<li>
+<p><strong>Update property access</strong> - The <code>opts</code> property has been removed. Use direct property access instead (<code>keyv.namespace</code> instead of the old <code>keyv.opts.namespace</code>)</p>
+</li>
+<li>
+<p><strong>Update serialization</strong> - Replace <code>serialize</code>/<code>deserialize</code> options with the new <code>serialization</code> adapter:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// v5</span>
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">serialize</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-property">stringify</span>, <span class="hljs-attr">deserialize</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-property">parse</span> });
+
+<span class="hljs-comment">// v6</span>
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvSerialize</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/serialize'</span>;
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">serialization</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvSerialize</span>() });
+</code></pre>
+</li>
+<li>
+<p><strong>Update raw value access</strong> - Replace <code>get(key, { raw: true })</code> with <code>getRaw(key)</code> and <code>getMany(keys, { raw: true })</code> with <code>getManyRaw(keys)</code></p>
+</li>
+<li>
+<p><strong>Handle new return types</strong> - <code>deleteMany</code> and <code>setMany</code> now return <code>boolean[]</code> instead of a single <code>boolean</code></p>
+</li>
+</ol>
+<p>For detailed information on each change, see the sections below.</p>
+<hr>
+<h2 id="breaking-changes">Breaking Changes</h2>
+<h3 id="namespace-overhaul">Namespace Overhaul</h3>
+<p>We have finalized the transition (started in v5) to move all namespace handling to the storage adapters themselves. When you set the namespace on Keyv, it passes it directly to the storage adapter.</p>
+<p><strong>What changed:</strong></p>
+<ul>
+<li><code>useKeyPrefix</code> property has been removed</li>
+<li><code>keyPrefix</code> property has been removed</li>
+<li>Key prefixing is no longer done at the Keyv layer</li>
+</ul>
+<p><strong>v5 (before):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({
+  <span class="hljs-attr">namespace</span>: <span class="hljs-string">'myapp'</span>,
+  <span class="hljs-attr">useKeyPrefix</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">keyPrefix</span>: <span class="hljs-string">'prefix:'</span>
+});
+</code></pre>
+<p><strong>v6 (after):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">namespace</span>: <span class="hljs-string">'myapp'</span> });
+<span class="hljs-comment">// Namespace is handled directly by the storage adapter</span>
+</code></pre>
+<p>For legacy storage adapters or <code>Map</code>-compatible stores, we have added <code>KeyvMemoryAdapter</code> which handles advanced features without overloading the main Keyv codebase. See <a href="#memory-adapter">Memory Adapter</a> for more details.</p>
+<hr>
+<h3 id="opts-property-removed"><code>opts</code> Property Removed</h3>
+<p>In Keyv v5, we began removing <code>opts</code> as a passed-around value. In v6, <code>opts</code> has been fully removed from the <code>KeyvStorageAdapter</code> interface and all storage adapters. The <code>dialect</code> property has also been removed. All properties are now directly part of the Keyv class and each storage adapter.</p>
+<p><strong>v5 (before):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(keyv.<span class="hljs-property">opts</span>.<span class="hljs-property">namespace</span>);
+</code></pre>
+<p><strong>v6 (after):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(keyv.<span class="hljs-property">namespace</span>);
+</code></pre>
+<hr>
+<h3 id="serialization-replaces-stringify-and-parse">Serialization Replaces <code>stringify</code> and <code>parse</code></h3>
+<p>The <code>stringify</code> and <code>parse</code> options have been replaced with the new <code>serialization</code> property that accepts a serialization adapter.</p>
+<p><strong>v5 (before):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({
+  <span class="hljs-attr">serialize</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-property">stringify</span>,
+  <span class="hljs-attr">deserialize</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-property">parse</span>
+});
+</code></pre>
+<p><strong>v6 (after):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvSerialize</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/serialize'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">serialization</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvSerialize</span>() });
+</code></pre>
+<p>See <a href="#serialization-adapters">Serialization Adapters</a> for more details.</p>
+<hr>
+<h3 id="hookified-for-events-and-hooks">Hookified for Events and Hooks</h3>
+<p>Keyv now extends <a href="https://hookified.org">Hookified</a> directly, replacing the custom <code>EventManager</code> and <code>HooksManager</code> classes. This unifies the event/hook system across Keyv and all storage adapters.</p>
+<p><strong>Breaking Changes:</strong></p>
+<ul>
+<li><code>keyv.hooks.addHandler(event, fn)</code> is replaced by <code>keyv.addHook(event, fn)</code></li>
+<li><code>keyv.hooks.removeHandler(event, fn)</code> is replaced by <code>keyv.removeHook({ event, handler: fn })</code></li>
+<li><code>keyv.hooks.handlers</code> is replaced by <code>keyv.hooks</code> (a <code>Map&#x3C;string, IHook[]></code>)</li>
+<li>Hook names changed from <code>pre</code>/<code>post</code> to <code>before:</code>/<code>after:</code> convention</li>
+<li>The <code>emitErrors</code> option has been removed</li>
+<li><code>throwOnErrors</code> behavior changed: it now only throws when there are <strong>no</strong> error listeners registered (standard EventEmitter pattern). In v5, it would always re-throw after emitting.</li>
+</ul>
+<p><strong>Hook Name Migration:</strong></p>
+<table>
+<thead>
+<tr>
+<th>v5 Hook</th>
+<th>v6 Hook</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>KeyvHooks.PRE_SET</code> (<code>"preSet"</code>)</td>
+<td><code>KeyvHooks.BEFORE_SET</code> (<code>"before:set"</code>)</td>
+</tr>
+<tr>
+<td><code>KeyvHooks.POST_SET</code> (<code>"postSet"</code>)</td>
+<td><code>KeyvHooks.AFTER_SET</code> (<code>"after:set"</code>)</td>
+</tr>
+<tr>
+<td><code>KeyvHooks.PRE_GET</code> (<code>"preGet"</code>)</td>
+<td><code>KeyvHooks.BEFORE_GET</code> (<code>"before:get"</code>)</td>
+</tr>
+<tr>
+<td><code>KeyvHooks.POST_GET</code> (<code>"postGet"</code>)</td>
+<td><code>KeyvHooks.AFTER_GET</code> (<code>"after:get"</code>)</td>
+</tr>
+<tr>
+<td><code>KeyvHooks.PRE_DELETE</code> (<code>"preDelete"</code>)</td>
+<td><code>KeyvHooks.BEFORE_DELETE</code> (<code>"before:delete"</code>)</td>
+</tr>
+<tr>
+<td><code>KeyvHooks.POST_DELETE</code> (<code>"postDelete"</code>)</td>
+<td><code>KeyvHooks.AFTER_DELETE</code> (<code>"after:delete"</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>The same pattern applies for <code>GET_MANY</code>, <code>GET_RAW</code>, <code>GET_MANY_RAW</code>, <code>SET_RAW</code>, <code>SET_MANY_RAW</code> hooks.</p>
+<p>The old <code>PRE_</code>/<code>POST_</code> enum values are deprecated but still work. Keyv will emit deprecation warnings when they are used.</p>
+<p><strong>v5 (before):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span>, { <span class="hljs-title class_">KeyvHooks</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+keyv.<span class="hljs-property">hooks</span>.<span class="hljs-title function_">addHandler</span>(<span class="hljs-title class_">KeyvHooks</span>.<span class="hljs-property">PRE_SET</span>, <span class="hljs-function">(<span class="hljs-params">data</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Setting <span class="hljs-subst">${data.key}</span>`</span>);
+});
+</code></pre>
+<p><strong>v6 (after):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span>, { <span class="hljs-title class_">KeyvHooks</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+keyv.<span class="hljs-title function_">addHook</span>(<span class="hljs-title class_">KeyvHooks</span>.<span class="hljs-property">BEFORE_SET</span>, <span class="hljs-function">(<span class="hljs-params">data</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Setting <span class="hljs-subst">${data.key}</span>`</span>);
+});
+</code></pre>
+<p><strong>Events:</strong>
+Events work the same as before, but now use Hookified internally:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+
+keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">(<span class="hljs-params">err</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'Keyv error:'</span>, err);
+});
+
+keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'disconnect'</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Disconnected'</span>);
+});
+</code></pre>
+<p><strong>Error Handling:</strong>
+The <code>throwOnErrors</code> option still works and defaults to <code>false</code>. When enabled, errors will throw if there are <strong>no</strong> error listeners registered (via hookified's <code>throwOnEmitError</code>). If you have an error listener, the error is passed to the listener instead of being thrown. This follows the standard Node.js EventEmitter pattern.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">throwOnErrors</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-comment">// Error will throw because there is no error listener</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>); <span class="hljs-comment">// throws if the store errors</span>
+
+<span class="hljs-comment">// Error will NOT throw because there is a listener handling it</span>
+keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">(<span class="hljs-params">err</span>) =></span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(err));
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>); <span class="hljs-comment">// error passed to listener instead</span>
+</code></pre>
+<p>Additionally, <code>throwOnEmptyListeners</code> is now enabled by default. This means that if an error event is emitted with <strong>no</strong> error listeners registered, it will always throw — even without <code>throwOnErrors</code> enabled. This is the standard Node.js EventEmitter behavior for unhandled errors. To silently discard errors, register a no-op listener:</p>
+<pre><code class="hljs language-javascript">keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">() =></span> {});
+</code></pre>
+<p>For more about Hookified, visit <a href="https://hookified.org">https://hookified.org</a>.</p>
+<hr>
+<h3 id="deletemany-returns-boolean"><code>deleteMany</code> Returns <code>boolean[]</code></h3>
+<p><code>deleteMany</code> now returns a <code>boolean[]</code> indicating the success of each deletion. The <code>StorageAdapter</code> interface has been updated accordingly.</p>
+<p><strong>v5 (before):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">deleteMany</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>]);
+<span class="hljs-comment">// result was: boolean (true if all deleted)</span>
+</code></pre>
+<p><strong>v6 (after):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">deleteMany</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>]);
+<span class="hljs-comment">// results: [true, true] - boolean for each key</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(results[<span class="hljs-number">0</span>]); <span class="hljs-comment">// true - key1 was deleted</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(results[<span class="hljs-number">1</span>]); <span class="hljs-comment">// true - key2 was deleted</span>
+</code></pre>
+<hr>
+<h3 id="setmany-uses-keyventry-and-returns-boolean"><code>setMany</code> Uses <code>KeyvEntry[]</code> and Returns <code>boolean[]</code></h3>
+<p><code>setMany</code> now uses the <code>KeyvEntry[]</code> type for input and returns <code>boolean[]</code> to indicate success for each entry.</p>
+<p><strong>v5 (before):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">setMany</span>([
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key1'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value1'</span> },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key2'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value2'</span> }
+]);
+</code></pre>
+<p><strong>v6 (after):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+
+<span class="hljs-comment">// Using KeyvEntry[] type</span>
+<span class="hljs-keyword">const</span> entries = [
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key1'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value1'</span>, <span class="hljs-attr">ttl</span>: <span class="hljs-number">1000</span> },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key2'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value2'</span> }
+];
+
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">setMany</span>(entries);
+<span class="hljs-comment">// results: [true, true] - boolean for each entry</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(results[<span class="hljs-number">0</span>]); <span class="hljs-comment">// true - key1 was set</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(results[<span class="hljs-number">1</span>]); <span class="hljs-comment">// true - key2 was set</span>
+</code></pre>
+<hr>
+<h3 id="get-and-getmany-no-longer-support-raw"><code>get</code> and <code>getMany</code> No Longer Support Raw</h3>
+<p>Since Keyv v5.5, we added <code>getRaw</code> and <code>getManyRaw</code> methods. In v6, raw support has been removed from <code>get</code> and <code>getMany</code>.</p>
+<p><strong>v5 (before):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>, <span class="hljs-number">1000</span>);
+
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>);
+<span class="hljs-keyword">const</span> rawValue = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>, { <span class="hljs-attr">raw</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-comment">// rawValue: { value: 'value', expires: 1234567890 }</span>
+</code></pre>
+<p><strong>v6 (after):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>, <span class="hljs-number">1000</span>);
+
+<span class="hljs-comment">// Use get for the value</span>
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>);
+<span class="hljs-comment">// value: 'value'</span>
+
+<span class="hljs-comment">// Use getRaw for the raw format</span>
+<span class="hljs-keyword">const</span> rawValue = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">getRaw</span>(<span class="hljs-string">'key'</span>);
+<span class="hljs-comment">// rawValue: { value: 'value', expires: 1234567890 }</span>
+
+<span class="hljs-comment">// For multiple keys</span>
+<span class="hljs-keyword">const</span> values = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">getMany</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>]);
+<span class="hljs-keyword">const</span> rawValues = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">getManyRaw</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>]);
+</code></pre>
+<hr>
+<h3 id="iterator-changes">Iterator Changes</h3>
+<p>The iterator is now a proper class method instead of a dynamically assigned property. It no longer requires any arguments — namespace handling is automatic.</p>
+<p>Key changes:</p>
+<ul>
+<li><code>iterator()</code> is now a built-in async generator method, not an assignable property</li>
+<li>No arguments required (previously required <code>keyv.namespace</code>)</li>
+<li>Automatically handles Map stores, storage adapters with <code>iterator()</code>, and unsupported stores</li>
+<li>Expired entries are automatically filtered and deleted during iteration</li>
+<li>The <code>IteratorFunction</code> type has been removed</li>
+<li>If the store does not support iteration, an <code>error</code> event is emitted instead of throwing</li>
+</ul>
+<p><strong>v5 (before):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+
+<span class="hljs-keyword">for</span> <span class="hljs-title function_">await</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> keyv.<span class="hljs-title function_">iterator</span>(keyv.<span class="hljs-property">namespace</span>)) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key, value);
+}
+</code></pre>
+<p><strong>v6 (after):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+
+<span class="hljs-keyword">for</span> <span class="hljs-title function_">await</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> keyv.<span class="hljs-title function_">iterator</span>()) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key, value);
+}
+</code></pre>
+<hr>
+<h3 id="removed-ttlsupport-from-storage-adapters">Removed <code>.ttlSupport</code> from Storage Adapters</h3>
+<p>The <code>ttlSupport</code> property has been removed from storage adapters. Keyv now automatically detects the storage adapter type and uses <code>KeyvMemoryAdapter</code> for adapters that don't natively support TTL.</p>
+<p><strong>v5 (before):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyAdapter</span> {
+  ttlSupport = <span class="hljs-literal">false</span>;
+  <span class="hljs-comment">// ...</span>
+}
+</code></pre>
+<p><strong>v6 (after):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// No need to specify ttlSupport</span>
+<span class="hljs-comment">// Keyv automatically handles TTL through KeyvMemoryAdapter if needed</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyAdapter</span> {
+  <span class="hljs-comment">// ...</span>
+}
+</code></pre>
+<hr>
+<h3 id="returns-undefined-instead-of-null">Returns <code>undefined</code> Instead of <code>null</code></h3>
+<p>Keyv now consistently returns <code>undefined</code> instead of <code>null</code> for missing values. Previously, some storage adapters returned <code>null</code>, which was passed through. Now we normalize to <code>undefined</code>.</p>
+<p><strong>v5 (before):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'nonexistent'</span>);
+<span class="hljs-comment">// value could be null or undefined depending on the adapter</span>
+</code></pre>
+<p><strong>v6 (after):</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'nonexistent'</span>);
+<span class="hljs-comment">// value is always undefined</span>
+</code></pre>
+<hr>
+<h3 id="compression-adapter-interface-change">Compression Adapter Interface Change</h3>
+<p>Compression adapters now use a simplified interface:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">KeyvCompression</span> {
+  <span class="hljs-attr">compress</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">value</span>: <span class="hljs-built_in">string</span></span>) =></span> <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">decompress</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">value</span>: <span class="hljs-built_in">string</span></span>) =></span> T;
+}
+</code></pre>
+<p><strong>Important:</strong> Compression requires <code>serialization</code> to be enabled (default) or values must be strings.</p>
+<p><strong>v6 usage:</strong></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvGzip</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/compress-gzip'</span>;
+
+<span class="hljs-keyword">const</span> compression = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvGzip</span>();
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ compression });
+
+<span class="hljs-comment">// Serialization is enabled by default (@keyv/serialize)</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, { <span class="hljs-attr">foo</span>: <span class="hljs-string">'bar'</span> });
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> Encryption and compression require string values. If your values are not strings, you must use <code>serialization</code>.</p>
+</blockquote>
+<hr>
+<h3 id="keyvmemcache-moves-from-memjs-to-memcache"><code>@keyv/memcache</code> Moves from <code>memjs</code> to <code>memcache</code></h3>
+<p>The <code>@keyv/memcache</code> package will switch its underlying Memcached client library from <a href="https://www.npmjs.com/package/memjs"><code>memjs</code></a> to <a href="https://www.npmjs.com/package/memcache"><code>memcache</code></a>.</p>
+<p><strong>Why the change:</strong></p>
+<ul>
+<li><code>memjs</code> uses the binary protocol and has not been actively maintained</li>
+<li><code>memcache</code> is actively maintained with a promise-based API and support for features such as consistent hashing, connection pooling, and hooks/events</li>
+</ul>
+<p><strong>What this means for you:</strong></p>
+<ul>
+<li>If you are using <code>@keyv/memcache</code> through Keyv with default settings, <strong>no changes are needed</strong> — the adapter API remains the same</li>
+<li>If you are passing <code>memjs</code>-specific client options through to the underlying client, you will need to update them to match the <code>memcache</code> client API</li>
+</ul>
+<hr>
+<h2 id="new-features">New Features</h2>
+<h3 id="keyv-v6-versioning">Keyv v6 Versioning</h3>
+<p>Starting with v6, all Keyv packages and adapters will use <strong>unified versioning</strong>. This means every package in the Keyv ecosystem will share the same version number and be released together.</p>
+<p><strong>What this means for you:</strong></p>
+<ul>
+<li>All <code>@keyv/*</code> packages will have the same version (e.g., <code>keyv@6.0.0</code>, <code>@keyv/redis@6.0.0</code>, <code>@keyv/sqlite@6.0.0</code>)</li>
+<li>When you upgrade Keyv, you can upgrade all adapters to the same version with confidence that they are compatible</li>
+<li>No more wondering which adapter version works with which Keyv version</li>
+</ul>
+<p><strong>Example of unified versions:</strong></p>
+<pre><code>keyv: 6.0.0
+@keyv/redis: 6.0.0
+@keyv/sqlite: 6.0.0
+@keyv/postgres: 6.0.0
+@keyv/serialize: 6.0.0
+@keyv/compress-gzip: 6.0.0
+</code></pre>
+<p>This approach is used by many popular projects:</p>
+<ul>
+<li><strong><a href="https://vitest.dev">Vitest</a></strong> - All packages in the Vitest monorepo share the same version</li>
+<li><strong><a href="https://babeljs.io">Babel</a></strong> - All <code>@babel/*</code> packages are versioned together</li>
+<li><strong><a href="https://jestjs.io">Jest</a></strong> - All Jest packages use unified versioning</li>
+<li><strong><a href="https://angular.io">Angular</a></strong> - All <code>@angular/*</code> packages share the same version</li>
+<li><strong><a href="https://vuejs.org">Vue</a></strong> - Vue and its companion packages are versioned together</li>
+</ul>
+<p>Unified versioning simplifies dependency management and ensures compatibility across the entire Keyv ecosystem.</p>
+<h3 id="keyv-v5-maintenance-mode">Keyv v5 Maintenance Mode</h3>
+<p>With the release of Keyv v6, Keyv v5 will move to maintenance mode. No major functionality will be added to Keyv v5. Only maintenance and security fixes will be applied going forward.</p>
+<p>We encourage all users to migrate to v6 to take advantage of the latest features and improvements. The <code>v5</code> branch will remain available in the mono repo for reference.</p>
+<hr>
+<h3 id="browser-compatibility">Browser Compatibility</h3>
+<p>Keyv v6 is now fully compatible with browser environments. You can use Keyv in frontend applications with appropriate storage adapters.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-comment">// Works in the browser</span>
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>() });
+</code></pre>
+<hr>
+<h3 id="serialization-adapters">Serialization Adapters</h3>
+<p>The default serialization module is <code>@keyv/serialize</code>, which uses the built-in <code>JSON</code> module. The property has been simplified to just <code>serialization</code>.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvSerialize</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/serialize'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">serialization</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvSerialize</span>() });
+
+<span class="hljs-comment">// You can also set it via the property</span>
+keyv.<span class="hljs-property">serialization</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvSerialize</span>();
+</code></pre>
+<p><strong>Available Serialization Adapters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>@keyv/serialize</code></td>
+<td><strong>Default</strong> - Based on built-in <code>JSON</code></td>
+</tr>
+<tr>
+<td><code>@keyv/serialize-superjson</code></td>
+<td>Supports <code>BigInt</code>, <code>Date</code>, <code>Map</code>, <code>Set</code>, and more</td>
+</tr>
+<tr>
+<td><code>@keyv/serialize-msgpackr</code></td>
+<td>High-performance binary serialization</td>
+</tr>
+</tbody>
+</table>
+<h4 id="disabling-serialization">Disabling Serialization</h4>
+<p>For in-memory storage or when serialization isn't needed (and you're not using encryption/compression):</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>(), <span class="hljs-attr">serialization</span>: <span class="hljs-literal">false</span> });
+
+<span class="hljs-comment">// Or set via property</span>
+keyv.<span class="hljs-property">serialization</span> = <span class="hljs-literal">undefined</span>;
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> If you want to use encryption or compression, you must have serialization enabled.</p>
+</blockquote>
+<h4 id="custom-serialization">Custom Serialization</h4>
+<p>Create your own serialization adapter using the <code>KeyvSerialization</code> interface:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">KeyvSerialization</span> {
+  <span class="hljs-attr">parse</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">value</span>: <span class="hljs-built_in">string</span></span>) =></span> T;
+  <span class="hljs-attr">stringify</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">value</span>: <span class="hljs-built_in">unknown</span></span>) =></span> <span class="hljs-built_in">string</span>;
+}
+</code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> customSerializer = {
+  <span class="hljs-attr">stringify</span>: <span class="hljs-function">(<span class="hljs-params">value</span>) =></span> <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(value),
+  <span class="hljs-attr">parse</span>: <span class="hljs-function">(<span class="hljs-params">value</span>) =></span> <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(value)
+};
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">serialization</span>: customSerializer });
+</code></pre>
+<hr>
+<h3 id="encryption-adapters">Encryption Adapters</h3>
+<p>You can now add encryption to values with the following adapters:</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>@keyv/encryption</code></td>
+<td>Node.js built-in encryption (configurable)</td>
+</tr>
+<tr>
+<td><code>@keyv/encryption-browser</code></td>
+<td>Browser-compatible encryption using <code>crypto-js</code></td>
+</tr>
+<tr>
+<td><code>@keyv/encryption-argon</code></td>
+<td>Modern, high-performance encryption for Node.js</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvEncryption</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/encryption'</span>;
+
+<span class="hljs-keyword">const</span> encryption = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEncryption</span>({ <span class="hljs-attr">key</span>: <span class="hljs-string">'your_secret_key_here'</span> });
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ encryption });
+
+<span class="hljs-comment">// Or set via property</span>
+keyv.<span class="hljs-property">encryption</span> = encryption;
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'sensitive'</span>, { <span class="hljs-attr">password</span>: <span class="hljs-string">'secret'</span> });
+</code></pre>
+<h4 id="custom-encryption">Custom Encryption</h4>
+<p>Create your own encryption adapter using the <code>KeyvEncryption</code> interface:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">KeyvEncryption</span> {
+  <span class="hljs-attr">encrypt</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">value</span>: <span class="hljs-built_in">string</span></span>) =></span> <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">decrypt</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">value</span>: <span class="hljs-built_in">string</span></span>) =></span> T;
+}
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> Encryption requires string values. Use <code>serialization</code> (enabled by default) if your values are not strings.</p>
+</blockquote>
+<hr>
+<h3 id="native-hashing-for-key-and-namespace">Native Hashing for Key and Namespace</h3>
+<p>Keyv now supports native hashing when <code>key</code> or <code>namespace</code> is too long. By default, this is not enabled but if you set <code>keyLength</code> or <code>namespaceLength</code> and submit a key it will use hashing to keep the maximum length and not error out. This helps with many of the storage adapters such as <code>memcache</code>, <code>postgres</code>, <code>mysql</code>, <code>sqlite</code>, etc.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({
+  <span class="hljs-attr">keyLength</span>: <span class="hljs-number">255</span>,
+  <span class="hljs-attr">namespaceLenght</span>: <span class="hljs-number">255</span>,
+});
+</code></pre>
+<p>You can even set what hash algorithm to use via the <code>hash</code> property as we use <a href="https://npmjs.org/package/hashery">hashery</a>.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({
+  <span class="hljs-attr">keyLength</span>: <span class="hljs-number">255</span>,
+  <span class="hljs-attr">namespaceLenght</span>: <span class="hljs-number">255</span>,
+  <span class="hljs-attr">hashAlgorithm</span>: <span class="hljs-string">'SHA-256'</span>
+});
+
+<span class="hljs-comment">// or via properties</span>
+
+keyv.<span class="hljs-property">hash</span>.<span class="hljs-property">defaultAlgorithm</span> = <span class="hljs-string">'DJB2'</span>;
+</code></pre>
+<h3 id="new-identification-functions">New Identification Functions</h3>
+<p>Keyv v6 provides new functions to help identify adapters and capabilities.</p>
+<h4 id="iskeyv"><code>isKeyv</code></h4>
+<p>Detects if an object is a Keyv instance by checking for Keyv-specific methods and properties:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span>, { isKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+
+<span class="hljs-title function_">isKeyv</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>());
+<span class="hljs-comment">// { keyv: false, get: true, set: true, delete: true, clear: true, has: true,</span>
+<span class="hljs-comment">//   getMany: false, setMany: false, deleteMany: false, hasMany: false,</span>
+<span class="hljs-comment">//   disconnect: false, getRaw: false, getManyRaw: false, hooks: false,</span>
+<span class="hljs-comment">//   stats: false, iterator: false }</span>
+
+<span class="hljs-title function_">isKeyv</span>(keyv);
+<span class="hljs-comment">// { keyv: true, get: true, set: true, delete: true, clear: true, has: true,</span>
+<span class="hljs-comment">//   getMany: true, setMany: true, deleteMany: true, hasMany: true,</span>
+<span class="hljs-comment">//   disconnect: true, getRaw: true, getManyRaw: true, hooks: true,</span>
+<span class="hljs-comment">//   stats: true, iterator: false }</span>
+</code></pre>
+<p>The <code>keyv</code> property is <code>true</code> when the object has all core Keyv methods (<code>get</code>, <code>set</code>, <code>delete</code>, <code>clear</code>) plus <code>hooks</code> and <code>stats</code> properties.</p>
+<h4 id="iskeyvstorage"><code>isKeyvStorage</code></h4>
+<p>Detects if an object is a Keyv storage adapter by checking for required adapter methods:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { isKeyvStorage } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-title function_">isKeyvStorage</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>());
+<span class="hljs-comment">// { keyvStorage: false, get: true, set: true, delete: true, clear: true,</span>
+<span class="hljs-comment">//   has: true, getMany: false, setMany: false, deleteMany: false,</span>
+<span class="hljs-comment">//   hasMany: false, disconnect: false, iterator: false, namespace: false }</span>
+
+<span class="hljs-title function_">isKeyvStorage</span>(redisAdapter);
+<span class="hljs-comment">// { keyvStorage: true, get: true, set: true, delete: true, clear: true,</span>
+<span class="hljs-comment">//   has: true, getMany: true, setMany: true, deleteMany: true,</span>
+<span class="hljs-comment">//   hasMany: true, disconnect: true, iterator: true, namespace: true }</span>
+</code></pre>
+<p>The <code>keyvStorage</code> property is <code>true</code> when the object has all core storage adapter methods (<code>get</code>, <code>set</code>, <code>delete</code>, <code>clear</code>).</p>
+<h4 id="additional-capability-checks">Additional Capability Checks</h4>
+<p>Keyv v6 also provides functions for checking compression, serialization, and encryption adapters:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { isKeyvCompression, isKeyvSerialization, isKeyvEncryption } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-title function_">isKeyvCompression</span>(gzipAdapter);
+<span class="hljs-comment">// { keyvCompression: true, compress: true, decompress: true }</span>
+
+<span class="hljs-title function_">isKeyvSerialization</span>(customSerializer);
+<span class="hljs-comment">// { keyvSerialization: true, stringify: true, parse: true }</span>
+
+<span class="hljs-title function_">isKeyvEncryption</span>(aesAdapter);
+<span class="hljs-comment">// { keyvEncryption: true, encrypt: true, decrypt: true }</span>
+</code></pre>
+<hr>
+<h3 id="memory-adapter">Memory Adapter</h3>
+<p>Keyv v6 includes <code>KeyvMemoryAdapter</code>, a wrapper class for storage types that don't conform to v6 storage adapter requirements (such as <code>Map</code>-compatible or legacy adapters).</p>
+<p><strong>Features:</strong></p>
+<ul>
+<li>Handles namespacing using key prefixing</li>
+<li>Extends the adapter with v6 functions: <code>getMany</code>, <code>setMany</code>, <code>getRaw</code>, <code>getManyRaw</code></li>
+<li>Attempts iteration using various strategies</li>
+<li>Adds TTL support and handles expiration</li>
+</ul>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-comment">// Map-compatible stores are automatically wrapped</span>
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>() });
+
+<span class="hljs-comment">// Check if your adapter will use KeyvMemoryAdapter</span>
+<span class="hljs-keyword">const</span> capabilities = keyv.<span class="hljs-title function_">getStoreCapabilities</span>(yourStore);
+<span class="hljs-keyword">if</span> (capabilities.<span class="hljs-property">mapCompatible</span> &#x26;&#x26; !capabilities.<span class="hljs-property">adapter</span>) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'This store will use KeyvMemoryAdapter'</span>);
+}
+</code></pre>
+<hr>
+<h2 id="getting-help">Getting Help</h2>
+<p>If you encounter issues during migration:</p>
+<ol>
+<li>Check the <a href="https://keyv.org">Keyv documentation</a></li>
+<li>Search <a href="https://github.com/jaredwray/keyv/issues">existing issues</a></li>
+<li>Open a <a href="https://github.com/jaredwray/keyv/issues/new">new issue</a> with details about your migration problem</li>
+</ol>

@@ -1,0 +1,816 @@
+<p><a href="https://github.com/jaredwray/cacheable"></a></p>
+<blockquote>
+<p>High Performance Layer 1 / Layer 2 Caching with Keyv Storage</p>
+</blockquote>
+<p><a href="https://codecov.io/gh/jaredwray/cacheable"><img src="https://codecov.io/gh/jaredwray/cacheable/branch/main/graph/badge.svg?token=lWZ9OBQ7GM" alt="codecov"></a>
+<a href="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/cacheable/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://www.npmjs.com/package/cacheable"><img src="https://img.shields.io/npm/dm/cacheable.svg" alt="npm"></a>
+<a href="https://www.npmjs.com/package/cacheable"><img src="https://img.shields.io/npm/v/cacheable" alt="npm"></a>
+<a href="https://github.com/jaredwray/cacheable/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/cacheable" alt="license"></a></p>
+<p><code>cacheable</code> is a high performance layer 1 / layer 2 caching engine that is focused on distributed caching with enterprise features such as <code>CacheSync</code>. It is built on top of the robust storage engine <a href="https://keyv.org">Keyv</a> and provides a simple API to cache and retrieve data.</p>
+<ul>
+<li>Simple to use with robust API</li>
+<li>Not bloated with additional modules</li>
+<li>Scalable and trusted storage engine by Keyv</li>
+<li>Memory Caching with LRU and Expiration <code>CacheableMemory</code></li>
+<li>Resilient to failures with try/catch and offline</li>
+<li>Wrap / Memoization for Sync and Async Functions with Stampede Protection</li>
+<li>Hooks and Events to extend functionality</li>
+<li>Shorthand for ttl in milliseconds <code>(1m = 60000) (1h = 3600000) (1d = 86400000)</code></li>
+<li>Non-blocking operations for layer 2 caching</li>
+<li><strong>Distributed Caching Sync via Pub/Sub with CacheSync</strong></li>
+<li>Comprehensive testing and code coverage</li>
+<li>ESM and CommonJS support with Typescript</li>
+<li>Maintained and supported regularly</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#basic-usage">Basic Usage</a></li>
+<li><a href="#hooks-and-events">Hooks and Events</a></li>
+<li><a href="#storage-tiering-and-caching">Storage Tiering and Caching</a></li>
+<li><a href="#ttl-propagation-and-storage-tiering">TTL Propagation and Storage Tiering</a></li>
+<li><a href="#shorthand-for-time-to-live-ttl">Shorthand for Time to Live (ttl)</a>
+<ul>
+<li><a href="#retrieving-raw-cache-entries">Retrieving raw cache entries</a></li>
+<li><a href="#checking-multiple-keys-with-hasmany">Checking multiple keys with hasMany</a></li>
+</ul>
+</li>
+<li><a href="#iteration-on-primary-and-secondary-stores">Iteration on Primary and Secondary Stores</a>
+<ul>
+<li><a href="#basic-iteration-example">Basic Iteration Example</a></li>
+<li><a href="#safe-iteration-helper">Safe Iteration Helper</a></li>
+<li><a href="#storage-adapter-support">Storage Adapter Support</a></li>
+</ul>
+</li>
+<li><a href="#non-blocking-operations">Non-Blocking Operations</a></li>
+<li><a href="#non-blocking-with-keyvredis">Non-Blocking with @keyv/redis</a></li>
+<li><a href="#getorset">GetOrSet</a></li>
+<li><a href="#cacheablesync---distributed-updates">CacheableSync - Distributed Updates</a>
+<ul>
+<li><a href="#how-it-works">How It Works</a></li>
+<li><a href="#supported-message-providers">Supported Message Providers</a></li>
+<li><a href="#basic-usage-1">Basic Usage</a></li>
+<li><a href="#using-multiple-message-providers">Using Multiple Message Providers</a></li>
+<li><a href="#using-an-existing-qified-instance">Using an Existing Qified Instance</a></li>
+<li><a href="#namespace-isolation-with-sync">Namespace Isolation with Sync</a></li>
+<li><a href="#how-sync-works">How Sync Works</a></li>
+<li><a href="#important-notes">Important Notes</a></li>
+</ul>
+</li>
+<li><a href="#maximum-time-to-live-maxttl">Maximum Time to Live (maxTtl)</a></li>
+<li><a href="#tag-based-invalidation">Tag Based Invalidation</a></li>
+<li><a href="#cacheable-options">Cacheable Options</a></li>
+<li><a href="#cacheable-statistics-instance-only">Cacheable Statistics (Instance Only)</a></li>
+<li><a href="#cacheable---api">Cacheable - API</a></li>
+<li><a href="#cacheablememory---in-memory-cache">CacheableMemory - In-Memory Cache</a></li>
+<li><a href="#wrap--memoization-for-sync-and-async-functions">Wrap / Memoization for Sync and Async Functions</a></li>
+<li><a href="#get-or-set-memoization-function">Get Or Set Memoization Function</a></li>
+<li><a href="#v1-to-v2-changes">v1 to v2 Changes</a></li>
+<li><a href="#how-to-contribute">How to Contribute</a></li>
+<li><a href="#license-and-copyright">License and Copyright</a></li>
+</ul>
+<h1 id="getting-started">Getting Started</h1>
+<p><code>cacheable</code> is primarily used as an extension to your caching engine with a robust storage backend <a href="https://keyv.org">Keyv</a>, Memoization (Wrap), Hooks, Events, and Statistics.</p>
+<pre><code class="hljs language-bash">npm install cacheable
+</code></pre>
+<h1 id="basic-usage">Basic Usage</h1>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-keyword">const</span> cacheable = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+<span class="hljs-keyword">await</span> cacheable.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>, <span class="hljs-number">1000</span>);
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> cacheable.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>);
+</code></pre>
+<p>This is a basic example where you are only using the in-memory storage engine. To enable layer 1 and layer 2 caching you can use the <code>secondary</code> property in the options:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> secondary = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({secondary});
+</code></pre>
+<p>In this example, the primary store we will use <code>lru-cache</code> and the secondary store is Redis. You can also set multiple stores in the options:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">LRUCache</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'lru-cache'</span>
+
+<span class="hljs-keyword">const</span> primary = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({<span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">LRUCache</span>()});
+<span class="hljs-keyword">const</span> secondary = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({primary, secondary});
+</code></pre>
+<p>This is a more advanced example and not needed for most use cases.</p>
+<h1 id="hooks-and-events">Hooks and Events</h1>
+<p>The following hooks are available for you to extend the functionality of <code>cacheable</code> via <code>CacheableHooks</code> enum:</p>
+<ul>
+<li><code>BEFORE_SET</code>: This is called before the <code>set()</code> method is called.</li>
+<li><code>AFTER_SET</code>: This is called after the <code>set()</code> method is called.</li>
+<li><code>BEFORE_SET_MANY</code>: This is called before the <code>setMany()</code> method is called.</li>
+<li><code>AFTER_SET_MANY</code>: This is called after the <code>setMany()</code> method is called.</li>
+<li><code>BEFORE_GET</code>: This is called before the <code>get()</code> method is called.</li>
+<li><code>AFTER_GET</code>: This is called after the <code>get()</code> method is called.</li>
+<li><code>BEFORE_GET_MANY</code>: This is called before the <code>getMany()</code> method is called.</li>
+<li><code>AFTER_GET_MANY</code>: This is called after the <code>getMany()</code> method is called.</li>
+<li><code>BEFORE_SECONDARY_SETS_PRIMARY</code>: This is called when the secondary store sets the value in the primary store.</li>
+</ul>
+<p>An example of how to use these hooks:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span>, <span class="hljs-title class_">CacheableHooks</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-keyword">const</span> cacheable = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+cacheable.<span class="hljs-title function_">onHook</span>(<span class="hljs-title class_">CacheableHooks</span>.<span class="hljs-property">BEFORE_SET</span>, <span class="hljs-function">(<span class="hljs-params">data</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`before set: <span class="hljs-subst">${data.key}</span> <span class="hljs-subst">${data.value}</span>`</span>);
+});
+</code></pre>
+<p>Here is an example of how to use <code>BEFORE_SECONDARY_SETS_PRIMARY</code> hook:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span>, <span class="hljs-title class_">CacheableHooks</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">const</span> secondary = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({secondary});
+cache.<span class="hljs-title function_">onHook</span>(<span class="hljs-title class_">CacheableHooks</span>.<span class="hljs-property">BEFORE_SECONDARY_SETS_PRIMARY</span>, <span class="hljs-function">(<span class="hljs-params">data</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`before secondary sets primary: <span class="hljs-subst">${data.key}</span> <span class="hljs-subst">${data.value}</span> <span class="hljs-subst">${data.ttl}</span>`</span>);
+});
+</code></pre>
+<p>This is called when the secondary store sets the value in the primary store. This is useful if you want to do something before the value is set in the primary store such as manipulating the ttl or the value.</p>
+<p>The following events are provided:</p>
+<ul>
+<li><code>error</code>: Emitted when an error occurs.</li>
+<li><code>cache:hit</code>: Emitted when a cache hit occurs.</li>
+<li><code>cache:miss</code>: Emitted when a cache miss occurs.</li>
+</ul>
+<p>Here is an example of using the <code>error</code> event:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span>, <span class="hljs-title class_">CacheableEvents</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-keyword">const</span> cacheable = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+cacheable.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">CacheableEvents</span>.<span class="hljs-property">ERROR</span>, <span class="hljs-function">(<span class="hljs-params">error</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">`Cacheable error: <span class="hljs-subst">${error.message}</span>`</span>);
+});
+</code></pre>
+<p>We also offer <code>cache:hit</code> and <code>cache:miss</code> events. These events are emitted when a cache hit or miss occurs, respectively. Here is how to use them:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span>, <span class="hljs-title class_">CacheableEvents</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-keyword">const</span> cacheable = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+cacheable.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">CacheableEvents</span>.<span class="hljs-property">CACHE_HIT</span>, <span class="hljs-function">(<span class="hljs-params">data</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Cache hit: <span class="hljs-subst">${data.key}</span> <span class="hljs-subst">${data.value}</span> <span class="hljs-subst">${data.store}</span>`</span>); <span class="hljs-comment">// the store will say primary or secondary</span>
+});
+cacheable.<span class="hljs-title function_">on</span>(<span class="hljs-title class_">CacheableEvents</span>.<span class="hljs-property">CACHE_MISS</span>, <span class="hljs-function">(<span class="hljs-params">data</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`Cache miss: <span class="hljs-subst">${data.key}</span> <span class="hljs-subst">${data.store}</span>`</span>); <span class="hljs-comment">// the store will say primary or secondary</span>
+});
+</code></pre>
+<h1 id="storage-tiering-and-caching">Storage Tiering and Caching</h1>
+<p><code>cacheable</code> is built as a layer 1 and layer 2 caching engine by default. The purpose is to have your layer 1 be fast and your layer 2 be more persistent. The primary store is the layer 1 cache and the secondary store is the layer 2 cache. By adding the secondary store you are enabling layer 2 caching. By default the operations are blocking but fault tolerant:</p>
+<ul>
+<li><code>Setting Data</code>: Sets the value in the primary store and then the secondary store.</li>
+<li><code>Getting Data</code>: Gets the value from the primary if the value does not exist it will get it from the secondary store and set it in the primary store.</li>
+<li><code>Deleting Data</code>: Deletes the value from the primary store and secondary store at the same time waiting for both to respond.</li>
+<li><code>Clearing Data</code>: Clears the primary store and secondary store at the same time waiting for both to respond.</li>
+</ul>
+<p>When <code>Getting Data</code> if the value does not exist in the primary store it will try to get it from the secondary store. If the secondary store returns the value it will set it in the primary store. Because we use <a href="#ttl-propagation-and-storage-tiering">TTL Propagation</a> the value will be set in the primary store with the TTL of the secondary store unless the time to live (TTL) is greater than the primary store which will then use the TTL of the primary store. An example of this is:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> {<span class="hljs-title class_">Keyv</span>} <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">const</span> secondary = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>), <span class="hljs-attr">ttl</span>: <span class="hljs-number">1000</span> });
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({secondary, <span class="hljs-attr">ttl</span>: <span class="hljs-number">100</span>});
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>); <span class="hljs-comment">// sets the value in the primary store with a ttl of 100 ms and secondary store with a ttl of 1000 ms</span>
+
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">sleep</span>(<span class="hljs-number">500</span>); <span class="hljs-comment">// wait for .5 seconds</span>
+
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>); <span class="hljs-comment">// gets the value from the secondary store and now sets the value in the primary store with a ttl of 500 ms which is what is left from the secondary store</span>
+</code></pre>
+<p>In this example the primary store has a ttl of <code>100 ms</code> and the secondary store has a ttl of <code>1000 ms</code>. Because the ttl is greater in the secondary store it will default to setting ttl value in the primary store.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> {<span class="hljs-title class_">Keyv</span>} <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+<span class="hljs-keyword">const</span> primary = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">ttl</span>: <span class="hljs-number">200</span> });
+<span class="hljs-keyword">const</span> secondary = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>), <span class="hljs-attr">ttl</span>: <span class="hljs-number">1000</span> });
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({primary, secondary});
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>); <span class="hljs-comment">// sets the value in the primary store with a ttl of 200 ms and secondary store with a ttl of 1000 ms</span>
+
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">sleep</span>(<span class="hljs-number">200</span>); <span class="hljs-comment">// wait for .2 seconds</span>
+
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>); <span class="hljs-comment">// gets the value from the secondary store and now sets the value in the primary store with a ttl of 200 ms which is what the primary store is set with</span>
+</code></pre>
+<h1 id="ttl-propagation-and-storage-tiering">TTL Propagation and Storage Tiering</h1>
+<p>Cacheable TTL propagation is a feature that allows you to set a time to live (TTL) for the cache. By default the TTL is set in the following order:</p>
+<pre><code>ttl = set at the function ?? storage adapter ttl ?? cacheable ttl
+</code></pre>
+<p>This means that if you set a TTL at the function level it will override the storage adapter TTL and the cacheable TTL. If you do not set a TTL at the function level it will use the storage adapter TTL and then the cacheable TTL. If you do not set a TTL at all it will use the default TTL of <code>undefined</code> which is disabled.</p>
+<h1 id="shorthand-for-time-to-live-ttl">Shorthand for Time to Live (ttl)</h1>
+<p>By default <code>Cacheable</code> and <code>CacheableMemory</code> the <code>ttl</code> is in milliseconds but you can use shorthand for the time to live. Here are the following shorthand values:</p>
+<ul>
+<li><code>ms</code>: Milliseconds such as (1ms = 1)</li>
+<li><code>s</code>: Seconds such as (1s = 1000)</li>
+<li><code>m</code>: Minutes such as (1m = 60000)</li>
+<li><code>h</code> or <code>hr</code>: Hours such as (1h = 3600000)</li>
+<li><code>d</code>: Days such as (1d = 86400000)</li>
+</ul>
+<p>Here is an example of how to use the shorthand for the <code>ttl</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({ <span class="hljs-attr">ttl</span>: <span class="hljs-string">'15m'</span> }); <span class="hljs-comment">//sets the default ttl to 15 minutes (900000 ms)</span>
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>, <span class="hljs-string">'1h'</span>); <span class="hljs-comment">//sets the ttl to 1 hour (3600000 ms) and overrides the default</span>
+</code></pre>
+<p>if you want to disable the <code>ttl</code> you can set it to <code>0</code> or <code>undefined</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({ <span class="hljs-attr">ttl</span>: <span class="hljs-number">0</span> }); <span class="hljs-comment">//sets the default ttl to 0 which is disabled</span>
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>, <span class="hljs-number">0</span>); <span class="hljs-comment">//sets the ttl to 0 which is disabled</span>
+</code></pre>
+<p>If you set the ttl to anything below <code>0</code> or <code>undefined</code> it will disable the ttl for the cache and the value that returns will be <code>undefined</code>. With no ttl set the value will be stored <code>indefinitely</code>.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({ <span class="hljs-attr">ttl</span>: <span class="hljs-number">0</span> }); <span class="hljs-comment">//sets the default ttl to 0 which is disabled</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(cache.<span class="hljs-property">ttl</span>); <span class="hljs-comment">// undefined</span>
+cache.<span class="hljs-property">ttl</span> = <span class="hljs-string">'1h'</span>; <span class="hljs-comment">// sets the default ttl to 1 hour (3600000 ms)</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(cache.<span class="hljs-property">ttl</span>); <span class="hljs-comment">// '1h'</span>
+cache.<span class="hljs-property">ttl</span> = -<span class="hljs-number">1</span>; <span class="hljs-comment">// sets the default ttl to 0 which is disabled</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(cache.<span class="hljs-property">ttl</span>); <span class="hljs-comment">// undefined</span>
+</code></pre>
+<h2 id="retrieving-raw-cache-entries">Retrieving raw cache entries</h2>
+<p>The <code>get</code> and <code>getMany</code> methods support a <code>raw</code> option, which returns the full stored metadata (<code>StoredDataRaw&#x3C;T></code>) instead of just the value:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+
+<span class="hljs-comment">// store a value</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'user:1'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'Alice'</span> });
+
+<span class="hljs-comment">// default: only the value</span>
+<span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> cache.<span class="hljs-property">get</span>&#x3C;{ <span class="hljs-attr">name</span>: <span class="hljs-built_in">string</span> }>(<span class="hljs-string">'user:1'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user); <span class="hljs-comment">// { name: 'Alice' }</span>
+
+<span class="hljs-comment">// with raw: full record including expiration</span>
+<span class="hljs-keyword">const</span> raw = <span class="hljs-keyword">await</span> cache.<span class="hljs-property">get</span>&#x3C;{ <span class="hljs-attr">name</span>: <span class="hljs-built_in">string</span> }>(<span class="hljs-string">'user:1'</span>, { <span class="hljs-attr">raw</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(raw.<span class="hljs-property">value</span>);   <span class="hljs-comment">// { name: 'Alice' }</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(raw.<span class="hljs-property">expires</span>); <span class="hljs-comment">// e.g. 1677628495000 or null</span>
+</code></pre>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// getMany with raw option</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'a'</span>, <span class="hljs-number">1</span>);
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'b'</span>, <span class="hljs-number">2</span>);
+
+<span class="hljs-keyword">const</span> raws = <span class="hljs-keyword">await</span> cache.<span class="hljs-property">getMany</span>&#x3C;<span class="hljs-built_in">number</span>>([<span class="hljs-string">'a'</span>, <span class="hljs-string">'b'</span>], { <span class="hljs-attr">raw</span>: <span class="hljs-literal">true</span> });
+raws.<span class="hljs-title function_">forEach</span>(<span class="hljs-function">(<span class="hljs-params">entry, idx</span>) =></span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`key=<span class="hljs-subst">${[<span class="hljs-string">'a'</span>,<span class="hljs-string">'b'</span>][idx]}</span>, value=<span class="hljs-subst">${entry?.value}</span>, expires=<span class="hljs-subst">${entry?.expires}</span>`</span>);
+});
+</code></pre>
+<h2 id="checking-multiple-keys-with-hasmany">Checking multiple keys with hasMany</h2>
+<p>The <code>hasMany</code> method allows you to efficiently check if multiple keys exist in the cache. It leverages Keyv's native <code>hasMany</code> support for optimal performance:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+
+<span class="hljs-comment">// set some values</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'user:1'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'Alice'</span> });
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'user:2'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'Bob'</span> });
+
+<span class="hljs-comment">// check if multiple keys exist</span>
+<span class="hljs-keyword">const</span> exists = <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">hasMany</span>([<span class="hljs-string">'user:1'</span>, <span class="hljs-string">'user:2'</span>, <span class="hljs-string">'user:3'</span>]);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(exists); <span class="hljs-comment">// [true, true, false]</span>
+</code></pre>
+<p>The <code>hasMany</code> method returns an array of booleans in the same order as the input keys. This is particularly useful when you need to verify the existence of multiple cache entries before performing batch operations.</p>
+<h1 id="iteration-on-primary-and-secondary-stores">Iteration on Primary and Secondary Stores</h1>
+<p>The <code>Cacheable</code> class exposes both <code>primary</code> and <code>secondary</code> Keyv instances, which support iteration over their stored entries using the <code>iterator()</code> method. This allows you to access and process all keys and values in either storage layer.</p>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>Not all storage adapters support iteration. Always check if <code>iterator</code> exists before using it.</li>
+<li>The iterator automatically filters by namespace, skips expired entries (and deletes them), and deserializes values.</li>
+<li><strong>Performance Warning:</strong> Be careful when using <code>iterator()</code> as it can cause performance issues with large datasets.</li>
+</ul>
+<h2 id="basic-iteration-example">Basic Iteration Example</h2>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-comment">// Create cache with primary (in-memory) and secondary (Redis) stores</span>
+<span class="hljs-keyword">const</span> secondary = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({ secondary });
+
+<span class="hljs-comment">// Add some data</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'user:1'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'Alice'</span>, <span class="hljs-attr">role</span>: <span class="hljs-string">'admin'</span> });
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'user:2'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'Bob'</span>, <span class="hljs-attr">role</span>: <span class="hljs-string">'user'</span> });
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'session:abc'</span>, { <span class="hljs-attr">userId</span>: <span class="hljs-string">'1'</span>, <span class="hljs-attr">active</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-comment">// Iterate over primary store (in-memory)</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Primary store contents:'</span>);
+<span class="hljs-keyword">if</span> (cache.<span class="hljs-property">primary</span>.<span class="hljs-property">iterator</span>) {
+    <span class="hljs-keyword">for</span> <span class="hljs-title function_">await</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> cache.<span class="hljs-property">primary</span>.<span class="hljs-title function_">iterator</span>()) {
+        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`  <span class="hljs-subst">${key}</span>:`</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(value));
+    }
+}
+
+<span class="hljs-comment">// Iterate over secondary store (Redis)</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'\nSecondary store contents:'</span>);
+<span class="hljs-keyword">if</span> (cache.<span class="hljs-property">secondary</span>?.<span class="hljs-property">iterator</span>) {
+    <span class="hljs-keyword">for</span> <span class="hljs-title function_">await</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> cache.<span class="hljs-property">secondary</span>.<span class="hljs-title function_">iterator</span>()) {
+        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`  <span class="hljs-subst">${key}</span>:`</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(value));
+    }
+}
+</code></pre>
+<h2 id="safe-iteration-helper">Safe Iteration Helper</h2>
+<p>Here's a recommended helper function for safe iteration that checks for store availability and iterator support:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">iterateStore</span>(<span class="hljs-params"><span class="hljs-attr">store</span>: <span class="hljs-title class_">Keyv</span> | <span class="hljs-literal">undefined</span>, <span class="hljs-attr">storeName</span>: <span class="hljs-built_in">string</span></span>) {
+    <span class="hljs-keyword">if</span> (!store) {
+        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`<span class="hljs-subst">${storeName}</span> store not configured`</span>);
+        <span class="hljs-keyword">return</span>;
+    }
+
+    <span class="hljs-keyword">if</span> (!store.<span class="hljs-property">iterator</span>) {
+        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`<span class="hljs-subst">${storeName}</span> store does not support iteration`</span>);
+        <span class="hljs-keyword">return</span>;
+    }
+
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`<span class="hljs-subst">${storeName}</span> store entries:`</span>);
+    <span class="hljs-keyword">for</span> <span class="hljs-title function_">await</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> store.<span class="hljs-title function_">iterator</span>()) {
+        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`  <span class="hljs-subst">${key}</span>:`</span>, value);
+    }
+}
+
+<span class="hljs-comment">// Usage</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({ <span class="hljs-comment">/* options */</span> });
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">iterateStore</span>(cache.<span class="hljs-property">primary</span>, <span class="hljs-string">'Primary'</span>);
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">iterateStore</span>(cache.<span class="hljs-property">secondary</span>, <span class="hljs-string">'Secondary'</span>);
+</code></pre>
+<h2 id="storage-adapter-support">Storage Adapter Support</h2>
+<p>The <code>iterator()</code> method is available when:</p>
+<ul>
+<li>The store is a Map instance (has Symbol.iterator)</li>
+<li>The store implements an <code>iterator()</code> method (e.g., Redis, Valkey, etc.)</li>
+<li>The store is a supported iterable adapter</li>
+</ul>
+<p>Common stores that support iteration:</p>
+<ul>
+<li>In-memory (Map-based stores)</li>
+<li>@keyv/redis</li>
+<li>@keyv/valkey</li>
+<li>Other Keyv adapters that implement the iterator interface</li>
+</ul>
+<h1 id="non-blocking-operations">Non-Blocking Operations</h1>
+<p>If you want your layer 2 (secondary) store to be non-blocking you can set the <code>nonBlocking</code> property to <code>true</code> in the options. This will make the secondary store non-blocking and will not wait for the secondary store to respond on <code>setting data</code>, <code>deleting data</code>, or <code>clearing data</code>. This is useful if you want to have a faster response time and not wait for the secondary store to respond. Here is a full list of what each method does in nonBlocking mode:</p>
+<ul>
+<li>
+<p><code>set</code> - in non-blocking mode it will set at the <code>primary</code> storage and then in the background update <code>secondary</code></p>
+</li>
+<li>
+<p><code>get</code> - in non-blocking mode it will only check the primary storage but then in the background look to see if there is a value in the <code>secondary</code> and update the primary</p>
+</li>
+<li>
+<p><code>getMany</code> - in non-blocking mode it will only check the primary storage but then in the background look to see if there is a value in the <code>secondary</code> and update the primary</p>
+</li>
+<li>
+<p><code>getRaw</code> - in non-blocking mode it will only check the primary storage but then in the background look to see if there is a value in the <code>secondary</code> and update the primary</p>
+</li>
+<li>
+<p><code>getManyRaw</code> - in non-blocking mode it will only check the primary storage but then in the background look to see if there is a value in the <code>secondary</code> and update the primary</p>
+</li>
+</ul>
+<h1 id="non-blocking-with-keyvredis">Non-Blocking with @keyv/redis</h1>
+<p><code>@keyv/redis</code> is one of the most popular storage adapters used with <code>cacheable</code>. It provides a Redis-backed cache store that can be used as a secondary store. It is a bit complicated to setup as by default it causes hangs and blocking with its default configuration. To get past this you will need to configure the following:</p>
+<p>Construct your own Redis client via the <code>createClient()</code> method from <code>@keyv/redis</code> with the following options:</p>
+<ul>
+<li>Set <code>disableOfflineQueue</code> to <code>true</code></li>
+<li>Set <code>socket.reconnectStrategy</code> to <code>false</code>
+In the KeyvRedis options:</li>
+<li>Set <code>throwOnConnectError</code> to <code>false</code>
+In the Cacheable options:</li>
+<li>Set <code>nonBlocking</code> to <code>true</code></li>
+</ul>
+<p>We have also build a function to help with this called <code>createKeyvNonBlocking</code> inside the <code>@keyv/redis</code> package after version <code>4.6.0</code>. Here is an example of how to use it:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> { createKeyvNonBlocking } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> secondary = <span class="hljs-title function_">createKeyvNonBlocking</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({ secondary, <span class="hljs-attr">nonBlocking</span>: <span class="hljs-literal">true</span> });
+</code></pre>
+<h1 id="getorset">GetOrSet</h1>
+<p>The <code>getOrSet</code> method provides a convenient way to implement the cache-aside pattern. It attempts to retrieve a value
+from cache, and if not found, calls the provided function to compute the value and store it in cache before returning
+it.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-comment">// Create a new Cacheable instance</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+
+<span class="hljs-comment">// Use getOrSet to fetch user data</span>
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getUserData</span>(<span class="hljs-params"><span class="hljs-attr">userId</span>: <span class="hljs-built_in">string</span></span>) {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">getOrSet</span>(
+    <span class="hljs-string">`user:<span class="hljs-subst">${userId}</span>`</span>,
+    <span class="hljs-title function_">async</span> () => {
+      <span class="hljs-comment">// This function only runs if the data isn't in the cache</span>
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Fetching user from database...'</span>);
+      <span class="hljs-comment">// Simulate database fetch</span>
+      <span class="hljs-keyword">return</span> { <span class="hljs-attr">id</span>: userId, <span class="hljs-attr">name</span>: <span class="hljs-string">'John Doe'</span>, <span class="hljs-attr">email</span>: <span class="hljs-string">'john@example.com'</span> };
+    },
+    { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'30m'</span> } <span class="hljs-comment">// Cache for 30 minutes</span>
+  );
+}
+
+<span class="hljs-comment">// First call - will fetch from "database"</span>
+<span class="hljs-keyword">const</span> user1 = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getUserData</span>(<span class="hljs-string">'123'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user1); <span class="hljs-comment">// { id: '123', name: 'John Doe', email: 'john@example.com' }</span>
+
+<span class="hljs-comment">// Second call - will retrieve from cache</span>
+<span class="hljs-keyword">const</span> user2 = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getUserData</span>(<span class="hljs-string">'123'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user2); <span class="hljs-comment">// Same data, but retrieved from cache</span>
+</code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> {<span class="hljs-title class_">KeyvRedis</span>} <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-keyword">const</span> secondary = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({secondary, <span class="hljs-attr">nonBlocking</span>: <span class="hljs-literal">true</span>});
+</code></pre>
+<h1 id="cacheablesync---distributed-updates">CacheableSync - Distributed Updates</h1>
+<p><code>cacheable</code> includes <code>CacheableSync</code>, a feature that enables distributed cache synchronization across multiple instances using Pub/Sub messaging via <a href="https://github.com/jaredwray/qified">Qified</a>. When a value is set or deleted in one cache instance, all other connected instances automatically receive and apply the update.</p>
+<h2 id="how-it-works">How It Works</h2>
+<p><code>CacheableSync</code> uses message providers from Qified to broadcast cache operations (SET and DELETE) to all connected cache instances. Each instance subscribes to these events and automatically updates its <code>primary</code> (example: in-memory) storage when receiving updates from other instances.</p>
+<h2 id="supported-message-providers">Supported Message Providers</h2>
+<p><code>Qified</code> supports multiple providers and you can learn more by going to <a href="https://qified.org">https://qified.org</a>.</p>
+<h2 id="basic-usage-1">Basic Usage</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">RedisMessageProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@qified/redis'</span>;
+
+<span class="hljs-comment">// Create a Redis message provider</span>
+<span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">RedisMessageProvider</span>({
+  <span class="hljs-attr">connection</span>: { <span class="hljs-attr">host</span>: <span class="hljs-string">'localhost'</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">6379</span> }
+});
+
+<span class="hljs-comment">// Create cache instances with sync enabled</span>
+<span class="hljs-keyword">const</span> cache1 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({
+  <span class="hljs-attr">sync</span>: { <span class="hljs-attr">qified</span>: provider }
+});
+
+<span class="hljs-keyword">const</span> cache2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({
+  <span class="hljs-attr">sync</span>: { <span class="hljs-attr">qified</span>: provider }
+});
+
+<span class="hljs-comment">// Set a value in cache1</span>
+<span class="hljs-keyword">await</span> cache1.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>);
+
+<span class="hljs-comment">// Note: you might want to sleep for a bit based on the backend.</span>
+
+<span class="hljs-comment">// The value is automatically synced to cache2</span>
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> cache2.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>); <span class="hljs-comment">// Returns 'value'</span>
+</code></pre>
+<h2 id="using-multiple-message-providers">Using Multiple Message Providers</h2>
+<p>You can use multiple message providers for redundancy:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">RedisMessageProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@qified/redis'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">NatsMessageProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@qified/nats'</span>;
+
+<span class="hljs-keyword">const</span> redisProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">RedisMessageProvider</span>({
+  <span class="hljs-attr">connection</span>: { <span class="hljs-attr">host</span>: <span class="hljs-string">'localhost'</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">6379</span> }
+});
+
+<span class="hljs-keyword">const</span> natsProvider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NatsMessageProvider</span>({
+  <span class="hljs-attr">servers</span>: [<span class="hljs-string">'nats://localhost:4222'</span>]
+});
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({
+  <span class="hljs-attr">sync</span>: { <span class="hljs-attr">qified</span>: [redisProvider, natsProvider] }
+});
+</code></pre>
+<h2 id="using-an-existing-qified-instance">Using an Existing Qified Instance</h2>
+<p>You can also pass a pre-configured Qified instance:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Qified</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'qified'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">RedisMessageProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@qified/redis'</span>;
+
+<span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">RedisMessageProvider</span>({
+  <span class="hljs-attr">connection</span>: { <span class="hljs-attr">host</span>: <span class="hljs-string">'localhost'</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">6379</span> }
+});
+
+<span class="hljs-keyword">const</span> qified = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Qified</span>({ <span class="hljs-attr">messageProviders</span>: [provider] });
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({
+  <span class="hljs-attr">sync</span>: { qified }
+});
+</code></pre>
+<h2 id="namespace-isolation-with-sync">Namespace Isolation with Sync</h2>
+<p>When multiple services share the same Redis instance (or other message provider), you can use namespaces to isolate cache synchronization events between services. This prevents one service's cache updates from affecting another service's cache.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">RedisMessageProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@qified/redis'</span>;
+
+<span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> <span class="hljs-title class_">RedisMessageProvider</span>({
+  <span class="hljs-attr">connection</span>: { <span class="hljs-attr">host</span>: <span class="hljs-string">'localhost'</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">6379</span> }
+});
+
+<span class="hljs-comment">// Service 1 with namespace</span>
+<span class="hljs-keyword">const</span> serviceA = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({
+  <span class="hljs-attr">namespace</span>: <span class="hljs-string">'service-a'</span>,
+  <span class="hljs-attr">sync</span>: { <span class="hljs-attr">qified</span>: provider }
+});
+
+<span class="hljs-comment">// Service 2 with different namespace</span>
+<span class="hljs-keyword">const</span> serviceB = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({
+  <span class="hljs-attr">namespace</span>: <span class="hljs-string">'service-b'</span>,
+  <span class="hljs-attr">sync</span>: { <span class="hljs-attr">qified</span>: provider }
+});
+
+<span class="hljs-comment">// Set value in service A</span>
+<span class="hljs-keyword">await</span> serviceA.<span class="hljs-title function_">set</span>(<span class="hljs-string">'config'</span>, { <span class="hljs-attr">timeout</span>: <span class="hljs-number">5000</span> });
+
+<span class="hljs-comment">// Service B won't receive this update because it has a different namespace</span>
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> serviceB.<span class="hljs-title function_">get</span>(<span class="hljs-string">'config'</span>); <span class="hljs-comment">// undefined</span>
+</code></pre>
+<p><strong>How Namespace Isolation Works:</strong></p>
+<ul>
+<li>Without namespaces, sync events use channel names like <code>cache:set</code> and <code>cache:delete</code></li>
+<li>With namespaces, events are prefixed: <code>service-a::cache:set</code>, <code>service-b::cache:set</code></li>
+<li>Services only subscribe to events matching their namespace, ensuring complete isolation</li>
+<li>Namespaces can be static strings or functions that return strings</li>
+</ul>
+<p><strong>Note:</strong> The namespace is automatically passed from Cacheable to CacheableSync, so you only need to set it once in the Cacheable options.</p>
+<h2 id="how-sync-works">How Sync Works</h2>
+<ol>
+<li>
+<p><strong>SET Operations</strong>: When you call <code>cache.set()</code> or <code>cache.setMany()</code>, the cache:</p>
+<ul>
+<li>Updates the local primary storage and secondary storage</li>
+<li>Publishes a <code>cache:set</code> event with the key, value, ttl, and cacheId</li>
+<li>Other cache instances receive the event and update their <code>primary</code> storage (excluding the originating instance)</li>
+</ul>
+</li>
+<li>
+<p><strong>DELETE Operations</strong>: When you call <code>cache.delete()</code> or <code>cache.deleteMany()</code>, the cache:</p>
+<ul>
+<li>Removes the key from primary and secondary storage</li>
+<li>Publishes a <code>cache:delete</code> event with the key and cacheId</li>
+<li>Other cache instances receive the event and remove the key from their storage</li>
+</ul>
+</li>
+</ol>
+<h2 id="important-notes">Important Notes</h2>
+<ul>
+<li>Cache sync only works with the <strong>primary storage layer</strong>. Secondary storage is usually handled by the instance doing the initial work.</li>
+<li>Each cache instance should have a unique <code>cacheId</code> to properly filter sync events. This is setup by default but you can set it if you want.</li>
+<li>Sync events are <strong>eventually consistent</strong> - there may be a small delay between when a value is set and when it appears in other instances.</li>
+<li>The sync feature requires a message provider to be running and accessible by all cache instances.</li>
+<li>Each cache instance has a unique <code>cacheId</code>. Events are only applied if they come from a different instance, preventing infinite loops.</li>
+</ul>
+<h1 id="maximum-time-to-live-maxttl">Maximum Time to Live (maxTtl)</h1>
+<p>You can set a <code>maxTtl</code> option to enforce an upper bound on any TTL in the cache. When <code>maxTtl</code> is set:</p>
+<ul>
+<li>Any per-entry TTL that exceeds <code>maxTtl</code> will be capped to <code>maxTtl</code>.</li>
+<li>Entries with no TTL (that would otherwise live indefinitely) will be capped to <code>maxTtl</code>.</li>
+<li>The default TTL is still respected if it is within the <code>maxTtl</code> limit.</li>
+<li>The <code>maxTtl</code> is enforced on both primary and secondary stores.</li>
+</ul>
+<p>This is useful when you want to guarantee that no cache entry lives longer than a certain duration, regardless of what TTL is passed to individual <code>set()</code> calls.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-comment">// No entry can live longer than 1 hour</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({ <span class="hljs-attr">maxTtl</span>: <span class="hljs-string">'1h'</span> });
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>, <span class="hljs-string">'2h'</span>); <span class="hljs-comment">// capped to 1 hour</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);        <span class="hljs-comment">// also capped to 1 hour (would otherwise be indefinite)</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key3'</span>, <span class="hljs-string">'value3'</span>, <span class="hljs-string">'30m'</span>); <span class="hljs-comment">// 30 minutes is within maxTtl, so it stays as-is</span>
+</code></pre>
+<p>You can also set <code>maxTtl</code> after construction:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+cache.<span class="hljs-property">maxTtl</span> = <span class="hljs-number">5000</span>; <span class="hljs-comment">// 5 seconds max</span>
+cache.<span class="hljs-property">maxTtl</span> = <span class="hljs-string">'10m'</span>; <span class="hljs-comment">// 10 minutes max</span>
+cache.<span class="hljs-property">maxTtl</span> = <span class="hljs-literal">undefined</span>; <span class="hljs-comment">// disable maxTtl (no upper bound)</span>
+</code></pre>
+<h1 id="tag-based-invalidation">Tag Based Invalidation</h1>
+<p>You can associate cache entries with tags and later invalidate every entry that shares a tag in a single call. This is useful for content caching where one upstream entity (a product, a user, a CMS document) is referenced by many cache entries:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({ <span class="hljs-attr">tags</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'page:/products'</span>, html, { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'10m'</span>, <span class="hljs-attr">tags</span>: [<span class="hljs-string">'entity:42'</span>, <span class="hljs-string">'collection:products'</span>] });
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'page:/products/42'</span>, detailHtml, { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'10m'</span>, <span class="hljs-attr">tags</span>: [<span class="hljs-string">'entity:42'</span>] });
+
+<span class="hljs-comment">// entity 42 changed - purge everything that referenced it</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-property">tags</span>.<span class="hljs-title function_">invalidateTag</span>(<span class="hljs-string">'entity:42'</span>);
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'page:/products'</span>); <span class="hljs-comment">// undefined</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'page:/products/42'</span>); <span class="hljs-comment">// undefined</span>
+</code></pre>
+<p>You can also pass tags per item with <code>setMany</code>, and invalidate several tags at once:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">setMany</span>([
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'user:1'</span>, <span class="hljs-attr">value</span>: userOne, <span class="hljs-attr">tags</span>: [<span class="hljs-string">'users'</span>] },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'user:2'</span>, <span class="hljs-attr">value</span>: userTwo, <span class="hljs-attr">tags</span>: [<span class="hljs-string">'users'</span>, <span class="hljs-string">'org:7'</span>] },
+]);
+
+<span class="hljs-keyword">await</span> cache.<span class="hljs-property">tags</span>.<span class="hljs-title function_">invalidateTags</span>([<span class="hljs-string">'users'</span>, <span class="hljs-string">'org:7'</span>]);
+</code></pre>
+<p>Tag functionality lives on the <code>tags</code> service — an instance of the <code>CacheTags</code> class from <a href="https://npmjs.com/package/@cacheable/utils"><code>@cacheable/utils</code></a> that is created by default in the constructor. Invalidation uses a lazy, constant-time model: <code>invalidateTag</code> simply bumps a version counter for the tag, no matter how many entries reference it. Each tagged entry stores a snapshot of its tags' versions, and on the next <code>get</code> / <code>getMany</code> the snapshot is compared to the live versions. If any tag has been bumped since, the entry is treated as a miss and removed from both the primary and secondary stores (and a <code>delete</code> is published via <a href="#cacheablesync---distributed-updates">sync</a> when enabled). The trade-off is one additional tag-store read per cache lookup while the tag service is enabled.</p>
+<p>Tag metadata is stored in the secondary store when one is configured, otherwise in the primary store. With a shared secondary store (such as Redis), an invalidation performed by one instance is seen by every instance:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvRedis</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/redis'</span>;
+
+<span class="hljs-comment">// enable tags on every instance that shares the store - writers and readers</span>
+<span class="hljs-keyword">const</span> writer = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({ <span class="hljs-attr">secondary</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://localhost:6379'</span>), <span class="hljs-attr">tags</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-keyword">const</span> reader = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({ <span class="hljs-attr">secondary</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://localhost:6379'</span>), <span class="hljs-attr">tags</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-keyword">await</span> writer.<span class="hljs-title function_">set</span>(<span class="hljs-string">'page:/products'</span>, html, { <span class="hljs-attr">tags</span>: [<span class="hljs-string">'entity:42'</span>] });
+<span class="hljs-keyword">await</span> writer.<span class="hljs-property">tags</span>.<span class="hljs-title function_">invalidateTag</span>(<span class="hljs-string">'entity:42'</span>);
+<span class="hljs-keyword">await</span> reader.<span class="hljs-title function_">get</span>(<span class="hljs-string">'page:/products'</span>); <span class="hljs-comment">// undefined - stale copy is also purged from reader's primary</span>
+</code></pre>
+<p>The tag service is disabled by default so untagged workloads pay no extra cost, and you have to turn it on to use it — either with the <code>tags: true</code> option or by setting <code>cache.tags.enabled = true</code>. While disabled, all tag operations are no-ops: values set with <code>tags</code> are stored without tag tracking and invalidations have no effect. The service never enables itself, which keeps behavior predictable across distributed instances — enable it on every instance that shares the store (writers and readers) so invalidations are honored and tag snapshots are cleaned up consistently.</p>
+<p>The full <code>CacheTags</code> API is available on the service:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">await</span> cache.<span class="hljs-property">tags</span>.<span class="hljs-title function_">getTags</span>(<span class="hljs-string">'page:/products'</span>); <span class="hljs-comment">// ['entity:42', 'collection:products']</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-property">tags</span>.<span class="hljs-title function_">getKeysByTag</span>(<span class="hljs-string">'entity:42'</span>); <span class="hljs-comment">// keys referencing a tag (debugging / tests)</span>
+cache.<span class="hljs-property">tags</span>.<span class="hljs-property">enabled</span>; <span class="hljs-comment">// whether freshness checks run on get / getMany</span>
+</code></pre>
+<h1 id="cacheable-options">Cacheable Options</h1>
+<p>The following options are available for you to configure <code>cacheable</code>:</p>
+<ul>
+<li><code>primary</code>: The primary store for the cache (layer 1) defaults to in-memory by Keyv.</li>
+<li><code>secondary</code>: The secondary store for the cache (layer 2) usually a persistent cache by Keyv.</li>
+<li><code>nonBlocking</code>: If the secondary store is non-blocking. Default is <code>false</code>.</li>
+<li><code>stats</code>: To enable statistics for this instance. Default is <code>false</code>.</li>
+<li><code>ttl</code>: The default time to live for the cache in milliseconds. Default is <code>undefined</code> which is disabled.</li>
+<li><code>maxTtl</code>: The maximum time to live for any cache entry. When set, TTLs exceeding this value are capped. Enforced on both primary and secondary stores. Default is <code>undefined</code> (no maximum).</li>
+<li><code>namespace</code>: The namespace for the cache. Default is <code>undefined</code>.</li>
+<li><code>cacheId</code>: A unique identifier for this cache instance. Used for sync filtering. Default is a random string.</li>
+<li><code>tags</code>: Enables the tag service so tag-based invalidation can be used and freshness checks run on <code>get</code> / <code>getMany</code>. Tags must be explicitly enabled — while disabled, all tag operations are no-ops. Default is <code>false</code>.</li>
+<li><code>sync</code>: Enable distributed cache synchronization. Can be:
+<ul>
+<li><code>CacheableSync</code> instance</li>
+<li><code>CacheableSyncOptions</code> object with <code>{ qified: MessageProvider | MessageProvider[] | Qified }</code></li>
+</ul>
+</li>
+</ul>
+<h1 id="cacheable-statistics-instance-only">Cacheable Statistics (Instance Only)</h1>
+<p>If you want to enable statistics for your instance you can set the <code>.stats.enabled</code> property to <code>true</code> in the options. This will enable statistics for your instance and you can get the statistics by calling the <code>stats</code> property. Here are the following property statistics:</p>
+<ul>
+<li><code>hits</code>: The number of hits in the cache.</li>
+<li><code>misses</code>: The number of misses in the cache.</li>
+<li><code>sets</code>: The number of sets in the cache.</li>
+<li><code>deletes</code>: The number of deletes in the cache.</li>
+<li><code>clears</code>: The number of clears in the cache.</li>
+<li><code>errors</code>: The number of errors in the cache.</li>
+<li><code>count</code>: The number of keys in the cache.</li>
+<li><code>vsize</code>: The estimated byte size of the values in the cache.</li>
+<li><code>ksize</code>: The estimated byte size of the keys in the cache.</li>
+</ul>
+<p>You can clear / reset the stats by calling the <code>.stats.reset()</code> method.</p>
+<p><em>This does not enable statistics for your layer 2 cache as that is a distributed cache</em>.</p>
+<h1 id="cacheable---api">Cacheable - API</h1>
+<ul>
+<li><code>set(key, value, ttlOrOptions?)</code>: Sets a value in the cache. The third argument can be a <code>ttl</code> or an options object such as <code>{ ttl: '1h', tags: ['entity:42'] }</code>.</li>
+<li><code>setMany([{key, value, ttl?, tags?}])</code>: Sets multiple values in the cache.</li>
+<li><code>get(key)</code>: Gets a value from the cache.</li>
+<li><code>get(key, { raw: true })</code>: Gets a raw value from the cache.</li>
+<li><code>getMany([keys])</code>: Gets multiple values from the cache.</li>
+<li><code>getMany([keys], { raw: true })</code>: Gets multiple raw values from the cache.</li>
+<li><code>has(key)</code>: Checks if a value exists in the cache.</li>
+<li><code>hasMany([keys])</code>: Checks if multiple values exist in the cache.</li>
+<li><code>take(key)</code>: Takes a value from the cache and deletes it.</li>
+<li><code>takeMany([keys])</code>: Takes multiple values from the cache and deletes them.</li>
+<li><code>delete(key)</code>: Deletes a value from the cache.</li>
+<li><code>deleteMany([keys])</code>: Deletes multiple values from the cache.</li>
+<li><code>clear()</code>: Clears the cache stores. Be careful with this as it will clear both layer 1 and layer 2.</li>
+<li><code>tags</code>: The <code>CacheTags</code> service from <code>@cacheable/utils</code> used for tag-based invalidation, such as <code>tags.invalidateTag(tag)</code>, <code>tags.invalidateTags([tags])</code>, <code>tags.getTags(key)</code>, <code>tags.getKeysByTag(tag)</code>, and <code>tags.enabled</code>.</li>
+<li><code>wrap(function, WrapOptions)</code>: Wraps an <code>async</code> function in a cache.</li>
+<li><code>getOrSet(GetOrSetKey, valueFunction, GetOrSetFunctionOptions)</code>: Gets a value from cache or sets it if not found using the provided function.</li>
+<li><code>disconnect()</code>: Disconnects from the cache stores.</li>
+<li><code>onHook(hook, callback)</code>: Sets a hook.</li>
+<li><code>removeHook(hook)</code>: Removes a hook.</li>
+<li><code>on(event, callback)</code>: Listens for an event.</li>
+<li><code>removeListener(event, callback)</code>: Removes a listener.</li>
+<li><code>hash(object: any, algorithm = 'SHA-256'): Promise&#x3C;string></code>: Asynchronously hashes an object with a cryptographic algorithm (SHA-256, SHA-384, SHA-512). Default is <code>SHA-256</code>.</li>
+<li><code>hashSync(object: any, algorithm = 'djb2'): string</code>: Synchronously hashes an object with a non-cryptographic algorithm (djb2, fnv1, murmer, crc32). Default is <code>djb2</code>.</li>
+<li><code>primary</code>: The primary store for the cache (layer 1) defaults to in-memory by Keyv.</li>
+<li><code>secondary</code>: The secondary store for the cache (layer 2) usually a persistent cache by Keyv.</li>
+<li><code>namespace</code>: The namespace for the cache. Default is <code>undefined</code>. This will set the namespace for the primary and secondary stores.</li>
+<li><code>maxTtl</code>: The maximum time to live for any cache entry. When set, TTLs exceeding this value are capped. Default is <code>undefined</code> (no maximum).</li>
+<li><code>nonBlocking</code>: If the secondary store is non-blocking. Default is <code>false</code>.</li>
+<li><code>stats</code>: The statistics for this instance which includes <code>hits</code>, <code>misses</code>, <code>sets</code>, <code>deletes</code>, <code>clears</code>, <code>errors</code>, <code>count</code>, <code>vsize</code>, <code>ksize</code>.</li>
+</ul>
+<h1 id="cacheablememory---in-memory-cache">CacheableMemory - In-Memory Cache</h1>
+<p><code>cacheable</code> comes with a built-in in-memory cache called <code>CacheableMemory</code> from <code>@cacheable/memory</code>. This is a simple in-memory cache that is used as the primary store for <code>cacheable</code>. You can use this as a standalone cache or as a primary store for <code>cacheable</code>. Here is an example of how to use <code>CacheableMemory</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>, <span class="hljs-comment">// 1 hour</span>
+  <span class="hljs-attr">useClones</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// use clones for the values (default is true)</span>
+  <span class="hljs-attr">lruSize</span>: <span class="hljs-number">1000</span>, <span class="hljs-comment">// the size of the LRU cache (default is 0 which is unlimited)</span>
+}
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>(options);
+cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key'</span>, <span class="hljs-string">'value'</span>);
+<span class="hljs-keyword">const</span> value = cache.<span class="hljs-title function_">get</span>(<span class="hljs-string">'key'</span>); <span class="hljs-comment">// value</span>
+</code></pre>
+<p>To learn more go to <a href="https://cacheable.org/docs/memory/">@cacheable/memory</a></p>
+<h1 id="wrap--memoization-for-sync-and-async-functions">Wrap / Memoization for Sync and Async Functions</h1>
+<p><code>Cacheable</code> and <code>CacheableMemory</code> has a feature called <code>wrap</code> that comes from <a href="https://cacheable.org/docs/utils/">@cacheable/utils</a> and allows you to wrap a function in a cache. This is useful for memoization and caching the results of a function. You can wrap a <code>sync</code> or <code>async</code> function in a cache. Here is an example of how to use the <code>wrap</code> function:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">asyncFunction</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params">value: number</span>) => {
+  <span class="hljs-keyword">return</span> <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">random</span>() * value;
+};
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+<span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>, <span class="hljs-comment">// 1 hour</span>
+  <span class="hljs-attr">keyPrefix</span>: <span class="hljs-string">'p1'</span>, <span class="hljs-comment">// key prefix. This is used if you have multiple functions and need to set a unique prefix.</span>
+}
+<span class="hljs-keyword">const</span> wrappedFunction = cache.<span class="hljs-title function_">wrap</span>(asyncFunction, options);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> <span class="hljs-title function_">wrappedFunction</span>(<span class="hljs-number">2</span>)); <span class="hljs-comment">// 4</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> <span class="hljs-title function_">wrappedFunction</span>(<span class="hljs-number">2</span>)); <span class="hljs-comment">// 4 from cache</span>
+</code></pre>
+<p>With <code>Cacheable</code> we have also included stampede protection so that a <code>Promise</code> based call will only be called once if multiple requests of the same are executed at the same time. Here is an example of how to test for stampede protection:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">asyncFunction</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params">value: number</span>) => {
+  <span class="hljs-keyword">return</span> value;
+};
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+<span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>, <span class="hljs-comment">// 1 hour</span>
+  <span class="hljs-attr">keyPrefix</span>: <span class="hljs-string">'p1'</span>, <span class="hljs-comment">// key prefix. This is used if you have multiple functions and need to set a unique prefix.</span>
+}
+
+<span class="hljs-keyword">const</span> wrappedFunction = cache.<span class="hljs-title function_">wrap</span>(asyncFunction, options);
+<span class="hljs-keyword">const</span> promises = [];
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &#x3C; <span class="hljs-number">10</span>; i++) {
+  promises.<span class="hljs-title function_">push</span>(<span class="hljs-title function_">wrappedFunction</span>(i));
+}
+
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> <span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">all</span>(promises); <span class="hljs-comment">// all results should be the same</span>
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(results); <span class="hljs-comment">// [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]</span>
+</code></pre>
+<p>In this example we are wrapping an <code>async</code> function in a cache with a <code>ttl</code> of <code>1 hour</code>. This will cache the result of the function for <code>1 hour</code> and then expire the value. You can also wrap a <code>sync</code> function in a cache:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">syncFunction</span> = (<span class="hljs-params">value: number</span>) => {
+  <span class="hljs-keyword">return</span> value * <span class="hljs-number">2</span>;
+};
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>();
+<span class="hljs-keyword">const</span> wrappedFunction = cache.<span class="hljs-title function_">wrap</span>(syncFunction, { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>, <span class="hljs-attr">key</span>: <span class="hljs-string">'syncFunction'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">wrappedFunction</span>(<span class="hljs-number">2</span>)); <span class="hljs-comment">// 4</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">wrappedFunction</span>(<span class="hljs-number">2</span>)); <span class="hljs-comment">// 4 from cache</span>
+</code></pre>
+<p>In this example we are wrapping a <code>sync</code> function in a cache with a <code>ttl</code> of <code>1 hour</code>. This will cache the result of the function for <code>1 hour</code> and then expire the value. You can also set the <code>key</code> property in the <code>wrap()</code> options to set a custom key for the cache.</p>
+<p>When an error occurs in the function it will not cache the value and will return the error. This is useful if you want to cache the results of a function but not cache the error. If you want it to cache the error you can set the <code>cacheError</code> property to <code>true</code> in the <code>wrap()</code> options. This is disabled by default.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheableMemory</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">syncFunction</span> = (<span class="hljs-params">value: number</span>) => {
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'error'</span>);
+};
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CacheableMemory</span>();
+<span class="hljs-keyword">const</span> wrappedFunction = cache.<span class="hljs-title function_">wrap</span>(syncFunction, { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span>, <span class="hljs-attr">key</span>: <span class="hljs-string">'syncFunction'</span>, <span class="hljs-attr">cacheError</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">wrappedFunction</span>()); <span class="hljs-comment">// error</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">wrappedFunction</span>()); <span class="hljs-comment">// error from cache</span>
+</code></pre>
+<p>If you would like to generate your own key for the wrapped function you can set the <code>createKey</code> property in the <code>wrap()</code> options. This is useful if you want to generate a key based on the arguments of the function or any other criteria.</p>
+<pre><code class="hljs language-javascript">  <span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+  <span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">WrapOptions</span> = {
+    cache,
+    <span class="hljs-attr">keyPrefix</span>: <span class="hljs-string">'test'</span>,
+    <span class="hljs-attr">createKey</span>: <span class="hljs-function">(<span class="hljs-params">function_, arguments_, options: WrapOptions</span>) =></span> <span class="hljs-string">`customKey:<span class="hljs-subst">${options?.keyPrefix}</span>:<span class="hljs-subst">${arguments_[<span class="hljs-number">0</span>]}</span>`</span>,
+  };
+
+  <span class="hljs-keyword">const</span> wrapped = <span class="hljs-title function_">wrap</span>(<span class="hljs-function">(<span class="hljs-params">argument: string</span>) =></span> <span class="hljs-string">`Result for <span class="hljs-subst">${argument}</span>`</span>, options);
+
+  <span class="hljs-keyword">const</span> result1 = <span class="hljs-keyword">await</span> <span class="hljs-title function_">wrapped</span>(<span class="hljs-string">'arg1'</span>);
+  <span class="hljs-keyword">const</span> result2 = <span class="hljs-keyword">await</span> <span class="hljs-title function_">wrapped</span>(<span class="hljs-string">'arg1'</span>); <span class="hljs-comment">// Should hit the cache</span>
+
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result1); <span class="hljs-comment">// Result for arg1</span>
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result2); <span class="hljs-comment">// Result for arg1 (from cache)</span>
+</code></pre>
+<p>We will pass in the <code>function</code> that is being wrapped, the <code>arguments</code> passed to the function, and the <code>options</code> used to wrap the function. You can then use these to generate a custom key for the cache.</p>
+<p>To learn more visit <a href="https://cacheable.org/docs/utils/">@cacheable/utils</a></p>
+<h1 id="get-or-set-memoization-function">Get Or Set Memoization Function</h1>
+<p>The <code>getOrSet</code>  method that comes from <a href="https://cacheable.org/docs/utils/">@cacheable/utils</a> provides a convenient way to implement the cache-aside pattern. It attempts to retrieve a value from cache, and if not found, calls the provided function to compute the value and store it in cache before returning it. Here are the options:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">GetOrSetFunctionOptions</span> = {
+	<span class="hljs-attr">ttl</span>?: <span class="hljs-built_in">number</span> | <span class="hljs-built_in">string</span>;
+	<span class="hljs-attr">cacheErrors</span>?: <span class="hljs-built_in">boolean</span>;
+	<span class="hljs-attr">throwErrors</span>?: <span class="hljs-built_in">boolean</span>;
+	<span class="hljs-attr">nonBlocking</span>?: <span class="hljs-built_in">boolean</span>;
+};
+</code></pre>
+<p>The <code>nonBlocking</code> option allows you to override the instance-level <code>nonBlocking</code> setting for the <code>get</code> call within <code>getOrSet</code>. When set to <code>false</code>, the <code>get</code> will block and wait for a response from the secondary store before deciding whether to call the provided function. When set to <code>true</code>, the primary store returns immediately and syncs from secondary in the background.</p>
+<p>Here is an example of how to use the <code>getOrSet</code> method:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+<span class="hljs-comment">// Use getOrSet to fetch user data</span>
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">function_</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params"></span>) => <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">random</span>() * <span class="hljs-number">100</span>;
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">getOrSet</span>(<span class="hljs-string">'randomValue'</span>, function_, { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(value); <span class="hljs-comment">// e.g. 42.123456789</span>
+</code></pre>
+<p>You can also use a function to compute the key for the function:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span>, <span class="hljs-title class_">GetOrSetOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>();
+
+<span class="hljs-comment">// Function to generate a key based on options</span>
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">generateKey</span> = (<span class="hljs-params">options?: GetOrSetOptions</span>) => {
+  <span class="hljs-keyword">return</span> <span class="hljs-string">`custom_key_:<span class="hljs-subst">${options?.cacheId || <span class="hljs-string">'default'</span>}</span>`</span>;
+};
+
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">function_</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params"></span>) => <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">random</span>() * <span class="hljs-number">100</span>;
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">getOrSet</span>(<span class="hljs-title function_">generateKey</span>(), function_, { <span class="hljs-attr">ttl</span>: <span class="hljs-string">'1h'</span> });
+</code></pre>
+<p>To learn more go to <a href="https://cacheable.org/docs/utils/">@cacheable/utils</a></p>
+<h1 id="v1-to-v2-changes">v1 to v2 Changes</h1>
+<p><code>cacheable</code> is now using <code>@cacheable/utils</code> and <code>@cacheable/memory</code> for its core functionality as we are moving to this modular architecture and plan to eventually have these modules across <code>cache-manager</code> and <code>flat-cache</code>. In addition there are some breaking changes:</p>
+<ul>
+<li><code>get()</code> and <code>getMany()</code> no longer have the <code>raw</code> option but instead we have built out <code>getRaw()</code> and <code>getManyRaw()</code> to use.</li>
+<li>All <code>get</code> related functions now support <code>nonBlocking</code> which means if <code>nonBlocking: true</code> the primary store will return what it has and then in the background will work to sync from secondary storage for any misses. You can disable this by setting at the <code>get</code> function level the option <code>nonBlocking: false</code> which will look for any missing keys in the secondary.</li>
+<li><code>Keyv</code> v5.5+ is now the recommended supported version as we are using its native <code>getMany*</code>, <code>getRaw*</code>, and <code>hasMany</code> methods for improved performance</li>
+<li><code>Wrap</code> and <code>getOrSet</code> have been updated with more robust options including the ability to use your own <code>serialize</code> function for creating the key in <code>wrap</code>.</li>
+<li><code>hash</code> has been split into async (<code>hash()</code> and <code>hashToNumber()</code>) and sync (<code>hashSync()</code> and <code>hashToNumberSync()</code>) methods. MD5 support has been removed. Now uses Hashery library with support for additional algorithms (SHA-384, FNV1, MURMER, CRC32).</li>
+</ul>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>You can contribute by forking the repo and submitting a pull request. Please make sure to add tests and update the documentation. To learn more about how to contribute go to our main README <a href="https://github.com/jaredwray/cacheable">https://github.com/jaredwray/cacheable</a>. This will talk about how to <code>Open a Pull Request</code>, <code>Ask a Question</code>, or <code>Post an Issue</code>.</p>
+<h1 id="license-and-copyright">License and Copyright</h1>
+<p><a href="./LICENSE">MIT © Jared Wray</a></p>

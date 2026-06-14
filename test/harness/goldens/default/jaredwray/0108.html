@@ -1,0 +1,3 @@
+<h1 id="rivus-gateway">Rivus Gateway</h1>
+<p>Rust + <a href="https://github.com/cloudflare/pingora">Pingora</a> data-plane gateway. Serves static sites from object storage with primary/secondary failover. Cloudflare terminates TLS in front; the gateway terminates TLS at origin using a Cloudflare Origin CA cert with Authenticated Origin Pulls.</p>
+<p>This crate is read-only against object storage. Deploys, config writes, replication, and garbage collection are owned by the <a href="../management/README.md">management API</a>. See the root <a href="../README.md">README</a> for the cross-project contract.</p>

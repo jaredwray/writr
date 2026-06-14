@@ -1,0 +1,1168 @@
+<p><img src="site/logo.svg" alt="Ecto" title="Ecto"></p>
+<h1 id="modern-template-consolidation-engine-for-ejs-markdown-pug-nunjucks-mustache-and-handlebars">Modern Template Consolidation Engine for EJS, Markdown, Pug, Nunjucks, Mustache, and Handlebars</h1>
+<p><a href="https://github.com/jaredwray/ecto/actions/workflows/tests.yml"><img src="https://github.com/jaredwray/ecto/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+<a href="https://github.com/jaredwray/ecto/actions"><img src="https://github.com/jaredwray/ecto/workflows/release/badge.svg" alt="Release Status"></a>
+<a href="https://github.com/jaredwray/ecto/blob/master/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/ecto" alt="GitHub license"></a>
+<a href="https://codecov.io/gh/jaredwray/ecto"><img src="https://codecov.io/gh/jaredwray/ecto/branch/main/graph/badge.svg?token=dpbFqSW5Kh" alt="codecov"></a>
+<a href="https://npmjs.com/package/ecto"><img src="https://img.shields.io/npm/dm/ecto" alt="npm"></a></p>
+<hr>
+<p>Ecto is a modern template consolidation engine that enables the best template engines: EJS, Markdown, Pug, Nunjucks, Mustache, Handlebars, and Liquid. It consolidates these template engines to a single library, allowing you to use any of them with ease.</p>
+<h1 id="features">Features</h1>
+<ul>
+<li>Zero Config by default but all properties exposed for flexibility. Check out our easy <a href="#api">API.</a></li>
+<li>Async <code>render</code> and <code>renderFromFile</code> functions for ES6 and Typescript.</li>
+<li><a href="#render-from-file">Render via Template File</a> with Automatic Engine Selection. No more selecting which engine to use, engine choice is automatically decided based on the file extension.</li>
+<li><a href="#only-the-top-template-engines-and-their-extensions">Only the Top Template Engines</a>: EJS, Markdown, Pug, Nunjucks, Mustache, Liquid, and Handlebars.</li>
+<li>FrontMatter Helpers <code>.hasFrontMatter</code>, <code>.getFrontMatter</code>, and <code>.removeFrontMatter</code> for Markdown files.</li>
+<li>Maintained with Monthly Updates!</li>
+</ul>
+<h1 id="table-of-contents">Table of Contents</h1>
+<ul>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#only-the-top-template-engines-and-their-extensions">Only the Top Template Engines and Their Extensions</a></li>
+<li><a href="#api---methods-and-parameters">API - Methods and Parameters</a>
+<ul>
+<li><a href="#render-from-string">Render From String</a></li>
+<li><a href="#render-from-file">Render From File</a></li>
+<li><a href="#default-engine">Default Engine</a></li>
+<li><a href="#set-the-engine-in-the-arguments-of-the-ecto-constructor">Set the engine in the arguments of the Ecto constructor</a></li>
+<li><a href="#set-the-default-engine-as-a-parameter">Set the default engine as a parameter</a></li>
+<li><a href="#set-the-engine-as-a-parameter-on-the-render-function">Set the engine as a parameter on the render function</a></li>
+<li><a href="#override-the-auto-selection-on-renderfromfile">Override the auto selection on renderFromFile</a></li>
+<li><a href="#find-template-without-extension---helper-methods">Find Template Without Extension - Helper Methods</a></li>
+</ul>
+</li>
+<li><a href="#markdown-example">Markdown Example</a></li>
+<li><a href="#handlebars-example">Handlebars Example</a></li>
+<li><a href="#engine-mappings">Engine Mappings</a>
+<ul>
+<li><a href="#setting-an-engine-mapping---setnamestring-extensionsarraystring-void">Setting an engine mapping - set(name:string, extensions:Array&#x3C;string>): void</a></li>
+<li><a href="#delete-an-engine-mapping---deletenamestring-void">Delete an engine mapping - delete(name:string): void</a></li>
+<li><a href="#delete-an-extension---deleteextensionnamestring-extensionstring-void">Delete an extension - deleteExtension(name:string, extension:string): void</a></li>
+<li><a href="#get-method---getnamestring-arraystring--undefined">get method - get(name:string): Array&#x3C;string> | undefined</a></li>
+<li><a href="#getname-method---getnameextensionstring-string--undefined">getName method - getName(extension:string): string | undefined</a></li>
+<li><a href="#detect-template-engine">Detect Template Engine</a></li>
+<li><a href="#detectenginesource-string-string">detectEngine(source: string): string</a>
+<ul>
+<li><a href="#basic-usage">Basic Usage</a></li>
+<li><a href="#detection-patterns">Detection Patterns</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#the-template-engines-we-support">The Template Engines We Support</a>
+<ul>
+<li><a href="#ejs">EJS</a></li>
+<li><a href="#markdown">Markdown</a></li>
+<li><a href="#pug">PUG</a></li>
+<li><a href="#nunjucks">Nunjucks</a></li>
+<li><a href="#mustache">Mustache</a></li>
+<li><a href="#handlebars">Handlebars</a></li>
+<li><a href="#liquid">Liquid</a></li>
+</ul>
+</li>
+<li><a href="#frontmatter-helper-functions">FrontMatter Helper Functions</a></li>
+<li><a href="#caching-on-rendering">Caching on Rendering</a></li>
+<li><a href="#emitting-events">Emitting Events</a></li>
+<li><a href="#hooks">Hooks</a>
+<ul>
+<li><a href="#available-hooks">Available Hooks</a></li>
+<li><a href="#using-hooks">Using Hooks</a></li>
+<li><a href="#hook-objects-ids-and-errors">Hook Objects, IDs, and Errors</a></li>
+</ul>
+</li>
+<li><a href="#creating-custom-engines">Creating Custom Engines</a>
+<ul>
+<li><a href="#direct-engine-usage">Direct Engine Usage</a>
+<ul>
+<li><a href="#customizing-engines-via-constructor">Customizing Engines via Constructor</a></li>
+<li><a href="#accessing-and-modifying-engines-after-creation">Accessing and Modifying Engines After Creation</a></li>
+<li><a href="#customizing-multiple-engines">Customizing Multiple Engines</a></li>
+<li><a href="#setting-partials-path-for-handlebars">Setting Partials Path for Handlebars</a></li>
+<li><a href="#using-exported-engines-standalone">Using Exported Engines Standalone</a></li>
+</ul>
+</li>
+<li><a href="#creating-a-custom-engine">Creating a Custom Engine</a>
+<ul>
+<li><a href="#basic-custom-engine-example">Basic Custom Engine Example</a></li>
+<li><a href="#integrating-custom-engine-with-ecto">Integrating Custom Engine with Ecto</a></li>
+<li><a href="#advanced-custom-engine-with-template-library">Advanced Custom Engine with Template Library</a></li>
+<li><a href="#custom-engine-with-partials-support">Custom Engine with Partials Support</a></li>
+</ul>
+</li>
+<li><a href="#engine-interface-reference">Engine Interface Reference</a></li>
+<li><a href="#baseengine-helper-methods">BaseEngine Helper Methods</a></li>
+<li><a href="#tips-for-custom-engines">Tips for Custom Engines</a></li>
+</ul>
+</li>
+<li><a href="#how-to-contribute">How to Contribute</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h1 id="getting-started">Getting Started</h1>
+<p>The <a href="https://nodejs.org/en/download/package-manager/">Node.js package manager documentation</a> provides the commands needed to complete the install on Windows and other operating systems.</p>
+<ol>
+<li>Open the terminal for your project and run <code>npm install</code> to ensure all project dependencies are correctly installed.</li>
+</ol>
+<pre><code>npm install ecto
+</code></pre>
+<ol start="2">
+<li>Declare and Initialize.</li>
+</ol>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Ecto</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">`ecto`</span>;
+
+<span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+</code></pre>
+<ol start="5">
+<li>Render via String for EJS (<a href="#default-engine">Default Engine</a>)</li>
+</ol>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> source = <span class="hljs-string">"&#x3C;h1>Hello &#x3C;%= firstName%> &#x3C;%= lastName %>!&#x3C;/h1>"</span>;
+<span class="hljs-keyword">const</span> data = {<span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span>}
+ecto.<span class="hljs-title function_">render</span>(source, data).<span class="hljs-title function_">then</span>(<span class="hljs-function">(<span class="hljs-params">output</span>) =></span> {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(output);
+});
+</code></pre>
+<p>After running your program you should see the following output:</p>
+<pre><code>&#x3C;h1>Hello John Doe!&#x3C;/h1>
+</code></pre>
+<hr>
+<p>You can easily set a different <a href="#default-engine">defaultEngine</a>, here we use Handlebars.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Ecto</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">`ecto`</span>;
+<span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>({<span class="hljs-attr">defaultEngine</span>: <span class="hljs-string">"handlebars"</span>});
+
+<span class="hljs-keyword">let</span> source = <span class="hljs-string">"&#x3C;h1>Hello {{ firstName }} {{ lastName }}!&#x3C;/h1>"</span>;
+<span class="hljs-keyword">let</span> data = {<span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span>};
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(source, data); <span class="hljs-comment">//returns &#x3C;h1>Hello John Doe!&#x3C;/h1></span>
+</code></pre>
+<p>To render from a template file, Ecto uses the <code>renderFromFile</code> function. This performs an automatic selection of the engine based on the file extension.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Ecto</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">`ecto`</span>;
+<span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-keyword">let</span> data = { <span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span>};
+<span class="hljs-comment">//async renderFromFile(filePath:string, data?:object, rootTemplatePath?:string, filePathOutput?:string, engineName?:string): Promise&#x3C;string></span>
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">renderFromFile</span>(<span class="hljs-string">"./path/to/template.ejs"</span>, data); <span class="hljs-comment">// returns &#x3C;h1>Hello John Doe!&#x3C;/h1></span>
+</code></pre>
+<h1 id="only-the-top-template-engines-and-their-extensions">Only the Top Template Engines and Their Extensions</h1>
+<p>We focus on the most popular and well-maintained consolidation engines. Unfortunately other engines suffered from packages that were unsupported, making it difficult to validate them as working fully. Some engines also had limited types and lacked ease of use.</p>
+<p>Our goal is to support the top engines, handling the vast majority of use cases. Here are the top engines that we support:</p>
+<table>
+<thead>
+<tr>
+<th>Engine</th>
+<th>Monthly Downloads</th>
+<th>Extensions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://www.npmjs.com/package/ejs">EJS</a></td>
+<td><a href="https://npmjs.com/package/ejs"><img src="https://img.shields.io/npm/dm/ejs" alt="npm"></a></td>
+<td>.ejs</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/marked">Markdown</a></td>
+<td><a href="https://npmjs.com/package/marked"><img src="https://img.shields.io/npm/dm/marked" alt="npm"></a></td>
+<td>.markdown, .md</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/pug">Pug</a></td>
+<td><a href="https://npmjs.com/package/pug"><img src="https://img.shields.io/npm/dm/pug" alt="npm"></a></td>
+<td>.pug, .jade</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/nunjucks">Nunjucks</a></td>
+<td><a href="https://npmjs.com/package/nunjucks"><img src="https://img.shields.io/npm/dm/nunjucks" alt="npm"></a></td>
+<td>.njk</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/mustache">Mustache</a></td>
+<td><a href="https://npmjs.com/package/mustache"><img src="https://img.shields.io/npm/dm/mustache" alt="npm"></a></td>
+<td>.mustache</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/handlebars">Handlebars</a></td>
+<td><a href="https://npmjs.com/package/handlebars"><img src="https://img.shields.io/npm/dm/handlebars" alt="npm"></a></td>
+<td>.handlebars, .hbs, .hjs</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/liquidjs">Liquid</a></td>
+<td><a href="https://npmjs.com/package/liquidjs"><img src="https://img.shields.io/npm/dm/liquidjs" alt="npm"></a></td>
+<td>.liquid</td>
+</tr>
+</tbody>
+</table>
+<p><em>The <code>Extensions</code> are listed above for when we <a href="#render-from-file">Render from File</a>.</em></p>
+<h1 id="api---methods-and-parameters">API - Methods and Parameters</h1>
+<p>The API is focused on using the main Ecto class:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-comment">//ecto.&#x3C;API> -- functions and parameters</span>
+</code></pre>
+<p>There are a couple of options that can be passed to the Ecto constructor:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>defaultEngine</td>
+<td>string</td>
+<td>This is the default engine to use if it is not set when doing rendering</td>
+</tr>
+<tr>
+<td>engineOptions</td>
+<td>object</td>
+<td>The options for each engin that you can set initially.</td>
+</tr>
+</tbody>
+</table>
+<p>here is an example of setting the default engine and also options for <code>nunjucks</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>({<span class="hljs-attr">defaultEngine</span>: <span class="hljs-string">"nunjucks"</span>, <span class="hljs-attr">engineOptions</span>: {<span class="hljs-attr">nunjucks</span>: {<span class="hljs-attr">autoescape</span>: <span class="hljs-literal">true</span>}});
+</code></pre>
+<p>When looking at the API there are two main methods to make note of:
+<a href="#render-from-string">render</a> (async) - Render from a string.
+<a href="#render-from-file">renderFromFile</a> (async) - Renders from a file path and will auto-select what engine to use based on the file extension. It will return a <code>Promise&#x3C;string></code> of the rendered output.</p>
+<h2 id="render-from-string">Render From String</h2>
+<p>As we have shown in <a href="#getting-started">Getting Started -- It's that Easy!</a> You can render in only a couple of lines of code.</p>
+<p>render and renderSync (<code>async</code>) - Render from a string. Here is the render function with all possible arguments shown:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>source</td>
+<td>string</td>
+<td>The markup/template source to be rendered.</td>
+</tr>
+<tr>
+<td>data</td>
+<td>object</td>
+<td>The data to be rendered by the file.</td>
+</tr>
+<tr>
+<td>engineName</td>
+<td>string</td>
+<td>Used to override the <code>Ecto.defaultEngine</code> parameter.</td>
+</tr>
+<tr>
+<td>rootTemplatePath</td>
+<td>string</td>
+<td>The root template path that is used for <code>partials</code> and <code>layouts</code>.</td>
+</tr>
+<tr>
+<td>filePathOutput</td>
+<td>string</td>
+<td>Used to specify the file path, if you want to write the rendered output to a file.</td>
+</tr>
+</tbody>
+</table>
+<p>Here is the simplest example of a render function. We are also showing the required steps you need to take beforehand such as setting up Ecto.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+
+<span class="hljs-keyword">const</span> source = <span class="hljs-string">"&#x3C;h1>Hello &#x3C;%= firstName%> &#x3C;%= lastName %>!&#x3C;/h1>"</span>;
+<span class="hljs-keyword">const</span> data = {<span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span>};
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(source, data); <span class="hljs-comment">//returns &#x3C;h1>Hello John Doe!&#x3C;/h1></span>
+</code></pre>
+<p>If you want to do synchronous rendering, you can do so by using the <code>renderSync</code> function. This function takes the same parameters as the <code>render</code> function.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-keyword">const</span> source = <span class="hljs-string">"&#x3C;h1>Hello &#x3C;%= firstName%> &#x3C;%= lastName %>!&#x3C;/h1>"</span>;
+<span class="hljs-keyword">const</span> data = {<span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span>};
+ecto.<span class="hljs-title function_">renderSync</span>(source, data); <span class="hljs-comment">//returns &#x3C;h1>Hello John Doe!&#x3C;/h1></span>
+</code></pre>
+<p>Now let's say your desired engine is not <a href="https://www.npmjs.com/package/ejs">EJS</a>, you will need to specify it explicitly. You can either set the <a href="#default-engine">defaultEngine</a> parameter, or simply pass it in the <code>render</code> function. In this case with the popular engine, <a href="https://www.npmjs.com/package/handlebars">Handlebars</a>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+
+<span class="hljs-keyword">const</span> source = <span class="hljs-string">"&#x3C;h1>Hello {{firstName}} {{lastName}}!&#x3C;/h1>"</span>;
+<span class="hljs-keyword">const</span> data = {<span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span>}
+ecto.<span class="hljs-title function_">render</span>(source, data, <span class="hljs-string">"handlebars"</span>).<span class="hljs-title function_">then</span>(<span class="hljs-function">(<span class="hljs-params">output</span>) =></span> {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(output);
+});
+
+</code></pre>
+<p>The <code>render</code> and <code>renderSync</code> function also can handle partial files for standard engines (markdown excluded) by simply adding the <code>rootTemplatePath</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+
+<span class="hljs-keyword">const</span> source = <span class="hljs-string">"&#x3C;h1>Hello &#x3C;%= firstName%> &#x3C;%= lastName %>!&#x3C;/h1>&#x3C;%- include('/relative/path/to/partial'); %>"</span>;
+<span class="hljs-keyword">const</span> data = {<span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span>};
+ecto.<span class="hljs-title function_">render</span>(source, data, <span class="hljs-literal">undefined</span>, <span class="hljs-string">"./path/to/templates"</span>).<span class="hljs-title function_">then</span>(<span class="hljs-function">(<span class="hljs-params">output</span>) =></span> {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(output);
+});
+
+</code></pre>
+<p>With <code>render</code> and <code>renderSync</code> you can also write to a file. This is accomplished by specifying the <code>filePathOutput</code> parameter as below. It will still return the output as a <code>string</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+
+<span class="hljs-keyword">const</span> source = <span class="hljs-string">"&#x3C;h1>Hello &#x3C;%= firstName%> &#x3C;%= lastName %>!&#x3C;/h1>"</span>;
+<span class="hljs-keyword">const</span> data = {<span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span>};
+ecto.<span class="hljs-title function_">render</span>(source, data, <span class="hljs-literal">undefined</span>, <span class="hljs-literal">undefined</span>, <span class="hljs-string">"./path/to/output/file.html"</span>).<span class="hljs-title function_">then</span>(<span class="hljs-function">(<span class="hljs-params">output</span>) =></span> {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(output);
+});
+</code></pre>
+<p>Notice the <code>undefined</code> value passed into the <code>engineName</code> parameter. This is done because we already have the <a href="#default-engine">defaultEngine</a> set to <a href="https://www.npmjs.com/package/ejs">EJS</a>. If you want you can easily add it in here too.</p>
+<hr>
+<h2 id="render-from-file">Render From File</h2>
+<p>To render via a template file, it is as simple as calling the <code>renderFromFile</code> or <code>renderFromFileSync</code> function with a couple of simple parameters passed in.</p>
+<p>renderFromFile (<code>async</code>) or renderFromFileSync (<code>synchronous</code>) - Renders from a file path and will auto-select what engine to use based on the file extension. It will return a <code>Promise&#x3C;string></code> of the rendered output. One of the main benefits is that it will automatically select the correct engine based on the file extension. The renderFromFile function takes the following parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>filePath</td>
+<td>string</td>
+<td>The file that you would like to render.</td>
+</tr>
+<tr>
+<td>data</td>
+<td>object</td>
+<td>The data to be rendered by the file.</td>
+</tr>
+<tr>
+<td>rootTemplatePath</td>
+<td>string</td>
+<td>The root template path that is used for <code>partials</code> and <code>layouts</code>.</td>
+</tr>
+<tr>
+<td>filePathOutput</td>
+<td>string</td>
+<td>Used to specify the file path if you want to write the rendered output to a file.</td>
+</tr>
+<tr>
+<td>engineName</td>
+<td>string</td>
+<td>Used to to override the auto-selection of the <code>engineName</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>This simple example showing the <code>renderFromFile</code> or <code>renderFromFileSync</code> function shows you the bare minimum required to execute this function successfully, we are passing in the template and it will return a <code>string</code>.</p>
+<p>One of the main benefits is that it will automatically select the correct engine based on the file extension.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span>};
+
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">renderFromFile</span>(<span class="hljs-string">"./path/to/template.ejs"</span>, data); <span class="hljs-comment">// returns &#x3C;h1>Hello John Doe!&#x3C;/h1></span>
+</code></pre>
+<p>To do this synchronously, you can use the <code>renderFromFileSync</code> function. This function takes the same parameters as the <code>renderFromFile</code> function.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span>};
+
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">renderFromFileSync</span>(<span class="hljs-string">"./path/to/template.ejs"</span>, data); <span class="hljs-comment">// returns &#x3C;h1>Hello John Doe!&#x3C;/h1></span>
+</code></pre>
+<p>In this example, we are writing the output to a HTML file:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span>};
+
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">renderFromFile</span>(<span class="hljs-string">"./path/to/template.ejs"</span>, data, <span class="hljs-literal">undefined</span>, <span class="hljs-string">"./path/to/output/yourname.html"</span>)
+</code></pre>
+<p>Notice that in these examples it is using the <code>./path/to/template.ejs</code> to specify <a href="https://www.npmjs.com/package/ejs">EJS</a> for the rendering.</p>
+<p>You can override the auto-selected engine by passing in the string value of a template engine as a parameter into the <code>renderFromFile</code> function. We pass in <code>pug</code>, which states we want to render the template using the <a href="https://www.npmjs.com/package/pug">Pug</a> engine.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span>};
+
+ecto.<span class="hljs-title function_">renderFromFile</span>(<span class="hljs-string">"./path/to/template.ejs"</span>, data, <span class="hljs-literal">undefined</span>, <span class="hljs-string">"./path/to/output/yourname.html"</span>, <span class="hljs-string">"pug"</span>);
+</code></pre>
+<h2 id="default-engine">Default Engine</h2>
+<p>This string parameter can be used to set the default template engine for an instance of the Ecto class. Ecto has been designed to support all major engines.</p>
+<p><code>Ecto.defaultEngine</code> is set by default to EJS.If you would like to change the template engine there are several options available to users when setting the value of <code>defaultEngine</code>:</p>
+<h2 id="set-the-engine-in-the-arguments-of-the-ecto-constructor">Set the engine in the arguments of the Ecto constructor</h2>
+<p>One option for setting the default engine, is to do so in the Ecto constructor:</p>
+<ul>
+<li><code>const ecto = new Ecto({defaultEngine: "ejs"});</code></li>
+<li><code>const ecto = new Ecto({defaultEngine: "markdown"});</code></li>
+<li><code>const ecto = new Ecto({defaultEngine: "pug"});</code></li>
+<li><code>const ecto = new Ecto({defaultEngine: "nunjucks"});</code></li>
+<li><code>const ecto = new Ecto({defaultEngine: "mustache"});</code></li>
+<li><code>const ecto = new Ecto({defaultEngine: "handlebars"});</code></li>
+<li><code>const ecto = new Ecto({defaultEngine: "liquid"});</code></li>
+</ul>
+<h2 id="set-the-default-engine-as-a-parameter">Set the default engine as a parameter</h2>
+<p>We can also set the default engine as a parameter, like so:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+ecto.<span class="hljs-property">defaultEngine</span> = <span class="hljs-string">"mustache"</span>;
+</code></pre>
+<p>Alternatively, we can set the engine directly on the constructor. This would make our previous example:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>({<span class="hljs-attr">defaultEngine</span>: <span class="hljs-string">"liquid"</span>});
+ecto.<span class="hljs-property">defaultEngine</span> = <span class="hljs-string">"mustache"</span>;
+</code></pre>
+<h2 id="set-the-engine-as-a-parameter-on-the-render-function">Set the engine as a parameter on the render function</h2>
+<p>You can explicitly override the Ecto.defaultEngine parameter in the render function:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-keyword">const</span> source = <span class="hljs-string">"&#x3C;h1>Hello {{firstName}} {{lastName}}!&#x3C;/h1>"</span>;
+<span class="hljs-keyword">const</span> data = {<span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span>};
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(source, data, <span class="hljs-string">"handlebars"</span>); <span class="hljs-comment">//returns &#x3C;h1>Hello John Doe!&#x3C;/h1></span>
+</code></pre>
+<h2 id="override-the-auto-selection-on-renderfromfile">Override the auto selection on renderFromFile</h2>
+<p>The <code>renderFromFile</code> function automatically decides on the template engine, based on the file extension in the file path you specify. However, you can also explicitly set the engine you would like to use. Here we set the engine to be Pug.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span>};
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">renderFromFile</span>(<span class="hljs-string">"./path/to/template.ejs"</span>, data, <span class="hljs-literal">undefined</span>, <span class="hljs-string">"./path/to/output/yourname.html"</span>, <span class="hljs-string">"pug"</span>); <span class="hljs-comment">// returns &#x3C;h1>Hello John Doe!&#x3C;/h1></span>
+</code></pre>
+<p>To make it easier to access and change between engines, all supported engines are provided as parameters on the <code>Ecto</code> class as <code>Ecto.&#x3C;EngineFullName></code></p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(ecto.<span class="hljs-property">Handlebars</span>.<span class="hljs-property">name</span>); <span class="hljs-comment">// will return "handlebars"</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(ecto.<span class="hljs-property">Handlebars</span>.<span class="hljs-property">opts</span>); <span class="hljs-comment">// will return "handlebars" options object</span>
+</code></pre>
+<p>To access a specific engine you can do so by going to <code>ecto.&#x3C;engine_name>.engine</code> and setting the <a href="https://handlebarsjs.com/api-reference/utilities.html#handlebars-safestring-string">SafeString</a>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-title class_">Ecto</span>();
+ecto.<span class="hljs-property">Handlebars</span>.<span class="hljs-property">engine</span>.<span class="hljs-title class_">SafeString</span>(<span class="hljs-string">"&#x3C;div>HTML Content!&#x3C;/div>"</span>);
+</code></pre>
+<h2 id="find-template-without-extension---helper-methods">Find Template Without Extension - Helper Methods</h2>
+<p>We have added in a couple of helper methods to make it easier to find a template without the extension. This is useful when you want to find a template without the extension. For example, if you have a template called <code>template.ejs</code> and you want to find it without the extension, you can use the <code>findTemplateWithoutExtension</code> for async or <code>findTemplateWithoutExtensionSync</code> function. This function takes two parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>filePath</td>
+<td>string</td>
+<td>The file that you would like to find without the extension.</td>
+</tr>
+<tr>
+<td>templateName</td>
+<td>string</td>
+<td>The name of the template you would like to find.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-keyword">const</span> templateFilePath = ecto.<span class="hljs-title function_">findTemplateWithoutExtensionSync</span>(<span class="hljs-string">"./path/to/"</span>, <span class="hljs-string">"index"</span>);
+</code></pre>
+<p>This will return the full path of the template based on what extension is there such as <code>./path/to/index.ejs</code>.</p>
+<h1 id="markdown-example">Markdown Example</h1>
+<p>Markdown does not contain complexities such as data objects, or partials and layouts. To render markdown its as simple as:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-keyword">const</span> source = <span class="hljs-string">"# markdown rulezz!"</span>;
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(source, <span class="hljs-literal">undefined</span>, <span class="hljs-string">"markdown"</span>); <span class="hljs-comment">//should be &#x3C;h1 id="markdown-rulezz">markdown rulezz!&#x3C;/h1></span>
+</code></pre>
+<p>Render by Markdown file:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">renderByFile</span>(<span class="hljs-string">"/path/to/file.md"</span>);
+</code></pre>
+<p>We are using <a href="https://writr.org/">Writr</a> which is remark with all the plugins and features you need.</p>
+<h1 id="handlebars-example">Handlebars Example</h1>
+<p>In Ecto we use the <a href="https://www.npmjs.com/package/@jaredwray/fumanchu">Fumanchu</a> engine to render <code>mustache</code> and <code>handlebars</code> related templates. This is because handlebars is based on mustache with just more additional features. Fumanchu includes handlebar engine with helpers.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-keyword">const</span> source = <span class="hljs-string">"{{year}}"</span>;
+
+ecto.<span class="hljs-title function_">render</span>(source, <span class="hljs-literal">undefined</span>, <span class="hljs-string">"handlebars"</span>).<span class="hljs-title function_">then</span>(<span class="hljs-function">(<span class="hljs-params">output</span>) =></span> {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(output)
+});
+</code></pre>
+<h1 id="engine-mappings">Engine Mappings</h1>
+<p>Ecto contains a mapping class containing all of the engines registered in the system. The class has been designed to allow users to edit existing engine mappings. Let us explore this class in detail.</p>
+<p>The <code>Map</code> object has the following structure: <code>Map&#x3C;string, Array&#x3C;string>> </code></p>
+<ul>
+<li>The first element of the tuple is the name of the map, such as "handlebars".</li>
+</ul>
+<ul>
+<li>The second element of the tuple is an array of the extensions for that map, example values may include "handlebars", "hbs","hjs".</li>
+</ul>
+<p>From here you can start setting and editing engine mappings.</p>
+<h2 id="setting-an-engine-mapping---setnamestring-extensionsarraystring-void">Setting an engine mapping - set(name:string, extensions:Array&#x3C;string>): void</h2>
+<p>To set an engine mapping with extensions simply write:</p>
+<pre><code>mappings.set("handlebars", ["handlebars","hbs","hjs"]);
+</code></pre>
+<p>This sets the handlebars engine to accept files with the following file extensions:</p>
+<ul>
+<li>.handlebars</li>
+<li>.hbs</li>
+<li>.hjs</li>
+</ul>
+<h2 id="delete-an-engine-mapping---deletenamestring-void">Delete an engine mapping - delete(name:string): void</h2>
+<p>To delete a mapping entirely you can use the <code>delete</code> method.</p>
+<pre><code>mappings.delete("handlebars");
+</code></pre>
+<p>This will remove this engine mapping entirely.</p>
+<h2 id="delete-an-extension---deleteextensionnamestring-extensionstring-void">Delete an extension - deleteExtension(name:string, extension:string): void</h2>
+<p>To delete an extension for a particular engine mapping, you can use the <code>deleteExtension</code> method. This method takes two arguments:</p>
+<ul>
+<li><code>name:string</code> - the name of the engine you would like to delete the extension for.</li>
+<li><code>extension:string</code> - the extension you would like to delete.</li>
+</ul>
+<p>The following code deletes two of the extensions for our <code>handlebars</code> engine mapping.</p>
+<pre><code>mappings.deleteExtension("handlebars", "hbs","hjs");
+</code></pre>
+<p>After executing this code the only accepted file extension for the Handlebars engine will be <code>handlebars</code>.</p>
+<p>Other useful methods include <code>get</code> and <code>getName</code>.</p>
+<h2 id="get-method---getnamestring-arraystring--undefined">get method - get(name:string): Array&#x3C;string> | undefined</h2>
+<p>The <code>get</code> method takes one argument, <code>name:string </code>, and will return the extensions for the name you specify. If extensions are found, they are returned as an <code>Array&#x3C;string></code>. If no engine mapping can be found for the name you specify, <code> undefined</code> is returned. To use the <code>get</code> method simply write:</p>
+<pre><code>mappings.get("handlebars")
+</code></pre>
+<p>This will retrieve the array of extensions assigned to the Handlebars engine.</p>
+<h2 id="getname-method---getnameextensionstring-string--undefined">getName method - getName(extension:string): string | undefined</h2>
+<p>The <code>getName</code> method takes a single argument, <code>extension:string</code>. If a valid extension is given, this method will return the name of the engine mapping that the extension belongs to. For example:</p>
+<pre><code>mappings.getName("hjs")
+</code></pre>
+<p>This will return the string “handlebars”, which is the corresponding engine for this extension. If no match can be found, this method will return <code>undefined</code>.</p>
+<p>Gaining an understanding of this class will provide you with more options and possibilities when using Ecto.</p>
+<h2 id="detect-template-engine">Detect Template Engine</h2>
+<p>Ecto provides a <code>detectEngine</code> method that can automatically detect the template engine from a template string by analyzing its syntax patterns. This is useful when you receive template content but don't know which engine it uses.</p>
+<h2 id="detectenginesource-string-string">detectEngine(source: string): string</h2>
+<p>The <code>detectEngine</code> method analyzes the template syntax and returns the detected engine name. If no specific template syntax is found, it returns the configured default engine.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>source</td>
+<td>string</td>
+<td>The template source string to analyze</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> The detected engine name ('ejs', 'markdown', 'pug', 'nunjucks', 'handlebars', 'liquid') or the default engine if no specific syntax is detected.</p>
+<h3 id="basic-usage">Basic Usage</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+
+<span class="hljs-comment">// Detect EJS templates</span>
+<span class="hljs-keyword">const</span> ejsEngine = ecto.<span class="hljs-title function_">detectEngine</span>(<span class="hljs-string">'&#x3C;%= name %>'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(ejsEngine); <span class="hljs-comment">// 'ejs'</span>
+
+<span class="hljs-comment">// Detect Handlebars templates</span>
+<span class="hljs-keyword">const</span> hbsEngine = ecto.<span class="hljs-title function_">detectEngine</span>(<span class="hljs-string">'{{name}}'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(hbsEngine); <span class="hljs-comment">// 'handlebars'</span>
+
+<span class="hljs-comment">// Detect Markdown</span>
+<span class="hljs-keyword">const</span> mdEngine = ecto.<span class="hljs-title function_">detectEngine</span>(<span class="hljs-string">'# Hello World\n\nThis is markdown'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(mdEngine); <span class="hljs-comment">// 'markdown'</span>
+
+<span class="hljs-comment">// Detect Pug templates</span>
+<span class="hljs-keyword">const</span> pugEngine = ecto.<span class="hljs-title function_">detectEngine</span>(<span class="hljs-string">'div.container\n  h1 Hello'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(pugEngine); <span class="hljs-comment">// 'pug'</span>
+
+<span class="hljs-comment">// Detect Nunjucks templates</span>
+<span class="hljs-keyword">const</span> njkEngine = ecto.<span class="hljs-title function_">detectEngine</span>(<span class="hljs-string">'{% block content %}Hello{% endblock %}'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(njkEngine); <span class="hljs-comment">// 'nunjucks'</span>
+
+<span class="hljs-comment">// Detect Liquid templates</span>
+<span class="hljs-keyword">const</span> liquidEngine = ecto.<span class="hljs-title function_">detectEngine</span>(<span class="hljs-string">'{% assign name = "John" %}{{ name | upcase }}'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(liquidEngine); <span class="hljs-comment">// 'liquid'</span>
+
+<span class="hljs-comment">// Returns default engine for plain text</span>
+<span class="hljs-keyword">const</span> defaultEngine = ecto.<span class="hljs-title function_">detectEngine</span>(<span class="hljs-string">'Plain text without template syntax'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(defaultEngine); <span class="hljs-comment">// 'ejs' (or whatever is set as defaultEngine)</span>
+</code></pre>
+<h3 id="detection-patterns">Detection Patterns</h3>
+<p>The <code>detectEngine</code> method recognizes the following syntax patterns:</p>
+<ul>
+<li><strong>EJS</strong>: <code>&#x3C;% %></code>, <code>&#x3C;%= %></code>, <code>&#x3C;%- %></code></li>
+<li><strong>Handlebars/Mustache</strong>: <code>{{ }}</code>, <code>{{# }}</code>, <code>{{> }}</code></li>
+<li><strong>Pug</strong>: Indentation-based syntax without angle brackets</li>
+<li><strong>Nunjucks</strong>: <code>{% block %}</code>, <code>{% extends %}</code>, <code>{% include %}</code></li>
+<li><strong>Liquid</strong>: <code>{% assign %}</code>, <code>{% capture %}</code>, pipe filters <code>{{ var | filter }}</code></li>
+<li><strong>Markdown</strong>: Headers <code>#</code>, lists, code blocks, links, tables</li>
+</ul>
+<p>Note: For ambiguous syntax (like simple <code>{{ }}</code> which could be Handlebars, Mustache, or Liquid), the method makes intelligent decisions based on additional context clues in the template.</p>
+<h1 id="the-template-engines-we-support">The Template Engines We Support</h1>
+<p>A template engine is a tool that allows developers to write HTML markup that contains the template engine’s defined tags and syntax. These tags are used to insert variables into the final output of the template, or run some programming logic at run-time before sending the final HTML to the browser for display.</p>
+<h2 id="ejs">EJS</h2>
+<p>EJS stands for Embedded JavaScript. It is a templating engine that allows users to generate HTML using plain JavaScript.</p>
+<p>You define HTML pages in the EJS syntax and specify where various data will be shown on the page. Then, your application combines data with the template and "renders" a complete HTML page where EJS takes your data and inserts it into the web page according to how you've defined the template. For example, you could have a table of dynamic data from a database and you want EJS to generate the table of data according to your display rules. It saves you from the writing code and logic to dynamically generate HTML based on data.</p>
+<p>It is a tool for generating web pages that can include dynamic data and can share templated pieces with other web pages. It is not a front-end framework. While EJS can be used by client-side Javascript to generate HTML on the client-side, it is typically used by your back-end to generate web pages in response to some URL request. EJS is not a client-side framework like Angular or React.</p>
+<h2 id="markdown">Markdown</h2>
+<p>Markdown is a lightweight markup language that you can use to add formatting elements to plaintext text documents. Markdown is now one of the world’s most popular markup languages.</p>
+<p>Using Markdown is different from using a word and text editor. In an application like Microsoft Word, you click buttons to format words and phrases, and the changes are visible immediately. Markdown isn’t like that. When you create a Markdown-formatted file, you add Markdown syntax to the text to indicate which words and phrases should look different.</p>
+<p>There are several reasons why people might choose Markdown instead of standard text editors.</p>
+<ul>
+<li>Markdown has a wide range of potential uses. It can be used to create websites, documents, notes, books, presentations, email messages, and technical documentation.</li>
+<li>Files containing Markdown-formatted text can be opened using virtually any application. This differs greatly from word processing applications like Microsoft Word that lock your content into a proprietary file format.</li>
+<li>You can create Markdown-formatted text on any device running any operating system.</li>
+<li>Markdown is future proof. Even if the application you’re using stops working at some point in the future, you’ll still be able to read your Markdown-formatted text using a text editing application.</li>
+<li>Markdown is widely supported. Websites like Reddit and GitHub support Markdown, along with many other desktop and web-based applications.</li>
+</ul>
+<h2 id="pug">PUG</h2>
+<p>Pug.js is an HTML templating engine that takes simple Pug code, which the Pug compiler will compile into HTML code that browsers can understand. Some features and advantages of the Pug template engine are as follows:</p>
+<ul>
+<li>Pug has powerful features like conditions, loops, includes, that allows us to render HTML code based on user input or reference data.</li>
+<li>Pug supports JavaScript natively.</li>
+<li>Pug is excellent for handling dynamic, changing data. Imagine we have an email template, with certain fields to be customized depending on who you are sending the email to. Before sending the email we can compile the Pug code to HTML, using the user data to fill the gaps where the dynamic information should go.</li>
+</ul>
+<h2 id="nunjucks">Nunjucks</h2>
+<p>Nunjucks is a rich and powerful template engine for JavaScript. Nunjucks is developed by Mozilla and maintained by the Node JS Foundation. Nunjucks can be used in both Node and the browser.</p>
+<p>In Node, Nunjucks is installed using npm. It is rich, fast, extensible, and available everywhere. It's highly optimized at just 8kb gzipped.</p>
+<p>Some of the advantages of using Nunjucks for your project are:</p>
+<ul>
+<li>It is a rich templating language with block inheritance, auto-escaping, macros, asynchronous control, and more.</li>
+<li>Nunjucks is fast, lean, and highly-performant.</li>
+<li>Easily extensible with custom filters and extensions.</li>
+<li>Available in Node and all modern web browsers, along with precompilation options.</li>
+</ul>
+<h2 id="mustache">Mustache</h2>
+<p>Mustache is a logic-less template syntax. It can be used for HTML, config files, source code, and more. It is often referred to as “logic-less” as there are no if statements, else clauses, or for loops. There are only tags. Tags are replaced with actual values at runtime.</p>
+<p>Mustache.js is an implementation of the mustache template system in JavaScript. It is often considered the base for JavaScript templating. Since mustache supports various languages, we don’t need a separate templating system on the server side.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-title class_">Mustache</span>.<span class="hljs-title function_">render</span>(<span class="hljs-string">"Hello, {{name}}"</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">"John"</span> });
+<span class="hljs-comment">// returns: Hello, John</span>
+</code></pre>
+<p>We see two braces around <code>{{ name }}</code>. This is Mustache syntax to show that it is a placeholder. When Mustache compiles this, it will look for the “name” property in the object we pass in, and replace <code>{{ name }}</code> with the actual value, in this case,  “John”.</p>
+<p>Mustache is not actually a templating engine. Mustache is a specification for a templating language. In general, we would write templates according to the Mustache specification, and they can then be compiled by a templating engine to be rendered, eventually creating an output.</p>
+<h2 id="handlebars">Handlebars</h2>
+<p>Handlebars is a simple templating language. It uses a template and an input object to generate HTML or other text formats. Handlebars templates look like regular text with embedded Handlebars expressions. Handlebars expressions are wrapped in double curly braces, like this: <code>{{expression}}</code>. We use <code>@jaredwray/fumanchu</code> as it contains handbars and helpers.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ecto = <span class="hljs-title class_">Ecto</span>();
+<span class="hljs-keyword">const</span> source = <span class="hljs-string">"{{year}}"</span>;
+
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(source, <span class="hljs-literal">undefined</span>, <span class="hljs-string">"handlebars"</span>); <span class="hljs-comment">//returns current year as a number</span>
+</code></pre>
+<h2 id="liquid">Liquid</h2>
+<p>Some refer to Liquid as a template language, while others may call it a template engine. It doesn't really matter which label you apply, in many ways both are right. It has a syntax (like traditional programming languages), has concepts such as output, logic, and loops, and it interacts with variables and data, just as you would with a language such as PHP.</p>
+<p>Liquid, like the previous template engines, creates a bridge between an HTML file and a data store. It does this by allowing us to access variables from within a template, or the Liquid file, with a simple and readable syntax.</p>
+<p>Liquid files have the extension of <code>.liquid</code>. A liquid file is a mix of standard HTML code and Liquid constructs. Its clear syntax is easy to distinguish from HTML when working with a Liquid file. This is made even easier thanks to the use of two sets of delimiters.</p>
+<p>The double curly brace delimiters <code>{{ }}</code> denote output, and the curly brace percentage delimiters <code>{% %}</code> denote logic. You'll become very familiar with these as every Liquid construct begins with one, or the other. Another way of thinking of delimiters is as placeholders. A placeholder can be viewed as a piece of code that will ultimately be replaced by data when the compiled file is sent to the browser.</p>
+<h1 id="frontmatter-helper-functions">FrontMatter Helper Functions</h1>
+<p>Ecto has added in some helper functions for frontmatter in markdown files. Frontmatter is metadata that is at the top of a markdown file. It is used to store information about the file such as the author, date, tags, and license.</p>
+<ul>
+<li><code>.hasFrontMatter(source: string): boolean</code> - This function checks if the markdown file has frontmatter. It takes in a string and returns a boolean value.</li>
+<li><code>.getFrontMatter(source: string): object</code> - This function gets the frontmatter from the markdown file. It takes in a string and returns an object.</li>
+<li><code>setFrontMatter(source:string, data: Record&#x3C;string, unknown>)</code> - This function sets the front matter even if it already exists and returns the full source with the new front matter.</li>
+<li><code>.removeFrontMatter(source: string): string</code> - This function removes the frontmatter from the markdown file. It takes in a string and returns a string.</li>
+</ul>
+<h1 id="caching-on-rendering">Caching on Rendering</h1>
+<p>Ecto has a built-in caching mechanism that is <code>disabled by default</code> that allows you to cache the rendered output of templates. This is useful for improving performance and reducing the number of times a template needs to be rendered. There are currently two caching engines available: <code>MemoryCache</code> and <code>FileCache</code>.</p>
+<ul>
+<li><code>cache</code> - This is the default caching engine and it uses in-memory by default but is called <code>async</code> so you can use a storage layer such as Redis or PostgreSQL. This is done using <code>Cacheable</code> which is a high performance caching library.</li>
+<li><code>cacheSync</code> - This is the synchronous version of the <code>cache</code> engine and uses <code>CacheableMemory</code>. It is useful for when you need to render a template synchronously and cache the output.</li>
+</ul>
+<p>Here is an example of how to use the caching engine with <code>render</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Ecto</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+
+<span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>({ <span class="hljs-attr">cache</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-keyword">const</span> source = <span class="hljs-string">"&#x3C;h1>Hello &#x3C;%= firstName%> &#x3C;%= lastName %>!&#x3C;/h1>"</span>;
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span> };
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(source, data);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result); <span class="hljs-comment">// &#x3C;h1>Hello John Doe!&#x3C;/h1></span>
+</code></pre>
+<p>You can also use the <code>cacheSync</code> engine with <code>renderSync</code>:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Ecto</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+<span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>({ <span class="hljs-attr">cacheSync</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-keyword">const</span> source = <span class="hljs-string">"&#x3C;h1>Hello &#x3C;%= firstName%> &#x3C;%= lastName %>!&#x3C;/h1>"</span>;
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span> };
+<span class="hljs-keyword">const</span> result = ecto.<span class="hljs-title function_">renderSync</span>(source, data);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result); <span class="hljs-comment">// &#x3C;h1>Hello John Doe!&#x3C;/h1></span>
+</code></pre>
+<p>If you want to provide your own caching configuration, you can do so by passing <code>Cacheable</code> instance to the <code>Ecto</code> constructor:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Ecto</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Cacheable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'cacheable'</span>;
+<span class="hljs-keyword">const</span> cacheable = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cacheable</span>({
+    <span class="hljs-comment">// Your caching configuration here</span>
+});
+<span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>({ <span class="hljs-attr">cache</span>: cacheable });
+<span class="hljs-keyword">const</span> source = <span class="hljs-string">"&#x3C;h1>Hello &#x3C;%= firstName%> &#x3C;%= lastName %>!&#x3C;/h1>"</span>;
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span> };
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(source, data);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result); <span class="hljs-comment">// &#x3C;h1>Hello John Doe!&#x3C;/h1></span>
+</code></pre>
+<h1 id="emitting-events">Emitting Events</h1>
+<p>Ecto has a built-in event emitter that allows you to listen for events that occur during the rendering process. This is useful for debugging and monitoring the rendering process. The following events are emitted:</p>
+<ul>
+<li><code>cacheHit</code> - Emitted when a cached result is found and returned.</li>
+<li><code>cacheMiss</code> - Emitted when a cached result is not found and the template needs to be rendered.</li>
+<li><code>info</code> - Emitted for informational messages.</li>
+<li><code>warn</code> - Emitted for warning messages.</li>
+<li><code>error</code> - Emitted for error messages.</li>
+</ul>
+<p>You can listen for these events by using the <code>on</code> method of the <code>Ecto</code> instance:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Ecto</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+<span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+ecto.<span class="hljs-title function_">on</span>(<span class="hljs-string">'cacheHit'</span>, <span class="hljs-function">(<span class="hljs-params">data</span>) =></span> {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Cache hit:'</span>, data);
+});
+ecto.<span class="hljs-title function_">on</span>(<span class="hljs-string">'cacheMiss'</span>, <span class="hljs-function">(<span class="hljs-params">data</span>) =></span> {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Cache miss:'</span>, data);
+});
+ecto.<span class="hljs-title function_">on</span>(<span class="hljs-string">'warn'</span>, <span class="hljs-function">(<span class="hljs-params">data</span>) =></span> {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">warn</span>(<span class="hljs-string">'Warning:'</span>, data);
+});
+ecto.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function">(<span class="hljs-params">data</span>) =></span> {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'Error:'</span>, data);
+});
+
+<span class="hljs-keyword">const</span> source = <span class="hljs-string">"&#x3C;h1>Hello &#x3C;%= firstName%> &#x3C;%= lastName %>!&#x3C;/h1>"</span>;
+<span class="hljs-keyword">const</span> data = { <span class="hljs-attr">firstName</span>: <span class="hljs-string">"John"</span>, <span class="hljs-attr">lastName</span>: <span class="hljs-string">"Doe"</span> };
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(source, data); <span class="hljs-comment">// &#x3C;h1>Hello John Doe!&#x3C;/h1></span>
+</code></pre>
+<h1 id="hooks">Hooks</h1>
+<p>Ecto supports hooks that intercept and modify data during the render pipeline. Unlike events (notifications only), hooks can transform the source, data, or result.</p>
+<h2 id="available-hooks">Available Hooks</h2>
+<table>
+<thead>
+<tr>
+<th>Hook</th>
+<th>Receives</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>beforeRender</code> / <code>beforeRenderSync</code></td>
+<td><code>RenderContext</code></td>
+<td>Modify source and data before rendering.</td>
+</tr>
+<tr>
+<td><code>afterRender</code> / <code>afterRenderSync</code></td>
+<td><code>RenderResult</code></td>
+<td>Modify the result after rendering.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">type</span> <span class="hljs-title class_">RenderContext</span> = {
+  <span class="hljs-attr">source</span>: <span class="hljs-built_in">string</span>;                  <span class="hljs-comment">// Template source (modifiable)</span>
+  <span class="hljs-attr">data</span>?: <span class="hljs-title class_">Record</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>>;  <span class="hljs-comment">// Template data (modifiable)</span>
+  <span class="hljs-attr">engineName</span>: <span class="hljs-built_in">string</span>;              <span class="hljs-comment">// Engine being used</span>
+  <span class="hljs-attr">rootTemplatePath</span>?: <span class="hljs-built_in">string</span>;       <span class="hljs-comment">// Root path for partials</span>
+  <span class="hljs-attr">filePathOutput</span>?: <span class="hljs-built_in">string</span>;         <span class="hljs-comment">// Output file path</span>
+  <span class="hljs-attr">cached</span>: <span class="hljs-built_in">boolean</span>;                 <span class="hljs-comment">// True if result came from cache</span>
+};
+
+<span class="hljs-keyword">type</span> <span class="hljs-title class_">RenderResult</span> = {
+  <span class="hljs-attr">result</span>: <span class="hljs-built_in">string</span>;                  <span class="hljs-comment">// Rendered output (modifiable)</span>
+  <span class="hljs-attr">context</span>: <span class="hljs-title class_">RenderContext</span>;          <span class="hljs-comment">// Original render context</span>
+};
+</code></pre>
+<h2 id="using-hooks">Using Hooks</h2>
+<p>Register hooks with <code>onHook</code>. Multiple hooks for the same event run in registration order, and the sync variants (<code>beforeRenderSync</code>, <code>afterRenderSync</code>) work identically.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Ecto</span>, <span class="hljs-title class_">EctoEvents</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+
+<span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+
+<span class="hljs-comment">// Modify source / inject data before rendering</span>
+ecto.<span class="hljs-title function_">onHook</span>(<span class="hljs-title class_">EctoEvents</span>.<span class="hljs-property">beforeRender</span>, <span class="hljs-function">(<span class="hljs-params">context</span>) =></span> {
+  context.<span class="hljs-property">source</span> = context.<span class="hljs-property">source</span>.<span class="hljs-title function_">replace</span>(<span class="hljs-string">'{{placeholder}}'</span>, <span class="hljs-string">'{{replaced}}'</span>);
+  context.<span class="hljs-property">data</span> = { ...(context.<span class="hljs-property">data</span> ?? {}), <span class="hljs-attr">injectedValue</span>: <span class="hljs-string">'hello'</span> };
+});
+
+<span class="hljs-comment">// Transform the result after rendering</span>
+ecto.<span class="hljs-title function_">onHook</span>(<span class="hljs-title class_">EctoEvents</span>.<span class="hljs-property">afterRender</span>, <span class="hljs-function">(<span class="hljs-params">renderResult</span>) =></span> {
+  <span class="hljs-keyword">if</span> (renderResult.<span class="hljs-property">context</span>.<span class="hljs-property">cached</span>) <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'from cache'</span>);
+  renderResult.<span class="hljs-property">result</span> = renderResult.<span class="hljs-property">result</span>.<span class="hljs-title function_">toUpperCase</span>();
+});
+
+<span class="hljs-keyword">const</span> output = <span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(<span class="hljs-string">'&#x3C;%= name %>'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'World'</span> });
+</code></pre>
+<h2 id="hook-objects-ids-and-errors">Hook Objects, IDs, and Errors</h2>
+<p>Ecto extends <a href="https://hookified.org">Hookified</a>, so you can also register hooks via the <code>Hook</code> class. Every hook has a unique <code>id</code> (auto-generated unless supplied) for later lookup or removal across events. Pass <code>throwOnHookError: true</code> to the <code>Ecto</code> constructor to make hook errors fail the render instead of just emitting on <code>error</code>.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Ecto</span>, <span class="hljs-title class_">EctoEvents</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Hook</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'hookified'</span>;
+
+<span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>({ <span class="hljs-attr">throwOnHookError</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-keyword">const</span> injectUser = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Hook</span>(
+  <span class="hljs-title class_">EctoEvents</span>.<span class="hljs-property">beforeRender</span>,
+  <span class="hljs-function">(<span class="hljs-params">context</span>) =></span> { context.<span class="hljs-property">data</span> = { ...(context.<span class="hljs-property">data</span> ?? {}), <span class="hljs-attr">user</span>: <span class="hljs-string">'jared'</span> }; },
+  <span class="hljs-string">'inject-user'</span>,
+);
+ecto.<span class="hljs-title function_">onHook</span>(injectUser);                       <span class="hljs-comment">// append to chain</span>
+ecto.<span class="hljs-title function_">onHook</span>(injectUser, { <span class="hljs-attr">position</span>: <span class="hljs-string">'Top'</span> }); <span class="hljs-comment">// or insert at top</span>
+
+ecto.<span class="hljs-title function_">removeHookById</span>(<span class="hljs-string">'inject-user'</span>);             <span class="hljs-comment">// remove one hook by id</span>
+ecto.<span class="hljs-title function_">removeEventHooks</span>(<span class="hljs-title class_">EctoEvents</span>.<span class="hljs-property">afterRender</span>); <span class="hljs-comment">// or all hooks for an event</span>
+</code></pre>
+<h1 id="creating-custom-engines">Creating Custom Engines</h1>
+<p>Ecto allows you to create your own custom template engines by implementing the <code>EngineInterface</code>. This is useful when you want to integrate a template engine that isn't built into Ecto or when you need custom rendering logic.</p>
+<h2 id="direct-engine-usage">Direct Engine Usage</h2>
+<p>All built-in engines can be imported and used directly without going through the main <code>Ecto</code> class:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-variable constant_">EJS</span>, <span class="hljs-title class_">Handlebars</span>, <span class="hljs-title class_">Liquid</span>, <span class="hljs-title class_">Markdown</span>, <span class="hljs-title class_">Nunjucks</span>, <span class="hljs-title class_">Pug</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+
+<span class="hljs-comment">// Use any engine directly</span>
+<span class="hljs-keyword">const</span> handlebars = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Handlebars</span>();
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> handlebars.<span class="hljs-title function_">render</span>(<span class="hljs-string">'Hello {{name}}'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'World'</span> });
+</code></pre>
+<h3 id="customizing-engines-via-constructor">Customizing Engines via Constructor</h3>
+<p>The recommended way to customize engines is through the <code>engineOptions</code> parameter in the Ecto constructor:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Ecto</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+
+<span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>({
+  <span class="hljs-attr">engineOptions</span>: {
+    <span class="hljs-attr">handlebars</span>: {
+      <span class="hljs-attr">noEscape</span>: <span class="hljs-literal">false</span>,
+      <span class="hljs-attr">strict</span>: <span class="hljs-literal">true</span>
+    },
+    <span class="hljs-attr">markdown</span>: {
+      <span class="hljs-attr">html</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-attr">breaks</span>: <span class="hljs-literal">true</span>
+    },
+    <span class="hljs-attr">ejs</span>: {
+      <span class="hljs-attr">delimiter</span>: <span class="hljs-string">'?'</span>  <span class="hljs-comment">// Use &#x3C;? ?> instead of &#x3C;% %></span>
+    }
+  }
+});
+
+<span class="hljs-comment">// Engines are now configured with your options</span>
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(<span class="hljs-string">'&#x3C;? name ?>'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'World'</span> }, <span class="hljs-string">'ejs'</span>);
+</code></pre>
+<h3 id="accessing-and-modifying-engines-after-creation">Accessing and Modifying Engines After Creation</h3>
+<p>After creating an Ecto instance, you can access each engine directly and modify it. This is useful for adding custom helpers or changing settings dynamically:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Ecto</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+
+<span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+
+<span class="hljs-comment">// Access the Handlebars engine and add custom helpers</span>
+ecto.<span class="hljs-property">handlebars</span>.<span class="hljs-property">engine</span>.<span class="hljs-title function_">registerHelper</span>(<span class="hljs-string">'uppercase'</span>, <span class="hljs-function">(<span class="hljs-params">text</span>) =></span> {
+  <span class="hljs-keyword">return</span> text.<span class="hljs-title function_">toUpperCase</span>();
+});
+
+ecto.<span class="hljs-property">handlebars</span>.<span class="hljs-property">engine</span>.<span class="hljs-title function_">registerHelper</span>(<span class="hljs-string">'formatDate'</span>, <span class="hljs-function">(<span class="hljs-params">date</span>) =></span> {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>(date).<span class="hljs-title function_">toLocaleDateString</span>();
+});
+
+<span class="hljs-comment">// Now use the customized engine</span>
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(
+  <span class="hljs-string">'Hello {{uppercase name}} - {{formatDate date}}'</span>,
+  { <span class="hljs-attr">name</span>: <span class="hljs-string">'world'</span>, <span class="hljs-attr">date</span>: <span class="hljs-string">'2024-01-15'</span> },
+  <span class="hljs-string">'handlebars'</span>
+);
+<span class="hljs-comment">// Output: Hello WORLD - 1/15/2024</span>
+
+<span class="hljs-comment">// Works with renderFromFile too</span>
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">renderFromFile</span>(<span class="hljs-string">'./template.hbs'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'world'</span>, <span class="hljs-attr">date</span>: <span class="hljs-string">'2024-01-15'</span> });
+</code></pre>
+<h3 id="customizing-multiple-engines">Customizing Multiple Engines</h3>
+<p>You can customize multiple engines in the same Ecto instance:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Ecto</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+
+<span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+
+<span class="hljs-comment">// Customize Handlebars with helpers</span>
+ecto.<span class="hljs-property">handlebars</span>.<span class="hljs-property">engine</span>.<span class="hljs-title function_">registerHelper</span>(<span class="hljs-string">'bold'</span>, <span class="hljs-function">(<span class="hljs-params">text</span>) =></span> {
+  <span class="hljs-keyword">return</span> <span class="hljs-string">`&#x3C;strong><span class="hljs-subst">${text}</span>&#x3C;/strong>`</span>;
+});
+
+<span class="hljs-comment">// Customize EJS options</span>
+ecto.<span class="hljs-property">ejs</span>.<span class="hljs-property">opts</span> = {
+  ...ecto.<span class="hljs-property">ejs</span>.<span class="hljs-property">opts</span>,
+  <span class="hljs-attr">delimiter</span>: <span class="hljs-string">'?'</span>,
+  <span class="hljs-attr">openDelimiter</span>: <span class="hljs-string">'['</span>,
+  <span class="hljs-attr">closeDelimiter</span>: <span class="hljs-string">']'</span>
+};
+
+<span class="hljs-comment">// Customize Markdown options</span>
+ecto.<span class="hljs-property">markdown</span>.<span class="hljs-property">opts</span> = {
+  ...ecto.<span class="hljs-property">markdown</span>.<span class="hljs-property">opts</span>,
+  <span class="hljs-attr">html</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">breaks</span>: <span class="hljs-literal">true</span>
+};
+
+<span class="hljs-comment">// Use all customized engines</span>
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(<span class="hljs-string">'{{bold "Hello"}}'</span>, {}, <span class="hljs-string">'handlebars'</span>);
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(<span class="hljs-string">'[? name ?]'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'World'</span> }, <span class="hljs-string">'ejs'</span>);
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(<span class="hljs-string">'# Hello\n\nVisit https://example.com'</span>, {}, <span class="hljs-string">'markdown'</span>);
+</code></pre>
+<h3 id="setting-partials-path-for-handlebars">Setting Partials Path for Handlebars</h3>
+<p>You can configure Handlebars to look for partials in multiple directories:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Ecto</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+
+<span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+
+<span class="hljs-comment">// Configure where to look for partials</span>
+ecto.<span class="hljs-property">handlebars</span>.<span class="hljs-property">partialsPath</span> = [<span class="hljs-string">'partials'</span>, <span class="hljs-string">'includes'</span>, <span class="hljs-string">'components'</span>, <span class="hljs-string">'layouts'</span>];
+ecto.<span class="hljs-property">handlebars</span>.<span class="hljs-property">rootTemplatePath</span> = <span class="hljs-string">'./templates'</span>;
+
+<span class="hljs-comment">// Now partials will be loaded from multiple directories</span>
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(<span class="hljs-string">'{{> header}}Content{{> footer}}'</span>, {}, <span class="hljs-string">'handlebars'</span>);
+</code></pre>
+<h3 id="using-exported-engines-standalone">Using Exported Engines Standalone</h3>
+<p>You can also use the exported engine classes independently of Ecto:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Handlebars</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+
+<span class="hljs-comment">// Create a standalone engine instance</span>
+<span class="hljs-keyword">const</span> handlebars = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Handlebars</span>();
+
+<span class="hljs-comment">// Add custom helpers</span>
+handlebars.<span class="hljs-property">engine</span>.<span class="hljs-title function_">registerHelper</span>(<span class="hljs-string">'shout'</span>, <span class="hljs-function">(<span class="hljs-params">text</span>) =></span> {
+  <span class="hljs-keyword">return</span> text.<span class="hljs-title function_">toUpperCase</span>() + <span class="hljs-string">'!!!'</span>;
+});
+
+<span class="hljs-comment">// Use it directly</span>
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> handlebars.<span class="hljs-title function_">render</span>(<span class="hljs-string">'{{shout greeting}}'</span>, { <span class="hljs-attr">greeting</span>: <span class="hljs-string">'hello'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result); <span class="hljs-comment">// HELLO!!!</span>
+</code></pre>
+<p>This pattern is particularly powerful when:</p>
+<ul>
+<li>You need consistent helpers across all templates</li>
+<li>You want to configure engine-specific options globally</li>
+<li>You're building a framework or application with specific template requirements</li>
+<li>You need to extend engine functionality beyond default behavior</li>
+</ul>
+<h2 id="creating-a-custom-engine">Creating a Custom Engine</h2>
+<p>To create a custom engine, you need to:</p>
+<ol>
+<li>Extend the <code>BaseEngine</code> class</li>
+<li>Implement the <code>EngineInterface</code></li>
+<li>Define your engine's name and file extensions</li>
+<li>Implement the <code>render</code> and <code>renderSync</code> methods</li>
+</ol>
+<h3 id="basic-custom-engine-example">Basic Custom Engine Example</h3>
+<p>Here's a simple example of a custom uppercase engine:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">BaseEngine</span>, <span class="hljs-keyword">type</span> <span class="hljs-title class_">EngineInterface</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">UppercaseEngine</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">BaseEngine</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">EngineInterface</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"><span class="hljs-attr">options</span>?: <span class="hljs-title class_">Record</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>></span>) {
+    <span class="hljs-variable language_">super</span>();
+
+    <span class="hljs-comment">// Define the engine name(s)</span>
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">names</span> = [<span class="hljs-string">'uppercase'</span>, <span class="hljs-string">'upper'</span>];
+
+    <span class="hljs-comment">// Set any options</span>
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">opts</span> = options;
+
+    <span class="hljs-comment">// Define file extensions this engine handles</span>
+    <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">setExtensions</span>([<span class="hljs-string">'upper'</span>, <span class="hljs-string">'uppercase'</span>]);
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">render</span>(<span class="hljs-attr">source</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">data</span>?: <span class="hljs-title class_">Record</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">string</span>> {
+    <span class="hljs-comment">// Simple rendering logic: replace variables and uppercase everything</span>
+    <span class="hljs-keyword">let</span> result = source;
+
+    <span class="hljs-keyword">if</span> (data) {
+      <span class="hljs-comment">// Replace {{variable}} with data values</span>
+      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> <span class="hljs-title class_">Object</span>.<span class="hljs-title function_">entries</span>(data)) {
+        <span class="hljs-keyword">const</span> regex = <span class="hljs-keyword">new</span> <span class="hljs-title class_">RegExp</span>(<span class="hljs-string">`\\{\\{\\s*<span class="hljs-subst">${key}</span>\\s*\\}\\}`</span>, <span class="hljs-string">'g'</span>);
+        result = result.<span class="hljs-title function_">replace</span>(regex, <span class="hljs-title class_">String</span>(value));
+      }
+    }
+
+    <span class="hljs-comment">// Convert to uppercase</span>
+    <span class="hljs-keyword">return</span> result.<span class="hljs-title function_">toUpperCase</span>();
+  }
+
+  <span class="hljs-title function_">renderSync</span>(<span class="hljs-attr">source</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">data</span>?: <span class="hljs-title class_">Record</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>>): <span class="hljs-built_in">string</span> {
+    <span class="hljs-comment">// Same logic for synchronous rendering</span>
+    <span class="hljs-keyword">let</span> result = source;
+
+    <span class="hljs-keyword">if</span> (data) {
+      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> <span class="hljs-title class_">Object</span>.<span class="hljs-title function_">entries</span>(data)) {
+        <span class="hljs-keyword">const</span> regex = <span class="hljs-keyword">new</span> <span class="hljs-title class_">RegExp</span>(<span class="hljs-string">`\\{\\{\\s*<span class="hljs-subst">${key}</span>\\s*\\}\\}`</span>, <span class="hljs-string">'g'</span>);
+        result = result.<span class="hljs-title function_">replace</span>(regex, <span class="hljs-title class_">String</span>(value));
+      }
+    }
+
+    <span class="hljs-keyword">return</span> result.<span class="hljs-title function_">toUpperCase</span>();
+  }
+}
+
+<span class="hljs-comment">// Use the custom engine</span>
+<span class="hljs-keyword">const</span> engine = <span class="hljs-keyword">new</span> <span class="hljs-title class_">UppercaseEngine</span>();
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> engine.<span class="hljs-title function_">render</span>(<span class="hljs-string">'Hello {{name}}!'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'World'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result); <span class="hljs-comment">// Output: HELLO WORLD!</span>
+</code></pre>
+<h3 id="integrating-custom-engine-with-ecto">Integrating Custom Engine with Ecto</h3>
+<p>To use your custom engine with the main Ecto class, you need to register it:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Ecto</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+
+<span class="hljs-keyword">const</span> ecto = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ecto</span>();
+
+<span class="hljs-comment">// Create and register your custom engine</span>
+<span class="hljs-keyword">const</span> uppercaseEngine = <span class="hljs-keyword">new</span> <span class="hljs-title class_">UppercaseEngine</span>();
+
+<span class="hljs-comment">// Add to the engines collection</span>
+ecto.<span class="hljs-property">engines</span>.<span class="hljs-title function_">set</span>(<span class="hljs-string">'uppercase'</span>, uppercaseEngine);
+
+<span class="hljs-comment">// Register the file extensions</span>
+ecto.<span class="hljs-property">mappings</span>.<span class="hljs-title function_">set</span>(<span class="hljs-string">'uppercase'</span>, [<span class="hljs-string">'upper'</span>, <span class="hljs-string">'uppercase'</span>]);
+
+<span class="hljs-comment">// Now you can use it with render</span>
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">render</span>(<span class="hljs-string">'Hello {{name}}!'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'World'</span> }, <span class="hljs-string">'uppercase'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result); <span class="hljs-comment">// HELLO WORLD!</span>
+
+<span class="hljs-comment">// Or with renderFromFile (for .upper or .uppercase files)</span>
+<span class="hljs-keyword">await</span> ecto.<span class="hljs-title function_">renderFromFile</span>(<span class="hljs-string">'./template.upper'</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">'World'</span> });
+</code></pre>
+<h3 id="advanced-custom-engine-with-template-library">Advanced Custom Engine with Template Library</h3>
+<p>Here's a more advanced example that wraps an external template library:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">BaseEngine</span>, <span class="hljs-keyword">type</span> <span class="hljs-title class_">EngineInterface</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">Handlebars</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'handlebars'</span>; <span class="hljs-comment">// Example external library</span>
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">CustomHandlebarsEngine</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">BaseEngine</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">EngineInterface</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"><span class="hljs-attr">options</span>?: <span class="hljs-title class_">Record</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>></span>) {
+    <span class="hljs-variable language_">super</span>();
+
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">names</span> = [<span class="hljs-string">'custom-handlebars'</span>];
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">opts</span> = options;
+    <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">setExtensions</span>([<span class="hljs-string">'chbs'</span>]);
+
+    <span class="hljs-comment">// Initialize the underlying engine</span>
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">engine</span> = <span class="hljs-title class_">Handlebars</span>.<span class="hljs-title function_">create</span>();
+
+    <span class="hljs-comment">// Register custom helpers</span>
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">engine</span>.<span class="hljs-title function_">registerHelper</span>(<span class="hljs-string">'shout'</span>, <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">text</span>: <span class="hljs-built_in">string</span></span>) =></span> {
+      <span class="hljs-keyword">return</span> text.<span class="hljs-title function_">toUpperCase</span>() + <span class="hljs-string">'!!!'</span>;
+    });
+
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">engine</span>.<span class="hljs-title function_">registerHelper</span>(<span class="hljs-string">'whisper'</span>, <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">text</span>: <span class="hljs-built_in">string</span></span>) =></span> {
+      <span class="hljs-keyword">return</span> text.<span class="hljs-title function_">toLowerCase</span>() + <span class="hljs-string">'...'</span>;
+    });
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">render</span>(<span class="hljs-attr">source</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">data</span>?: <span class="hljs-title class_">Record</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">string</span>> {
+    <span class="hljs-keyword">const</span> template = <span class="hljs-variable language_">this</span>.<span class="hljs-property">engine</span>.<span class="hljs-title function_">compile</span>(source, <span class="hljs-variable language_">this</span>.<span class="hljs-property">opts</span>);
+    <span class="hljs-keyword">return</span> <span class="hljs-title function_">template</span>(data);
+  }
+
+  <span class="hljs-title function_">renderSync</span>(<span class="hljs-attr">source</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">data</span>?: <span class="hljs-title class_">Record</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>>): <span class="hljs-built_in">string</span> {
+    <span class="hljs-keyword">const</span> template = <span class="hljs-variable language_">this</span>.<span class="hljs-property">engine</span>.<span class="hljs-title function_">compile</span>(source, <span class="hljs-variable language_">this</span>.<span class="hljs-property">opts</span>);
+    <span class="hljs-keyword">return</span> <span class="hljs-title function_">template</span>(data);
+  }
+}
+
+<span class="hljs-comment">// Usage</span>
+<span class="hljs-keyword">const</span> engine = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CustomHandlebarsEngine</span>();
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> engine.<span class="hljs-title function_">render</span>(
+  <span class="hljs-string">'Normal: {{name}}, Shout: {{shout name}}, Whisper: {{whisper name}}'</span>,
+  { <span class="hljs-attr">name</span>: <span class="hljs-string">'Hello'</span> }
+);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result);
+<span class="hljs-comment">// Output: Normal: Hello, Shout: HELLO!!!, Whisper: hello...</span>
+</code></pre>
+<h3 id="custom-engine-with-partials-support">Custom Engine with Partials Support</h3>
+<p>If your engine needs to support partials, you can handle the <code>rootTemplatePath</code>:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">'node:fs'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">BaseEngine</span>, <span class="hljs-keyword">type</span> <span class="hljs-title class_">EngineInterface</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'ecto'</span>;
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">CustomEngineWithPartials</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">BaseEngine</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">EngineInterface</span> {
+  <span class="hljs-keyword">private</span> <span class="hljs-attr">partials</span>: <span class="hljs-title class_">Map</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">string</span>> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>();
+
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"><span class="hljs-attr">options</span>?: <span class="hljs-title class_">Record</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>></span>) {
+    <span class="hljs-variable language_">super</span>();
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">names</span> = [<span class="hljs-string">'custom-partials'</span>];
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">opts</span> = options;
+    <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">setExtensions</span>([<span class="hljs-string">'cpart'</span>]);
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">render</span>(<span class="hljs-attr">source</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">data</span>?: <span class="hljs-title class_">Record</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">string</span>> {
+    <span class="hljs-comment">// Load partials if rootTemplatePath is set</span>
+    <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">this</span>.<span class="hljs-property">rootTemplatePath</span>) {
+      <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">loadPartials</span>(<span class="hljs-variable language_">this</span>.<span class="hljs-property">rootTemplatePath</span>);
+    }
+
+    <span class="hljs-comment">// Process includes: {{> partialName}}</span>
+    <span class="hljs-keyword">let</span> result = source;
+    <span class="hljs-keyword">const</span> includeRegex = <span class="hljs-regexp">/\{\{>\s*(\w+)\s*\}\}/g</span>;
+    result = result.<span class="hljs-title function_">replace</span>(includeRegex, <span class="hljs-function">(<span class="hljs-params">match, partialName</span>) =></span> {
+      <span class="hljs-keyword">return</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">partials</span>.<span class="hljs-title function_">get</span>(partialName) || match;
+    });
+
+    <span class="hljs-comment">// Process variables: {{variableName}}</span>
+    <span class="hljs-keyword">if</span> (data) {
+      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> <span class="hljs-title class_">Object</span>.<span class="hljs-title function_">entries</span>(data)) {
+        <span class="hljs-keyword">const</span> regex = <span class="hljs-keyword">new</span> <span class="hljs-title class_">RegExp</span>(<span class="hljs-string">`\\{\\{\\s*<span class="hljs-subst">${key}</span>\\s*\\}\\}`</span>, <span class="hljs-string">'g'</span>);
+        result = result.<span class="hljs-title function_">replace</span>(regex, <span class="hljs-title class_">String</span>(value));
+      }
+    }
+
+    <span class="hljs-keyword">return</span> result;
+  }
+
+  <span class="hljs-title function_">renderSync</span>(<span class="hljs-attr">source</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">data</span>?: <span class="hljs-title class_">Record</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>>): <span class="hljs-built_in">string</span> {
+    <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">this</span>.<span class="hljs-property">rootTemplatePath</span>) {
+      <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">loadPartialsSync</span>(<span class="hljs-variable language_">this</span>.<span class="hljs-property">rootTemplatePath</span>);
+    }
+
+    <span class="hljs-keyword">let</span> result = source;
+    <span class="hljs-keyword">const</span> includeRegex = <span class="hljs-regexp">/\{\{>\s*(\w+)\s*\}\}/g</span>;
+    result = result.<span class="hljs-title function_">replace</span>(includeRegex, <span class="hljs-function">(<span class="hljs-params">match, partialName</span>) =></span> {
+      <span class="hljs-keyword">return</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">partials</span>.<span class="hljs-title function_">get</span>(partialName) || match;
+    });
+
+    <span class="hljs-keyword">if</span> (data) {
+      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> <span class="hljs-title class_">Object</span>.<span class="hljs-title function_">entries</span>(data)) {
+        <span class="hljs-keyword">const</span> regex = <span class="hljs-keyword">new</span> <span class="hljs-title class_">RegExp</span>(<span class="hljs-string">`\\{\\{\\s*<span class="hljs-subst">${key}</span>\\s*\\}\\}`</span>, <span class="hljs-string">'g'</span>);
+        result = result.<span class="hljs-title function_">replace</span>(regex, <span class="hljs-title class_">String</span>(value));
+      }
+    }
+
+    <span class="hljs-keyword">return</span> result;
+  }
+
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">async</span> <span class="hljs-title function_">loadPartials</span>(<span class="hljs-attr">partialsPath</span>: <span class="hljs-built_in">string</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">void</span>> {
+    <span class="hljs-keyword">const</span> files = <span class="hljs-keyword">await</span> fs.<span class="hljs-property">promises</span>.<span class="hljs-title function_">readdir</span>(partialsPath);
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> file <span class="hljs-keyword">of</span> files) {
+      <span class="hljs-keyword">if</span> (file.<span class="hljs-title function_">endsWith</span>(<span class="hljs-string">'.cpart'</span>)) {
+        <span class="hljs-keyword">const</span> name = file.<span class="hljs-title function_">replace</span>(<span class="hljs-string">'.cpart'</span>, <span class="hljs-string">''</span>);
+        <span class="hljs-keyword">const</span> content = <span class="hljs-keyword">await</span> fs.<span class="hljs-property">promises</span>.<span class="hljs-title function_">readFile</span>(
+          <span class="hljs-string">`<span class="hljs-subst">${partialsPath}</span>/<span class="hljs-subst">${file}</span>`</span>,
+          <span class="hljs-string">'utf-8'</span>
+        );
+        <span class="hljs-variable language_">this</span>.<span class="hljs-property">partials</span>.<span class="hljs-title function_">set</span>(name, content);
+      }
+    }
+  }
+
+  <span class="hljs-keyword">private</span> <span class="hljs-title function_">loadPartialsSync</span>(<span class="hljs-attr">partialsPath</span>: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">const</span> files = fs.<span class="hljs-title function_">readdirSync</span>(partialsPath);
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> file <span class="hljs-keyword">of</span> files) {
+      <span class="hljs-keyword">if</span> (file.<span class="hljs-title function_">endsWith</span>(<span class="hljs-string">'.cpart'</span>)) {
+        <span class="hljs-keyword">const</span> name = file.<span class="hljs-title function_">replace</span>(<span class="hljs-string">'.cpart'</span>, <span class="hljs-string">''</span>);
+        <span class="hljs-keyword">const</span> content = fs.<span class="hljs-title function_">readFileSync</span>(<span class="hljs-string">`<span class="hljs-subst">${partialsPath}</span>/<span class="hljs-subst">${file}</span>`</span>, <span class="hljs-string">'utf-8'</span>);
+        <span class="hljs-variable language_">this</span>.<span class="hljs-property">partials</span>.<span class="hljs-title function_">set</span>(name, content);
+      }
+    }
+  }
+}
+
+<span class="hljs-comment">// Usage</span>
+<span class="hljs-keyword">const</span> engine = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CustomEngineWithPartials</span>();
+engine.<span class="hljs-property">rootTemplatePath</span> = <span class="hljs-string">'./templates/partials'</span>;
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> engine.<span class="hljs-title function_">render</span>(<span class="hljs-string">'{{> header}}\nHello {{name}}!\n{{> footer}}'</span>, {
+  <span class="hljs-attr">name</span>: <span class="hljs-string">'World'</span>
+});
+</code></pre>
+<h2 id="engine-interface-reference">Engine Interface Reference</h2>
+<p>When creating a custom engine, implement these required methods:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">EngineInterface</span> {
+  <span class="hljs-comment">// Engine name(s) - can support multiple aliases</span>
+  <span class="hljs-attr">names</span>: <span class="hljs-built_in">string</span>[];
+
+  <span class="hljs-comment">// The underlying template engine (if wrapping a library)</span>
+  <span class="hljs-attr">engine</span>: <span class="hljs-built_in">any</span>;
+
+  <span class="hljs-comment">// Optional configuration</span>
+  <span class="hljs-attr">opts</span>?: <span class="hljs-title class_">Record</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>>;
+
+  <span class="hljs-comment">// Root path for templates (used for partials/includes)</span>
+  <span class="hljs-attr">rootTemplatePath</span>?: <span class="hljs-built_in">string</span>;
+
+  <span class="hljs-comment">// Async rendering method</span>
+  <span class="hljs-title function_">render</span>(<span class="hljs-attr">source</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">data</span>?: <span class="hljs-title class_">Record</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-built_in">string</span>>;
+
+  <span class="hljs-comment">// Synchronous rendering method</span>
+  <span class="hljs-title function_">renderSync</span>(<span class="hljs-attr">source</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">data</span>?: <span class="hljs-title class_">Record</span>&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>>): <span class="hljs-built_in">string</span>;
+}
+</code></pre>
+<h2 id="baseengine-helper-methods">BaseEngine Helper Methods</h2>
+<p>The <code>BaseEngine</code> class provides useful helper methods:</p>
+<ul>
+<li><code>getExtensions()</code>: Get registered file extensions</li>
+<li><code>setExtensions(extensions: string[])</code>: Set file extensions this engine handles</li>
+<li><code>deleteExtension(name: string)</code>: Remove a file extension</li>
+</ul>
+<h2 id="tips-for-custom-engines">Tips for Custom Engines</h2>
+<ol>
+<li><strong>Error Handling</strong>: Always wrap your rendering logic in try-catch blocks</li>
+<li><strong>Options</strong>: Make your engine configurable through the constructor options</li>
+<li><strong>Performance</strong>: Consider caching compiled templates if applicable</li>
+<li><strong>Type Safety</strong>: Use TypeScript for better development experience</li>
+<li><strong>Testing</strong>: Write comprehensive tests for your custom engine</li>
+<li><strong>Documentation</strong>: Document your engine's syntax and features</li>
+</ol>
+<h1 id="how-to-contribute">How to Contribute</h1>
+<p>To contribute please ready our <a href="CONTRIBUTING.md">CONTRIBUTING.md</a> guide. Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.</p>
+<h1 id="license">License</h1>
+<p><a href="LICENSE">MIT License - Copyright (c) Jared Wray</a></p>

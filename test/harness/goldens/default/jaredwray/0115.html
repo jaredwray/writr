@@ -1,0 +1,127 @@
+<p>import FlagdContent from '@site/src/components/custom/tutorial/flagd-content.mdx';
+import FlagdChangeContent from '@site/src/components/custom/tutorial/flagd-change-content.mdx';</p>
+<h1 id="getting-started-with-the-openfeature-rust-sdk-and-axum">Getting Started with the OpenFeature Rust SDK and Axum</h1>
+<h2 id="introduction">Introduction</h2>
+<p>This tutorial explains how to integrate the OpenFeature Rust SDK into an Axum application using the flagd provider.
+In this guide you will learn how to:</p>
+<ul>
+<li>Create a new Rust project with Cargo</li>
+<li>Update dependencies to include Docker-based flagd configuration</li>
+<li>Set up an Axum server with a custom AppState that holds a FlagdProvider</li>
+<li>Evaluate a feature flag and return a custom message with diff markers to highlight changes</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Rust stable (1.80.2 or later recommended)</li>
+<li>Cargo</li>
+<li>Docker (to run the flagd service)</li>
+<li>A valid flagd configuration file (e.g. <code>flags.flagd.json</code>)</li>
+</ul>
+<h2 id="walk-through">Walk-through</h2>
+<h3 id="step-1-create-a-new-rust-project">Step 1: Create a new Rust project</h3>
+<pre><code class="hljs language-bash">cargo new axumstart
+</code></pre>
+<p>Then navigate to the project directory:</p>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">cd</span> axumstart
+</code></pre>
+<h3 id="step-2-update-cargotoml-dependencies">Step 2: Update Cargo.toml dependencies</h3>
+<p>In your Cargo.toml add the following dependencies:</p>
+<pre><code class="hljs language-toml"><span class="hljs-section">[dependencies]</span>
+<span class="hljs-attr">axum</span> = <span class="hljs-string">"0.6"</span>
+<span class="hljs-attr">tokio</span> = { version = <span class="hljs-string">"1"</span>, features = [<span class="hljs-string">"full"</span>] }
+<span class="hljs-attr">serde_json</span> = <span class="hljs-string">"1.0"</span>
+<span class="hljs-attr">tracing</span> = <span class="hljs-string">"0.1"</span>
+<span class="hljs-attr">open-feature</span> = <span class="hljs-string">"^0"</span>
+<span class="hljs-attr">open-feature-flagd</span> = <span class="hljs-string">"^0"</span>
+</code></pre>
+<p>Adjust version numbers according to the latest releases.</p>
+<h3 id="step-3-set-up-the-application">Step 3: Set Up the Application</h3>
+<p>Create or modify your <code>src/main.rs</code> with the following code.
+Notice the diff markers to indicate new additions:</p>
+<pre><code class="hljs language-rust"><span class="hljs-comment">// diff-remove-block-start</span>
+<span class="hljs-keyword">fn</span> <span class="hljs-title function_">main</span>() {
+    <span class="hljs-built_in">println!</span>(<span class="hljs-string">"Hello, world!"</span>);
+}
+<span class="hljs-comment">// diff-remove-block-end</span>
+
+<span class="hljs-comment">// diff-add-block-start</span>
+<span class="hljs-keyword">use</span> axum::{
+    extract::State,
+    http::StatusCode,
+    response::IntoResponse,
+    routing::get,
+    Json, Router,
+};
+<span class="hljs-keyword">use</span> open_feature_flagd::{FlagdOptions, FlagdProvider};
+<span class="hljs-keyword">use</span> open_feature::{EvaluationContext, provider::FeatureProvider};
+<span class="hljs-keyword">use</span> serde_json::json;
+<span class="hljs-keyword">use</span> std::sync::Arc;
+
+<span class="hljs-meta">#[derive(Clone)]</span>
+<span class="hljs-keyword">pub</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">AppState</span> {
+    <span class="hljs-keyword">pub</span> flag_provider: Arc&#x3C;FlagdProvider>,
+}
+
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">hello_handler</span>(<span class="hljs-title function_ invoke__">State</span>(state): State&#x3C;AppState>) <span class="hljs-punctuation">-></span> <span class="hljs-keyword">impl</span> <span class="hljs-title class_">IntoResponse</span> {
+    <span class="hljs-comment">// Create an evaluation context (custom fields can be added if required)</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">context</span> = EvaluationContext::<span class="hljs-title function_ invoke__">default</span>();
+
+    <span class="hljs-comment">// Evaluate the "welcome-message" feature flag.</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">flag_eval</span> = state.flag_provider.<span class="hljs-title function_ invoke__">resolve_bool_value</span>(<span class="hljs-string">"welcome-message"</span>, &#x26;context).<span class="hljs-keyword">await</span>;
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">message</span> = <span class="hljs-keyword">match</span> flag_eval {
+        <span class="hljs-title function_ invoke__">Ok</span>(result) <span class="hljs-keyword">if</span> result.value => <span class="hljs-string">"Hello, welcome to this OpenFeature-enabled website!"</span>,
+        _ => <span class="hljs-string">"Hello!"</span>,
+    };
+
+    (StatusCode::OK, <span class="hljs-title function_ invoke__">Json</span>(json!({ <span class="hljs-string">"message"</span>: message })))
+}
+
+<span class="hljs-meta">#[tokio::main]</span>
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">main</span>() {
+    <span class="hljs-comment">// Initialize the flagd provider with default options.</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">flag_provider</span> = Arc::<span class="hljs-title function_ invoke__">new</span>(
+        FlagdProvider::<span class="hljs-title function_ invoke__">new</span>(FlagdOptions {
+            cache_settings: <span class="hljs-literal">None</span>,
+            ..<span class="hljs-built_in">Default</span>::<span class="hljs-title function_ invoke__">default</span>()
+        })
+        .<span class="hljs-keyword">await</span>
+        .<span class="hljs-title function_ invoke__">expect</span>(<span class="hljs-string">"Failed to connect to flagd. Please confirm flagd is running."</span>),
+    );
+
+    <span class="hljs-comment">// Create a custom application state with the flag provider.</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">app_state</span> = AppState { flag_provider };
+
+    <span class="hljs-comment">// Build an Axum application with the "/hello" endpoint.</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">app</span> = Router::<span class="hljs-title function_ invoke__">new</span>()
+        .<span class="hljs-title function_ invoke__">route</span>(<span class="hljs-string">"/hello"</span>, <span class="hljs-title function_ invoke__">get</span>(hello_handler))
+        .<span class="hljs-title function_ invoke__">with_state</span>(app_state);
+
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">addr</span> = <span class="hljs-string">"127.0.0.1:8080"</span>.<span class="hljs-title function_ invoke__">parse</span>().<span class="hljs-title function_ invoke__">unwrap</span>();
+    <span class="hljs-built_in">println!</span>(<span class="hljs-string">"Listening on http://{}/hello"</span>, addr);
+
+    axum::Server::<span class="hljs-title function_ invoke__">bind</span>(&#x26;addr)
+        .<span class="hljs-title function_ invoke__">serve</span>(app.<span class="hljs-title function_ invoke__">into_make_service</span>())
+        .<span class="hljs-keyword">await</span>
+        .<span class="hljs-title function_ invoke__">unwrap</span>();
+}
+<span class="hljs-comment">// diff-add-block-end</span>
+</code></pre>
+<h3 id="step-4-configure-a-provider-flagd">Step 4: Configure a provider (flagd)</h3>
+<p>Flagd can be run as a <a href="https://flagd.dev/reference/flagd-cli/flagd/">standalone binary</a> or <a href="https://openfeature.dev/docs/tutorials/ofo/">Kubernetes Operator</a>
+as well.
+If you don't have docker installed, get and install the <a href="https://github.com/open-feature/flagd/releases">Flagd binary</a>.
+With the flagd configuration in place, start flagd service with the following command.</p>
+<pre><code class="hljs language-sh">flagd start -f file:flags.flagd.json
+</code></pre>
+<h3 id="step-6-rerun-the-application">Step 6: Rerun the application</h3>
+<p>Now that everything is in place, let's start the app.</p>
+<pre><code class="hljs language-sh">cargo run
+</code></pre>
+<p>Open your browser and navigate to <a href="http://127.0.0.1:8080/hello">http://127.0.0.1:8080/hello</a> should show the same value as before.
+This difference is now the feature flag value can be changed at runtime!</p>
+<p>Save the changes to <code>flags.flagd.json</code> and refresh the browser tab.
+You should now be greeted with <code>Hello, welcome to this OpenFeature-enabled website!</code>.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>This tutorial demonstrated how to integrate the OpenFeature Rust SDK with an Axum web server using a custom AppState containing a FlagdProvider.
+By leveraging flagd service, you can dynamically update feature flags at runtime without needing to redeploy your application.</p>
+<p>For advanced configuration and more details, refer to the <a href="https://docs.rs/open-feature-flagd/latest/open_feature_flagd/">OpenFeature Rust SDK documentation</a>.</p>

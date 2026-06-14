@@ -1,0 +1,33 @@
+<h1 id="statistics--observability">Statistics &#x26; Observability</h1>
+<p>You cannot tune what you cannot measure. <code>http-cache</code> records cache activity through a
+<strong>statistics provider framework</strong>, so you get rich, queryable metrics without bolting on
+a separate pipeline.</p>
+<h2 id="provider-framework">Provider framework</h2>
+<p>Statistics are pluggable, just like <a href="/docs/storage-backends">storage</a> and
+<a href="/docs/realtime-and-webhooks">queues</a>. Enable stats and pick a provider; the gateway
+streams events (hits, misses, sets, deletes, evictions, latencies) to it.</p>
+<p><strong><a href="https://clickhouse.com">ClickHouse</a> is the default provider when you enable
+statistics</strong> — it is purpose-built for high-volume, append-only event analytics, which
+is exactly the shape of cache telemetry.</p>
+<pre><code class="hljs language-bash">HTTP_CACHE_STATS=clickhouse://clickhouse:9000/httpcache
+</code></pre>
+<p>When stats are disabled, the gateway adds zero telemetry overhead to the hot path.</p>
+<h2 id="what-you-can-measure">What you can measure</h2>
+<ul>
+<li><strong>Hit ratio</strong> overall and per key prefix, region, or client.</li>
+<li><strong>Latency</strong> percentiles for L1, L2, backend, and origin paths.</li>
+<li><strong>Throughput</strong> — requests per second per gateway and per region.</li>
+<li><strong>Invalidations</strong> and eviction rates over time.</li>
+<li><strong>Top keys</strong> by traffic, and cold keys worth evicting.</li>
+</ul>
+<p>Because the data lands in ClickHouse, you can drive dashboards, alerts, and capacity
+planning with plain SQL.</p>
+<h2 id="designed-for-the-gateway-model">Designed for the gateway model</h2>
+<p>In a <a href="/docs/architecture">globally load-balanced deployment</a>, each gateway emits its own
+stats. Aggregating them in a columnar store like ClickHouse gives you a single,
+fleet-wide view across every region — without any cross-gateway coordination on the hot
+path.</p>
+<blockquote>
+<p>📊 A management UX with built-in dashboards over these statistics is on the
+<a href="/docs/roadmap">roadmap</a>.</p>
+</blockquote>

@@ -1,0 +1,147 @@
+<h1 id="openfeature-contributing-">OpenFeature Contributing </h1>
+<ul>
+<li><a href="#running-locally">Running locally</a>
+<ul>
+<li><a href="#installation-prerequisites-without-devbox">Installation Prerequisites (Without Devbox)</a></li>
+<li><a href="#install-dependencies">Install dependencies</a></li>
+<li><a href="#local-development">Local Development</a></li>
+<li><a href="#local-development-with-devbox">Local Development with Devbox</a></li>
+<li><a href="#build">Build</a></li>
+<li><a href="#manage-content">Manage content</a>
+<ul>
+<li><a href="#ecosystem">Ecosystem</a></li>
+<li><a href="#sdk-docs">SDK Docs</a></li>
+</ul>
+</li>
+<li><a href="#deployment">Deployment</a></li>
+</ul>
+</li>
+<li><a href="#pull-request">Pull Request</a>
+<ul>
+<li><a href="#how-to-receive-comments">How to Receive Comments</a></li>
+<li><a href="#how-to-get-prs-merged">How to Get PRs Merged</a></li>
+</ul>
+</li>
+<li><a href="#style-guide">Style Guide</a>
+<ul>
+<li><a href="#diagrams">Diagrams</a>
+<ul>
+<li><a href="#mermaid">Mermaid</a></li>
+<li><a href="#excalidraw">Excalidraw</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="running-locally">Running locally</h2>
+<h3 id="installation-prerequisites-without-devbox">Installation Prerequisites (Without Devbox)</h3>
+<p>You will need <a href="https://nodejs.org/en/download">Node.js</a> >= 18 and <code>yarn</code> installed.
+Instructions for using yarn on all versions of node can be found <a href="https://yarnpkg.com/getting-started/install">here</a>.</p>
+<h3 id="install-dependencies">Install dependencies</h3>
+<pre><code class="hljs language-sh">yarn &#x26;&#x26; yarn submodules
+</code></pre>
+<h3 id="local-development">Local Development</h3>
+<pre><code class="hljs language-sh">yarn start
+</code></pre>
+<p>This command starts a local development server and opens up a browser window.
+Most changes are reflected live without having to restart the server.</p>
+<h3 id="local-development-with-devbox">Local Development with Devbox</h3>
+<p>To develop locally with <a href="https://www.jetify.com/devbox">Devbox</a>, Follow the steps below:</p>
+<p>1.Make sure you have <a href="https://www.jetify.com/devbox/docs/installing_devbox/">Devbox</a> installed.
+1.Install the development dependencies by running <code>devbox install</code>.
+1.Enter the development environment by running <code>devbox shell</code>. This will start a new shell with the project dependencies installed.
+1.Continue with the steps above to run the project locally using <code>yarn start</code>.</p>
+<h3 id="build">Build</h3>
+<pre><code class="hljs language-sh">yarn build
+</code></pre>
+<p>This command generates static content into the <code>build</code> directory and can be served using any static contents hosting service.</p>
+<h3 id="ecosystem">Ecosystem</h3>
+<p>The ecosystem content is loaded from <code>/src/datasets/index.ts</code>.</p>
+<h4 id="hooks">Hooks</h4>
+<p>A new hook can be added by:</p>
+<ol>
+<li>Add a new hook in <code>/src/datasets/hooks</code></li>
+<li>Add the newly created hook to the <code>ECOSYSTEM_HOOKS</code> array in <code>/src/datasets/hooks/index.ts</code></li>
+</ol>
+<h4 id="providers">Providers</h4>
+<p>A new provider can be added by:</p>
+<ol>
+<li>Add a new hook in <code>/src/datasets/providers</code></li>
+<li>Add the newly created hook to the <code>PROVIDERS</code> array in <code>/src/datasets/providers/index.ts</code></li>
+</ol>
+<h4 id="sdks">SDKs</h4>
+<p>A new SDK can be added by:</p>
+<ol>
+<li>Add an SVG that represents the technology used by the SDK in the <code>/static/img</code> directory. <a href="https://fontawesome.com/">Font Awesome</a> is a good resource finding SVGs.</li>
+<li>Add the SVG to the logo map found <code>/src/datasets/sdks/ecosystem.ts</code>. The key can be anything you want as long as it matches what you define in the next step.</li>
+<li>Add a new SDK in <code>/src/datasets/sdks</code></li>
+<li>Add the newly created SDK to the <code>SDKS</code> array in <code>/src/datasets/sdks/index.ts</code></li>
+<li>Run <code>yarn update:sdk-docs</code></li>
+</ol>
+<p>The SDK docs can be updated by running <code>yarn update:sdk-docs</code>.
+This will fetch the READMEs from all the configured SDK repos and automatically run transformations on the content.</p>
+<h3 id="deployment">Deployment</h3>
+<p>The documentation is hosted by Netlify and deployments are automatically triggered after a successful merge to main.</p>
+<h2 id="pull-request">Pull Request</h2>
+<p>All contributions to the OpenFeature project are welcome via GitHub pull requests.</p>
+<p>To create a new PR, you will need to first fork the GitHub repository and clone upstream.</p>
+<pre><code class="hljs language-bash">git <span class="hljs-built_in">clone</span> https://github.com/open-feature/openfeature.dev.git openfeature.dev
+</code></pre>
+<p>Navigate to the repository folder</p>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">cd</span> openfeature.dev
+</code></pre>
+<p>Add your fork as an origin</p>
+<pre><code class="hljs language-bash">git remote add fork https://github.com/YOUR_GITHUB_USERNAME/openfeature.dev.git
+</code></pre>
+<p>Makes sure your environment is all setup by starting the website</p>
+<pre><code class="hljs language-bash">yarn
+yarn submodules
+yarn start
+</code></pre>
+<p>To start working on a new feature or bugfix, create a new branch and start working on it.</p>
+<pre><code class="hljs language-bash">git checkout -b feat/NAME_OF_FEATURE
+<span class="hljs-comment"># Make your changes</span>
+git add --all
+git commit --signoff
+git push fork feat/NAME_OF_FEATURE
+</code></pre>
+<p>Open a pull request against the main openfeature.dev repository.</p>
+<h3 id="how-to-receive-comments">How to Receive Comments</h3>
+<ul>
+<li>If the PR is not ready for review, please mark it as
+<a href="https://github.blog/2019-02-14-introducing-draft-pull-requests/"><code>draft</code></a>.</li>
+<li>Make sure all required CI checks are clear.</li>
+<li>Submit small, focused PRs addressing a single concern/issue.</li>
+<li>Make sure the PR title reflects the contribution.</li>
+<li>Write a summary that helps understand the change.</li>
+<li>Include usage examples in the summary, where applicable.</li>
+</ul>
+<h3 id="how-to-get-prs-merged">How to Get PRs Merged</h3>
+<p>A PR is considered to be <strong>ready to merge</strong> when:</p>
+<ul>
+<li>Major feedback is resolved.</li>
+<li>Urgent fix can take exception as long as it has been actively communicated.</li>
+</ul>
+<p>Any Maintainer can merge the PR once it is <strong>ready to merge</strong>. Note, that some
+PRs may not be merged immediately if the repo is in the process of a release and
+the maintainers decided to defer the PR to the next release train.</p>
+<p>If a PR has been stuck (e.g. there are lots of debates and people couldn't agree
+on each other), the owner should try to get people aligned by:</p>
+<ul>
+<li>Consolidating the perspectives and putting a summary in the PR. It is
+recommended to add a link into the PR description, which points to a comment
+with a summary in the PR conversation.</li>
+<li>Tagging domain experts (by looking at the change history) in the PR asking
+for suggestion.</li>
+<li>Reaching out to more people on the <a href="https://cloud-native.slack.com/archives/C0344AANLA1">CNCF OpenFeature Slack channel</a>.</li>
+<li>Stepping back to see if it makes sense to narrow down the scope of the PR or
+split it up.</li>
+</ul>
+<h2 id="style-guide">Style Guide</h2>
+<h3 id="diagrams">Diagrams</h3>
+<p>When adding a diagram to the documentation, it's recommended to use one of the following tools:</p>
+<h4 id="mermaid">Mermaid</h4>
+<p><a href="https://mermaid-js.github.io/">Mermaid</a> is uses a Markdown-inspired text definitions to create diagrams. These diagrams are natively supported in GitHub and Docusaurus.</p>
+<h4 id="excalidraw">Excalidraw</h4>
+<p><a href="https://excalidraw.com/">Excalidraw</a> is a virtual whiteboard for sketching hand-drawn like diagrams. When saving an Excalidraw image, make sure to use the "embed scene" option. That will allow others to edit the image in the future.</p>
+<p><img src="./static/img/excalidraw-embed-scene.png" alt="Excalidraw Embed Scene"></p>

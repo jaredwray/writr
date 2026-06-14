@@ -1,0 +1,84 @@
+<h1 id="helpers">Helpers</h1>
+<p>Docula provides powerful helper utilities through its integration with <a href="https://writr.org">Writr</a>. For all markdown operations including reading files, manipulating content, managing frontmatter, and rendering, you should use the <code>Writr</code> class that's exported from Docula.</p>
+<p><strong>Instead of custom helper functions, use Writr for:</strong></p>
+<ul>
+<li>Loading and saving markdown files</li>
+<li>Getting and setting frontmatter (metadata)</li>
+<li>Rendering markdown to HTML</li>
+<li>Working with markdown content programmatically</li>
+</ul>
+<h1 id="working-with-markdown-using-writr">Working with Markdown using Writr</h1>
+<p>Docula exports <a href="https://writr.org">Writr</a> for powerful markdown operations including loading files, rendering, and managing frontmatter. Writr provides a simple API for working with markdown content.</p>
+<h2 id="creating-and-loading-markdown">Creating and Loading Markdown</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'docula'</span>;
+
+<span class="hljs-comment">// Create a new instance with markdown content</span>
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>(<span class="hljs-string">'# Hello World\n\nThis is my content'</span>);
+
+<span class="hljs-comment">// Or load from a file</span>
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>();
+<span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">loadFromFile</span>(<span class="hljs-string">'./README.md'</span>);
+
+<span class="hljs-comment">// Synchronous version</span>
+writr.<span class="hljs-title function_">loadFromFileSync</span>(<span class="hljs-string">'./README.md'</span>);
+</code></pre>
+<h2 id="getting-and-setting-front-matter">Getting and Setting Front Matter</h2>
+<p>Front matter is metadata at the top of markdown files in YAML format. Writr makes it easy to read and modify:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Writr</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'docula'</span>;
+
+<span class="hljs-keyword">const</span> writr = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Writr</span>();
+<span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">loadFromFile</span>(<span class="hljs-string">'./docs/guide.md'</span>);
+
+<span class="hljs-comment">// Get the entire front matter object</span>
+<span class="hljs-keyword">const</span> frontMatter = writr.<span class="hljs-property">frontMatter</span>;
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(frontMatter.<span class="hljs-property">title</span>); <span class="hljs-comment">// 'My Guide'</span>
+
+<span class="hljs-comment">// Get a specific front matter value</span>
+<span class="hljs-keyword">const</span> title = writr.<span class="hljs-title function_">getFrontMatterValue</span>(<span class="hljs-string">'title'</span>);
+<span class="hljs-keyword">const</span> order = writr.<span class="hljs-title function_">getFrontMatterValue</span>(<span class="hljs-string">'order'</span>);
+
+<span class="hljs-comment">// Set front matter</span>
+writr.<span class="hljs-property">frontMatter</span> = {
+  <span class="hljs-attr">title</span>: <span class="hljs-string">'Updated Guide'</span>,
+  <span class="hljs-attr">order</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">author</span>: <span class="hljs-string">'John Doe'</span>
+};
+
+<span class="hljs-comment">// Save the changes back to the file</span>
+<span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">saveToFile</span>(<span class="hljs-string">'./docs/guide.md'</span>);
+</code></pre>
+<h2 id="accessing-markdown-content">Accessing Markdown Content</h2>
+<pre><code class="hljs language-js"><span class="hljs-comment">// Get the full content (front matter + markdown)</span>
+<span class="hljs-keyword">const</span> fullContent = writr.<span class="hljs-property">content</span>;
+
+<span class="hljs-comment">// Get just the markdown body (without front matter)</span>
+<span class="hljs-keyword">const</span> markdown = writr.<span class="hljs-property">body</span>;
+<span class="hljs-comment">// or use the alias</span>
+<span class="hljs-keyword">const</span> markdown = writr.<span class="hljs-property">markdown</span>;
+
+<span class="hljs-comment">// Get the raw front matter string (including delimiters)</span>
+<span class="hljs-keyword">const</span> rawFrontMatter = writr.<span class="hljs-property">frontMatterRaw</span>;
+
+<span class="hljs-comment">// Set new content</span>
+writr.<span class="hljs-property">content</span> = <span class="hljs-string">'---\ntitle: New Title\n---\n# New Content'</span>;
+</code></pre>
+<h2 id="rendering-markdown-to-html">Rendering Markdown to HTML</h2>
+<pre><code class="hljs language-js"><span class="hljs-comment">// Render to HTML</span>
+<span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>();
+
+<span class="hljs-comment">// Synchronous rendering</span>
+<span class="hljs-keyword">const</span> html = writr.<span class="hljs-title function_">renderSync</span>();
+
+<span class="hljs-comment">// Render with options</span>
+<span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">render</span>({
+  <span class="hljs-attr">emoji</span>: <span class="hljs-literal">true</span>,        <span class="hljs-comment">// Enable emoji support (default: true)</span>
+  <span class="hljs-attr">toc</span>: <span class="hljs-literal">true</span>,          <span class="hljs-comment">// Generate table of contents (default: true)</span>
+  <span class="hljs-attr">highlight</span>: <span class="hljs-literal">true</span>,    <span class="hljs-comment">// Code syntax highlighting (default: true)</span>
+  <span class="hljs-attr">gfm</span>: <span class="hljs-literal">true</span>,          <span class="hljs-comment">// GitHub Flavored Markdown (default: true)</span>
+  <span class="hljs-attr">math</span>: <span class="hljs-literal">true</span>,         <span class="hljs-comment">// Math support (default: true)</span>
+  <span class="hljs-attr">mdx</span>: <span class="hljs-literal">true</span>           <span class="hljs-comment">// MDX support (default: true)</span>
+});
+
+<span class="hljs-comment">// Render directly to a file</span>
+<span class="hljs-keyword">await</span> writr.<span class="hljs-title function_">renderToFile</span>(<span class="hljs-string">'./output.html'</span>);
+</code></pre>

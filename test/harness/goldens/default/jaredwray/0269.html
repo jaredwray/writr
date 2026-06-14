@@ -1,0 +1,121 @@
+<p>A <a href="/specification/sections/hooks">Hook</a> taps into one or more of the flag evaluation's
+lifecycle events (before/after/error/finally) to perform the same action at that point for every evaluation.
+In this blog post, we'll look into what it takes to create an OpenFeature hook in Go that verifies that the return value is a valid hex color.</p>
+<h2 id="objective">Objective</h2>
+<p>Create and integrate a spec compliant hook that validates that the result of a flag evaluation is a hex color.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Golang 1.17+</li>
+</ul>
+<h2 id="repository-setup">Repository setup</h2>
+<p><code>Hooks</code> written for the <a href="https://github.com/open-feature/go-sdk"><code>go-sdk</code></a> are all maintained in the
+<a href="https://github.com/open-feature/go-sdk-contrib.git"><code>go-sdk-contrib</code></a> repository, containing both <code>hooks</code> and <code>providers</code>.
+The following commands can be used to setup the <code>go-sdk-contrib</code> repository,
+this clones the repository and sets up your hook specific go module under <code>/hooks/MY-NEW-HOOK-NAME</code>
+adding a <code>go.mod</code> and <code>README.md</code> file. The module will then be referenced in the top level <code>go.work</code> file.</p>
+<pre><code class="hljs language-bash">git <span class="hljs-built_in">clone</span> https://github.com/open-feature/go-sdk-contrib.git
+<span class="hljs-built_in">cd</span> go-sdk-contrib
+make HOOK=MY-NEW-HOOK-NAME new-hook
+make workspace-init
+</code></pre>
+<h2 id="creating-the-hook">Creating the hook</h2>
+<p>In order for the <code>Hook</code> to be compatible with the OpenFeature <code>go-sdk</code>, it will need to comply to the OpenFeature spec.
+For the <code>go-sdk</code> this means that it will need to conform to the following interface:</p>
+<pre><code class="hljs language-go"><span class="hljs-keyword">type</span> Hook <span class="hljs-keyword">interface</span> {
+    Before(ctx context.Context, hookContext HookContext, hookHints HookHints) (*EvaluationContext, <span class="hljs-type">error</span>)
+    After(ctx context.Context, hookContext HookContext, flagEvaluationDetails InterfaceEvaluationDetails, hookHints HookHints) <span class="hljs-type">error</span>
+    Error(ctx context.Context, hookContext HookContext, err <span class="hljs-type">error</span>, hookHints HookHints)
+    Finally(ctx context.Context, hookContext HookContext, hookHints HookHints)
+}
+</code></pre>
+<p>In order to avoid implementing all the required functions to conform to the interface, embed the <code>of.UnimplementedHook</code> struct in the Hook struct.
+Then define the <code>After</code> lifecycle event, overriding <code>of.UnimplementedHook</code>'s null implementation.</p>
+<pre><code class="hljs language-go"><span class="hljs-comment">// Hook validates the flag evaluation details After flag resolution</span>
+<span class="hljs-keyword">type</span> Hook <span class="hljs-keyword">struct</span> {
+    of.UnimplementedHook
+    Validator validator
+}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(h Hook)</span></span> After(ctx context.Context, hookContext of.HookContext, flagEvaluationDetails of.InterfaceEvaluationDetails, hookHints of.HookHints) <span class="hljs-type">error</span> {
+    err := h.Validator.IsValid(flagEvaluationDetails)
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        <span class="hljs-keyword">return</span> err
+    }
+
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
+}
+</code></pre>
+<p>Notice the <code>Validator</code> field of type <code>validator</code> in the <code>Hook</code> struct. This is defined as such:</p>
+<pre><code class="hljs language-go"><span class="hljs-keyword">type</span> validator <span class="hljs-keyword">interface</span> {
+    IsValid(flagEvaluationDetails of.InterfaceEvaluationDetails) <span class="hljs-type">error</span>
+}
+</code></pre>
+<p>This allows us to supply any validator that implements this function signature, you can either create your own validator
+or use one of the <a href="https://github.com/open-feature/go-sdk-contrib/hooks/validator">existing validators</a>.
+This tutorial uses the existing <a href="https://github.com/open-feature/go-sdk-contrib/hooks/validator/pkg/regex/hex.go">hex regex validator</a>.</p>
+<h2 id="integrating-the-hook">Integrating the hook</h2>
+<ol>
+<li>
+<p>Install dependencies</p>
+<pre><code class="hljs language-shell">go get github.com/open-feature/go-sdk
+go get github.com/open-feature/go-sdk-contrib/hooks/validator
+</code></pre>
+</li>
+<li>
+<p>Import the dependencies</p>
+<pre><code class="hljs language-go"><span class="hljs-keyword">package</span> main
+
+<span class="hljs-keyword">import</span> (
+    <span class="hljs-string">"context"</span>
+    <span class="hljs-string">"fmt"</span>
+    <span class="hljs-string">"github.com/open-feature/go-sdk-contrib/hooks/validator/pkg/regex"</span>
+    <span class="hljs-string">"github.com/open-feature/go-sdk-contrib/hooks/validator/pkg/validator"</span>
+    <span class="hljs-string">"github.com/open-feature/go-sdk/pkg/openfeature"</span>
+    <span class="hljs-string">"log"</span>
+)
+</code></pre>
+</li>
+<li>
+<p>Create an instance of the <code>validator hook</code> struct using the regex hex validator</p>
+<pre><code class="hljs language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
+    hexValidator, err := regex.Hex()
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        log.Fatal(err)
+    }
+    v := validator.Hook{Validator: hexValidator}
+}
+</code></pre>
+</li>
+<li>
+<p>Register the <code>NoopProvider</code>, this simply returns the given default value on flag evaluation.</p>
+<p>This step is optional, the sdk uses the <code>NoopProvider</code> by default but we're explicitly setting it for completeness</p>
+<pre><code class="hljs language-go">openfeature.SetProvider(openfeature.NoopProvider{})
+</code></pre>
+</li>
+<li>
+<p>Create the client, call the flag evaluation using the <code>validator hook</code> at the point of invocation</p>
+<pre><code class="hljs language-go">client := openfeature.NewClient(<span class="hljs-string">"foo"</span>)
+
+result, err := client.
+    StringValueDetails(
+        context.Background(),
+        <span class="hljs-string">"blue"</span>,
+        <span class="hljs-string">"invalidhex"</span>,
+        openfeature.EvaluationContext{},
+        openfeature.WithHooks(v),
+    )
+<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+    fmt.Println(<span class="hljs-string">"err:"</span>, err)
+}
+fmt.Println(<span class="hljs-string">"result:"</span>, result)
+</code></pre>
+</li>
+<li>
+<p>Check that the flag evaluation returns an error as <code>invalidhex</code> is not a valid hex color</p>
+<pre><code class="hljs language-shell">go run main.go
+err: execute after hook: regex doesn't match on flag value
+result {blue 1 {invalidhex   }}
+</code></pre>
+<p>Note that despite getting an error we still get a result.</p>
+</li>
+</ol>

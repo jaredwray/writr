@@ -1,0 +1,61 @@
+<h1 id="architecture-decisions">Architecture Decisions</h1>
+<p>This page records the key engineering decisions behind <code>http-cache</code> and the reasoning
+that led to them.</p>
+<h2 id="why-nodejs--typescript-and-not-rust">Why Node.js / TypeScript (and not Rust)?</h2>
+<p><strong>Decision: build <code>http-cache</code> in Node.js / TypeScript first, with a Rust/native escape
+hatch for CPU-bound hot paths.</strong></p>
+<p>We already own and maintain the exact building blocks a caching gateway needs:</p>
+<ul>
+<li><strong><a href="https://github.com/jaredwray/keyv">keyv</a></strong> — pluggable <a href="/docs/storage-backends">storage
+backends</a>.</li>
+<li><strong><a href="https://github.com/jaredwray/cacheable">cacheable</a></strong> — <a href="/docs/caching-layers">L1/L2 in-memory
+caching</a> with CacheSync.</li>
+<li><strong><a href="https://github.com/jaredwray/qified">qified</a></strong> — <a href="/docs/realtime-and-webhooks">centralized
+queues</a>.</li>
+<li><strong><a href="https://github.com/jaredwray/airhorn">airhorn</a></strong> — <a href="/docs/realtime-and-webhooks">webhooks and
+notifications</a>.</li>
+</ul>
+<p>Reusing this ecosystem means the gateway is mostly <em>composition</em>, not new code. That is
+the single biggest lever on time-to-value and long-term maintainability — and it keeps
+<code>http-cache</code> consistent with the rest of the stack.</p>
+<h3 id="the-honest-performance-trade-off">The honest performance trade-off</h3>
+<p>Rust is genuinely faster for raw proxy work. In published proxy/gateway benchmarks, a
+Rust runtime can deliver on the order of <strong>3–9× the throughput</strong> of a typical Node.js
+HTTP stack, with markedly <strong>lower tail latency under very high concurrency</strong> (Node
+event-loop latency tends to climb past several thousand concurrent connections, while
+Rust stays flat). We do not dispute this.</p>
+<p>The question is whether that gap dominates <em>for a cache gateway</em>. It usually does not:</p>
+<ul>
+<li><strong>The hot path is I/O, not CPU.</strong> A cache request is: parse a small HTTP request,
+check memory, maybe do one network read from a backend, write a small response.
+Node's libuv event loop is very good at exactly this I/O-bound workload.</li>
+<li><strong>L1/L2 memory absorbs the hottest traffic.</strong> Most hits never leave the process
+(<a href="/docs/caching-layers">caching layers</a>), so per-request work is tiny regardless of
+language.</li>
+<li><strong>Global load balancing spreads the load.</strong> Because we scale <a href="/docs/architecture">horizontally across
+regions</a> instead of vertically in one cluster, per-node
+throughput is rarely the ceiling — network proximity is.</li>
+<li><strong>Developer velocity compounds.</strong> Shipping features, providers, and SDKs quickly —
+and sharing code with keyv/cacheable — outweighs raw single-node throughput for the
+vast majority of deployments.</li>
+</ul>
+<h3 id="the-rust-escape-hatch">The Rust escape hatch</h3>
+<p>We design so that performance-critical pieces can drop to native later <strong>without a
+rewrite</strong>:</p>
+<ul>
+<li>Move a measured hot path (e.g. a serialization or hashing routine) into a <strong>native
+N-API addon</strong> while the rest stays in TypeScript.</li>
+<li>Run a <strong>Rust sidecar</strong> (e.g. a Pingora/Tower-based front) for an ultra-high-throughput
+edge tier, with the Node ecosystem as the control plane and providers.</li>
+</ul>
+<p>We will reach for these <strong>only when telemetry shows a real bottleneck</strong> — not
+speculatively.</p>
+<h2 id="why-not-clustering">Why not clustering?</h2>
+<p>Covered in depth in <a href="/docs/architecture#why-not-clustering">Architecture</a>: clustering
+couples many machines into one logical cache, which brings O(n²) gossip, rebalancing,
+sticky sessions, split-brain risk, and single-region latency. Stateless gateways behind
+a global load balancer avoid all of it.</p>
+<h2 id="why-provider-frameworks-everywhere">Why provider frameworks everywhere?</h2>
+<p>Storage, statistics, queues, and configuration are all <strong>providers</strong>. This keeps the
+core small, lets teams use the infrastructure they already run, and means a new backend
+is an adapter — not a fork.</p>

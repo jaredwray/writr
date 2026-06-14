@@ -1,0 +1,314 @@
+<blockquote>
+<p><strong>Availability:</strong> Registered in both the Node and browser builds.</p>
+</blockquote>
+<h2 id="date-helpers">Date Helpers</h2>
+<p>Fumanchu provides powerful date manipulation capabilities using dayjs and chrono-node for natural language date parsing.</p>
+<h3 id="year">{{year}}</h3>
+<p>Get the current year as a string.</p>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{year}}
+&#x3C;!-- 2025 -->
+</code></pre>
+<h3 id="date">{{date}}</h3>
+<p>Format a date with support for human-readable date strings, Date objects, timestamps, or defaults to current date.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dateInput</code> (optional): Date string, Date object, timestamp, or undefined (defaults to now)</li>
+<li><code>format</code> (optional): Format string (defaults to "YYYY-MM-DD")</li>
+</ul>
+<p><strong>Supported format tokens:</strong></p>
+<ul>
+<li><code>YYYY</code> or <code>yyyy</code>: 4-digit year</li>
+<li><code>YY</code> or <code>yy</code>: 2-digit year</li>
+<li><code>MM</code> or <code>mm</code>: Month (01-12)</li>
+<li><code>DD</code> or <code>dd</code>: Day of month (01-31)</li>
+<li><code>HH</code> or <code>hh</code>: Hour (00-23)</li>
+<li><code>mm</code>: Minute (00-59)</li>
+<li><code>ss</code>: Second (00-59)</li>
+</ul>
+<p><strong>Examples</strong></p>
+<pre><code class="hljs language-handlebars">{{date "January 15, 2023" "YYYY-MM-DD"}}
+&#x3C;!-- 2023-01-15 -->
+
+{{date "5 years ago" "YYYY"}}
+&#x3C;!-- 2020 -->
+
+{{date "next Friday" "MM/DD/YYYY"}}
+&#x3C;!-- 11/21/2025 -->
+
+{{date}}
+&#x3C;!-- 2025-11-17 (current date) -->
+
+{{date "2023-01-15" "dd/mm/yyyy"}}
+&#x3C;!-- 15/01/2023 -->
+</code></pre>
+<h3 id="moment">{{moment}}</h3>
+<p>Legacy alias for <code>{{date}}</code>. Works exactly the same as the date helper.</p>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{moment "December 25, 2023" "YYYY-MM-DD"}}
+&#x3C;!-- 2023-12-25 -->
+</code></pre>
+<hr>
+<h2 id="current-time-helpers">Current Time Helpers</h2>
+<h3 id="timestamp">{{timestamp}}</h3>
+<p>Returns the current Unix timestamp in milliseconds.</p>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{timestamp}}
+&#x3C;!-- 1700236800000 -->
+</code></pre>
+<h3 id="now">{{now}}</h3>
+<p>Returns the current date/time with optional formatting.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>format</code> (optional): Format string (defaults to "YYYY-MM-DD HH:mm:ss")</li>
+</ul>
+<p><strong>Examples</strong></p>
+<pre><code class="hljs language-handlebars">{{now}}
+&#x3C;!-- 2025-11-17 14:30:45 -->
+
+{{now "YYYY-MM-DD"}}
+&#x3C;!-- 2025-11-17 -->
+
+{{now "HH:mm:ss"}}
+&#x3C;!-- 14:30:45 -->
+</code></pre>
+<hr>
+<h2 id="relative-time-helpers">Relative Time Helpers</h2>
+<h3 id="fromnow">{{fromNow}}</h3>
+<p>Display relative time from now (e.g., "5 minutes ago", "in 2 hours").</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dateInput</code>: Date string, Date object, or timestamp</li>
+</ul>
+<p><strong>Examples</strong></p>
+<pre><code class="hljs language-handlebars">{{fromNow "2 days ago"}}
+&#x3C;!-- 2 days ago -->
+
+{{fromNow "tomorrow"}}
+&#x3C;!-- in a day -->
+
+{{fromNow "January 1, 2025"}}
+&#x3C;!-- 10 months ago -->
+</code></pre>
+<h3 id="ago">{{ago}}</h3>
+<p>Alias for <code>{{fromNow}}</code>. Shows how long ago a date was.</p>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{ago "5 minutes ago"}}
+&#x3C;!-- 5 minutes ago -->
+</code></pre>
+<h3 id="tonow">{{toNow}}</h3>
+<p>Opposite of <code>fromNow</code>. Shows relative time to now (less commonly used).</p>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{toNow "2 hours ago"}}
+&#x3C;!-- in 2 hours -->
+</code></pre>
+<hr>
+<h2 id="date-arithmetic-helpers">Date Arithmetic Helpers</h2>
+<h3 id="dateadd">{{dateAdd}}</h3>
+<p>Add time to a date.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dateInput</code> (optional): Date to add to (defaults to now)</li>
+<li><code>amount</code>: Number to add</li>
+<li><code>unit</code>: Unit of time ("year", "month", "week", "day", "hour", "minute", "second")</li>
+</ul>
+<p><strong>Examples</strong></p>
+<pre><code class="hljs language-handlebars">{{dateAdd "2023-01-15" 5 "days"}}
+&#x3C;!-- 2023-01-20 00:00:00 -->
+
+{{dateAdd "2023-01-15" 2 "months"}}
+&#x3C;!-- 2023-03-15 00:00:00 -->
+
+{{dateAdd undefined 1 "year"}}
+&#x3C;!-- 2026-11-17 14:30:45 (current date + 1 year) -->
+</code></pre>
+<h3 id="datesubtract">{{dateSubtract}}</h3>
+<p>Subtract time from a date.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dateInput</code> (optional): Date to subtract from (defaults to now)</li>
+<li><code>amount</code>: Number to subtract</li>
+<li><code>unit</code>: Unit of time</li>
+</ul>
+<p><strong>Examples</strong></p>
+<pre><code class="hljs language-handlebars">{{dateSubtract "2023-01-15" 5 "days"}}
+&#x3C;!-- 2023-01-10 00:00:00 -->
+
+{{dateSubtract "2023-01-15" 2 "weeks"}}
+&#x3C;!-- 2023-01-01 00:00:00 -->
+</code></pre>
+<hr>
+<h2 id="date-period-helpers">Date Period Helpers</h2>
+<h3 id="startof">{{startOf}}</h3>
+<p>Get the start of a time period.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dateInput</code> (optional): Date (defaults to now)</li>
+<li><code>unit</code>: Unit of time ("year", "month", "week", "day", "hour", "minute", "second")</li>
+</ul>
+<p><strong>Examples</strong></p>
+<pre><code class="hljs language-handlebars">{{startOf "2023-01-15" "month"}}
+&#x3C;!-- 2023-01-01 00:00:00 -->
+
+{{startOf "2023-06-15" "year"}}
+&#x3C;!-- 2023-01-01 00:00:00 -->
+
+{{startOf "2023-01-15 14:30:45" "day"}}
+&#x3C;!-- 2023-01-15 00:00:00 -->
+</code></pre>
+<h3 id="endof">{{endOf}}</h3>
+<p>Get the end of a time period.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dateInput</code> (optional): Date (defaults to now)</li>
+<li><code>unit</code>: Unit of time</li>
+</ul>
+<p><strong>Examples</strong></p>
+<pre><code class="hljs language-handlebars">{{endOf "2023-01-15" "month"}}
+&#x3C;!-- 2023-01-31 23:59:59 -->
+
+{{endOf "2023-06-15" "year"}}
+&#x3C;!-- 2023-12-31 23:59:59 -->
+</code></pre>
+<hr>
+<h2 id="date-comparison-helpers">Date Comparison Helpers</h2>
+<h3 id="isbefore">{{isBefore}}</h3>
+<p>Check if the first date is before the second date.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>date1</code>: First date</li>
+<li><code>date2</code>: Second date</li>
+</ul>
+<p><strong>Returns:</strong> <code>true</code> or <code>false</code></p>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (isBefore "2023-01-10" "2023-01-15")}}
+  Date 1 is before Date 2
+{{/if}}
+</code></pre>
+<h3 id="isafter">{{isAfter}}</h3>
+<p>Check if the first date is after the second date.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>date1</code>: First date</li>
+<li><code>date2</code>: Second date</li>
+</ul>
+<p><strong>Returns:</strong> <code>true</code> or <code>false</code></p>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (isAfter "2023-01-20" "2023-01-15")}}
+  Date 1 is after Date 2
+{{/if}}
+</code></pre>
+<h3 id="issame">{{isSame}}</h3>
+<p>Check if two dates are the same, with optional unit precision.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>date1</code>: First date</li>
+<li><code>date2</code>: Second date</li>
+<li><code>unit</code> (optional): Unit for comparison ("year", "month", "day", etc.)</li>
+</ul>
+<p><strong>Returns:</strong> <code>true</code> or <code>false</code></p>
+<p><strong>Examples</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (isSame "2023-01-15" "2023-01-15")}}
+  Dates are the same
+{{/if}}
+
+{{#if (isSame "2023-01-15" "2023-12-31" "year")}}
+  Same year
+{{/if}}
+</code></pre>
+<h3 id="isbetween">{{isBetween}}</h3>
+<p>Check if a date is between two other dates (inclusive).</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dateInput</code>: Date to check</li>
+<li><code>startDate</code>: Start of range</li>
+<li><code>endDate</code>: End of range</li>
+</ul>
+<p><strong>Returns:</strong> <code>true</code> or <code>false</code></p>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#if (isBetween "2023-01-15" "2023-01-10" "2023-01-20")}}
+  Date is in range
+{{/if}}
+</code></pre>
+<hr>
+<h2 id="date-utilities">Date Utilities</h2>
+<h3 id="diff">{{diff}}</h3>
+<p>Calculate the difference between two dates.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>date1</code>: First date</li>
+<li><code>date2</code>: Second date</li>
+<li><code>unit</code> (optional): Unit for result ("year", "month", "day", "hour", etc.). Defaults to milliseconds.</li>
+</ul>
+<p><strong>Returns:</strong> Number</p>
+<p><strong>Examples</strong></p>
+<pre><code class="hljs language-handlebars">{{diff "2023-01-20" "2023-01-15" "days"}}
+&#x3C;!-- 5 -->
+
+{{diff "2023-03-15" "2023-01-15" "months"}}
+&#x3C;!-- 2 -->
+
+{{diff "2025-01-15" "2023-01-15" "years"}}
+&#x3C;!-- 2 -->
+</code></pre>
+<h3 id="toisostring">{{toISOString}}</h3>
+<p>Convert a date to ISO 8601 format.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dateInput</code>: Date to convert</li>
+</ul>
+<p><strong>Examples</strong></p>
+<pre><code class="hljs language-handlebars">{{toISOString "2023-01-15"}}
+&#x3C;!-- 2023-01-15T00:00:00.000Z -->
+
+{{toISOString "January 15, 2023"}}
+&#x3C;!-- 2023-01-15T00:00:00.000Z -->
+</code></pre>
+<hr>
+<h2 id="internationalization-helpers">Internationalization Helpers</h2>
+<h3 id="datetimezone">{{dateTimezone}}</h3>
+<p>Format a date in a specific timezone.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dateInput</code>: Date to format</li>
+<li><code>timezone</code>: IANA timezone string (e.g., "America/New_York", "UTC", "Europe/London")</li>
+<li><code>format</code> (optional): Format string (defaults to "YYYY-MM-DD HH:mm:ss")</li>
+</ul>
+<p><strong>Examples</strong></p>
+<pre><code class="hljs language-handlebars">{{dateTimezone "2023-01-15 12:00:00" "America/New_York" "YYYY-MM-DD HH:mm:ss"}}
+&#x3C;!-- 2023-01-15 07:00:00 -->
+
+{{dateTimezone "2023-01-15" "UTC"}}
+&#x3C;!-- 2023-01-15 00:00:00 -->
+</code></pre>
+<h3 id="datelocale">{{dateLocale}}</h3>
+<p>Format a date with a specific locale.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dateInput</code>: Date to format</li>
+<li><code>locale</code>: Locale code (e.g., "en", "fr", "de")</li>
+<li><code>format</code> (optional): Format string (defaults to "YYYY-MM-DD HH:mm:ss")</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{dateLocale "2023-01-15" "en" "YYYY-MM-DD"}}
+&#x3C;!-- 2023-01-15 -->
+</code></pre>
+<hr>
+<h2 id="natural-language-date-parsing">Natural Language Date Parsing</h2>
+<p>All date helpers support natural language date parsing powered by chrono-node:</p>
+<ul>
+<li>"today", "tomorrow", "yesterday"</li>
+<li>"next Friday", "last Monday"</li>
+<li>"5 days ago", "in 2 weeks"</li>
+<li>"January 15, 2023"</li>
+<li>"2023-01-15"</li>
+<li>Date objects</li>
+<li>Unix timestamps</li>
+</ul>
+<p><strong>Examples</strong></p>
+<pre><code class="hljs language-handlebars">{{date "tomorrow" "YYYY-MM-DD"}}
+{{date "next Friday" "MM/DD/YYYY"}}
+{{date "5 years ago" "YYYY"}}
+{{fromNow "2 hours ago"}}
+{{dateAdd "next week" 3 "days"}}
+</code></pre>

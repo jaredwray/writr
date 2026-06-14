@@ -1,0 +1,34 @@
+<h1 id="roadmap">Roadmap</h1>
+<p><code>http-cache</code> starts as a specification. This page tracks the planned direction — it is
+intentionally a set of <strong>roadmap notes</strong>, not committed designs.</p>
+<h2 id="management-api--admin-ux-planned">Management API &#x26; admin UX <em>(planned)</em></h2>
+<p>Today, the gateway is configured declaratively (environment + the centralized
+<a href="/docs/management-and-config">config store</a>). A natural next step is a first-class
+<strong>Management API</strong> plus an <strong>admin UX</strong> on top of it:</p>
+<ul>
+<li><strong>Management API</strong> — a REST control plane for tokens, TTL/cache policies, cache purge
+(by key, prefix, or tag), webhook subscriptions, and provider settings, backed by the
+same centralized MongoDB config store.</li>
+<li><strong>Admin UX</strong> — a dashboard for operators: live <strong>ClickHouse-powered</strong>
+<a href="/docs/statistics">statistics</a> (hit ratios, latency, top keys), one-click purge,
+token management, and fleet/region health.</li>
+</ul>
+<p>These are <strong>planned, not yet designed</strong>. The architecture already supports them: config
+is centralized, stats stream to a provider, and gateways are stateless — a control plane
+slots in cleanly without changing the data path.</p>
+<h2 id="other-planned-work">Other planned work</h2>
+<ul>
+<li><strong>Reference gateway implementation</strong> in Node.js/TypeScript (see <a href="/docs/architecture-decisions">Architecture
+Decisions</a>).</li>
+<li><strong>Bundled Docker images</strong> per storage provider for <a href="/docs/getting-started">minimal
+hops</a>.</li>
+<li><strong>Additional gateway providers</strong> beyond REST (e.g. GraphQL/gRPC) on the shared core.</li>
+<li><strong>Client SDKs</strong> for browser/SPA and server use of the
+<a href="/docs/gateway-and-api">Bearer / x-api-token API</a>.</li>
+<li><strong>Native/Rust escape hatch</strong> for measured hot paths, only where telemetry justifies
+it.</li>
+</ul>
+<blockquote>
+<p>Have an opinion on prioritization? Open an issue on
+<a href="https://github.com/jaredwray/http-cache">GitHub</a>.</p>
+</blockquote>

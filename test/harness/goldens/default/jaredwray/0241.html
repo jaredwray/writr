@@ -1,0 +1,409 @@
+<h1 id="keyvetcd-">@keyv/etcd <a href="https://github.com/jaredwray/keyv"></a></h1>
+<blockquote>
+<p>Etcd storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a>, powered by our own from-scratch etcd v3 client — no third-party etcd library required</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://github.com/jaredwray/keyv/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jaredwray/keyv" alt="GitHub license"></a>
+<a href="https://www.npmjs.com/package/@keyv/etcd"><img src="https://img.shields.io/npm/v/@keyv/etcd.svg" alt="npm"></a>
+<a href="https://npmjs.com/package/@keyv/etcd"><img src="https://img.shields.io/npm/dm/@keyv/etcd" alt="npm"></a></p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Talks to etcd directly over its HTTP/JSON gateway via a small in-house client — no <code>etcd3</code> or other third-party etcd packages</li>
+<li>Full TypeScript support</li>
+<li>TTL support via etcd leases (millisecond input, converted to seconds internally)</li>
+<li>Namespace support for key isolation across multiple Keyv instances</li>
+<li>Async iterator support for scanning keys</li>
+<li><code>setMany</code>, <code>getMany</code>, <code>deleteMany</code>, and <code>hasMany</code> batch operations</li>
+<li><code>createKeyv</code> helper for quick setup</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li><strong>etcd v3 or newer</strong> — this adapter uses the etcd v3 API (<code>/v3/kv/range</code>, <code>/v3/kv/put</code>, <code>/v3/lease/grant</code>, etc.) exposed by etcd's built-in HTTP/JSON gateway. etcd v2 is not supported.</li>
+<li><strong>Node.js 20 or newer</strong> — the client uses the global <code>fetch</code> and <code>AbortSignal.timeout</code> APIs.</li>
+</ul>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#install">Install</a></li>
+<li><a href="#quick-start-with-createkeyv">Quick Start with createKeyv</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#usage-with-namespaces">Usage with Namespaces</a></li>
+<li><a href="#options">Options</a></li>
+<li><a href="#properties">Properties</a>
+<ul>
+<li><a href="#client">.client</a></li>
+<li><a href="#lease">.lease</a></li>
+<li><a href="#url">.url</a></li>
+<li><a href="#ttl">.ttl</a></li>
+<li><a href="#busytimeout">.busyTimeout</a></li>
+<li><a href="#namespace">.namespace</a></li>
+<li><a href="#keyprefixseparator">.keyPrefixSeparator</a></li>
+</ul>
+</li>
+<li><a href="#methods">Methods</a>
+<ul>
+<li><a href="#constructorurl-options">constructor(url?, options?)</a></li>
+<li><a href="#getkey">.get(key)</a></li>
+<li><a href="#getmanykeys">.getMany(keys)</a></li>
+<li><a href="#setkey-value-ttl">.set(key, value, ttl?)</a></li>
+<li><a href="#setmanyentries">.setMany(entries)</a></li>
+<li><a href="#deletekey">.delete(key)</a></li>
+<li><a href="#deletemanykeys">.deleteMany(keys)</a></li>
+<li><a href="#clear">.clear()</a></li>
+<li><a href="#haskey">.has(key)</a></li>
+<li><a href="#hasmanykeys">.hasMany(keys)</a></li>
+<li><a href="#iterator">.iterator()</a></li>
+<li><a href="#disconnect">.disconnect()</a></li>
+<li><a href="#formatkeykey">.formatKey(key)</a></li>
+</ul>
+</li>
+<li><a href="#license">License</a></li>
+</ul>
+<h2 id="install">Install</h2>
+<pre><code class="hljs language-shell">npm install --save keyv @keyv/etcd
+</code></pre>
+<p>You also need a running etcd v3+ server reachable from your Node process. For local development:</p>
+<pre><code class="hljs language-shell">docker run --rm -p 2379:2379 registry.k8s.io/etcd:3.5.15-0 \
+  etcd --listen-client-urls=http://0.0.0.0:2379 --advertise-client-urls=http://0.0.0.0:2379
+</code></pre>
+<h2 id="quick-start-with-createkeyv">Quick Start with createKeyv</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/etcd'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+
+<span class="hljs-comment">// set a value</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+
+<span class="hljs-comment">// get a value</span>
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>);
+
+<span class="hljs-comment">// set with TTL (milliseconds)</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">6000</span>);
+
+<span class="hljs-comment">// delete a value</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'foo'</span>);
+</code></pre>
+<p>You can also pass options:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/etcd'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'etcd://localhost:2379'</span>, { <span class="hljs-attr">ttl</span>: <span class="hljs-number">5000</span> });
+
+<span class="hljs-comment">// or using an options object</span>
+<span class="hljs-keyword">const</span> keyv2 = <span class="hljs-title function_">createKeyv</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'127.0.0.1:2379'</span>, <span class="hljs-attr">ttl</span>: <span class="hljs-number">5000</span> });
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvEtcd</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/etcd'</span>;
+
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store });
+
+<span class="hljs-comment">// set a value</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+
+<span class="hljs-comment">// set a value with TTL (in milliseconds)</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">6000</span>);
+
+<span class="hljs-comment">// get a value</span>
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>);
+
+<span class="hljs-comment">// delete a value</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'foo'</span>);
+
+<span class="hljs-comment">// clear all values</span>
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">clear</span>();
+
+<span class="hljs-comment">// disconnect</span>
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h2 id="usage-with-namespaces">Usage with Namespaces</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvEtcd</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/etcd'</span>;
+
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+<span class="hljs-keyword">const</span> keyv1 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store, <span class="hljs-attr">namespace</span>: <span class="hljs-string">'namespace1'</span> });
+<span class="hljs-keyword">const</span> keyv2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store, <span class="hljs-attr">namespace</span>: <span class="hljs-string">'namespace2'</span> });
+
+<span class="hljs-comment">// keys are isolated by namespace</span>
+<span class="hljs-keyword">await</span> keyv1.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar1'</span>);
+<span class="hljs-keyword">await</span> keyv2.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar2'</span>);
+
+<span class="hljs-keyword">const</span> value1 = <span class="hljs-keyword">await</span> keyv1.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar1'</span>
+<span class="hljs-keyword">const</span> value2 = <span class="hljs-keyword">await</span> keyv2.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar2'</span>
+</code></pre>
+<h2 id="options">Options</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>url</code></td>
+<td><code>string</code></td>
+<td><code>'127.0.0.1:2379'</code></td>
+<td>The etcd server URL. The <code>etcd://</code> protocol prefix is automatically stripped.</td>
+</tr>
+<tr>
+<td><code>uri</code></td>
+<td><code>string</code></td>
+<td>—</td>
+<td>Alias for <code>url</code></td>
+</tr>
+<tr>
+<td><code>ttl</code></td>
+<td><code>number</code></td>
+<td><code>undefined</code></td>
+<td>Default TTL in milliseconds for all keys. Uses etcd leases internally.</td>
+</tr>
+<tr>
+<td><code>busyTimeout</code></td>
+<td><code>number</code></td>
+<td><code>undefined</code></td>
+<td>Per-request timeout in milliseconds. Aborts hung requests via <code>AbortSignal.timeout</code>.</td>
+</tr>
+<tr>
+<td><code>namespace</code></td>
+<td><code>string</code></td>
+<td><code>undefined</code></td>
+<td>Key prefix for namespace isolation</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvEtcd</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/etcd'</span>;
+
+<span class="hljs-comment">// Using a URI string</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+
+<span class="hljs-comment">// Using an options object</span>
+<span class="hljs-keyword">const</span> store2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'127.0.0.1:2379'</span>, <span class="hljs-attr">ttl</span>: <span class="hljs-number">5000</span> });
+
+<span class="hljs-comment">// Using a URI string with additional options</span>
+<span class="hljs-keyword">const</span> store3 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>, { <span class="hljs-attr">ttl</span>: <span class="hljs-number">5000</span>, <span class="hljs-attr">busyTimeout</span>: <span class="hljs-number">3000</span> });
+</code></pre>
+<h2 id="properties">Properties</h2>
+<h3 id="client">.client</h3>
+<p>The underlying <code>EtcdClient</code> instance — a lightweight wrapper around the etcd v3 HTTP/JSON gateway. Can be used to issue raw etcd requests directly.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EtcdClient</code></td>
+<td>Created from the <code>url</code> option</td>
+</tr>
+</tbody>
+</table>
+<h3 id="lease">.lease</h3>
+<p>The etcd lease used for TTL support. Only set when a <code>ttl</code> is configured.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Lease | undefined</code></td>
+<td><code>undefined</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="url">.url</h3>
+<p>The etcd server URL.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>string</code></td>
+<td><code>'127.0.0.1:2379'</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ttl">.ttl</h3>
+<p>Default TTL in milliseconds for all keys. Converted to seconds internally for etcd leases.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>number | undefined</code></td>
+<td><code>undefined</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="busytimeout">.busyTimeout</h3>
+<p>Per-request timeout in milliseconds. When set, every HTTP request to etcd is aborted via <code>AbortSignal.timeout</code> if it does not complete within this window. Updating the setter applies to subsequent requests.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>number | undefined</code></td>
+<td><code>undefined</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="namespace">.namespace</h3>
+<p>Key prefix for namespace isolation. When set, all keys are prefixed with <code>namespace:</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>string | undefined</code></td>
+<td><code>undefined</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="keyprefixseparator">.keyPrefixSeparator</h3>
+<p>The separator between the namespace and key.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>string</code></td>
+<td><code>':'</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="methods">Methods</h2>
+<h3 id="constructorurl-options">constructor(url?, options?)</h3>
+<p>Creates a new <code>KeyvEtcd</code> instance.</p>
+<ul>
+<li><code>url</code> — An etcd server URI string (e.g., <code>'etcd://localhost:2379'</code>) or a <code>KeyvEtcdOptions</code> object. Defaults to <code>'127.0.0.1:2379'</code> if not provided.</li>
+<li><code>options</code> — Optional <code>KeyvEtcdOptions</code> object. When both <code>url</code> and <code>options</code> are objects, they are merged together.</li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvEtcd</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/etcd'</span>;
+
+<span class="hljs-comment">// Using a URI string</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+
+<span class="hljs-comment">// Using an options object</span>
+<span class="hljs-keyword">const</span> store2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'127.0.0.1:2379'</span>, <span class="hljs-attr">ttl</span>: <span class="hljs-number">5000</span> });
+
+<span class="hljs-comment">// Using a URI string with additional options</span>
+<span class="hljs-keyword">const</span> store3 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>, { <span class="hljs-attr">ttl</span>: <span class="hljs-number">5000</span> });
+</code></pre>
+<h3 id="getkey">.get(key)</h3>
+<p>Retrieves a value from the etcd server. Returns the stored value or <code>undefined</code> if the key does not exist.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar'</span>
+</code></pre>
+<h3 id="getmanykeys">.getMany(keys)</h3>
+<p>Retrieves multiple values from the etcd server. Returns an array of stored data corresponding to each key.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">getMany</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>]);
+</code></pre>
+<h3 id="setkey-value-ttl">.set(key, value, ttl?)</h3>
+<p>Stores a value in the etcd server. If a <code>ttl</code> is provided, a dedicated etcd lease is created for that key. Otherwise, if a default TTL is configured via the constructor <code>ttl</code> option, the shared lease is used. Returns <code>true</code> on success, <code>false</code> on failure.</p>
+<ul>
+<li><code>key</code> <em>(string)</em> - The key to set.</li>
+<li><code>value</code> <em>(any)</em> - The value to store.</li>
+<li><code>ttl</code> <em>(number, optional)</em> - Time to live in milliseconds.</li>
+<li>Returns: <code>Promise&#x3C;boolean></code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">5000</span>); <span class="hljs-comment">// expires in 5 seconds</span>
+</code></pre>
+<h3 id="setmanyentries">.setMany(entries)</h3>
+<p>Stores multiple values in the etcd server. Each entry is a <code>KeyvEntry&#x3C;Value></code> object (<code>{ key: string, value: Value, ttl?: number }</code>), where <code>Value</code> is inferred from the entries provided. Returns a <code>boolean[]</code> indicating whether each entry was set successfully.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">setMany</span>([
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key1'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value1'</span> },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key2'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value2'</span> },
+]); <span class="hljs-comment">// [true, true]</span>
+</code></pre>
+<h3 id="deletekey">.delete(key)</h3>
+<p>Deletes a key from the etcd server. Returns <code>true</code> if the key was deleted, <code>false</code> otherwise.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">const</span> deleted = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<h3 id="deletemanykeys">.deleteMany(keys)</h3>
+<p>Deletes multiple keys from the etcd server. Returns a <code>boolean[]</code> indicating whether each key was deleted.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">deleteMany</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>]); <span class="hljs-comment">// [true, true]</span>
+</code></pre>
+<h3 id="clear">.clear()</h3>
+<p>Clears data from the etcd server. If a namespace is set, only keys with the namespace prefix are deleted. Otherwise, all keys are deleted.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">clear</span>();
+</code></pre>
+<h3 id="haskey">.has(key)</h3>
+<p>Checks whether a key exists in the etcd server.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">const</span> exists = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">has</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// true</span>
+<span class="hljs-keyword">const</span> missing = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">has</span>(<span class="hljs-string">'baz'</span>); <span class="hljs-comment">// false</span>
+</code></pre>
+<h3 id="hasmanykeys">.hasMany(keys)</h3>
+<p>Checks whether multiple keys exist in the etcd server. Returns an array of booleans corresponding to each key.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">hasMany</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>, <span class="hljs-string">'key3'</span>]); <span class="hljs-comment">// [true, true, false]</span>
+</code></pre>
+<h3 id="iterator">.iterator()</h3>
+<p>Returns an async iterator over key-value pairs. The iterator uses the namespace configured on the instance.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+
+<span class="hljs-keyword">for</span> <span class="hljs-title function_">await</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> store.<span class="hljs-title function_">iterator</span>()) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key, value);
+}
+</code></pre>
+<h3 id="disconnect">.disconnect()</h3>
+<p>Gracefully disconnects from the etcd server.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h3 id="formatkeykey">.formatKey(key)</h3>
+<p>Formats a key by prepending the namespace if one is set. If the key already starts with the namespace prefix, it is returned as-is to avoid double-prefixing.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvEtcd</span>(<span class="hljs-string">'etcd://localhost:2379'</span>);
+store.<span class="hljs-title function_">formatKey</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'foo'</span>
+
+store.<span class="hljs-property">namespace</span> = <span class="hljs-string">'myapp'</span>;
+store.<span class="hljs-title function_">formatKey</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'myapp:foo'</span>
+store.<span class="hljs-title function_">formatKey</span>(<span class="hljs-string">'myapp:foo'</span>); <span class="hljs-comment">// 'myapp:foo' (no double-prefix)</span>
+</code></pre>
+<h2 id="license">License</h2>
+<p><a href="LICENSE">MIT © Jared Wray</a></p>

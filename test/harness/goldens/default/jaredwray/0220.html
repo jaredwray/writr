@@ -1,0 +1,31 @@
+<blockquote>
+<p><strong>Availability:</strong> Registered in both the Node and browser builds. The browser build renders inline markdown only — the Node build also accepts a file path and will read its contents before rendering.</p>
+</blockquote>
+<h2 id="markdown">markdown</h2>
+<h3 id="markdown-1">{{markdown}}</h3>
+<p>Block helper that converts a string of inline markdown to HTML.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>string</code> <strong>{String}</strong>: Markdown string to convert</li>
+<li><code>returns</code> <strong>{String}</strong>: HTML string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{#markdown}}
+# Foo
+{{/markdown}}
+&#x3C;!-- results in: &#x3C;h1>Foo&#x3C;/h1> -->
+</code></pre>
+<h3 id="md">{{md}}</h3>
+<p>Converts a markdown string to HTML, or reads a markdown file from the file system and converts its contents to HTML.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>filepath</code> <strong>{String}</strong>: Markdown string or path to a markdown file</li>
+<li><code>returns</code> <strong>{String}</strong>: HTML string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{md "# Hello World"}}
+&#x3C;!-- results in: &#x3C;h1>Hello World&#x3C;/h1> -->
+
+{{md "foo/bar.md"}}
+&#x3C;!-- reads file and converts to HTML -->
+</code></pre>

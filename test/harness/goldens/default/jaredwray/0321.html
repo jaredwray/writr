@@ -1,0 +1,252 @@
+<h1 id="hooks">Hooks</h1>
+<p>import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';</p>
+<p><em>Hooks</em> are a mechanism that allow for the addition of arbitrary behavior at well-defined points of the <em>flag evaluation life-cycle</em>.
+Use cases include validation of the resolved flag value, modifying or adding data to the evaluation context, logging, telemetry, and tracking.</p>
+<pre><code class="hljs language-mdx-code-block">import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+
+&#x3C;div className="video-container">
+  &#x3C;LiteYouTubeEmbed
+    id="6jOXSsE426k"
+    title="YouTube video player"
+    poster="maxresdefault"
+    webp
+  />
+&#x3C;/div>
+</code></pre>
+<h2 id="adding-hooks-to-flag-evaluation">Adding Hooks to Flag Evaluation</h2>
+<p>Hooks can be attached globally (on the OpenFeature API object), at the client, or at the flag invocation level.</p>
+<pre><code class="hljs language-ts"><span class="hljs-comment">// add a hook globally, to run on all evaluations</span>
+<span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">addHooks</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleGlobalHook</span>());
+
+<span class="hljs-comment">// add a hook on this client, to run on all evaluations made by this client</span>
+<span class="hljs-keyword">const</span> client = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+client.<span class="hljs-title function_">addHooks</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleClientHook</span>());
+
+<span class="hljs-comment">// add a hook for this evaluation only</span>
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-variable constant_">FLAG_KEY</span>, <span class="hljs-literal">false</span>, context, {
+  <span class="hljs-attr">hooks</span>: [<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleInvocationHook</span>()],
+});
+</code></pre>
+<pre><code class="hljs language-java"><span class="hljs-comment">// add a hook globally, to run on all evaluations</span>
+OpenFeatureAPI.getInstance().addHooks(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleGlobalHook</span>());
+
+<span class="hljs-comment">// add a hook on this client, to run on all evaluations made by this client</span>
+<span class="hljs-type">Client</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> api.getClient();
+client.addHooks(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleClientHook</span>());
+
+<span class="hljs-comment">// add a hook for this evaluation only</span>
+<span class="hljs-type">Boolean</span> <span class="hljs-variable">value</span> <span class="hljs-operator">=</span> client.getBooleanValue(<span class="hljs-string">"key"</span>, <span class="hljs-literal">false</span>, <span class="hljs-literal">null</span>, FlagEvaluationOptions
+  .builder()
+  .hook(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleInvocationHook</span>())
+  .build());
+</code></pre>
+<pre><code class="hljs language-csharp"><span class="hljs-comment">// add a hook globally, to run on all evaluations</span>
+Api.Instance.AddHooks(<span class="hljs-keyword">new</span> ExampleGlobalHook());
+
+<span class="hljs-comment">// add a hook on this client, to run on all evaluations made by this client</span>
+<span class="hljs-keyword">var</span> client = Api.Instance.GetClient();
+client.AddHooks(<span class="hljs-keyword">new</span> ExampleClientHook());
+
+<span class="hljs-comment">// add a hook for this evaluation only</span>
+<span class="hljs-keyword">var</span> <span class="hljs-keyword">value</span> = <span class="hljs-keyword">await</span> client.GetBooleanValue(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>, context, <span class="hljs-keyword">new</span> FlagEvaluationOptions(<span class="hljs-keyword">new</span> ExampleInvocationHook()));
+</code></pre>
+<pre><code class="hljs language-go"><span class="hljs-comment">// add a hook globally, to run on all evaluations</span>
+openfeature.AddHooks(ExampleGlobalHook{})
+
+<span class="hljs-comment">// add a hook on this client, to run on all evaluations made by this client</span>
+client := openfeature.NewClient(<span class="hljs-string">"my-app"</span>)
+client.AddHooks(ExampleClientHook{})
+
+<span class="hljs-comment">// add a hook for this evaluation only</span>
+value, err := client.BooleanValue(
+    context.Background(), <span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>, openfeature.EvaluationContext{}, WithHooks(ExampleInvocationHook{}),
+)
+</code></pre>
+<pre><code class="hljs language-php"><span class="hljs-comment">// add a hook globally, to run on all evaluations</span>
+<span class="hljs-variable">$api</span> = OpenFeatureAPI.<span class="hljs-title function_ invoke__">getInstance</span>();
+<span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">addHook</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleGlobalHook</span>());
+
+<span class="hljs-comment">// add a hook on this client, to run on all evaluations made by this client</span>
+<span class="hljs-variable">$client</span> = <span class="hljs-variable">$api</span>-><span class="hljs-title function_ invoke__">getClient</span>();
+<span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">addHook</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleClientHook</span>());
+
+<span class="hljs-comment">// add a hook for this evaluation only</span>
+<span class="hljs-variable">$value</span> = <span class="hljs-variable">$client</span>-><span class="hljs-title function_ invoke__">getBooleanValue</span>(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">false</span>, <span class="hljs-variable">$context</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">EvaluationOptions</span>([<span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleInvocationHook</span>()]));
+</code></pre>
+<pre><code class="hljs language-python"><span class="hljs-comment"># add a hook globally, to run on all evaluations</span>
+<span class="hljs-keyword">import</span> openfeature.api
+openfeature.api.add_hooks([ExampleGlobalHook()])
+
+<span class="hljs-comment"># add a hook on this client, to run on all evaluations made by this client</span>
+client = api.get_client()
+client.add_hooks([ExampleClientHook()])
+
+<span class="hljs-comment"># add a hook for this evaluation only</span>
+options = EvaluationOptions(hooks=[ExampleInvocationHook()])
+value = client.get_boolean_value(<span class="hljs-string">"boolFlag"</span>, <span class="hljs-literal">False</span>, context, options)
+</code></pre>
+<h2 id="flag-evaluation-life-cycle">Flag Evaluation Life-Cycle</h2>
+<p>The flag evaluation life-cycle consists of four stages: <em>Before</em>, <em>After</em>, <em>Error</em> and <em>Finally</em>.
+A Hook will implement one or more of these stages, performing activities related to their specific role.</p>
+<blockquote>
+<p>Note: "finally" is a reserved word in some languages.
+In such cases, an alternate name is used, such as <em>finallyAfter</em>.</p>
+</blockquote>
+<h3 id="before">Before</h3>
+<p>The <em>Before</em> stage is evaluated before flag evaluation takes place.
+Hooks implementing the Before stage may alter the <a href="./evaluation-context">evaluation context</a> or perform other side effects.
+Note that Before hooks run before flag evaluation has succeeded.
+Consider this when using Before hooks.
+You may want to use <a href="#after">After hooks</a> for use cases where you want to perform some side effect with an assurance that flag evaluation proceeded normally.</p>
+<h3 id="after">After</h3>
+<p>The <em>After</em> stage is evaluated after <strong>successful</strong> flag evaluation.
+Hooks implementing the After stage may validate the resolved flag value (throwing or returning errors) or perform other side effects.
+After hooks are an ideal mechanism for publishing records in other services for the purposes of telemetry relating to flag evaluation or for user tracking.</p>
+<h3 id="error">Error</h3>
+<p>The <em>Error</em> stage runs only in the case that flag evaluation has proceeded abnormally.
+Some reasons for abnormal execution include:</p>
+<ul>
+<li>the flag control plane could not be reached</li>
+<li>the flag referenced by the flag key does not exist</li>
+<li>the flag referenced by the flag key is not of the expected type</li>
+<li>an unhandled error occurred in a <em>Before</em> hook</li>
+</ul>
+<p>The Error stage is ideal for logging error messages or adding error records to a telemetry provider.</p>
+<h3 id="finally">Finally</h3>
+<p>The <em>Finally</em> stage runs unconditionally, no matter if flag resolution succeeded or failed.
+Hooks implementing this stage might use it to release resources or finalize records.</p>
+<h3 id="ordering">Ordering</h3>
+<p>Hooks are evaluated in the following order:</p>
+<ul>
+<li>before: API, Client, Invocation</li>
+<li>after: Invocation, Client, API</li>
+<li>error (if applicable): Invocation, Client, API</li>
+<li>finally: Invocation, Client, API</li>
+</ul>
+<p>Hooks added at the same level (API, client, or invocation) are evaluated in the order they are added.</p>
+<h2 id="implementing-hooks">Implementing Hooks</h2>
+<p>Create a hook by implementing <strong>at least</strong> one of the flag evaluation life-cycle stages.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyHook</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Hook</span> {
+  <span class="hljs-title function_">before</span>(<span class="hljs-params"><span class="hljs-attr">hookContext</span>: <span class="hljs-title class_">HookContext</span></span>) {
+    <span class="hljs-comment">// code to run before flag evaluation</span>
+  }
+
+  <span class="hljs-title function_">after</span>(<span class="hljs-params"><span class="hljs-attr">hookContext</span>: <span class="hljs-title class_">HookContext</span>, <span class="hljs-attr">details</span>: <span class="hljs-title class_">EvaluationDetails</span>&#x3C;<span class="hljs-title class_">FlagValue</span>></span>) {
+    <span class="hljs-comment">// code to run after successful flag evaluation</span>
+  }
+
+  <span class="hljs-title function_">error</span>(<span class="hljs-params"><span class="hljs-attr">hookContext</span>: <span class="hljs-title class_">HookContext</span>, <span class="hljs-attr">err</span>: <span class="hljs-title class_">Error</span></span>) {
+    <span class="hljs-comment">// code to run if there's an error during before hooks or during flag evaluation</span>
+  }
+
+  <span class="hljs-title function_">finally</span>(<span class="hljs-params"><span class="hljs-attr">hookContext</span>: <span class="hljs-title class_">HookContext</span>, <span class="hljs-attr">details</span>: <span class="hljs-title class_">EvaluationDetails</span>&#x3C;<span class="hljs-title class_">FlagValue</span>></span>) {
+    <span class="hljs-comment">// code to run after all other stages, regardless of success/failure</span>
+  }
+}
+</code></pre>
+<pre><code class="hljs language-java"><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyHook</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">BooleanHook</span> {
+  <span class="hljs-meta">@Override</span>
+  <span class="hljs-keyword">public</span> Optional&#x3C;EvaluationContext> <span class="hljs-title function_">before</span><span class="hljs-params">(HookContext&#x3C;Boolean> ctx, Map&#x3C;String, Object> hints)</span> {
+    <span class="hljs-comment">// code to run before flag evaluation</span>
+  }
+
+  <span class="hljs-meta">@Override</span>
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">after</span><span class="hljs-params">(HookContext&#x3C;Boolean> ctx, FlagEvaluationDetails&#x3C;Boolean> details, Map&#x3C;String, Object> hints)</span> {
+    <span class="hljs-comment">// code to run after successful flag evaluation</span>
+  }
+
+  <span class="hljs-meta">@Override</span>
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">error</span><span class="hljs-params">(HookContext&#x3C;Boolean> ctx, Exception error, Map&#x3C;String, Object> hints)</span> {
+    <span class="hljs-comment">// code to run if there's an error during before hooks or during flag evaluation</span>
+  }
+
+  <span class="hljs-meta">@Override</span>
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">finallyAfter</span><span class="hljs-params">(HookContext&#x3C;Boolean> ctx, FlagEvaluationDetails details, Map&#x3C;String, Object> hints)</span> {
+    <span class="hljs-comment">// code to run after all other stages, regardless of success/failure</span>
+  }
+}
+</code></pre>
+<pre><code class="hljs language-csharp">MyHook : Hook
+{
+  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">Task</span>&#x3C;<span class="hljs-title">EvaluationContext</span>> <span class="hljs-title">Before</span>&#x3C;<span class="hljs-title">T</span>>(<span class="hljs-params">HookContext&#x3C;T> context,
+      IReadOnlyDictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">object</span>> hints = <span class="hljs-literal">null</span></span>)</span>
+  {
+    <span class="hljs-comment">// code to run before flag evaluation</span>
+  }
+
+  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">virtual</span> Task <span class="hljs-title">After</span>&#x3C;<span class="hljs-title">T</span>>(<span class="hljs-params">HookContext&#x3C;T> context, FlagEvaluationDetails&#x3C;T> details,
+      IReadOnlyDictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">object</span>> hints = <span class="hljs-literal">null</span></span>)</span>
+  {
+    <span class="hljs-comment">// code to run after successful flag evaluation</span>
+  }
+
+  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">virtual</span> Task <span class="hljs-title">Error</span>&#x3C;<span class="hljs-title">T</span>>(<span class="hljs-params">HookContext&#x3C;T> context, Exception error,
+      IReadOnlyDictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">object</span>> hints = <span class="hljs-literal">null</span></span>)</span>
+  {
+    <span class="hljs-comment">// code to run if there's an error during before hooks or during flag evaluation</span>
+  }
+
+  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">virtual</span> Task <span class="hljs-title">Finally</span>&#x3C;<span class="hljs-title">T</span>>(<span class="hljs-params">HookContext&#x3C;T> context, FlagEvaluationDetails&#x3C;T> details, IReadOnlyDictionary&#x3C;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">object</span>> hints = <span class="hljs-literal">null</span></span>)</span>
+  {
+    <span class="hljs-comment">// code to run after all other stages, regardless of success/failure</span>
+  }
+}
+</code></pre>
+<pre><code class="hljs language-go"><span class="hljs-keyword">type</span> myHook <span class="hljs-keyword">struct</span>{}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(h myHook)</span></span> Before(ctx context.Context, hookContext openfeature.HookContext, hookHints openfeature.HookHints) (*openfeature.EvaluationContext, <span class="hljs-type">error</span>) {
+    <span class="hljs-comment">// code to run before flag evaluation</span>
+}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(h myHook)</span></span> After(ctx context.Context, hookContext openfeature.HookContext, details openfeature.InterfaceEvaluationDetails, hookHints openfeature.HookHints) <span class="hljs-type">error</span> {
+    <span class="hljs-comment">// code to run after successful flag evaluation</span>
+}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(h myHook)</span></span> Error(ctx context.Context, hookContext openfeature.HookContext, err <span class="hljs-type">error</span>, hookHints openfeature.HookHints) {
+    <span class="hljs-comment">// code to run if there's an error during before hooks or during flag evaluation</span>
+}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(h myHook)</span></span> Finally(ctx context.Context, hookContext openfeature.HookContext, details openfeature.InterfaceEvaluationDetails, hookHints openfeature.HookHints) {
+    <span class="hljs-comment">// code to run after all other stages, regardless of success/failure</span>
+}
+</code></pre>
+<pre><code class="hljs language-php"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyHook</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">Hook</span>
+</span>{
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">before</span>(<span class="hljs-params">HookContext <span class="hljs-variable">$context</span>, HookHints <span class="hljs-variable">$hints</span></span>): ?<span class="hljs-title">EvaluationContext</span>
+    </span>{
+      <span class="hljs-comment">// code to run before flag evaluation</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">after</span>(<span class="hljs-params">HookContext <span class="hljs-variable">$context</span>, ResolutionDetails <span class="hljs-variable">$details</span>, HookHints <span class="hljs-variable">$hints</span></span>): <span class="hljs-title">void</span>
+    </span>{
+      <span class="hljs-comment">// code to run after successful flag evaluation</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">error</span>(<span class="hljs-params">HookContext <span class="hljs-variable">$context</span>, <span class="hljs-built_in">Throwable</span> <span class="hljs-variable">$error</span>, HookHints <span class="hljs-variable">$hints</span></span>): <span class="hljs-title">void</span>
+    </span>{
+      <span class="hljs-comment">// code to run if there's an error during before hooks or during flag evaluation</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">finally</span>(<span class="hljs-params">HookContext <span class="hljs-variable">$context</span>, HookHints <span class="hljs-variable">$hints</span></span>): <span class="hljs-title">void</span>
+    </span>{
+      <span class="hljs-comment">// code to run after all other stages, regardless of success/failure</span>
+    }
+}
+
+</code></pre>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> openfeature.hook <span class="hljs-keyword">import</span> Hook, HookHints
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyHook</span>(<span class="hljs-title class_ inherited__">Hook</span>):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">before</span>(<span class="hljs-params">self, context: HookContext, hints: HookHints</span>):
+        ...  <span class="hljs-comment"># code to run before flag evaluation</span>
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">after</span>(<span class="hljs-params">self, context: HookContext, details: FlagEvaluationDetails, hints: HookHints</span>):
+        ...  <span class="hljs-comment"># code to run after successful flag evaluation</span>
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">error</span>(<span class="hljs-params">self, context: HookContext, error, hints: HookHints</span>):
+        ...  <span class="hljs-comment"># code to run if there's an error during before hooks or during flag evaluation</span>
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">finally_after</span>(<span class="hljs-params">self, context: HookContext, details: FlagEvaluationDetails, hints: HookHints</span>):
+        ...  <span class="hljs-comment"># code to run after all other stages, regardless of success/failure</span>
+</code></pre>

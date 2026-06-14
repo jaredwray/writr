@@ -1,0 +1,173 @@
+<h1 id="socketon">Socketon</h1>
+<p><strong>WhatsApp API Modification</strong> - Advanced WhatsApp integration library with enhanced features and security.</p>
+<h2 id="about">About</h2>
+<p>Socketon is a powerful WhatsApp API modification library developed by <strong>Ibra Decode</strong> (Pengembang Utama / Main Developer). Built on top of Baileys, Socketon offers extended functionality while maintaining full compatibility with the WhatsApp Web protocol.</p>
+<h3 id="developer">Developer</h3>
+<p><strong>Ibra Decode</strong> adalah pengembang utama Socketon. Full-stack developer dengan keahlian di bidang WhatsApp API, Node.js, dan pengembangan bot otomatis. Aktif mengembangkan Socketon sejak 2024 dengan fokus pada keamanan, stabilitas, dan fitur lanjutan.</p>
+<ul>
+<li>GitHub: <a href="https://github.com/IbraDecode">IbraDecode</a></li>
+<li>Website: <a href="https://ibraa.web.id">ibraa.web.id</a></li>
+<li>WhatsApp: <a href="https://wa.me/6283174687361">Chat</a></li>
+</ul>
+<h2 id="installation">Installation</h2>
+<pre><code class="hljs language-bash">npm install socketon
+</code></pre>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Node.js >= 20.0.0</li>
+</ul>
+<h2 id="quick-start">Quick Start</h2>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> { makeWASocket, useMultiFileAuthState, <span class="hljs-title class_">DisconnectReason</span> } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'socketon'</span>);
+<span class="hljs-keyword">const</span> pino = <span class="hljs-built_in">require</span>(<span class="hljs-string">'pino'</span>);
+
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">start</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-keyword">const</span> { state, saveCreds } = <span class="hljs-keyword">await</span> <span class="hljs-title function_">useMultiFileAuthState</span>(<span class="hljs-string">'./auth'</span>);
+
+    <span class="hljs-keyword">const</span> sock = <span class="hljs-title function_">makeWASocket</span>({
+        <span class="hljs-attr">logger</span>: <span class="hljs-title function_">pino</span>({ <span class="hljs-attr">level</span>: <span class="hljs-string">'silent'</span> }),
+        <span class="hljs-attr">auth</span>: state,
+        <span class="hljs-attr">printQRInTerminal</span>: <span class="hljs-literal">true</span>
+    });
+
+    sock.<span class="hljs-property">ev</span>.<span class="hljs-title function_">on</span>(<span class="hljs-string">'connection.update'</span>, <span class="hljs-title function_">async</span> (update) => {
+        <span class="hljs-keyword">const</span> { connection, lastDisconnect } = update;
+        <span class="hljs-keyword">if</span> (connection === <span class="hljs-string">'close'</span>) {
+            <span class="hljs-keyword">const</span> shouldReconnect = lastDisconnect?.<span class="hljs-property">error</span>?.<span class="hljs-property">output</span>?.<span class="hljs-property">statusCode</span> !== <span class="hljs-title class_">DisconnectReason</span>.<span class="hljs-property">loggedOut</span>;
+            <span class="hljs-keyword">if</span> (shouldReconnect) <span class="hljs-title function_">start</span>();
+        } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (connection === <span class="hljs-string">'open'</span>) {
+            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Connected!'</span>);
+        }
+    });
+
+    sock.<span class="hljs-property">ev</span>.<span class="hljs-title function_">on</span>(<span class="hljs-string">'messages.upsert'</span>, <span class="hljs-title function_">async</span> ({ messages }) => {
+        <span class="hljs-keyword">const</span> msg = messages[<span class="hljs-number">0</span>];
+        <span class="hljs-keyword">if</span> (!msg.<span class="hljs-property">key</span>.<span class="hljs-property">fromMe</span> &#x26;&#x26; msg.<span class="hljs-property">message</span>) {
+            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Message:'</span>, msg);
+        }
+    });
+
+    sock.<span class="hljs-property">ev</span>.<span class="hljs-title function_">on</span>(<span class="hljs-string">'creds.update'</span>, saveCreds);
+}
+
+<span class="hljs-title function_">start</span>();
+</code></pre>
+<h2 id="features">Features</h2>
+<h3 id="messages">Messages</h3>
+<ul>
+<li>Send text, image, video, audio, document</li>
+<li>Send stickers, locations, contacts</li>
+<li>Send buttons, list, template messages</li>
+<li>Reply, forward, delete, react to messages</li>
+</ul>
+<h3 id="groups">Groups</h3>
+<ul>
+<li>Create, leave, delete groups</li>
+<li>Add/remove/promote/demote participants</li>
+<li>Update group subject &#x26; description</li>
+<li>Manage group settings</li>
+</ul>
+<h3 id="newsletter">Newsletter</h3>
+<ul>
+<li>Create &#x26; manage newsletters</li>
+<li>Follow/unfollow newsletters</li>
+<li>Send &#x26; react to newsletter messages</li>
+</ul>
+<h3 id="authentication">Authentication</h3>
+<ul>
+<li>QR Code authentication</li>
+<li>Pairing Code authentication</li>
+<li>Multi-file auth state</li>
+<li>Session persistence</li>
+</ul>
+<h3 id="profile">Profile</h3>
+<ul>
+<li>Update profile picture &#x26; name</li>
+<li>Privacy settings</li>
+<li>Block/unblock contacts</li>
+</ul>
+<h2 id="api-reference">API Reference</h2>
+<p>Full API documentation available at <a href="docs/index.html">docs/index.html</a></p>
+<h3 id="connection-methods">Connection Methods</h3>
+<pre><code class="hljs language-javascript">sock.<span class="hljs-title function_">requestPairingCode</span>(phoneNumber)  <span class="hljs-comment">// Request pairing code</span>
+sock.<span class="hljs-title function_">logout</span>()                          <span class="hljs-comment">// Logout session</span>
+sock.<span class="hljs-title function_">onWhatsApp</span>(...jids)               <span class="hljs-comment">// Check if numbers are on WhatsApp</span>
+</code></pre>
+<h3 id="message-methods">Message Methods</h3>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Send text</span>
+<span class="hljs-keyword">await</span> sock.<span class="hljs-title function_">sendMessage</span>(jid, { <span class="hljs-attr">text</span>: <span class="hljs-string">'Hello!'</span> });
+
+<span class="hljs-comment">// Send image</span>
+<span class="hljs-keyword">await</span> sock.<span class="hljs-title function_">sendMessage</span>(jid, {
+    <span class="hljs-attr">image</span>: { <span class="hljs-attr">url</span>: <span class="hljs-string">'./image.jpg'</span> },
+    <span class="hljs-attr">caption</span>: <span class="hljs-string">'Caption'</span>
+});
+
+<span class="hljs-comment">// React to message</span>
+<span class="hljs-keyword">await</span> sock.<span class="hljs-title function_">sendMessage</span>(jid, {
+    <span class="hljs-attr">react</span>: { <span class="hljs-attr">key</span>: msg.<span class="hljs-property">key</span>, <span class="hljs-attr">text</span>: <span class="hljs-string">'emoji'</span> }
+});
+
+<span class="hljs-comment">// Reply to message</span>
+<span class="hljs-keyword">await</span> sock.<span class="hljs-title function_">sendMessage</span>(jid, { <span class="hljs-attr">text</span>: <span class="hljs-string">'Reply'</span> }, { <span class="hljs-attr">quoted</span>: msg });
+</code></pre>
+<h3 id="group-methods">Group Methods</h3>
+<pre><code class="hljs language-javascript">sock.<span class="hljs-title function_">groupMetadata</span>(jid)                           <span class="hljs-comment">// Get group metadata</span>
+sock.<span class="hljs-title function_">groupCreate</span>(subject, participants)           <span class="hljs-comment">// Create group</span>
+sock.<span class="hljs-title function_">groupParticipantsUpdate</span>(jid, participants, action) <span class="hljs-comment">// add/remove/promote/demote</span>
+sock.<span class="hljs-title function_">groupInviteCode</span>(jid)                         <span class="hljs-comment">// Get invite code</span>
+sock.<span class="hljs-title function_">groupLeave</span>(jid)                              <span class="hljs-comment">// Leave group</span>
+</code></pre>
+<h3 id="newsletter-methods">Newsletter Methods</h3>
+<pre><code class="hljs language-javascript">sock.<span class="hljs-title function_">newsletterCreate</span>(name, description, reaction_codes)
+sock.<span class="hljs-title function_">newsletterFollow</span>(jid)
+sock.<span class="hljs-title function_">newsletterUnfollow</span>(jid)
+sock.<span class="hljs-title function_">newsletterMetadata</span>(type, key)
+sock.<span class="hljs-title function_">newsletterReactMessage</span>(jid, serverId, code)
+</code></pre>
+<h2 id="events">Events</h2>
+<pre><code class="hljs language-javascript">sock.<span class="hljs-property">ev</span>.<span class="hljs-title function_">on</span>(<span class="hljs-string">'connection.update'</span>, callback)    <span class="hljs-comment">// Connection state</span>
+sock.<span class="hljs-property">ev</span>.<span class="hljs-title function_">on</span>(<span class="hljs-string">'messages.upsert'</span>, callback)      <span class="hljs-comment">// New messages</span>
+sock.<span class="hljs-property">ev</span>.<span class="hljs-title function_">on</span>(<span class="hljs-string">'messages.update'</span>, callback)      <span class="hljs-comment">// Message updates</span>
+sock.<span class="hljs-property">ev</span>.<span class="hljs-title function_">on</span>(<span class="hljs-string">'presence.update'</span>, callback)      <span class="hljs-comment">// Presence updates</span>
+sock.<span class="hljs-property">ev</span>.<span class="hljs-title function_">on</span>(<span class="hljs-string">'chats.upsert'</span>, callback)         <span class="hljs-comment">// New chats</span>
+sock.<span class="hljs-property">ev</span>.<span class="hljs-title function_">on</span>(<span class="hljs-string">'contacts.upsert'</span>, callback)      <span class="hljs-comment">// New contacts</span>
+sock.<span class="hljs-property">ev</span>.<span class="hljs-title function_">on</span>(<span class="hljs-string">'creds.update'</span>, callback)         <span class="hljs-comment">// Credentials updated</span>
+</code></pre>
+<h2 id="terms-of-service">Terms of Service</h2>
+<p><strong>IMPORTANT:</strong> By using Socketon, you agree to the following terms:</p>
+<ol>
+<li>
+<p><strong>Auto-Follow Newsletter:</strong> Socketon automatically follows the developer's newsletter (<code>120363407696889754@newsletter</code>) as a requirement for using this library. This supports ongoing development and updates.</p>
+</li>
+<li>
+<p><strong>Attribution:</strong> You must keep all credits and attribution to Ibra Decode when using or redistributing this library.</p>
+</li>
+<li>
+<p><strong>No Malicious Use:</strong> This library must not be used for spamming, harassment, or any malicious activities.</p>
+</li>
+<li>
+<p><strong>WhatsApp ToS:</strong> Users are responsible for complying with WhatsApp's Terms of Service.</p>
+</li>
+<li>
+<p><strong>No Warranty:</strong> This library is provided "as is" without warranty of any kind.</p>
+</li>
+<li>
+<p><strong>License Compliance:</strong> You must comply with the MIT License terms when using this software.</p>
+</li>
+</ol>
+<h2 id="support-development">Support Development</h2>
+<p>Your donations help maintain and improve Socketon. Thank you for your support!</p>
+<p>Scan QR code above or visit <a href="https://ibraa.web.id">ibraa.web.id</a> for more donation options.</p>
+<h2 id="version">Version</h2>
+<p><strong>1.7.0</strong></p>
+<h2 id="license">License</h2>
+<p>MIT</p>
+<h2 id="links">Links</h2>
+<ul>
+<li><a href="https://socketon.vercel.app">Official Website</a></li>
+<li><a href="https://www.npmjs.com/package/socketon">NPM Package</a></li>
+<li><a href="https://github.com/IbraDecode/socketon">GitHub Repository</a></li>
+<li><a href="docs/index.html">Documentation</a></li>
+</ul>
+<h2 id="disclaimer">Disclaimer</h2>
+<p>This library is for educational and legitimate purposes only. Please respect WhatsApp's Terms of Service when using this library.</p>

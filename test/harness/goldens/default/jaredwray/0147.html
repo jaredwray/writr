@@ -1,0 +1,415 @@
+<blockquote>
+<p><strong>Availability:</strong> Registered in both the Node and browser builds.</p>
+</blockquote>
+<h3 id="after">{{after}}</h3>
+<p>Returns all of the items in an array after the specified index. Opposite of <a href="#before">before</a>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong>: Collection</li>
+<li><code>n</code> <strong>{Number}</strong>: Starting index (number of items to exclude)</li>
+<li><code>returns</code> <strong>{Array}</strong>: Array exluding <code>n</code> items.</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['a', 'b', 'c'] --></span>
+{{after array 1}}
+<span class="hljs-comment">&#x3C;!-- results in: '["c"]' --></span>
+</code></pre>
+<h3 id="arrayify">{{arrayify}}</h3>
+<p>Cast the given <code>value</code> to an array.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>value</code> <strong>{any}</strong></li>
+<li><code>returns</code> <strong>{Array}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{arrayify "foo"}}
+<span class="hljs-comment">&#x3C;!-- results in: [ "foo" ] --></span>
+</code></pre>
+<h3 id="before">{{before}}</h3>
+<p>Return all of the items in the collection before the specified count. Opposite of <a href="#after">after</a>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>n</code> <strong>{Number}</strong></li>
+<li><code>returns</code> <strong>{Array}</strong>: Array excluding items after the given number.</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['a', 'b', 'c'] --></span>
+{{before array 2}}
+<span class="hljs-comment">&#x3C;!-- results in: '["a", "b"]' --></span>
+</code></pre>
+<h3 id="eachindex">{{eachIndex}}</h3>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>options</code> <strong>{Object}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] --></span>
+{{#eachIndex array}}
+  {{item}} is {{index}}
+{{/eachIndex}}
+</code></pre>
+<h3 id="filter">{{filter}}</h3>
+<p>Block helper that filters the given array and renders the block for values that evaluate to <code>true</code>, otherwise the inverse block is returned.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>value</code> <strong>{any}</strong></li>
+<li><code>options</code> <strong>{Object}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['a', 'b', 'c'] --></span>
+{{#filter array "foo"}}AAA{{else}}BBB{{/filter}}
+<span class="hljs-comment">&#x3C;!-- results in: 'BBB' --></span>
+</code></pre>
+<h3 id="first">{{first}}</h3>
+<p>Returns the first item, or first <code>n</code> items of an array.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>n</code> <strong>{Number}</strong>: Number of items to return, starting at <code>0</code>.</li>
+<li><code>returns</code> <strong>{Array}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{first "['a', 'b', 'c', 'd', 'e']" 2}}
+<span class="hljs-comment">&#x3C;!-- results in: '["a", "b"]' --></span>
+</code></pre>
+<h3 id="foreach">{{forEach}}</h3>
+<p>Iterates over each item in an array and exposes the current item in the array as context to the inner block. In addition to the current array item, the helper exposes the following variables to the inner block:</p>
+<ul>
+<li><code>index</code></li>
+<li><code>total</code></li>
+<li><code>isFirst</code></li>
+<li><code>isLast</code>
+Also, <code>@index</code> is exposed as a private variable, and additional
+private variables may be defined as hash arguments.</li>
+</ul>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- accounts = [
+{'name': 'John', 'email': 'john@example.com'},
+{'name': 'Malcolm', 'email': 'malcolm@example.com'},
+{'name': 'David', 'email': 'david@example.com'}
+] --></span>
+
+{{#forEach accounts}}
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"mailto:{{ email }}"</span> <span class="hljs-attr">title</span>=<span class="hljs-string">"Send an email to {{ name }}"</span>></span>
+	{{ name }}
+  <span class="hljs-tag">&#x3C;/<span class="hljs-name">a</span>></span>{{#unless isLast}}, {{/unless}}
+{{/forEach}}
+</code></pre>
+<h3 id="inarray">{{inArray}}</h3>
+<p>Block helper that renders the block if an array has the given <code>value</code>. Optionally specify an inverse block to render when the array does not have the given value.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>value</code> <strong>{any}</strong></li>
+<li><code>options</code> <strong>{Object}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['a', 'b', 'c'] --></span>
+{{#inArray array "d"}}
+  foo
+{{else}}
+  bar
+{{/inArray}}
+<span class="hljs-comment">&#x3C;!-- results in: 'bar' --></span>
+</code></pre>
+<h3 id="isarray">{{isArray}}</h3>
+<p>Returns true if <code>value</code> is an es5 array.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>value</code> <strong>{any}</strong>: The value to test.</li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{isArray "abc"}}
+<span class="hljs-comment">&#x3C;!-- results in: false --></span>
+
+<span class="hljs-comment">&#x3C;!-- array: [1, 2, 3] --></span>
+{{isArray array}}
+<span class="hljs-comment">&#x3C;!-- results in: true --></span>
+</code></pre>
+<h3 id="itemat">{{itemAt}}</h3>
+<p>Returns the item from <code>array</code> at index <code>idx</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>idx</code> <strong>{Number}</strong></li>
+<li><code>returns</code> <strong>{any}</strong> <code>value</code></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['a', 'b', 'c'] --></span>
+{{itemAt array 1}}
+<span class="hljs-comment">&#x3C;!-- results in: 'b' --></span>
+</code></pre>
+<h3 id="join">{{join}}</h3>
+<p>Join all elements of array into a string, optionally using a given separator.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>separator</code> <strong>{String}</strong>: The separator to use. Defaults to <code>,</code>.</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['a', 'b', 'c'] --></span>
+{{join array}}
+<span class="hljs-comment">&#x3C;!-- results in: 'a, b, c' --></span>
+
+{{join array '-'}}
+<span class="hljs-comment">&#x3C;!-- results in: 'a-b-c' --></span>
+</code></pre>
+<h3 id="equalslength">{{equalsLength}}</h3>
+<p>Returns true if the the length of the given <code>value</code> is equal
+to the given <code>length</code>. Can be used as a block or inline helper.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>value</code> <strong>{Array|String}</strong></li>
+<li><code>length</code> <strong>{Number}</strong></li>
+<li><code>options</code> <strong>{Object}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<h3 id="last">{{last}}</h3>
+<p>Returns the last item, or last <code>n</code> items of an array or string. Opposite of <a href="#first">first</a>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>value</code> <strong>{Array|String}</strong>: Array or string.</li>
+<li><code>n</code> <strong>{Number}</strong>: Number of items to return from the end of the array.</li>
+<li><code>returns</code> <strong>{Array}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- var value = ['a', 'b', 'c', 'd', 'e'] --></span>
+
+{{last value}}
+<span class="hljs-comment">&#x3C;!-- results in: ['e'] --></span>
+
+{{last value 2}}
+<span class="hljs-comment">&#x3C;!-- results in: ['d', 'e'] --></span>
+
+{{last value 3}}
+<span class="hljs-comment">&#x3C;!-- results in: ['c', 'd', 'e'] --></span>
+</code></pre>
+<h3 id="length">{{length}}</h3>
+<p>Returns the length of the given string or array.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>value</code> <strong>{Array|Object|String}</strong></li>
+<li><code>returns</code> <strong>{Number}</strong>: The length of the value.</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{length '["a", "b", "c"]'}}
+<span class="hljs-comment">&#x3C;!-- results in: 3 --></span>
+
+<span class="hljs-comment">&#x3C;!-- results in: myArray = ['a', 'b', 'c', 'd', 'e']; --></span>
+{{length myArray}}
+<span class="hljs-comment">&#x3C;!-- results in: 5 --></span>
+
+<span class="hljs-comment">&#x3C;!-- results in: myObject = {'a': 'a', 'b': 'b'}; --></span>
+{{length myObject}}
+<span class="hljs-comment">&#x3C;!-- results in: 2 --></span>
+</code></pre>
+<h3 id="lengthequal">{{lengthEqual}}</h3>
+<p>Alias for <a href="#equalsLength">equalsLength</a></p>
+<h3 id="map">{{map}}</h3>
+<p>Returns a new array, created by calling <code>function</code> on each element of the given <code>array</code>. For example,</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>fn</code> <strong>{Function}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['a', 'b', 'c'], and "double" is a
+fictitious function that duplicates letters --></span>
+{{map array double}}
+<span class="hljs-comment">&#x3C;!-- results in: '["aa", "bb", "cc"]' --></span>
+</code></pre>
+<h3 id="pluck">{{pluck}}</h3>
+<p>Map over the given object or array or objects and create an array of values from the given <code>prop</code>. Dot-notation may be used (as a string) to get nested properties.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>collection</code> <strong>{Array|Object}</strong></li>
+<li><code>prop</code> <strong>{Function}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">// {{pluck items "data.title"}}
+<span class="hljs-comment">&#x3C;!-- results in: '["aa", "bb", "cc"]' --></span>
+</code></pre>
+<h3 id="reverse">{{reverse}}</h3>
+<p>Reverse the elements in an array, or the characters in a string.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>value</code> <strong>{Array|String}</strong></li>
+<li><code>returns</code> <strong>{Array|String}</strong>: Returns the reversed string or array.</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- value: 'abcd' --></span>
+{{reverse value}}
+<span class="hljs-comment">&#x3C;!-- results in: 'dcba' --></span>
+<span class="hljs-comment">&#x3C;!-- value: ['a', 'b', 'c', 'd'] --></span>
+{{reverse value}}
+<span class="hljs-comment">&#x3C;!-- results in: ['d', 'c', 'b', 'a'] --></span>
+</code></pre>
+<h3 id="some">{{some}}</h3>
+<p>Block helper that returns the block if the callback returns true for some value in the given array.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>iter</code> <strong>{Function}</strong>: Iteratee</li>
+<li><strong>{Options}</strong>: Handlebars provided options object</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: [1, 'b', 3] --></span>
+{{#some array isString}}
+  Render me if the array has a string.
+{{else}}
+  Render me if it doesn't.
+{{/some}}
+<span class="hljs-comment">&#x3C;!-- results in: 'Render me if the array has a string.' --></span>
+</code></pre>
+<h3 id="sort">{{sort}}</h3>
+<p>Sort the given <code>array</code>. If an array of objects is passed, you may optionally pass a <code>key</code> to sort on as the second argument. You may alternatively pass a sorting function as the second argument.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong>: the array to sort.</li>
+<li><code>key</code> <strong>{String|Function}</strong>: The object key to sort by, or sorting function.</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['b', 'a', 'c'] --></span>
+{{sort array}}
+<span class="hljs-comment">&#x3C;!-- results in: '["a", "b", "c"]' --></span>
+</code></pre>
+<h3 id="sortby">{{sortBy}}</h3>
+<p>Sort an <code>array</code>. If an array of objects is passed, you may optionally pass a <code>key</code> to sort on as the second argument. You may alternatively pass a sorting function as the second argument.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong>: the array to sort.</li>
+<li><code>props</code> <strong>{String|Function}</strong>: One or more properties to sort by, or sorting functions to use.</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: [{a: 'zzz'}, {a: 'aaa'}] --></span>
+{{sortBy array "a"}}
+<span class="hljs-comment">&#x3C;!-- results in: '[{"a":"aaa"}, {"a":"zzz"}]' --></span>
+</code></pre>
+<h3 id="withafter">{{withAfter}}</h3>
+<p>Use the items in the array <em>after</em> the specified index as context inside a block. Opposite of <a href="#withBefore">withBefore</a>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>idx</code> <strong>{Number}</strong></li>
+<li><code>options</code> <strong>{Object}</strong></li>
+<li><code>returns</code> <strong>{Array}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['a', 'b', 'c', 'd', 'e'] --></span>
+{{#withAfter array 3}}
+  {{this}}
+{{/withAfter}}
+<span class="hljs-comment">&#x3C;!-- results in: "de" --></span>
+</code></pre>
+<h3 id="withbefore">{{withBefore}}</h3>
+<p>Use the items in the array <em>before</em> the specified index as context inside a block. Opposite of <a href="#withAfter">withAfter</a>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>idx</code> <strong>{Number}</strong></li>
+<li><code>options</code> <strong>{Object}</strong></li>
+<li><code>returns</code> <strong>{Array}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['a', 'b', 'c', 'd', 'e'] --></span>
+{{#withBefore array 3}}
+  {{this}}
+{{/withBefore}}
+<span class="hljs-comment">&#x3C;!-- results in: 'ab' --></span>
+</code></pre>
+<h3 id="withfirst">{{withFirst}}</h3>
+<p>Use the first item in a collection inside a handlebars block expression. Opposite of <a href="#withLast">withLast</a>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>idx</code> <strong>{Number}</strong></li>
+<li><code>options</code> <strong>{Object}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['a', 'b', 'c'] --></span>
+{{#withFirst array}}
+  {{this}}
+{{/withFirst}}
+<span class="hljs-comment">&#x3C;!-- results in: 'a' --></span>
+</code></pre>
+<h3 id="withgroup">{{withGroup}}</h3>
+<p>Block helper that groups array elements by given group <code>size</code>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong>: The array to iterate over</li>
+<li><code>size</code> <strong>{Number}</strong>: The desired length of each array "group"</li>
+<li><code>options</code> <strong>{Object}</strong>: Handlebars options</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['a','b','c','d','e','f','g','h'] --></span>
+{{#withGroup array 4}}
+  {{#each this}}
+	{{.}}
+  {{each}}
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">br</span>></span>
+{{/withGroup}}
+<span class="hljs-comment">&#x3C;!-- results in: --></span>
+<span class="hljs-comment">&#x3C;!-- 'a','b','c','d'&#x3C;br> --></span>
+<span class="hljs-comment">&#x3C;!-- 'e','f','g','h'&#x3C;br> --></span>
+</code></pre>
+<h3 id="withlast">{{withLast}}</h3>
+<p>Use the last item or <code>n</code> items in an array as context inside a block. Opposite of <a href="#withFirst">withFirst</a>.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>idx</code> <strong>{Number}</strong>: The starting index.</li>
+<li><code>options</code> <strong>{Object}</strong></li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['a', 'b', 'c'] --></span>
+{{#withLast array}}
+  {{this}}
+{{/withLast}}
+<span class="hljs-comment">&#x3C;!-- results in: 'c' --></span>
+</code></pre>
+<h3 id="withsort">{{withSort}}</h3>
+<p>Block helper that sorts a collection and exposes the sorted collection as context inside the block.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>prop</code> <strong>{String}</strong></li>
+<li><code>options</code> <strong>{Object}</strong>: Specify <code>reverse="true"</code> to reverse the array.</li>
+<li><code>returns</code> <strong>{String}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['b', 'a', 'c'] --></span>
+{{#withSort array}}{{this}}{{/withSort}}
+<span class="hljs-comment">&#x3C;!-- results in: 'abc' --></span>
+</code></pre>
+<h3 id="unique">{{unique}}</h3>
+<p>Block helper that return an array with all duplicate values removed. Best used along with a <a href="#each">each</a> helper.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>array</code> <strong>{Array}</strong></li>
+<li><code>options</code> <strong>{Object}</strong></li>
+<li><code>returns</code> <strong>{Array}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html"><span class="hljs-comment">&#x3C;!-- array: ['a', 'a', 'c', 'b', 'e', 'e'] --></span>
+{{#each (unique array)}}{{.}}{{/each}}
+<span class="hljs-comment">&#x3C;!-- results in: 'acbe' --></span>
+</code></pre>

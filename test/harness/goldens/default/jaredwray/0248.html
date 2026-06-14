@@ -1,0 +1,116 @@
+<h1 id="using-ai">Using AI</h1>
+<p>Docula can automatically generate missing metadata for your documentation pages using AI. When configured, it fills gaps in OpenGraph tags, descriptions, and keywords so your pages are optimized for search engines and social sharing without manual effort.</p>
+<h2 id="how-it-works">How It Works</h2>
+<p>During the build, Docula checks each document and changelog entry for missing metadata fields. If any are missing and AI is configured, it uses <a href="https://writr.org">Writr's AI features</a> to generate the missing values. Results are cached so unchanged content never triggers redundant API calls.</p>
+<p>Fields that are enriched (only when missing):</p>
+<ul>
+<li><code>description</code> - page meta description</li>
+<li><code>keywords</code> - search keywords</li>
+<li><code>ogTitle</code> - OpenGraph title</li>
+<li><code>ogDescription</code> - OpenGraph description</li>
+<li><code>title</code> - changelog entry titles (if missing)</li>
+<li><code>preview</code> - changelog entry previews (if missing)</li>
+</ul>
+<p>Both documentation pages and changelog entries receive the full set of SEO fields (<code>description</code>, <code>keywords</code>, <code>ogTitle</code>, <code>ogDescription</code>). You can also set these fields manually in changelog entry frontmatter and AI will only fill the ones that are missing.</p>
+<p>Existing frontmatter values are never overwritten.</p>
+<h2 id="configuration">Configuration</h2>
+<p>Add the <code>ai</code> option to your <code>docula.config.mjs</code> or <code>docula.config.ts</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">ai</span>: {
+    <span class="hljs-attr">provider</span>: <span class="hljs-string">'anthropic'</span>,
+    <span class="hljs-attr">apiKey</span>: process.<span class="hljs-property">env</span>.<span class="hljs-property">ANTHROPIC_API_KEY</span>,
+  },
+};
+</code></pre>
+<h3 id="options">Options</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>provider</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>AI provider: <code>"anthropic"</code>, <code>"openai"</code>, or <code>"google"</code></td>
+</tr>
+<tr>
+<td><code>apiKey</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>Your API key for the provider</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Override the default model</td>
+</tr>
+</tbody>
+</table>
+<h3 id="supported-providers">Supported Providers</h3>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Default Model</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>anthropic</code></td>
+<td><code>claude-haiku-4-5</code></td>
+</tr>
+<tr>
+<td><code>openai</code></td>
+<td><code>gpt-4o-mini</code></td>
+</tr>
+<tr>
+<td><code>google</code></td>
+<td><code>gemini-2.5-flash-lite</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="custom-model">Custom Model</h3>
+<p>To use a specific model, set the <code>model</code> property:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">ai</span>: {
+    <span class="hljs-attr">provider</span>: <span class="hljs-string">'anthropic'</span>,
+    <span class="hljs-attr">apiKey</span>: process.<span class="hljs-property">env</span>.<span class="hljs-property">ANTHROPIC_API_KEY</span>,
+    <span class="hljs-attr">model</span>: <span class="hljs-string">'claude-sonnet-4-6-20250217'</span>,
+  },
+};
+</code></pre>
+<h2 id="disabling-ai">Disabling AI</h2>
+<p>To disable AI enrichment, simply omit the <code>ai</code> property from your config (it is not set by default).</p>
+<h2 id="caching">Caching</h2>
+<p>AI results are cached in <code>.cache/ai/metadata.json</code> inside your site directory, keyed by a hash of each document's body content. This means:</p>
+<ul>
+<li>Unchanged content reuses cached metadata (no API call)</li>
+<li>Editing the body content triggers re-enrichment on the next build</li>
+<li>Deleting <code>.cache/ai/metadata.json</code> forces re-enrichment of all documents</li>
+</ul>
+<p>The <code>.cache</code> directory is automatically added to <code>.gitignore</code>.</p>
+<h2 id="example">Example</h2>
+<p>Given a document with minimal frontmatter:</p>
+<pre><code class="hljs language-md">---
+title: Getting Started
+<span class="hljs-section">order: 1
+---</span>
+
+<span class="hljs-section"># Getting Started</span>
+
+Follow these steps to install and configure Docula for your project...
+</code></pre>
+<p>After an AI-enriched build, the built page will include auto-generated meta tags:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"description"</span> <span class="hljs-attr">content</span>=<span class="hljs-string">"Learn how to install and configure Docula for your project documentation"</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"keywords"</span> <span class="hljs-attr">content</span>=<span class="hljs-string">"docula, documentation, setup, installation, getting-started"</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">meta</span> <span class="hljs-attr">property</span>=<span class="hljs-string">"og:title"</span> <span class="hljs-attr">content</span>=<span class="hljs-string">"Getting Started"</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">meta</span> <span class="hljs-attr">property</span>=<span class="hljs-string">"og:description"</span> <span class="hljs-attr">content</span>=<span class="hljs-string">"Learn how to install and configure Docula for your project documentation"</span>></span>
+</code></pre>
+<p>The source file is not modified - enrichment is applied in-memory during the build.</p>

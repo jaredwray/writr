@@ -1,0 +1,77 @@
+<h1 id="partial-template-overrides">Partial Template Overrides</h1>
+<p>Docula lets you override individual template files from a built-in template without replacing the entire template. This is useful when you want to customize specific parts of a template (such as the footer, sidebar, or header) while keeping the rest of the default template intact.</p>
+<h2 id="how-it-works">How It Works</h2>
+<p>Place your override files in a <code>templates/{templateName}/</code> directory inside your site folder. The directory structure mirrors the built-in template. Any file you include will replace its corresponding file in the built-in template during the build.</p>
+<p>For example, if you are using the <code>modern</code> template and want to customize the footer:</p>
+<pre><code>site/
+  templates/
+    modern/
+      includes/
+        footer.hbs    # overrides the built-in modern/includes/footer.hbs
+  docs/
+    index.md
+  docula.config.ts
+</code></pre>
+<h2 id="overridable-files">Overridable Files</h2>
+<p>You can override any file in the built-in template, including:</p>
+<p><strong>Top-level templates:</strong></p>
+<ul>
+<li><code>home.hbs</code> — Landing page</li>
+<li><code>docs.hbs</code> — Documentation page</li>
+<li><code>api.hbs</code> — API reference page</li>
+<li><code>changelog.hbs</code> — Changelog listing page</li>
+<li><code>changelog-entry.hbs</code> — Individual changelog entry page</li>
+</ul>
+<p><strong>Includes (partials):</strong></p>
+<ul>
+<li><code>includes/header.hbs</code> — Page header/meta tags</li>
+<li><code>includes/header-bar.hbs</code> — Sticky header navigation bar</li>
+<li><code>includes/footer.hbs</code> — Page footer</li>
+<li><code>includes/sidebar.hbs</code> — Navigation sidebar</li>
+<li><code>includes/doc.hbs</code> — Document content wrapper</li>
+<li><code>includes/hero.hbs</code> — Hero section</li>
+<li><code>includes/home.hbs</code> — Home page content</li>
+<li><code>includes/scripts.hbs</code> — Page scripts</li>
+<li><code>includes/theme-toggle.hbs</code> — Light/dark theme toggle</li>
+</ul>
+<p><strong>Assets:</strong></p>
+<ul>
+<li><code>css/</code> — Stylesheet files</li>
+<li><code>js/</code> — JavaScript files</li>
+</ul>
+<p>The available includes vary by template. Check the <code>templates/</code> directory in the <a href="https://github.com/jaredwray/docula">Docula repository</a> for the complete list of files in each template.</p>
+<h2 id="example-custom-footer">Example: Custom Footer</h2>
+<ol>
+<li>Create the override directory structure:</li>
+</ol>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">mkdir</span> -p site/templates/modern/includes
+</code></pre>
+<ol start="2">
+<li>Create your custom footer at <code>site/templates/modern/includes/footer.hbs</code>:</li>
+</ol>
+<pre><code class="hljs language-handlebars">&#x3C;footer class="site-footer">
+  &#x3C;div class="footer-content">
+    &#x3C;p>&#x26;copy; 2024 My Project. Built with Docula.&#x3C;/p>
+    &#x3C;nav>
+      &#x3C;a href="/docs">Docs&#x3C;/a>
+      &#x3C;a href="/changelog">Changelog&#x3C;/a>
+    &#x3C;/nav>
+  &#x3C;/div>
+&#x3C;/footer>
+</code></pre>
+<ol start="3">
+<li>Build your site as usual:</li>
+</ol>
+<pre><code class="hljs language-bash">npx docula build
+</code></pre>
+<p>During the build, Docula will log which files are being overridden:</p>
+<pre><code>▶ Applying template overrides...
+ℹ Template override: includes/footer.hbs
+</code></pre>
+<h2 id="notes">Notes</h2>
+<ul>
+<li><strong>Built-in templates only</strong> — Partial overrides work with the <code>template</code> option (e.g., <code>modern</code>, <code>classic</code>). If you use <code>templatePath</code> to provide a fully custom template, overrides are not applied since you already control the entire template.</li>
+<li><strong>Cache directory</strong> — Docula merges overrides into a <code>.cache/templates/{templateName}/</code> directory inside your site folder. This directory is automatically managed and only rebuilt when override files change. Use <code>--clean</code> to remove it along with the output directory.</li>
+<li><strong>Automatic .gitignore</strong> — When the <code>.cache</code> directory is first created, Docula automatically adds <code>.cache</code> to your site folder's <code>.gitignore</code> (creating the file if needed). Set <code>autoUpdateIgnores: false</code> in your config to disable this behavior.</li>
+<li><strong>Any file can be overridden</strong> — The override directory structure mirrors the built-in template exactly. Any file you place in the override directory replaces the corresponding file from the built-in template.</li>
+</ul>

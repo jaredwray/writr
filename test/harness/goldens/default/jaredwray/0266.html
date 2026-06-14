@@ -1,0 +1,478 @@
+<h1 id="keyvmongo-">@keyv/mongo <a href="https://github.com/jaredwray/keyv"></a></h1>
+<blockquote>
+<p>MongoDB storage adapter for Keyv</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://www.npmjs.com/package/@keyv/mongo"><img src="https://img.shields.io/npm/v/@keyv/mongo.svg" alt="npm"></a>
+<a href="https://npmjs.com/package/@keyv/mongo"><img src="https://img.shields.io/npm/dm/@keyv/mongo" alt="npm"></a></p>
+<p>MongoDB storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a>.</p>
+<p>Uses TTL indexes to automatically remove expired documents. However <a href="https://docs.mongodb.com/manual/core/index-ttl/#timing-of-the-delete-operation">MongoDB doesn't guarantee data will be deleted immediately upon expiration</a>, so expiry dates are revalidated in Keyv.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#install">Install</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#constructor-options">Constructor Options</a></li>
+<li><a href="#properties">Properties</a>
+<ul>
+<li><a href="#url">url</a></li>
+<li><a href="#collection">collection</a></li>
+<li><a href="#namespace">namespace</a></li>
+<li><a href="#usegridfs">useGridFS</a></li>
+<li><a href="#db">db</a></li>
+<li><a href="#readpreference">readPreference</a></li>
+</ul>
+</li>
+<li><a href="#methods">Methods</a>
+<ul>
+<li><a href="#set">set</a></li>
+<li><a href="#setmany">setMany</a></li>
+<li><a href="#get">get</a></li>
+<li><a href="#getmany">getMany</a></li>
+<li><a href="#has">has</a></li>
+<li><a href="#hasmany">hasMany</a></li>
+<li><a href="#delete">delete</a></li>
+<li><a href="#deletemany">deleteMany</a></li>
+<li><a href="#clear">clear</a></li>
+<li><a href="#iterator">iterator</a></li>
+<li><a href="#disconnect">disconnect</a></li>
+<li><a href="#clearexpired">clearExpired</a></li>
+<li><a href="#clearunusedfor">clearUnusedFor</a></li>
+</ul>
+</li>
+<li><a href="#migration-from-v3-to-v6">Migration from v3 to v6</a>
+<ul>
+<li><a href="#breaking-changes">Breaking Changes</a>
+<ul>
+<li><a href="#mongodb-driver-upgraded-to-v7">MongoDB Driver Upgraded to v7</a></li>
+<li><a href="#event-handling-eventemitter-replaced-with-hookified">Event Handling: EventEmitter Replaced with Hookified</a></li>
+<li><a href="#usegridfs-is-now-read-only"><code>useGridFS</code> is Now Read-Only</a></li>
+<li><a href="#ttlsupport-property-removed"><code>ttlSupport</code> Property Removed</a></li>
+<li><a href="#namespace-index-change">Namespace Index Change</a></li>
+<li><a href="#options-type-is-now-strongly-typed">Options Type is Now Strongly Typed</a></li>
+</ul>
+</li>
+<li><a href="#new-features">New Features</a>
+<ul>
+<li><a href="#createkeyv-helper-function"><code>createKeyv</code> Helper Function</a></li>
+<li><a href="#setmany-method"><code>setMany</code> Method</a></li>
+<li><a href="#hasmany-method"><code>hasMany</code> Method</a></li>
+<li><a href="#clearexpired-method"><code>clearExpired</code> Method</a></li>
+<li><a href="#clearunusedfor-method"><code>clearUnusedFor</code> Method</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#license">License</a></li>
+</ul>
+<h2 id="install">Install</h2>
+<pre><code class="hljs language-shell">npm install --save keyv @keyv/mongo
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvMongo</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/mongo'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://user:pass@localhost:27017/dbname'</span>));
+keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, handleConnectionError);
+</code></pre>
+<p>You can specify the collection name, by default <code>'keyv'</code> is used.</p>
+<p>e.g:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-string">'mongodb://user:pass@localhost:27017/dbname'</span>, { <span class="hljs-attr">collection</span>: <span class="hljs-string">'cache'</span> });
+</code></pre>
+<p>You can also use the <code>createKeyv</code> helper function to create a <code>Keyv</code> instance with <code>KeyvMongo</code> as the store:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/mongo'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>(<span class="hljs-string">'mongodb://user:pass@localhost:27017/dbname'</span>);
+</code></pre>
+<h2 id="constructor-options">Constructor Options</h2>
+<p>The <code>KeyvMongo</code> constructor accepts a connection URI string or an options object:</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// With URI string</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://user:pass@localhost:27017/dbname'</span>);
+
+<span class="hljs-comment">// With options object</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>({
+  <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://user:pass@localhost:27017/dbname'</span>,
+  <span class="hljs-attr">collection</span>: <span class="hljs-string">'cache'</span>,
+  <span class="hljs-attr">db</span>: <span class="hljs-string">'mydb'</span>,
+  <span class="hljs-attr">useGridFS</span>: <span class="hljs-literal">false</span>,
+});
+
+<span class="hljs-comment">// With URI string and additional options</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://user:pass@localhost:27017/dbname'</span>, { <span class="hljs-attr">collection</span>: <span class="hljs-string">'cache'</span> });
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>url</code></td>
+<td><code>string</code></td>
+<td><code>'mongodb://127.0.0.1:27017'</code></td>
+<td>MongoDB connection URI</td>
+</tr>
+<tr>
+<td><code>collection</code></td>
+<td><code>string</code></td>
+<td><code>'keyv'</code></td>
+<td>Collection name for storage</td>
+</tr>
+<tr>
+<td><code>namespace</code></td>
+<td><code>string | undefined</code></td>
+<td><code>undefined</code></td>
+<td>Namespace prefix for keys</td>
+</tr>
+<tr>
+<td><code>useGridFS</code></td>
+<td><code>boolean</code></td>
+<td><code>false</code></td>
+<td>Whether to use GridFS for storing values</td>
+</tr>
+<tr>
+<td><code>db</code></td>
+<td><code>string | undefined</code></td>
+<td><code>undefined</code></td>
+<td>Database name</td>
+</tr>
+<tr>
+<td><code>readPreference</code></td>
+<td><code>ReadPreference | undefined</code></td>
+<td><code>undefined</code></td>
+<td>MongoDB read preference for GridFS operations</td>
+</tr>
+</tbody>
+</table>
+<p>Any additional options are passed through to the MongoDB driver as <code>MongoClientOptions</code>.</p>
+<h2 id="properties">Properties</h2>
+<p>Most configuration options are exposed as properties with getters and setters on the <code>KeyvMongo</code> instance. You can read or update them after construction. Some properties like <code>useGridFS</code> are read-only and can only be set via the constructor.</p>
+<h3 id="url">url</h3>
+<p>Get or set the MongoDB connection URI.</p>
+<ul>
+<li>Type: <code>string</code></li>
+<li>Default: <code>'mongodb://127.0.0.1:27017'</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://user:pass@localhost:27017/dbname'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">url</span>); <span class="hljs-comment">// 'mongodb://user:pass@localhost:27017/dbname'</span>
+</code></pre>
+<h3 id="collection">collection</h3>
+<p>Get or set the collection name used for storage.</p>
+<ul>
+<li>Type: <code>string</code></li>
+<li>Default: <code>'keyv'</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://user:pass@localhost:27017/dbname'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">collection</span>); <span class="hljs-comment">// 'keyv'</span>
+store.<span class="hljs-property">collection</span> = <span class="hljs-string">'cache'</span>;
+</code></pre>
+<h3 id="namespace">namespace</h3>
+<p>Get or set the namespace for the adapter. Used for key prefixing and scoping operations like <code>clear()</code>.</p>
+<ul>
+<li>Type: <code>string | undefined</code></li>
+<li>Default: <code>undefined</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://user:pass@localhost:27017/dbname'</span> });
+store.<span class="hljs-property">namespace</span> = <span class="hljs-string">'my-namespace'</span>;
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">namespace</span>); <span class="hljs-comment">// 'my-namespace'</span>
+</code></pre>
+<h3 id="usegridfs">useGridFS</h3>
+<p>Get whether GridFS is used for storing values. When enabled, values are stored using MongoDB's GridFS specification, which is useful for storing large files. This property is read-only and can only be set via the constructor, because the connection shape differs between GridFS and standard modes.</p>
+<ul>
+<li>Type: <code>boolean</code></li>
+<li>Default: <code>false</code></li>
+<li>Read-only (set via constructor only)</li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://user:pass@localhost:27017/dbname'</span>, <span class="hljs-attr">useGridFS</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">useGridFS</span>); <span class="hljs-comment">// true</span>
+</code></pre>
+<h3 id="db">db</h3>
+<p>Get or set the database name for the MongoDB connection.</p>
+<ul>
+<li>Type: <code>string | undefined</code></li>
+<li>Default: <code>undefined</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://user:pass@localhost:27017'</span>, <span class="hljs-attr">db</span>: <span class="hljs-string">'mydb'</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">db</span>); <span class="hljs-comment">// 'mydb'</span>
+</code></pre>
+<h3 id="readpreference">readPreference</h3>
+<p>Get or set the MongoDB read preference for GridFS operations.</p>
+<ul>
+<li>Type: <code>ReadPreference | undefined</code></li>
+<li>Default: <code>undefined</code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">ReadPreference</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'mongodb'</span>;
+
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>({
+  <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://user:pass@localhost:27017/dbname'</span>,
+  <span class="hljs-attr">useGridFS</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">readPreference</span>: <span class="hljs-title class_">ReadPreference</span>.<span class="hljs-property">SECONDARY</span>,
+});
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">readPreference</span>); <span class="hljs-comment">// ReadPreference.SECONDARY</span>
+</code></pre>
+<h2 id="methods">Methods</h2>
+<h3 id="set">set</h3>
+<p><code>set(key, value, ttl?)</code> - Set a value in the store.</p>
+<ul>
+<li><code>key</code> <em>(string)</em> - The key to set.</li>
+<li><code>value</code> <em>(any)</em> - The value to store.</li>
+<li><code>ttl</code> <em>(number, optional)</em> - Time to live in milliseconds. If specified, the key will expire after this duration.</li>
+<li>Returns: <code>Promise&#x3C;boolean></code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store });
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-number">5000</span>); <span class="hljs-comment">// expires in 5 seconds</span>
+</code></pre>
+<h3 id="setmany">setMany</h3>
+<p><code>setMany(entries)</code> - Set multiple values in the store at once.</p>
+<ul>
+<li><code>entries</code> <em>(KeyvEntry[])</em> - Array of entries to set. Each entry has a <code>key</code>, <code>value</code>, and optional <code>ttl</code> in milliseconds. <code>Value</code> is inferred from the entries provided.</li>
+<li>Returns: <code>Promise&#x3C;boolean[]></code> - An array of booleans indicating whether each entry was set successfully.</li>
+</ul>
+<p>In standard mode, uses a single unordered MongoDB <code>bulkWrite</code> operation for efficiency with per-entry error tracking — if individual writes fail, only those entries return <code>false</code>. In GridFS mode, each entry is set individually in parallel using <code>Promise.allSettled</code>, providing per-entry success tracking.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store });
+
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>([
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key1'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value1'</span> },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key2'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value2'</span>, <span class="hljs-attr">ttl</span>: <span class="hljs-number">5000</span> },
+]); <span class="hljs-comment">// [true, true]</span>
+</code></pre>
+<h3 id="get">get</h3>
+<p><code>get(key)</code> - Get a value from the store.</p>
+<ul>
+<li><code>key</code> <em>(string)</em> - The key to retrieve.</li>
+<li>Returns: <code>Promise&#x3C;any></code> - The stored value, or <code>undefined</code> if the key does not exist.</li>
+</ul>
+<p>In GridFS mode, <code>get</code> also updates the <code>lastAccessed</code> timestamp on the file, which is used by <code>clearUnusedFor</code>.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store });
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(value); <span class="hljs-comment">// 'bar'</span>
+
+<span class="hljs-keyword">const</span> missing = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'nonexistent'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(missing); <span class="hljs-comment">// undefined</span>
+</code></pre>
+<h3 id="getmany">getMany</h3>
+<p><code>getMany(keys)</code> - Get multiple values from the store at once.</p>
+<ul>
+<li><code>keys</code> <em>(string[])</em> - Array of keys to retrieve.</li>
+<li>Returns: <code>Promise&#x3C;Array&#x3C;any>></code> - Array of values in the same order as the input keys. Missing keys return <code>undefined</code> at their position.</li>
+</ul>
+<p>In standard mode, uses a single MongoDB query with the <code>$in</code> operator for efficiency. In GridFS mode, each key is fetched individually.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store });
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+
+<span class="hljs-keyword">const</span> values = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>, <span class="hljs-string">'key3'</span>]);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(values); <span class="hljs-comment">// ['value1', 'value2', undefined]</span>
+</code></pre>
+<h3 id="has">has</h3>
+<p><code>has(key)</code> - Check if a key exists in the store.</p>
+<ul>
+<li><code>key</code> <em>(string)</em> - The key to check.</li>
+<li>Returns: <code>Promise&#x3C;boolean></code> - <code>true</code> if the key exists, <code>false</code> otherwise.</li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store });
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">has</span>(<span class="hljs-string">'foo'</span>)); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">has</span>(<span class="hljs-string">'nonexistent'</span>)); <span class="hljs-comment">// false</span>
+</code></pre>
+<h3 id="hasmany">hasMany</h3>
+<p><code>hasMany(keys)</code> - Check if multiple keys exist in the store at once.</p>
+<ul>
+<li><code>keys</code> <em>(string[])</em> - Array of keys to check.</li>
+<li>Returns: <code>Promise&#x3C;boolean[]></code> - Array of booleans in the same order as the input keys.</li>
+</ul>
+<p>Uses a single MongoDB query with the <code>$in</code> operator for efficiency in both standard and GridFS modes.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store });
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">has</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>, <span class="hljs-string">'key3'</span>]);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(results); <span class="hljs-comment">// [true, true, false]</span>
+</code></pre>
+<h3 id="delete">delete</h3>
+<p><code>delete(key)</code> - Delete a key from the store.</p>
+<ul>
+<li><code>key</code> <em>(string)</em> - The key to delete.</li>
+<li>Returns: <code>Promise&#x3C;boolean></code> - <code>true</code> if the key was deleted, <code>false</code> if the key was not found.</li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store });
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'foo'</span>)); <span class="hljs-comment">// true</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">delete</span>(<span class="hljs-string">'nonexistent'</span>)); <span class="hljs-comment">// false</span>
+</code></pre>
+<h3 id="deletemany">deleteMany</h3>
+<p><code>deleteMany(keys)</code> - Delete multiple keys from the store at once.</p>
+<ul>
+<li><code>keys</code> <em>(string[])</em> - Array of keys to delete.</li>
+<li>Returns: <code>Promise&#x3C;boolean[]></code> - An array of booleans indicating whether each key was deleted.</li>
+</ul>
+<p>In standard mode, uses a single MongoDB query with the <code>$in</code> operator. In GridFS mode, all matching files are found and deleted in parallel.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store });
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+
+<span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">delete</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>, <span class="hljs-string">'key3'</span>]); <span class="hljs-comment">// [true, true, false]</span>
+</code></pre>
+<h3 id="clear">clear</h3>
+<p><code>clear()</code> - Delete all keys in the current namespace.</p>
+<ul>
+<li>Returns: <code>Promise&#x3C;void></code></li>
+</ul>
+<p>Only keys matching the current namespace are removed. If no namespace is set, all keys with an empty namespace are cleared.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store, <span class="hljs-attr">namespace</span>: <span class="hljs-string">'my-namespace'</span> });
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">clear</span>(); <span class="hljs-comment">// removes all keys in 'my-namespace'</span>
+</code></pre>
+<h3 id="iterator">iterator</h3>
+<p><code>iterator()</code> - Iterate over all key-value pairs in the store. The iterator uses the namespace configured on the instance.</p>
+<ul>
+<li>Returns: <code>AsyncGenerator&#x3C;[string, any]></code> - An async generator yielding <code>[key, value]</code> pairs.</li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store, <span class="hljs-attr">namespace</span>: <span class="hljs-string">'ns'</span> });
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>);
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>);
+
+<span class="hljs-keyword">for</span> <span class="hljs-title function_">await</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> keyv.<span class="hljs-title function_">iterator</span>()) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(key, value); <span class="hljs-comment">// 'key1' 'value1', 'key2' 'value2'</span>
+}
+</code></pre>
+<h3 id="disconnect">disconnect</h3>
+<p><code>disconnect()</code> - Close the MongoDB connection.</p>
+<ul>
+<li>Returns: <code>Promise&#x3C;void></code></li>
+</ul>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store });
+
+<span class="hljs-comment">// ... use the store ...</span>
+
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">disconnect</span>();
+</code></pre>
+<h3 id="clearexpired">clearExpired</h3>
+<p><code>clearExpired()</code> - Remove all expired files from GridFS. This method only works in GridFS mode and is a no-op that returns <code>false</code> in standard mode.</p>
+<ul>
+<li>Returns: <code>Promise&#x3C;boolean></code> - <code>true</code> if running in GridFS mode, <code>false</code> otherwise.</li>
+</ul>
+<p>This is useful for manual cleanup of expired GridFS files, since GridFS does not support MongoDB TTL indexes.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://localhost:27017'</span>, <span class="hljs-attr">useGridFS</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'temp'</span>, <span class="hljs-string">'data'</span>, <span class="hljs-number">1000</span>); <span class="hljs-comment">// expires in 1 second</span>
+
+<span class="hljs-comment">// After expiration...</span>
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">clearExpired</span>(); <span class="hljs-comment">// removes expired GridFS files</span>
+</code></pre>
+<h3 id="clearunusedfor">clearUnusedFor</h3>
+<p><code>clearUnusedFor(seconds)</code> - Remove all GridFS files that have not been accessed for the specified duration. This method only works in GridFS mode and is a no-op that returns <code>false</code> in standard mode.</p>
+<ul>
+<li><code>seconds</code> <em>(number)</em> - The number of seconds of inactivity after which files should be removed.</li>
+<li>Returns: <code>Promise&#x3C;boolean></code> - <code>true</code> if running in GridFS mode, <code>false</code> otherwise.</li>
+</ul>
+<p>The <code>lastAccessed</code> timestamp is updated each time a file is read via <code>get</code>.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://localhost:27017'</span>, <span class="hljs-attr">useGridFS</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+
+<span class="hljs-comment">// Remove files not accessed in the last hour</span>
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">clearUnusedFor</span>(<span class="hljs-number">3600</span>);
+</code></pre>
+<h2 id="migration-from-v3-to-v6">Migration from v3 to v6</h2>
+<p><code>@keyv/mongo</code> is jumping from v3 to v6 because the entire Keyv monorepo is now unified under a single version number. This approach, similar to what other popular open source projects do, keeps all <code>@keyv/*</code> packages in sync and makes it easier to reason about compatibility across the ecosystem.</p>
+<h3 id="breaking-changes">Breaking Changes</h3>
+<h4 id="mongodb-driver-upgraded-to-v7">MongoDB Driver Upgraded to v7</h4>
+<p>The <code>mongodb</code> dependency has been upgraded from <code>^6.x</code> to <code>^7.0.0</code>. Review the <a href="https://github.com/mongodb/node-mongodb-native/releases/tag/v7.0.0">MongoDB Node.js Driver v7 release notes</a> for any breaking changes that may affect your application.</p>
+<h4 id="event-handling-eventemitter-replaced-with-hookified">Event Handling: EventEmitter Replaced with Hookified</h4>
+<p><code>KeyvMongo</code> no longer extends Node.js <code>EventEmitter</code>. It now extends <code>Hookified</code>, which provides hook-based event management.</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// v3 - EventEmitter</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+store.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-params">err</span> =></span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(err));
+
+<span class="hljs-comment">// v6 - Hookified (same usage for basic events)</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+store.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-params">err</span> =></span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(err));
+</code></pre>
+<p>For most use cases the <code>.on()</code> API is the same, but if you relied on EventEmitter-specific methods like <code>.listenerCount()</code>, <code>.rawListeners()</code>, or <code>.prependListener()</code>, check the <a href="https://github.com/jaredwray/hookified">Hookified documentation</a> for equivalents.</p>
+<h4 id="usegridfs-is-now-read-only"><code>useGridFS</code> is Now Read-Only</h4>
+<p>The <code>useGridFS</code> property can no longer be changed after construction. The connection shape differs between GridFS and standard modes, so this must be set at construction time.</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// v3 - Could change after instantiation</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+store.<span class="hljs-property">useGridFS</span> = <span class="hljs-literal">true</span>; <span class="hljs-comment">// worked in v3</span>
+
+<span class="hljs-comment">// v6 - Must set at construction</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://localhost:27017'</span>, <span class="hljs-attr">useGridFS</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(store.<span class="hljs-property">useGridFS</span>); <span class="hljs-comment">// true (read-only)</span>
+</code></pre>
+<h4 id="ttlsupport-property-removed"><code>ttlSupport</code> Property Removed</h4>
+<p>The <code>ttlSupport</code> property has been removed. If your code checks for TTL support on the adapter, remove those checks.</p>
+<h4 id="namespace-index-change">Namespace Index Change</h4>
+<p>The unique index on the underlying MongoDB collection has changed from <code>{ key: 1 }</code> to <code>{ key: 1, namespace: 1 }</code>. This allows the same key name to exist in different namespaces without conflicts. The old index is automatically dropped and replaced on first connection, so no manual migration is needed.</p>
+<h4 id="options-type-is-now-strongly-typed">Options Type is Now Strongly Typed</h4>
+<p>The constructor options no longer accept arbitrary keys via <code>[key: string]: unknown</code>. Options are now strictly typed with explicit properties. Any additional MongoDB driver options should be valid <code>MongoClientOptions</code> properties.</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// v3 - Accepted any properties</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://...'</span>, <span class="hljs-attr">customProp</span>: <span class="hljs-literal">true</span> }); <span class="hljs-comment">// no type error</span>
+
+<span class="hljs-comment">// v6 - Strictly typed</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://...'</span>, <span class="hljs-attr">collection</span>: <span class="hljs-string">'cache'</span> }); <span class="hljs-comment">// only known props + MongoClientOptions</span>
+</code></pre>
+<h3 id="new-features">New Features</h3>
+<h4 id="createkeyv-helper-function"><code>createKeyv</code> Helper Function</h4>
+<p>A new <code>createKeyv</code> helper simplifies creating a Keyv instance with the MongoDB adapter.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createKeyv } <span class="hljs-keyword">from</span> <span class="hljs-string">'@keyv/mongo'</span>;
+
+<span class="hljs-comment">// Before</span>
+<span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>(<span class="hljs-string">'mongodb://localhost:27017'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ store, <span class="hljs-attr">namespace</span>: <span class="hljs-string">'my-ns'</span> });
+
+<span class="hljs-comment">// After</span>
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-title function_">createKeyv</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://localhost:27017'</span>, <span class="hljs-attr">namespace</span>: <span class="hljs-string">'my-ns'</span> });
+</code></pre>
+<h4 id="setmany-method"><code>setMany</code> Method</h4>
+<p>Batch set multiple key-value pairs in a single operation using MongoDB <code>bulkWrite</code>.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> store.<span class="hljs-title function_">setMany</span>([
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key1'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value1'</span> },
+  { <span class="hljs-attr">key</span>: <span class="hljs-string">'key2'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'value2'</span>, <span class="hljs-attr">ttl</span>: <span class="hljs-number">5000</span> },
+]);
+</code></pre>
+<h4 id="hasmany-method"><code>hasMany</code> Method</h4>
+<p>Check if multiple keys exist in a single query using the <code>$in</code> operator.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> results = <span class="hljs-keyword">await</span> store.<span class="hljs-title function_">hasMany</span>([<span class="hljs-string">'key1'</span>, <span class="hljs-string">'key2'</span>, <span class="hljs-string">'key3'</span>]);
+<span class="hljs-comment">// [true, true, false]</span>
+</code></pre>
+<h4 id="clearexpired-method"><code>clearExpired</code> Method</h4>
+<p>Manually remove expired files from GridFS storage.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://localhost:27017'</span>, <span class="hljs-attr">useGridFS</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">clearExpired</span>();
+</code></pre>
+<h4 id="clearunusedfor-method"><code>clearUnusedFor</code> Method</h4>
+<p>Remove GridFS files that have not been accessed for a specified duration.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> store = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvMongo</span>({ <span class="hljs-attr">url</span>: <span class="hljs-string">'mongodb://localhost:27017'</span>, <span class="hljs-attr">useGridFS</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-keyword">await</span> store.<span class="hljs-title function_">clearUnusedFor</span>(<span class="hljs-number">3600</span>); <span class="hljs-comment">// remove files unused for 1 hour</span>
+</code></pre>
+<h2 id="license">License</h2>
+<p><a href="LISCENCE">MIT © Jared Wray</a></p>

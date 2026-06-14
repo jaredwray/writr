@@ -1,0 +1,72 @@
+<h2 id="recent-specification-changes-">Recent Specification Changes 🗒</h2>
+<p>There's no shortage of frameworks available when it comes to the development of enterprise software.
+Whether it's the "frontend" or "backend", developers are quick to avail things like React, Spring, Gin and Flask to avoid boilerplate code and structure their applications in a familiar way.
+Such frameworks also offer convenient abstractions that ease the employment of common patterns, think <em>dependency injection</em> as in Angular or Spring, or <em>MVC</em> as in Django or ASP.NET MVC.
+Many also provide extensibility features so that new functionality can be implemented seamlessly and idiomatically.</p>
+<p>OpenFeature, we've been working on <a href="https://github.com/open-feature/spec/pull/241">enhancing our specification</a> and base SDKs to support the creation of such <em>framework-level</em> SDKs in order to bring vendor neutral feature flags to them.
+Specifically with respect to front end frameworks such as React, we've found that it was critical to refine the semantics of our events API and context-reconciliation concepts.
+This post discusses some of our improvements.</p>
+<h3 id="context-reconciliation">Context Reconciliation</h3>
+<p>As discussed in <a href="https://openfeature.dev/blog/catering-to-the-client-side">previous blog posts</a>, we've seen that client-side feature flag APIs share some commonalities we refer to collectively as the <a href="https://openfeature.dev/specification/glossary/#static-context-paradigm">static-context paradigm</a>; in short, the context used as the basis for flag evaluation is less frequently changed and generally corresponds to a user, or application state that a user occasionally modifies.
+When a user logs in, or some state is modified, <a href="https://openfeature.dev/specification/glossary#provider">providers</a> frequently need to fetch a new ruleset or re-evaluate their cache of flags based on the new contextual data.
+We refer to this as <em>reconciliation</em>.
+During reconciliation, some asynchronous work is often required (frequently this takes form of some kind of network request).
+During this time, depending on the provider and the needs of the application, it might be necessary to display loading indicators, or prevent users from taking action.
+Some frameworks have patterns or in-built functionality to support this, such as React's <a href="https://react.dev/reference/react/Suspense">suspense</a>.
+In order to leverage such features, we've added a new <code>RECONCILING</code> provider state and <code>PROVIDER_RECONCILING</code> provider event.
+These indicate the provider is in the process of reconciling it's internal state due to a context change.
+Previously, something like this was achievable with the use of the STALE state and events, but we believed this was overloading the meaning of this state and didn't provide adequately robust semantics.</p>
+<pre><code class="hljs language-mermaid">---
+title: Provider lifecycle, including reconciliation
+---
+stateDiagram-v2
+    direction LR
+    [*] --> NOT_READY
+    NOT_READY --> READY:initialize()
+    NOT_READY --> ERROR:initialize()
+    NOT_READY --> FATAL:initialize()
+    FATAL --> [*]
+    READY --> ERROR:*
+    ERROR --> READY:*
+    READY --> STALE:*
+    STALE --> READY:*
+    STALE --> ERROR:*
+    READY --> NOT_READY:shutdown()
+    STALE --> NOT_READY:shutdown()
+    ERROR --> NOT_READY:shutdown()
+    READY --> RECONCILING:::client:setContext()
+    RECONCILING:::client --> READY
+    RECONCILING:::client --> ERROR
+
+    classDef client fill:#888
+</code></pre>
+<p>* transitions occurring when associated events are spontaneously emitted from the provider</p>
+<h3 id="wider-implications-stateless-providers">Wider Implications: "Stateless" Providers</h3>
+<p>Up to now, providers maintained a publicly-exposed representation of their own state: when they became ready, they changed their state to <code>READY</code>; if they lost connection to their source of truth, they might change their state to <code>STALE</code> or <code>ERROR</code> and emit <code>PROVIDER_STALE</code> or <code>PROVIDER_ERROR</code> events.
+This state management was burdensome for provider authors, and the addition of new states (such as <code>RECONCILING</code> mentioned above) only worsened that issue.
+Additionally, it allowed for widely divergent behavior between provider implementations, making the creation of framework-specific SDKs difficult and their behavior less predictable between providers, without meaningful benefit.
+With this update, <em>the provider interface has become stateless</em>.
+Now, the SDK itself maintains the provider's state based on the completion of lifecycle functions (<code>initialization</code>, <code>shutdown</code>, <code>on context change</code>) and events emitted by the provider.
+This simplifies things for provider authors, and results in a uniform experience for application authors, especially when leveraging framework-specific SDKs.</p>
+<h3 id="bad-states">Bad States</h3>
+<p>In some circumstances, providers may not be able to evaluate flags.
+This could be because a provider hasn't yet been fully initialized, or has experienced some internal error.
+Previously, provider-authors had to ensure their publicly exposed state was updated if such errors occurred, as well as emit an error event.
+Furthermore, provider authors had to check with this state to accurately return an informative <code>error code</code> (ie: <code>PROVIDER_NOT_READY</code>) if evaluation was attempted in such states.
+With these recent changes, we've added a new <code>FATAL</code> error code, indicating that the provider has entered a irrecoverable error state (typically due to a bad credential, hostname or other value that's likely to represent a misconfiguration).
+Along with this helpful new state, implementations will now "short-circuit" evaluations if the provider is in <code>NOT_READY</code> or <code>FATAL</code> states.</p>
+<p>Overall, we believe these changes will improve consistency for application authors across providers, and simultaneously reduce the burden on provider authors as well.</p>
+<h2 id="contributing-">Contributing 🤝</h2>
+<p>If you're interested in contributing, there's no shortage of opportunities!
+You can create a client-side provider for a vendor or tool you're familiar with and host in our <a href="https://github.com/orgs/open-feature/repositories?q=contrib">contrib repos</a>.
+If the server-side is more your thing, you can help to update any of our existing server-side providers by simplifying them consistent with this latest spec change.
+As always, we're looking for help with our newest SDKs, some of which have yet to reach 1.0, including <a href="https://github.com/open-feature/kotlin-sdk">Kotlin</a>, <a href="https://github.com/open-feature/swift-sdk">Swift</a>, <a href="https://github.com/open-feature/python-sdk">Python</a>, <a href="https://github.com/open-feature/ruby-sdk">Ruby</a>, and <a href="https://github.com/open-feature/rust-sdk">Rust</a>.
+We're also interested in more framework-specific SDKs as discussed in this earlier post.
+If there's a framework or library you think could benefit from an OpenFeature SDK, these are a great idea for a first contribution.</p>
+<h2 id="shout-outs-">Shout Outs 🥇</h2>
+<p>Thanks to everyone who worked on this specification change, and a special shout-out to the folks at Spotify who've been contributing to the spec, as well as to our client implementations including our Kotlin and Swift SDKs.</p>
+<p>&#x3C;img src={require('@site/static/img/blog/2024-02-28-reconciling-with-state/shoutout.png').default} /></p>
+<h2 id="stay-tuned-">Stay Tuned... 📻</h2>
+<p>We're excited to be working on an open, vendor-neutral protocol for the evaluation of feature flags, which adheres to OpenFeature semantics.
+This protocol could be used as the basis for a single provider which is compatible with any implementing backend, and might be of particular usefulness for client-side feature flagging.
+If you'd like to know more, check out our <a href="https://cloud-native.slack.com/archives/C066A48LK35">dedicated slack channel</a> for this topic.</p>

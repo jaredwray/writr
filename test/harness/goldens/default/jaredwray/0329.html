@@ -1,0 +1,118 @@
+<h1 id="api-reference">API Reference</h1>
+<p>Docula can generate an API Reference page from an OpenAPI (Swagger) specification. The spec is parsed at build time and rendered as a native, interactive API reference (inspired by <a href="https://github.com/scalar/scalar">Scalar</a>) with grouped endpoints, method badges, schema tables, code examples, and search — all with no external dependencies. The page is available at <code>/api</code>.</p>
+<h2 id="auto-detection">Auto-Detection</h2>
+<p>Docula automatically detects OpenAPI specs in your site directory — no configuration needed.</p>
+<p><strong>Single spec</strong> — place a <code>swagger.json</code> at <code>api/swagger.json</code>:</p>
+<pre><code>site
+├───api
+│   └───swagger.json
+├───docs
+├───logo.svg
+├───favicon.ico
+└───docula.config.mjs
+</code></pre>
+<p><strong>Multiple specs</strong> — place each spec in its own subdirectory under <code>api/</code>:</p>
+<pre><code>site
+├───api
+│   ├───petstore
+│   │   └───swagger.json
+│   └───users
+│       └───swagger.json
+├───docs
+└───docula.config.mjs
+</code></pre>
+<p>When multiple subdirectories are detected, each spec becomes a section on the API Reference page. The directory name is used as the display name (e.g., <code>petstore</code> becomes "Petstore").</p>
+<h2 id="explicit-configuration">Explicit Configuration</h2>
+<p>Set the <code>openApiUrl</code> option to point to an OpenAPI spec. For a single spec, pass a string (local path or remote URL):</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> options = {
+  <span class="hljs-attr">openApiUrl</span>: <span class="hljs-string">'/api/swagger.json'</span>,
+  <span class="hljs-comment">// or a remote URL:</span>
+  <span class="hljs-comment">// openApiUrl: 'https://petstore.swagger.io/v2/swagger.json',</span>
+};
+</code></pre>
+<h2 id="multiple-api-specs">Multiple API Specs</h2>
+<p>For multiple specs, pass an array to <code>openApiUrl</code>. All specs render as sections on a single <code>/api/</code> page, each with its own title, endpoints, and sidebar grouping:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">DoculaOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'docula'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">Partial</span>&#x3C;<span class="hljs-title class_">DoculaOptions</span>> = {
+  <span class="hljs-attr">openApiUrl</span>: [
+    { <span class="hljs-attr">name</span>: <span class="hljs-string">'Petstore API'</span>, <span class="hljs-attr">url</span>: <span class="hljs-string">'petstore/swagger.json'</span>, <span class="hljs-attr">order</span>: <span class="hljs-number">1</span> },
+    { <span class="hljs-attr">name</span>: <span class="hljs-string">'Users API'</span>, <span class="hljs-attr">url</span>: <span class="hljs-string">'users/swagger.json'</span>, <span class="hljs-attr">order</span>: <span class="hljs-number">2</span> },
+  ],
+};
+</code></pre>
+<p>Each entry has the following fields:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Display name shown as the section heading</td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td><code>string</code></td>
+<td>Path to the spec file relative to the api directory, or a remote URL</td>
+</tr>
+<tr>
+<td><code>order</code></td>
+<td><code>number?</code></td>
+<td>Sort order — lower numbers appear first. Specs without <code>order</code> appear last.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="priority">Priority</h2>
+<p>When multiple configuration methods are used, Docula applies them in this order (first match wins):</p>
+<ol>
+<li><code>openApiUrl</code> (array) — explicit multi-spec configuration</li>
+<li><code>openApiUrl</code> (string) — explicit single-spec configuration</li>
+<li>Auto-detection — <code>api/swagger.json</code> or <code>api/*/swagger.json</code></li>
+</ol>
+<h2 id="spec-requirements">Spec Requirements</h2>
+<p>The file must be a valid OpenAPI 3.x or Swagger 2.0 JSON specification. A minimal example:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"openapi"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"3.0.0"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"info"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"title"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"My API"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"version"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"1.0.0"</span>
+  <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"paths"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span><span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h2 id="authentication">Authentication</h2>
+<p>Docula automatically parses <code>securitySchemes</code> from the OpenAPI spec's <code>components</code> section and displays them in an authorization panel on the API Reference page. Supported scheme types:</p>
+<ul>
+<li><strong>API Key</strong> — sent as a header, query parameter, or cookie</li>
+<li><strong>HTTP Bearer</strong> — sent as an <code>Authorization: Bearer &#x3C;token></code> header</li>
+<li><strong>OAuth2</strong> — displays flow details (authorization code, client credentials, implicit, password)</li>
+</ul>
+<p>When you use the "Try It" panel to test an endpoint, Docula injects the credentials automatically based on the selected scheme — as a header, query parameter, or cookie.</p>
+<h3 id="example">Example</h3>
+<p>Add a <code>securitySchemes</code> section to your OpenAPI spec:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"components"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"securitySchemes"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"ApiKeyAuth"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+        <span class="hljs-attr">"type"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"apiKey"</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">"in"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"header"</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">"name"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"x-api-key"</span>
+      <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"BearerAuth"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+        <span class="hljs-attr">"type"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"http"</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">"scheme"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"bearer"</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">"bearerFormat"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"JWT"</span>
+      <span class="hljs-punctuation">}</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>The authorization dropdown will be populated with these schemes. If no <code>securitySchemes</code> are defined, the authorization panel is hidden.</p>
+<h3 id="cookie-based-authentication">Cookie-Based Authentication</h3>
+<p>If your spec defines an API Key scheme with <code>"in": "cookie"</code> and you have <a href="/docs/cookie-auth"><code>cookieAuth</code></a> configured, the API Reference page shows whether you are currently logged in. Requests made via "Try It" automatically include the cookie — no manual token entry is needed.</p>

@@ -1,0 +1,92 @@
+<blockquote>
+<p>Simple key-value storage with support for multiple backends</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://github.com/jaredwray/keyv/actions/workflows/bun-test.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/bun-test.yaml/badge.svg" alt="bun"></a>
+<a href="https://github.com/jaredwray/keyv/actions/workflows/browser-compat.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/browser-compat.yaml/badge.svg" alt="browser"></a>
+<a href="https://www.jsdelivr.com/package/npm/keyv"><img src="https://data.jsdelivr.com/v1/package/npm/keyv/badge" alt=""></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://www.npmjs.com/package/keyv"><img src="https://img.shields.io/npm/dm/keyv.svg" alt="npm"></a>
+<a href="https://www.npmjs.com/package/keyv"><img src="https://img.shields.io/npm/v/keyv.svg" alt="npm"></a></p>
+<h1 id="getting-started">Getting Started</h1>
+<p>Keyv provides a consistent interface for key-value storage across multiple backends via storage adapters. It supports TTL-based expiry, making it suitable as a cache or a persistent key-value store.</p>
+<p>Install Keyv:</p>
+<pre><code>npm install keyv
+</code></pre>
+<p>By default everything is stored in memory. You can optionally install a storage adapter for persistent backends:</p>
+<pre><code>npm install @keyv/redis
+</code></pre>
+<p>Use it:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">Keyv</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>();
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">set</span>(<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>);
+<span class="hljs-keyword">await</span> keyv.<span class="hljs-title function_">get</span>(<span class="hljs-string">'foo'</span>); <span class="hljs-comment">// 'bar'</span>
+</code></pre>
+<p>For the full API documentation, see the <a href="https://github.com/jaredwray/keyv/blob/main/core/keyv/README.md">Keyv README</a>.</p>
+<h1 id="project-structure">Project Structure</h1>
+<p>This monorepo is organized into categorized directories:</p>
+<pre><code>core/             Core packages
+  keyv/             Main Keyv library
+  test-suite/       Shared test suite for API compliance
+  bigmap/           Scalable in-memory Map
+serialization/    Serialization packages
+  superjson/        SuperJSON serializer (@keyv/serialize-superjson)
+  msgpackr/         MessagePack serializer (@keyv/serialize-msgpackr)
+compression/      Compression adapters
+  compress-brotli/
+  compress-gzip/
+  compress-lz4/
+storage/          Storage adapters
+  redis/  postgres/  mysql/  mongo/  sqlite/
+  memcache/  etcd/  valkey/  dynamo/
+website/          Documentation website (keyv.org)
+</code></pre>
+<h1 id="packages">Packages</h1>
+<ul>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/core/keyv">keyv</a> - Simple key-value storage with support for multiple backends</li>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/core/test-suite">test-suite</a> - Test suite for Keyv API compliance</li>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/core/bigmap">bigmap</a> - Scalable in-memory Map</li>
+</ul>
+<h2 id="storage-adapters">Storage Adapters</h2>
+<ul>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/storage/dynamo">dynamo</a> - DynamoDB storage adapter</li>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/storage/etcd">etcd</a> - Etcd storage adapter</li>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/storage/memcache">memcache</a> - Memcache storage adapter</li>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/storage/mongo">mongo</a> - MongoDB storage adapter</li>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/storage/mysql">mysql</a> - MySQL/MariaDB storage adapter</li>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/storage/postgres">postgres</a> - PostgreSQL storage adapter</li>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/storage/redis">redis</a> - Redis storage adapter</li>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/storage/sqlite">sqlite</a> - SQLite storage adapter</li>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/storage/valkey">valkey</a> - Valkey (Open Source Redis) storage adapter</li>
+</ul>
+<h2 id="compression-adapters">Compression Adapters</h2>
+<ul>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/compression/compress-brotli">compress-brotli</a> - Brotli compression adapter</li>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/compression/compress-gzip">compress-gzip</a> - Gzip compression adapter</li>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/compression/compress-lz4">compress-lz4</a> - LZ4 compression adapter</li>
+</ul>
+<h2 id="serialization">Serialization</h2>
+<p>The default serializer (<code>KeyvJsonSerializer</code>) is built into the core <code>keyv</code> package. Alternative serializers are available as separate packages:</p>
+<ul>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/serialization/superjson">serialize-superjson</a> - SuperJSON serializer with Date, Map, Set, BigInt support (@keyv/serialize-superjson)</li>
+<li><a href="https://github.com/jaredwray/keyv/tree/main/serialization/msgpackr">serialize-msgpackr</a> - High-performance MessagePack serializer (@keyv/serialize-msgpackr)</li>
+</ul>
+<h2 id="third-party-storage-adapters">Third-party Storage Adapters</h2>
+<p>We love the community and the third-party storage adapters they have built. They enable Keyv to be used with even more backends and use cases.</p>
+<p>View the complete list of third-party storage adapters and learn how to build your own at <a href="https://keyv.org/docs/third-party-storage-adapters/">https://keyv.org/docs/third-party-storage-adapters/</a></p>
+<h1 id="contributing">Contributing</h1>
+<p>We welcome contributions! Here are some ways to get involved:</p>
+<ul>
+<li><strong>Pull Requests</strong> - Fork the repo, make your changes, run <code>pnpm test</code>, and open a PR. See <a href="CONTRIBUTING.md">CONTRIBUTING.md</a> for detailed instructions.</li>
+<li><strong>Issues</strong> - Report bugs or request features by <a href="https://github.com/jaredwray/keyv/issues">opening an issue</a>. For bugs, include replication steps and error messages.</li>
+<li><strong>Questions</strong> - Create an issue with the label "question" and include relevant context.</li>
+<li><strong>Storage Adapter Requests</strong> - Create an issue with the label "storage adapter." Requests are given 30-60 days for community interest before being triaged.</li>
+<li><strong>Security</strong> - See our <a href="https://github.com/jaredwray/keyv/blob/main/SECURITY.md">security policy</a> for reporting vulnerabilities.</li>
+<li><strong>Code of Conduct</strong> - Please review our <a href="CODE_OF_CONDUCT.md">Code of Conduct</a>.</li>
+</ul>
+<h1 id="keyv-v5-to-v6">Keyv v5 to v6</h1>
+<p>We are actively working on Keyv v6, which includes several major changes such as improved TypeScript support, enhanced hooks system, and streamlined storage adapter interfaces. You can follow along with the development and see the full migration guide at <a href="https://keyv.org/docs/keyv-v5-to-v6">https://keyv.org/docs/keyv-v5-to-v6</a></p>
+<p>No major functionality will be added to Keyv v5. Only maintenance and security fixes will be applied going forward.</p>
+<h1 id="license">License</h1>
+<p><a href="./LICENSE">MIT © Jared Wray</a></p>

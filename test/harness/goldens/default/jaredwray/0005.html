@@ -1,25 +1,360 @@
-<h1 id="keyvmongo">@keyv/mongo</h1>
-<blockquote>
-<p>MongoDB storage adapter for Keyv</p>
-</blockquote>
-<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
-<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
-<a href="https://www.npmjs.com/package/@keyv/mongo"><img src="https://img.shields.io/npm/v/@keyv/mongo.svg" alt="npm"></a>
-<a href="https://npmjs.com/package/@keyv/mongo"><img src="https://img.shields.io/npm/dm/@keyv/mongo" alt="npm"></a></p>
-<p>MongoDB storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a>.</p>
-<p>Uses TTL indexes to automatically remove expired documents. However <a href="https://docs.mongodb.com/manual/core/index-ttl/#timing-of-the-delete-operation">MongoDB doesn't guarantee data will be deleted immediately upon expiration</a>, so expiry dates are revalidated in Keyv.</p>
-<h2 id="install">Install</h2>
-<pre><code class="hljs language-shell">npm install --save keyv @keyv/mongo
+<h2 id="overview">Overview</h2>
+<p>The OpenFeature Angular SDK adds Angular-specific functionality to
+the <a href="/docs/reference/sdks/client/web">OpenFeature Web SDK</a>.</p>
+<p>In addition to the features provided by the <a href="/docs/reference/sdks/client/web">web sdk</a>, capabilities include:</p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#quick-start">Quick start</a>
+<ul>
+<li><a href="#requirements">Requirements</a></li>
+<li><a href="#install">Install</a>
+<ul>
+<li><a href="#npm">npm</a></li>
+<li><a href="#yarn">yarn</a></li>
+<li><a href="#required-peer-dependencies">Required peer dependencies</a></li>
+</ul>
+</li>
+<li><a href="#usage">Usage</a>
+<ul>
+<li><a href="#module">Module</a>
+<ul>
+<li><a href="#minimal-example">Minimal Example</a></li>
+</ul>
+</li>
+<li><a href="#how-to-use">How to use</a>
+<ul>
+<li><a href="#structural-directives">Structural Directives</a>
+<ul>
+<li><a href="#boolean-feature-flag">Boolean Feature Flag</a></li>
+<li><a href="#number-feature-flag">Number Feature Flag</a></li>
+<li><a href="#string-feature-flag">String Feature Flag</a></li>
+<li><a href="#object-feature-flag">Object Feature Flag</a></li>
+<li><a href="#opting-out-of-automatic-re-rendering">Opting-out of automatic re-rendering</a></li>
+<li><a href="#consuming-the-evaluation-details">Consuming the evaluation details</a></li>
+</ul>
+</li>
+<li><a href="#featureflagservice">FeatureFlagService</a>
+<ul>
+<li><a href="#using-with-observables">Using with Observables</a></li>
+<li><a href="#using-with-angular-signals">Using with Angular Signals</a></li>
+<li><a href="#service-options">Service Options</a></li>
+</ul>
+</li>
+<li><a href="#setting-evaluation-context">Setting evaluation context</a>
+<ul>
+<li><a href="#using-a-static-object">Using a static object</a></li>
+<li><a href="#using-a-factory-function">Using a factory function</a></li>
+</ul>
+</li>
+<li><a href="#observability-considerations">Observability considerations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#faq-and-troubleshooting">FAQ and troubleshooting</a></li>
+<li><a href="#resources">Resources</a></li>
+</ul>
+<h2 id="quick-start">Quick start</h2>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li>ES2015-compatible web browser (Chrome, Edge, Firefox, etc)</li>
+<li>Angular version 16+</li>
+</ul>
+<h3 id="install">Install</h3>
+<h4 id="npm">npm</h4>
+<pre><code class="hljs language-sh">npm install --save @openfeature/angular-sdk
 </code></pre>
-<h2 id="usage">Usage</h2>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'keyv'</span>);
+<h4 id="yarn">yarn</h4>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># yarn requires manual installation of the peer dependencies (see below)</span>
+yarn add @openfeature/angular-sdk @openfeature/web-sdk @openfeature/core
+</code></pre>
+<h4 id="required-peer-dependencies">Required peer dependencies</h4>
+<p>The following list contains the peer dependencies of <code>@openfeature/angular-sdk</code>.
+See the <a href="https://github.com/open-feature/js-sdk/blob/main/packages/angular/projects/angular-sdk/package.json">package.json</a> for the required versions.</p>
+<ul>
+<li><code>@openfeature/web-sdk</code></li>
+<li><code>@angular/common</code></li>
+<li><code>@angular/core</code></li>
+</ul>
+<h3 id="usage">Usage</h3>
+<h4 id="module">Module</h4>
+<p>To include the OpenFeature Angular directives in your application, you need to import the <code>OpenFeatureModule</code> and
+configure it using the <code>forRoot</code> method.</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">NgModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@angular/core'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CommonModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@angular/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeatureModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/angular-sdk'</span>;
 
-<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-string">'mongodb://user:pass@localhost:27017/dbname'</span>);
-keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, handleConnectionError);
+<span class="hljs-meta">@NgModule</span>({
+  <span class="hljs-attr">declarations</span>: [
+    <span class="hljs-comment">// Other components</span>
+  ],
+  <span class="hljs-attr">imports</span>: [
+    <span class="hljs-title class_">CommonModule</span>,
+    <span class="hljs-title class_">OpenFeatureModule</span>.<span class="hljs-title function_">forRoot</span>({
+      <span class="hljs-attr">provider</span>: yourFeatureProvider,
+      <span class="hljs-comment">// domainBoundProviders are optional, mostly needed if more than one provider is used in the application.</span>
+      <span class="hljs-attr">domainBoundProviders</span>: {
+        <span class="hljs-attr">domain1</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">YourOpenFeatureProvider</span>(),
+        <span class="hljs-attr">domain2</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">YourOtherOpenFeatureProvider</span>(),
+      },
+    })
+  ],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AppModule</span> {
+}
 </code></pre>
-<p>You can specify the collection name, by default <code>'keyv'</code> is used.</p>
-<p>e.g:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-string">'mongodb://user:pass@localhost:27017/dbname'</span>, { <span class="hljs-attr">collection</span>: <span class="hljs-string">'cache'</span> });
+<h5 id="minimal-example">Minimal Example</h5>
+<p>You don't need to provide all the templates. Here's a minimal example using a boolean feature flag:</p>
+<p>If <code>initializing</code> and <code>reconciling</code> are not given, the feature flag value that is returned by the provider will
+determine what will be rendered.</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">div</span> *<span class="hljs-attr">booleanFeatureFlag</span>=<span class="hljs-string">"'isFeatureEnabled'; default: true"</span>></span>
+  This is shown when the feature flag is enabled.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span>
 </code></pre>
-<h2 id="license">License</h2>
-<p>MIT © Jared Wray</p>
+<p>This example shows content when the feature flag <code>isFeatureEnabled</code> is true with a default value of true.
+No <code>else</code>, <code>initializing</code>, or <code>reconciling</code> templates are required in this case.</p>
+<h4 id="how-to-use">How to use</h4>
+<p>The library provides two main ways to work with feature flags:</p>
+<ol>
+<li><strong>Structural Directives</strong> - For template-based conditional rendering</li>
+<li><strong>FeatureFlagService</strong> - For programmatic access with Observables</li>
+</ol>
+<h5 id="structural-directives">Structural Directives</h5>
+<p>The library provides four primary directives for feature flags, <code>booleanFeatureFlag</code>,
+<code>numberFeatureFlag</code>, <code>stringFeatureFlag</code> and <code>objectFeatureFlag</code>.</p>
+<p>The first value given to the directive is the flag key that should be evaluated.</p>
+<p>For all directives, the default value passed to OpenFeature has to be provided by the <code>default</code> parameter.</p>
+<p>For all non-boolean directives, the value to compare the evaluation result to can be provided by the <code>value</code> parameter.
+This parameter is optional, if omitted, the <code>thenTemplate</code> will always be rendered.</p>
+<p>The <code>domain</code> parameter is <em>optional</em> and will be used as domain when getting the OpenFeature provider.</p>
+<p>The <code>updateOnConfigurationChanged</code> and <code>updateOnContextChanged</code> parameter are <em>optional</em> and used to disable the
+automatic re-rendering on flag value or context change. They are set to <code>true</code> by default.</p>
+<p>The template referenced in <code>else</code> will be rendered if the evaluated feature flag is <code>false</code> for the <code>booleanFeatureFlag</code>
+directive and if the <code>value</code> does not match evaluated flag value for all other directives.
+This parameter is <em>optional</em>.</p>
+<p>The template referenced in <code>initializing</code> and <code>reconciling</code> will be rendered if OpenFeature provider is in the
+corresponding states.
+This parameter is <em>optional</em>, if omitted, the <code>then</code> and <code>else</code> templates will be rendered according to the flag value.</p>
+<h6 id="boolean-feature-flag">Boolean Feature Flag</h6>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">div</span>
+  *<span class="hljs-attr">booleanFeatureFlag</span>=<span class="hljs-string">"'isFeatureEnabled'; default: true; domain: 'userDomain'; else: booleanFeatureElse; initializing: booleanFeatureInitializing; reconciling: booleanFeatureReconciling"</span>></span>
+  This is shown when the feature flag is enabled.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">booleanFeatureElse</span>></span>
+  This is shown when the feature flag is disabled.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">booleanFeatureInitializing</span>></span>
+  This is shown when the feature flag is initializing.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">booleanFeatureReconciling</span>></span>
+  This is shown when the feature flag is reconciling.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+</code></pre>
+<h6 id="number-feature-flag">Number Feature Flag</h6>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">div</span>
+  *<span class="hljs-attr">numberFeatureFlag</span>=<span class="hljs-string">"'discountRate'; value: 10; default: 5; domain: 'userDomain'; else: numberFeatureElse; initializing: numberFeatureInitializing; reconciling: numberFeatureReconciling"</span>></span>
+  This is shown when the feature flag matches the specified discount rate.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">numberFeatureElse</span>></span>
+  This is shown when the feature flag does not match the specified discount rate.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">numberFeatureInitializing</span>></span>
+  This is shown when the feature flag is initializing.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">numberFeatureReconciling</span>></span>
+  This is shown when the feature flag is reconciling.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+</code></pre>
+<h6 id="string-feature-flag">String Feature Flag</h6>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">div</span>
+  *<span class="hljs-attr">stringFeatureFlag</span>=<span class="hljs-string">"'themeColor'; value: 'dark'; default: 'light'; domain: 'userDomain'; else: stringFeatureElse; initializing: stringFeatureInitializing; reconciling: stringFeatureReconciling"</span>></span>
+  This is shown when the feature flag matches the specified theme color.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">stringFeatureElse</span>></span>
+  This is shown when the feature flag does not match the specified theme color.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">stringFeatureInitializing</span>></span>
+  This is shown when the feature flag is initializing.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">stringFeatureReconciling</span>></span>
+  This is shown when the feature flag is reconciling.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+</code></pre>
+<h6 id="object-feature-flag">Object Feature Flag</h6>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">div</span>
+  *<span class="hljs-attr">objectFeatureFlag</span>=<span class="hljs-string">"'userConfig'; value: { theme: 'dark' }; default: { theme: 'light' }; domain: 'userDomain'; else: objectFeatureElse; initializing: objectFeatureInitializing; reconciling: objectFeatureReconciling"</span>></span>
+  This is shown when the feature flag matches the specified user configuration.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">objectFeatureElse</span>></span>
+  This is shown when the feature flag does not match the specified user configuration.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">objectFeatureInitializing</span>></span>
+  This is shown when the feature flag is initializing.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">objectFeatureReconciling</span>></span>
+  This is shown when the feature flag is reconciling.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+</code></pre>
+<h6 id="opting-out-of-automatic-re-rendering">Opting-out of automatic re-rendering</h6>
+<p>By default, the directive re-renders when the flag value changes or the context changes.</p>
+<p>In cases, this is not desired, re-rendering can be disabled for both events:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">div</span> *<span class="hljs-attr">booleanFeatureFlag</span>=<span class="hljs-string">"'isFeatureEnabled'; default: true; updateOnContextChanged: false; updateOnConfigurationChanged: false;"</span>></span>
+  This is shown when the feature flag is enabled.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span>
+</code></pre>
+<h6 id="consuming-the-evaluation-details">Consuming the evaluation details</h6>
+<p>The <code>evaluation details</code> can be used when rendering the templates.
+The directives <a href="https://angular.dev/guide/directives/structural-directives#structural-directive-shorthand"><code>$implicit</code></a>
+value will be bound to the flag value and additionally the value <code>evaluationDetails</code> will be
+bound to the whole evaluation details.
+They can be referenced in all templates.</p>
+<p>The following example shows <code>value</code> being implicitly bound and <code>details</code> being bound to the evaluation details.</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">div</span>
+  *<span class="hljs-attr">stringFeatureFlag</span>=<span class="hljs-string">"'themeColor'; value: 'dark'; default: 'light'; else: stringFeatureElse; let value; let details = evaluationDetails"</span>></span>
+  It was a match!
+  The theme color is {{ value }} because of {{ details.reason }}
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span>
+<span class="hljs-tag">&#x3C;<span class="hljs-name">ng-template</span> #<span class="hljs-attr">stringFeatureElse</span> <span class="hljs-attr">let-value</span> <span class="hljs-attr">let-details</span>=<span class="hljs-string">'evaluationDetails'</span>></span>
+  It was no match!
+  The theme color is {{ value }} because of {{ details.reason }}
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">ng-template</span>></span>
+</code></pre>
+<p>When the expected flag value is omitted, the template will always be rendered.
+This can be used to just render the flag value or details without conditional rendering.</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&#x3C;<span class="hljs-name">div</span> *<span class="hljs-attr">stringFeatureFlag</span>=<span class="hljs-string">"'themeColor'; default: 'light'; let value;"</span>></span>
+  The theme color is {{ value }}.
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span>
+</code></pre>
+<h5 id="featureflagservice">FeatureFlagService</h5>
+<p>The <code>FeatureFlagService</code> provides programmatic access to feature flags through reactive patterns. All methods return
+Observables that automatically emit new values when flag configurations or evaluation context changes.</p>
+<h6 id="using-with-observables">Using with Observables</h6>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Component</span>, inject } <span class="hljs-keyword">from</span> <span class="hljs-string">'@angular/core'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">AsyncPipe</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@angular/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">FeatureFlagService</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/angular-sdk'</span>;
+
+<span class="hljs-meta">@Component</span>({
+  <span class="hljs-attr">selector</span>: <span class="hljs-string">'my-component'</span>,
+  <span class="hljs-attr">standalone</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">imports</span>: [<span class="hljs-title class_">AsyncPipe</span>],
+  <span class="hljs-attr">template</span>: <span class="hljs-string">`
+    &#x3C;div *ngIf="(isFeatureEnabled$ | async)?.value">
+      Feature is enabled! Reason: {{ (isFeatureEnabled$ | async)?.reason }}
+    &#x3C;/div>
+    &#x3C;div>Theme: {{ (currentTheme$ | async)?.value }}&#x3C;/div>
+    &#x3C;div>Max items: {{ (maxItems$ | async)?.value }}&#x3C;/div>
+  `</span>
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyComponent</span> {
+  <span class="hljs-keyword">private</span> flagService = <span class="hljs-title function_">inject</span>(<span class="hljs-title class_">FeatureFlagService</span>);
+
+  <span class="hljs-comment">// Boolean flag</span>
+  isFeatureEnabled$ = <span class="hljs-variable language_">this</span>.<span class="hljs-property">flagService</span>.<span class="hljs-title function_">getBooleanDetails</span>(<span class="hljs-string">'my-feature'</span>, <span class="hljs-literal">false</span>);
+
+  <span class="hljs-comment">// String flag</span>
+  currentTheme$ = <span class="hljs-variable language_">this</span>.<span class="hljs-property">flagService</span>.<span class="hljs-title function_">getStringDetails</span>(<span class="hljs-string">'theme'</span>, <span class="hljs-string">'light'</span>);
+
+  <span class="hljs-comment">// Number flag</span>
+  maxItems$ = <span class="hljs-variable language_">this</span>.<span class="hljs-property">flagService</span>.<span class="hljs-title function_">getNumberDetails</span>(<span class="hljs-string">'max-items'</span>, <span class="hljs-number">10</span>);
+
+  <span class="hljs-comment">// Object flag with type safety</span>
+  config$ = <span class="hljs-variable language_">this</span>.<span class="hljs-property">flagService</span>.<span class="hljs-property">getObjectDetails</span>&#x3C;{ <span class="hljs-attr">timeout</span>: <span class="hljs-built_in">number</span> }>(<span class="hljs-string">'api-config'</span>, { <span class="hljs-attr">timeout</span>: <span class="hljs-number">5000</span> });
+}
+</code></pre>
+<h6 id="using-with-angular-signals">Using with Angular Signals</h6>
+<p>You can convert any Observable from the service to an Angular Signal using <code>toSignal()</code>:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Component</span>, inject } <span class="hljs-keyword">from</span> <span class="hljs-string">'@angular/core'</span>;
+<span class="hljs-keyword">import</span> { toSignal } <span class="hljs-keyword">from</span> <span class="hljs-string">'@angular/core/rxjs-interop'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">FeatureFlagService</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/angular-sdk'</span>;
+
+<span class="hljs-meta">@Component</span>({
+  <span class="hljs-attr">selector</span>: <span class="hljs-string">'my-component'</span>,
+  <span class="hljs-attr">standalone</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">template</span>: <span class="hljs-string">`
+    &#x3C;div *ngIf="isFeatureEnabled()?.value">
+      Feature is enabled! Reason: {{ isFeatureEnabled()?.reason }}
+    &#x3C;/div>
+    &#x3C;div>Theme: {{ currentTheme()?.value }}&#x3C;/div>
+  `</span>
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyComponent</span> {
+  <span class="hljs-keyword">private</span> flagService = <span class="hljs-title function_">inject</span>(<span class="hljs-title class_">FeatureFlagService</span>);
+
+  <span class="hljs-comment">// Convert Observables to Signals</span>
+  isFeatureEnabled = <span class="hljs-title function_">toSignal</span>(<span class="hljs-variable language_">this</span>.<span class="hljs-property">flagService</span>.<span class="hljs-title function_">getBooleanDetails</span>(<span class="hljs-string">'my-feature'</span>, <span class="hljs-literal">false</span>));
+  currentTheme = <span class="hljs-title function_">toSignal</span>(<span class="hljs-variable language_">this</span>.<span class="hljs-property">flagService</span>.<span class="hljs-title function_">getStringDetails</span>(<span class="hljs-string">'theme'</span>, <span class="hljs-string">'light'</span>));
+}
+</code></pre>
+<h6 id="service-options">Service Options</h6>
+<p>The service methods accept the <a href="#opting-out-of-automatic-re-rendering">same options as the directives</a>:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">const</span> flag$ = <span class="hljs-variable language_">this</span>.<span class="hljs-property">flagService</span>.<span class="hljs-title function_">getBooleanDetails</span>(<span class="hljs-string">'my-flag'</span>, <span class="hljs-literal">false</span>, <span class="hljs-string">'my-domain'</span>, {
+  <span class="hljs-attr">updateOnConfigurationChanged</span>: <span class="hljs-literal">false</span>,  <span class="hljs-comment">// default: true</span>
+  <span class="hljs-attr">updateOnContextChanged</span>: <span class="hljs-literal">false</span>,        <span class="hljs-comment">// default: true</span>
+});
+</code></pre>
+<h5 id="setting-evaluation-context">Setting evaluation context</h5>
+<p>To set the initial evaluation context, you can add the <code>context</code> parameter to the <code>OpenFeatureModule</code> configuration.
+This context can be either an object or a factory function that returns an <code>EvaluationContext</code>.</p>
+<div class="markdown-alert markdown-alert-tip" dir="auto">
+<p class="markdown-alert-title" dir="auto"><svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848.075-.088.147-.173.213-.253.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z"></path></svg>TIP</p>
+<p>Updating the context can be done directly via the global OpenFeature API using <code>OpenFeature.setContext()</code></p>
+</div>
+<p>Here’s how you can define and use the initial client evaluation context:</p>
+<h6 id="using-a-static-object">Using a static object</h6>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">NgModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@angular/core'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CommonModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@angular/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeatureModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/angular-sdk'</span>;
+
+<span class="hljs-keyword">const</span> initialContext = {
+  <span class="hljs-attr">user</span>: {
+    <span class="hljs-attr">id</span>: <span class="hljs-string">'user123'</span>,
+    <span class="hljs-attr">role</span>: <span class="hljs-string">'admin'</span>,
+  }
+};
+
+<span class="hljs-meta">@NgModule</span>({
+  <span class="hljs-attr">imports</span>: [
+    <span class="hljs-title class_">CommonModule</span>,
+    <span class="hljs-title class_">OpenFeatureModule</span>.<span class="hljs-title function_">forRoot</span>({
+      <span class="hljs-attr">provider</span>: yourFeatureProvider,
+      <span class="hljs-attr">context</span>: initialContext
+    })
+  ],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AppModule</span> {}
+</code></pre>
+<h6 id="using-a-factory-function">Using a factory function</h6>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">NgModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@angular/core'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CommonModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@angular/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeatureModule</span>, <span class="hljs-title class_">EvaluationContext</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/angular-sdk'</span>;
+
+<span class="hljs-keyword">const</span> contextFactory = (): <span class="hljs-function"><span class="hljs-params">EvaluationContext</span> =></span> <span class="hljs-title function_">loadContextFromLocalStorage</span>();
+
+<span class="hljs-meta">@NgModule</span>({
+  <span class="hljs-attr">imports</span>: [
+    <span class="hljs-title class_">CommonModule</span>,
+    <span class="hljs-title class_">OpenFeatureModule</span>.<span class="hljs-title function_">forRoot</span>({
+      <span class="hljs-attr">provider</span>: yourFeatureProvider,
+      <span class="hljs-attr">context</span>: contextFactory
+    })
+  ],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AppModule</span> {}
+</code></pre>
+<h5 id="observability-considerations">Observability considerations</h5>
+<p>Angular's lifecycle can result in flags being evaluated multiple times as a user interacts with a page.
+If you are using an OpenFeature hook for telemetry, this can result in inflated evaluation metrics.
+The <a href="https://github.com/open-feature/js-sdk-contrib/tree/main/libs/hooks/debounce">OpenFeature debounce hook</a> can help to reduce the amount of redundant evaluations reported to your observability platform by limiting the frequency at which evaluation metrics are reported.</p>
+<h2 id="faq-and-troubleshooting">FAQ and troubleshooting</h2>
+<blockquote>
+<p>I can import things form the <code>@openfeature/angular-sdk</code>, <code>@openfeature/web-sdk</code>, and <code>@openfeature/core</code>; which should I use?</p>
+</blockquote>
+<p>The <code>@openfeature/angular-sdk</code> re-exports everything from its peers (<code>@openfeature/web-sdk</code> and <code>@openfeature/core</code>), and adds the Angular-specific features.
+You can import everything from the <code>@openfeature/angular-sdk</code> directly.
+Avoid importing anything from <code>@openfeature/web-sdk</code> or <code>@openfeature/core</code>.</p>
+<h2 id="resources">Resources</h2>
+<ul>
+<li><a href="https://github.com/open-feature/angular-test-app">Example repo</a></li>
+</ul>

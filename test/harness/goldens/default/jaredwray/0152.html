@@ -1,0 +1,15 @@
+<h2 id="renaming-the-openfeaturejs-sdk">Renaming the @openfeature/js-sdk</h2>
+<p>It's been said that there's only two hard things in Computer Science: cache invalidation and naming things.
+Here at the OpenFeature project we can attest to both, but today we'd like to talk about naming.</p>
+<h3 id="whats-changed">What's changed</h3>
+<p>In order to avoid confusion, we recently renamed our server-side JavaScript SDK.
+We've deprecated the <a href="https://www.npmjs.com/package/@openfeature/js-sdk">@openfeature/js-sdk</a> and published the same package under a new name: <a href="https://www.npmjs.com/package/@openfeature/server-sdk">@openfeature/server-sdk</a>.</p>
+<h3 id="why-we-made-this-change">Why we made this change</h3>
+<p>With the introduction of the <a href="https://www.npmjs.com/package/@openfeature/web-sdk">@openfeature/web-sdk</a>, we heard many stories of users having trouble due to incorrectly importanting modules; either importing modules meant for the web in a Node.JS context, or vice-versa.
+This problem was exacerbated by the fact the server-side SDK was called <code>@openfeature/js-sdk</code>, which doesn't indicate it's intended for server-side JavaScript runtimes such as Node.JS.
+With our new naming scheme, it's clear that <code>@openfeature/server-sdk</code> is useful for the server, while <code>@openfeature/web-sdk</code> should be used in browser environments.</p>
+<h3 id="how-to-migrate">How to migrate</h3>
+<p>To migrate, simply uninstall the old package, install this new package, and update all your require/import statements.
+There are no changes between the last published version of the <code>@openfeature/js-sdk</code> and the first published version of the <code>@openfeature/server-sdk</code>.
+Note that we have re-released all the relevant community-provided artifacts hosted in our <a href="https://github.com/open-feature/js-sdk-contrib">js-contribs</a> repository, and modified them to include a peer dependency on the <code>@openfeature/server-sdk</code>.
+You will need to migrate in order to consume the latest versions of these components.</p>

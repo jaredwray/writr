@@ -1,0 +1,101 @@
+<blockquote>
+<p><strong>Availability:</strong> Registered in the Node build only. Not available in the browser build.</p>
+</blockquote>
+<h2 id="fs">fs</h2>
+<h3 id="filesize">{{fileSize}}</h3>
+<p>Formats a number of bytes into a human-readable file size string with appropriate units.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>value</code> <strong>{Number|Object}</strong>: The number of bytes, or an object with a <code>length</code> property</li>
+<li><code>precision</code> <strong>{Number}</strong>: Optional decimal precision (default: 2)</li>
+<li><code>returns</code> <strong>{String}</strong>: Formatted file size string</li>
+</ul>
+<p><strong>Supported Units</strong></p>
+<p>B, kB, MB, GB, TB, PB, EB, ZB, YB</p>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">{{fileSize 1024}}
+&#x3C;!-- results in: '1 kB' -->
+
+{{fileSize 1536}}
+&#x3C;!-- results in: '1.5 kB' -->
+
+{{fileSize 1048576}}
+&#x3C;!-- results in: '1 MB' -->
+
+{{fileSize 1073741824}}
+&#x3C;!-- results in: '1 GB' -->
+
+&#x3C;!-- With custom precision -->
+{{fileSize 1536 0}}
+&#x3C;!-- results in: '2 kB' -->
+
+{{fileSize 1536 3}}
+&#x3C;!-- results in: '1.5 kB' -->
+
+&#x3C;!-- Returns '0 B' for null/undefined -->
+{{fileSize null}}
+&#x3C;!-- results in: '0 B' -->
+</code></pre>
+<h3 id="read">{{read}}</h3>
+<p>Read a file from the file system. This is useful in composing "include"-style helpers using sub-expressions.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>filepath</code> <strong>{String}</strong>: The path to the file to read</li>
+<li><code>returns</code> <strong>{String}</strong>: The file contents as a UTF-8 string</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- Read and output file contents -->
+{{read "path/to/file.txt"}}
+
+&#x3C;!-- Use with other helpers -->
+{{markdown (read "README.md")}}
+
+&#x3C;!-- Include a partial file -->
+&#x3C;script>
+{{read "src/scripts/analytics.js"}}
+&#x3C;/script>
+</code></pre>
+<h3 id="readdir">{{readdir}}</h3>
+<p>Return an array of files from the given directory. Supports optional filtering by function, RegExp, glob pattern, or type.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>directory</code> <strong>{String}</strong>: The directory path to read</li>
+<li><code>filter</code> <strong>{Function|RegExp|String}</strong>: Optional filter to apply to the file list</li>
+<li><code>returns</code> <strong>{Array}</strong>: Array of file paths</li>
+</ul>
+<p><strong>Filter Options</strong></p>
+<ul>
+<li><strong>Function</strong>: Custom filter function that receives the files array and returns filtered array</li>
+<li><strong>RegExp</strong>: Regular expression to test against file paths</li>
+<li><strong>Glob string</strong>: Glob pattern to match files (e.g., <code>"*.js"</code>, <code>"**/*.md"</code>)</li>
+<li><strong>"isFile"</strong>: Return only files (not directories)</li>
+<li><strong>"isDirectory"</strong>: Return only directories (not files)</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-handlebars">&#x3C;!-- List all files in a directory -->
+{{#each (readdir "src")}}
+  {{this}}
+{{/each}}
+
+&#x3C;!-- Filter by glob pattern -->
+{{#each (readdir "src" "*.js")}}
+  {{this}}
+{{/each}}
+
+&#x3C;!-- Filter to only files -->
+{{#each (readdir "src" "isFile")}}
+  {{this}}
+{{/each}}
+
+&#x3C;!-- Filter to only directories -->
+{{#each (readdir "src" "isDirectory")}}
+  {{this}}
+{{/each}}
+
+&#x3C;!-- Use with other helpers -->
+{{#each (readdir "posts" "*.md")}}
+  &#x3C;article>
+    {{markdown (read this)}}
+  &#x3C;/article>
+{{/each}}
+</code></pre>

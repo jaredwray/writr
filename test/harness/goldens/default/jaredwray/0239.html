@@ -1,0 +1,182 @@
+<p>While OpenFeature initially focused on support for server-side feature flagging, we know that a lot of feature-flagging (likely the majority) happens on the client - mobile apps and frontend web apps. As such, we're currently finalizing <a href="https://github.com/open-feature/spec/issues/167">a proposal</a> which extends the OpenFeature spec to support client-side use cases.
+By the way, if you're working on a feature flagging framework, whether it's commercial, open-source, or internal product, the folks at OpenFeature would love to <a href="https://forms.gle/TD4gAYKNgPiiwPrd6">hear more</a> about how you approach client-side flagging.</p>
+<p>In this post I'll summarize those changes, but to understand them in context we'll first talk about what makes client-side feature flagging different before diving into how that will impact the OpenFeature APIs.</p>
+<h2 id="context-is-king-why-client-side-flagging-is-different">Context is King: why client-side flagging is different</h2>
+<h3 id="static-evaluation-context">Static evaluation context</h3>
+<p>The key distinction between the client- and server-side feature flagging is the difference in how often evaluation context changes. In the typical server-side scenario - a service responding to http requests - the context for a feature flagging decision might change completely with every incoming request. Each new request is coming from a new user, and a lot of the evaluation context which affects a feature flagging decision is based on the user making the request.</p>
+<p>In contrast, with a client-side app all feature flagging decisions are made in the context of the same user - the user interacting with the client-side app - and so the evaluation context is relatively static. There are cases where evaluation context will change within a client-side app - when a user logs in, for example - but by and large with client-side code we can treat feature flag evaluation context as something that is fixed (while still providing mechanisms to update it).</p>
+<h3 id="the-network-is-slow">The network is slow</h3>
+<p>With server-side flags, we can assume that evaluating a feature flag is a <em>relatively</em> fast operation. With some systems the flagging rulesets<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref aria-describedby="footnote-label">1</a></sup> live right next to where a flagging decision is needed, with flag evaluation happening either within the same process or in some sort of sidecar process. In this <em>local evaluation</em> model every flagging decision is a very fast operation. For frameworks that use a <em>remote evaluation</em> model, a flagging decision is still just a quick service call - akin to making a DB query or calling a remote cache.</p>
+<p>This situation is quite different with client-side flags. Remote flag evaluation now requires a trip across the internet, and we have to anticipate such a service call to be slow, particularly if our users are behind a spotty internet connection. In fact, with a native mobile app we have to handle a fully disconnected client. Even with the local evaluation model, we still have to deal with the fact that the source of truth for our flagging ruleset is on the other side of a potentially high-latency network.</p>
+<h3 id="eager-evaluation-for-remote-evaluated-systems">Eager evaluation for remote-evaluated systems</h3>
+<p>We can see that the network presents challenges for client-side apps using a remote evaluation model for flagging decisions. But we've also seen that the inputs into that flag evaluation - the evaluation context - are fairly static for client-side apps, and that means the <em>results</em> of flag evaluation are fairly static too.</p>
+<p>How do we handle an expensive operation with fairly static results? We add caching! And that's what many client-side feature flagging frameworks do.</p>
+<p>Specifically, when the app starts the flagging framework requests an eager evaluation of all the feature flagging decisions that might be needed, and then caches those decisions. Then whenever client-side code needs to make a flagging decision the framework simply returns the pre-evaluated result from its local cache.</p>
+<pre><code class="hljs language-mermaid">sequenceDiagram
+  actor app
+  participant client as feature flagging logic
+  participant cache
+  participant provider as remote flag service
+  app->>+client: userLoggedIn(userId)
+  client->>+provider: evaluateFlags(evaluationContext)
+  provider-->>-client: flag values
+  client->>+cache: store(flag values)
+  cache->>-client: .
+  %% deactivate cache
+  client->>-app: .
+  %% deactivate client
+  note right of app: some time later..
+  app->>+client: operation that needs a flagging decision
+  client->>+cache: getFlagValue(flagKey)
+  note right of cache: no call to flagging service needed
+  cache->>-client: previously evaluated value
+  client->>-app: .
+</code></pre>
+<p>Put another way, with client-side feature flagging we can separate flag <a href="/specification/glossary#evaluating-flag-values"><strong>evaluation</strong></a> - passing an evaluation context through a set of rules in order to determine a flagging decision - from flag <a href="/specification/glossary#resolving-flag-values"><strong>resolution</strong></a> - getting the flagging decision for a specific feature flag.</p>
+<h3 id="keeping-rulesets-in-sync-for-local-evaluated-systems">Keeping rulesets in sync for local-evaluated systems</h3>
+<p>Flagging frameworks that use a local evaluation model don't have to contend with network calls for every evaluation, but they still need to keep their local rulesets up to date and allow the client-side app to respond to changes in those ruleset. Again, this means using caches to keep the most recent ruleset available. It also means that the flagging framework may have an eventing or callback mechanism to inform application code that the ruleset has changed and that current flag values may be stale.</p>
+<pre><code class="hljs language-mermaid">sequenceDiagram
+  actor app
+  participant sdk as feature flag SDK
+  participant cache as local ruleset
+  participant provider as remote flag service
+  app->>+sdk: boot
+  sdk->>+provider: get ruleset from last known state
+  provider-->>-sdk: ruleset
+  sdk->>+cache: Store ruleset
+  cache->>-sdk: .
+  sdk->>-app: .
+  app->>+sdk: operation that needs a flagging decision
+  sdk->>+cache: flag evaluation
+  cache->>-sdk: locally evaluated flag value
+  note right of cache: no call to flagging service needed
+  sdk->>-app: flag value
+</code></pre>
+<h2 id="client-side-support-in-openfeature">Client-side support in OpenFeature</h2>
+<p>With OpenFeature we have been thinking about how to support these key differences between client-side and server-side feature flagging. We have come to refer to these differences as two <em>paradigms</em>: dynamic context (for server-side flags) and static context (for client-side flags).</p>
+<p>OpenFeature's current Evaluation API supports the dynamic paradigm quite nicely, but to support the static paradigm (and thus client-side flagging) we need to add a second flavor of the Evaluation API.</p>
+<h3 id="server-side-evaluation-today">Server-side evaluation today</h3>
+<p>Let's compare and contrast. A typical server-side flagging decision using OpenFeature's current SDK might look something like this:</p>
+<pre><code class="hljs language-java"><span class="hljs-meta">@GetMapping("/hello")</span>
+<span class="hljs-keyword">public</span> String <span class="hljs-title function_">getSalutation</span><span class="hljs-params">()</span> {
+    <span class="hljs-keyword">final</span> <span class="hljs-type">Client</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> openFeatureAPI.getClient();
+    <span class="hljs-keyword">final</span> evalContext:EvaluationContext = evalContextForCurrentRequest();
+
+    <span class="hljs-keyword">if</span> (client.getBooleanValue(<span class="hljs-string">"use-formal-salutation"</span>, <span class="hljs-literal">false</span>, evalContext)) {
+      <span class="hljs-keyword">return</span> <span class="hljs-string">"Good day to you!"</span>;
+    }<span class="hljs-keyword">else</span>{
+      <span class="hljs-keyword">return</span> <span class="hljs-string">"Hey, what's up?"</span>;
+    }
+}
+</code></pre>
+<p>You can see that we're passing evaluation context every time we need to make a flagging decision.</p>
+<h3 id="client-side-evaluation-tomorrow">Client-side evaluation tomorrow</h3>
+<p>With the currently proposed OpenFeature changes, a client-side flagging decision would look more like this:</p>
+<pre><code class="hljs language-java"><span class="hljs-keyword">public</span> string <span class="hljs-title function_">generateSalutation</span><span class="hljs-params">()</span>{
+  <span class="hljs-keyword">if</span> (client.getBooleanValue(<span class="hljs-string">"use-formal-salutation"</span>, <span class="hljs-literal">false</span>)) {
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"Good day to you!"</span>;
+  }<span class="hljs-keyword">else</span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"Hey, what's up?"</span>;
+  }
+}
+</code></pre>
+<p>Note that we are no longer passing evaluation context when requesting a flagging decision.</p>
+<p>However OpenFeature does still need to take evaluation context into account, and our app still needs to make sure that OpenFeature has an accurate view of the current context. What does that look like?</p>
+<p>We can imagine a client-side app where the evaluation context only changes when a user logs in or out. Let's say this app has an <code>onAuthenticated(...)</code> handler which fires whenever that happens. We can use that handler to make sure that the evaluation context used for subsequent feature flagging decision is up-to-date:</p>
+<pre><code class="hljs language-java"><span class="hljs-comment">// called whenever a user logs in (or out)</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onAuthenticated</span><span class="hljs-params">(userId:String)</span>{
+  <span class="hljs-type">OpenFeatureAPI</span> <span class="hljs-variable">api</span> <span class="hljs-operator">=</span> OpenFeatureAPI.getInstance();
+  api.setEvaluationContext(<span class="hljs-keyword">new</span> <span class="hljs-title class_">MutableContext</span>().add(<span class="hljs-string">"targetingKey"</span>, userId));
+}
+</code></pre>
+<p>This call to update the evaluation context can prompt OpenFeature's underlying flagging provider to update any cached feature flag values using the new evaluation context. The provider will be notified that the evaluation context has changed via a new <code>onContextSet</code> handler which is being added to the OpenFeature provider interface:</p>
+<pre><code class="hljs language-java"><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyFlaggingProvider</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Provider</span> {
+  <span class="hljs-comment">// triggered when `setEvaluationContext` is called</span>
+  onContextSet(EvaluationContext oldContext, EvaluationContext newContext): <span class="hljs-keyword">void</span> {
+    <span class="hljs-comment">// here the provider can re-evaluate flags using the next evaluation context, updating any</span>
+    <span class="hljs-comment">// previously cached flag values</span>
+  }
+  <span class="hljs-comment">//...</span>
+}
+</code></pre>
+<pre><code class="hljs language-mermaid">sequenceDiagram
+  actor user
+  participant app
+  participant of as OpenFeature SDK
+  participant provider as OpenFeature Provider
+  participant backend as provider backend
+  user->>app: logs in
+  app->>+app: onAuthenticated(userId)
+  app->>of: setEvaluationContext({targetingKey:userId})
+  of->>+provider: onContextSet(oldContext,newContext)
+  deactivate app
+  provider->>+backend: evaluateFlags(newContext)
+  backend->>-provider: flag values
+  provider->>provider: update cache with new values
+  deactivate provider
+</code></pre>
+<h3 id="javascript-niceties">Javascript niceties</h3>
+<p>JavaScript is the most common runtime for client-side flagging, and it comes with some peculiarities which we wanted to accommodate as we designed the OpenFeature API.</p>
+<p>In order to align the OpenFeature API with most existing feature flagging providers and to play nicely with frontend frameworks, the static context flavor of the JavaScript Evaluation API will be a synchronous call:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">function</span> <span class="hljs-title function_">Salutation</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">const</span> useFormalSalutation = client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">'use-formal-salutation'</span>, <span class="hljs-literal">false</span>);
+  <span class="hljs-keyword">if</span> (useFormalSalutation) {
+    <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">blink</span>></span>Good day!<span class="hljs-tag">&#x3C;/<span class="hljs-name">blink</span>></span></span>;
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">blink</span>></span>What's up!<span class="hljs-tag">&#x3C;/<span class="hljs-name">blink</span>></span></span>;
+  }
+}
+</code></pre>
+<p>contrast this with how a server-side flagging decision would be implemented, using the dynamic context flavor of the Evaluation API:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> client = <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>();
+
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">'/hello'</span>, <span class="hljs-title function_">async</span> (req, res) => {
+  <span class="hljs-keyword">const</span> evalContext = <span class="hljs-title function_">evaluationContextForRequest</span>(req);
+  <span class="hljs-keyword">const</span> formalSalutation = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">'use-formal-salutation'</span>, <span class="hljs-literal">false</span>, evalContext);
+  <span class="hljs-keyword">if</span> (formalSalutation) {
+    res.<span class="hljs-title function_">send</span>(<span class="hljs-string">'Good day!'</span>);
+  } <span class="hljs-keyword">else</span> {
+    res.<span class="hljs-title function_">send</span>(<span class="hljs-string">"What's up!"</span>);
+  }
+});
+</code></pre>
+<p>Note that <code>getBooleanValue</code> is async - it returns a promise. That's pretty much unavoidable. This dynamic flavor of the evaluation API expects a different evaluation context every time it's called, and that means it can't be synchronous, because some feature flagging implementations will need to use asynchronous mechanisms such as networks calls in order to perform a flag evaluation with that new context.</p>
+<p>However in the earlier client-side example we are in the static context paradigm which means that the evaluation context has been provided ahead of time, so we can pretty safely assume that the flagging decision can be made synchronously by pulling from a local cache.</p>
+<h3 id="non-authoritative-results">Non-authoritative results</h3>
+<p>This synchronous API also lines up better with the way rendering works in client-side web frameworks like React and Vue - via a synchronous call. However, with a synchronous API we have a potential for a race condition. What happens if our rendering logic asks for a flagging decision before a pre-evaluation operation has completed? We can't block, and so will have to return some sort of non-authoritative decision - a default value, or a previously evaluated value, or perhaps a null value.</p>
+<pre><code class="hljs language-javascript">client.<span class="hljs-title function_">setContext</span>(updatedEvalContext);
+
+<span class="hljs-comment">// this result will NOT be based on the evaluation context we</span>
+<span class="hljs-comment">// provided immediately above - our feature flagging framework</span>
+<span class="hljs-comment">// won't have had a chance to actually send this new context</span>
+<span class="hljs-comment">// anywhere</span>
+<span class="hljs-keyword">const</span> result = client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">'some-flag'</span>, <span class="hljs-literal">true</span>);
+</code></pre>
+<p>This potential for stale or non-authoritative results is the price we pay for using a synchronous API.</p>
+<p>When we have received a non-authoritative answer we can pass it on to our rendering logic, but we also need some way to know when an authoritative value is available, so that we can trigger a re-render using that new value. OpenFeature will provide a mechanism for that in the form of Provider Events. Here's how you might use provider events as part of a React hook:</p>
+<pre><code class="hljs language-javascript">client.<span class="hljs-title function_">addHandler</span>(<span class="hljs-title class_">ProviderEvents</span>.<span class="hljs-property">FlagValuesChanged</span>, <span class="hljs-function">() =></span> {
+  <span class="hljs-comment">// this would trigger a re-render</span>
+  <span class="hljs-title function_">setUseFormalSalutation</span>(client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">'use-formal-salutation'</span>, <span class="hljs-literal">false</span>));
+});
+</code></pre>
+<h3 id="a-multi-paradigm-sdk">A multi-paradigm SDK</h3>
+<p>To recap, OpenFeature is planning to support client-side feature flagging by introducing the concept of two flagging paradigms: dynamic context (for server-side flagging) and static context (for client-side flagging). The OpenFeature APIs will have two slightly different flavors, depending upon which paradigm they support.</p>
+<p>This raises a question around distribution - how will we distribute these two flavors of API for languages such as JavaScript and Java which support both paradigms. Our intention in those situations is to distribute two distinct packages - for example with JavaScript we will likely have a <code>@openfeature/server-sdk</code> package and a <code>@openfeature/web-sdk</code> package. We are opting for this approach rather that distributing a single "universal", multi-paradigm package contain both APIs because we think this will be less confusing for developers getting started with OpenFeature. But under the covers the two OpenFeature packages will share a lot of common code.</p>
+<p>If a feature flagging provider wants to provide support for both paradigms they will need to provide two distinct implementations of the <a href="/specification/sections/providers">Provider API</a>. These implementations could be shipped as part of a "universal" multi-paradigm, or as separate packages - that's a choice for a provider to make.</p>
+<h2 id="in-summary">In summary</h2>
+<p>We've seen that the difference between feature flagging on the client vs on the server comes down to the difference between two paradigms of evaluation context - static context and dynamic context, respectively. These two paradigms are different enough that they warrant two different flavors of API within OpenFeature, with the primary difference between whether highly-dynamic evaluation context is provided to the flagging framework at the point a flagging decision is requested, or whether mostly-static evaluation context is updated out-of-band when it changes, and ahead of the time when flagging decisions being made.</p>
+<p>Getting better support in OpenFeature for client-side flags comes down to supporting both of these paradigms, and when you lay it all out adding that support doesn't have too huge an impact on the OpenFeature API. As we just discussed, it means adding a different flavor of the Evaluation API. In addition a few extra points of contact are added to the API surface so an app can tell the framework that the evaluation context has changed, and so the framework can in turn tell the app once new flag values are available.</p>
+<p>With these additions in place, OpenFeature should have everything needed to bring client-side apps an open, vendor-agnostic standard for feature flagging.</p>
+<h2 id="revisions">Revisions</h2>
+<p>Initially published <strong>February 13 2023</strong>.</p>
+<ul>
+<li>Updated <strong>February 18 2023</strong> to include discussion of local vs remote flag evaluation models.</li>
+<li>Updated <strong>May 3 2024</strong> to update the NPM package names.</li>
+</ul>
+<section data-footnotes class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>by "rulesets" I mean the set of feature flagging rule configurations that define how flagging decisions should be made for each feature flag: "enable red_checkout_button flag for 50% of users", "only enable new_reco_algorithm for users in the 'internal_testers' group", etc. Rulesets plus evaluation context are the two inputs that fully define the output for any flagging decision. <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

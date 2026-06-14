@@ -1,0 +1,116 @@
+<p>import MCPInstall from '@site/src/partials/mcp-install';</p>
+<h2 id="overview">Overview</h2>
+<p>The OpenFeature NestJS SDK is a package that provides a NestJS wrapper for the <a href="/docs/reference/sdks/server/javascript/">OpenFeature Server SDK</a>.</p>
+<p>Capabilities include:</p>
+<ul>
+<li>Providing a NestJS global module to simplify OpenFeature configuration and usage within NestJS</li>
+<li>Setting up logging, event handling, hooks and providers directly when registering the module</li>
+<li>Injecting feature flags directly into controller route handlers by using decorators</li>
+<li>Injecting transaction evaluation context for flag evaluations directly from <a href="https://docs.nestjs.com/fundamentals/execution-context">execution context</a> (HTTP header values, client IPs, etc.)</li>
+<li>Injecting OpenFeature clients into NestJS services and controllers by using decorators</li>
+</ul>
+<h2 id="quick-start">Quick start</h2>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li>Node.js version 20+</li>
+<li>NestJS version 8+</li>
+</ul>
+<h3 id="install">Install</h3>
+<h4 id="npm">npm</h4>
+<pre><code class="hljs language-sh">npm install --save @openfeature/nestjs-sdk
+</code></pre>
+<h4 id="yarn">yarn</h4>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># yarn requires manual installation of the peer dependencies (see below)</span>
+yarn add @openfeature/nestjs-sdk @openfeature/server-sdk @openfeature/core
+</code></pre>
+<h4 id="required-peer-dependencies">Required peer dependencies</h4>
+<p>The following list contains the peer dependencies of <code>@openfeature/nestjs-sdk</code> with its expected and compatible versions:</p>
+<ul>
+<li><code>@openfeature/server-sdk</code>: >=1.7.5</li>
+<li><code>@nestjs/common</code>: ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0</li>
+<li><code>@nestjs/core</code>: ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0</li>
+<li><code>rxjs</code>: ^6.0.0 || ^7.0.0 || ^8.0.0</li>
+</ul>
+<p>The minimum required version of <code>@openfeature/server-sdk</code> currently is <code>1.7.5</code>.</p>
+<h3 id="usage">Usage</h3>
+<p>The example below shows how to use the <code>OpenFeatureModule</code> with OpenFeature's <code>InMemoryProvider</code>.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Module</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeatureModule</span>, <span class="hljs-title class_">InMemoryProvider</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/nestjs-sdk'</span>;
+
+<span class="hljs-meta">@Module</span>({
+  <span class="hljs-attr">imports</span>: [
+    <span class="hljs-title class_">OpenFeatureModule</span>.<span class="hljs-title function_">forRoot</span>({
+      <span class="hljs-attr">defaultProvider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">InMemoryProvider</span>({
+        <span class="hljs-attr">testBooleanFlag</span>: {
+          <span class="hljs-attr">defaultVariant</span>: <span class="hljs-string">'default'</span>,
+          <span class="hljs-attr">variants</span>: { <span class="hljs-attr">default</span>: <span class="hljs-literal">true</span> },
+          <span class="hljs-attr">disabled</span>: <span class="hljs-literal">false</span>,
+        },
+      }),
+      <span class="hljs-attr">providers</span>: {
+        <span class="hljs-attr">differentProvider</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">InMemoryProvider</span>(),
+      },
+    }),
+  ],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AppModule</span> {}
+</code></pre>
+<p>With the <code>OpenFeatureModule</code> configured, it's possible to inject flag evaluation details into route handlers like in the following code snippet.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Controller</span>, <span class="hljs-title class_">ExecutionContext</span>, <span class="hljs-title class_">Get</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>;
+<span class="hljs-keyword">import</span> { map, <span class="hljs-title class_">Observable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'rxjs'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">BooleanFeatureFlag</span>, <span class="hljs-title class_">EvaluationDetails</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/nestjs-sdk'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Request</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'express'</span>;
+
+<span class="hljs-meta">@Controller</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OpenFeatureController</span> {
+  <span class="hljs-meta">@Get</span>(<span class="hljs-string">'/welcome'</span>)
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">async</span> <span class="hljs-title function_">welcome</span>(<span class="hljs-params">
+    <span class="hljs-meta">@BooleanFeatureFlag</span>({
+      flagKey: <span class="hljs-string">'testBooleanFlag'</span>,
+      defaultValue: <span class="hljs-literal">false</span>,
+    })
+    <span class="hljs-attr">feature</span>: <span class="hljs-title class_">Observable</span>&#x3C;<span class="hljs-title class_">EvaluationDetails</span>&#x3C;<span class="hljs-built_in">boolean</span>>>,
+  </span>) {
+    <span class="hljs-keyword">return</span> feature.<span class="hljs-title function_">pipe</span>(
+      <span class="hljs-title function_">map</span>(<span class="hljs-function">(<span class="hljs-params">details</span>) =></span>
+        details.<span class="hljs-property">value</span> ? <span class="hljs-string">'Welcome to this OpenFeature-enabled NestJS app!'</span> : <span class="hljs-string">'Welcome to this NestJS app!'</span>,
+      ),
+    );
+  }
+}
+</code></pre>
+<p>It is also possible to inject the default or domain scoped OpenFeature clients into a service via Nest dependency injection system.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Injectable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">OpenFeatureClient</span>, <span class="hljs-title class_">Client</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/nestjs-sdk'</span>;
+
+<span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OpenFeatureTestService</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">
+    <span class="hljs-meta">@OpenFeatureClient</span>() <span class="hljs-keyword">private</span> <span class="hljs-attr">defaultClient</span>: <span class="hljs-title class_">Client</span>,
+    <span class="hljs-meta">@OpenFeatureClient</span>({ domain: <span class="hljs-string">'my-domain'</span> }) <span class="hljs-keyword">private</span> <span class="hljs-attr">scopedClient</span>: <span class="hljs-title class_">Client</span>,
+  </span>) {}
+
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">async</span> <span class="hljs-title function_">getBoolean</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">defaultClient</span>.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">'testBooleanFlag'</span>, <span class="hljs-literal">false</span>);
+  }
+}
+</code></pre>
+<h4 id="managing-controller-or-route-access-via-feature-flags">Managing Controller or Route Access via Feature Flags</h4>
+<p>The <code>RequireFlagsEnabled</code> decorator can be used to manage access to a controller or route based on the enabled state of a feature flag. The decorator will throw an exception if the required feature flag(s) are not enabled.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Controller</span>, <span class="hljs-title class_">Get</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">RequireFlagsEnabled</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@openfeature/nestjs-sdk'</span>;
+
+<span class="hljs-meta">@Controller</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OpenFeatureController</span> {
+  <span class="hljs-meta">@RequireFlagsEnabled</span>({ <span class="hljs-attr">flags</span>: [{ <span class="hljs-attr">flagKey</span>: <span class="hljs-string">'testBooleanFlag'</span> }] })
+  <span class="hljs-meta">@Get</span>(<span class="hljs-string">'/welcome'</span>)
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">async</span> <span class="hljs-title function_">welcome</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-keyword">return</span> <span class="hljs-string">'Welcome to this OpenFeature-enabled NestJS app!'</span>;
+  }
+}
+</code></pre>
+<h2 id="module-additional-information">Module additional information</h2>
+<h3 id="flag-evaluation-context-injection">Flag evaluation context injection</h3>
+<p>Whenever a flag evaluation occurs, context can be provided with information like user e-mail, role, targeting key, etc. in order to trigger specific evaluation rules or logic. The <code>OpenFeatureModule</code> provides a way to configure context for each request using the <code>contextFactory</code> option.
+The <code>contextFactory</code> is run in a NestJS interceptor scope to configure the evaluation context, and then it is used in every flag evaluation related to this request.
+By default, the interceptor is configured globally, but it can be changed by setting the <code>useGlobalInterceptor</code> to <code>false</code>. In this case, it is still possible to configure a <code>contextFactory</code> that can be injected into route, module or controller bound interceptors.</p>

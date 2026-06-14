@@ -1,0 +1,68 @@
+<h1 id="architecture">Architecture</h1>
+<p><code>http-cache</code> is built on a simple idea: <strong>caching is an HTTP problem, so solve it with
+HTTP architecture.</strong> Run stateless gateways at the edge, put them behind a global
+anycast load balancer, and let standard HTTP semantics do the heavy lifting.</p>
+<h2 id="the-big-picture">The big picture</h2>
+<p><img src="/architecture.svg" alt="Old-school clustering versus http-cache global load balancing"></p>
+<p>A request flows like this:</p>
+<ol>
+<li>A client (browser, SPA, or service) makes an HTTP request.</li>
+<li>A <strong>global anycast load balancer</strong> routes it to the <strong>nearest</strong> gateway region.</li>
+<li>The gateway checks its <strong>L1/L2 in-memory cache</strong> (<a href="/docs/caching-layers">cacheable</a>).
+On a hit, it responds in microseconds.</li>
+<li>On a miss, it consults the <strong>shared storage backend</strong> (<a href="/docs/storage-backends">keyv</a>)
+and, if needed, the origin — then populates its memory tiers.</li>
+<li>Changes are pushed to subscribers over <strong>socket.io</strong> and fanned out to other systems
+via <strong>webhooks and queues</strong> (<a href="/docs/realtime-and-webhooks">airhorn</a> + qified).</li>
+<li>Every operation is recorded through the <strong>statistics</strong> provider framework
+(<a href="/docs/statistics">ClickHouse</a> by default).</li>
+</ol>
+<h2 id="why-not-clustering">Why not clustering?</h2>
+<p>Old-school cache clustering <em>sucks</em> — and we mean that technically:</p>
+<ul>
+<li><strong>O(n²) chatter.</strong> Gossip and replication traffic grows with every node you add.</li>
+<li><strong>Rebalancing pain.</strong> Adding or losing a node triggers reshuffling and risks
+split-brain and cache stampedes.</li>
+<li><strong>Sticky sessions.</strong> You end up pinning clients to nodes to preserve cache affinity,
+which fights against horizontal scaling.</li>
+<li><strong>Single-region latency.</strong> A cluster lives in one place, so distant users always pay
+a long round trip.</li>
+</ul>
+<p>Clustering tries to make many machines pretend to be one big cache. That coupling is
+exactly what makes it fragile.</p>
+<h2 id="why-global-load-balancing--http-wins">Why global load balancing + HTTP wins</h2>
+<p><code>http-cache</code> gateways are <strong>stateless</strong> request handlers. Their memory tier is a local
+accelerator, and the source of truth lives in a shared, provider-backed store. That
+unlocks a far simpler operational model:</p>
+<ul>
+<li><strong>Nearest-edge latency.</strong> Anycast routes each user to the closest region.</li>
+<li><strong>Elastic, no rebalancing.</strong> Add or remove gateways freely — there is no cluster
+membership to negotiate.</li>
+<li><strong>No gossip, no sticky sessions, no split-brain.</strong> Gateways never need to talk to
+each other to be correct.</li>
+<li><strong>HTTP all the way down.</strong> CDNs, proxies, and clients already understand caching
+headers, so the whole ecosystem cooperates instead of fighting you.</li>
+</ul>
+<h2 id="diagram-source-mermaid">Diagram source (mermaid)</h2>
+<p>The diagram above is also maintained as mermaid for easy editing:</p>
+<pre><code class="hljs language-mermaid">flowchart TD
+    U["Users worldwide&#x3C;br/>(browser / SPA / service)"] --> LB["Global Anycast Load Balancer&#x3C;br/>Cloudflare · Fastly · GCP · Azure · AWS"]
+    LB --> GA["Gateway · region A&#x3C;br/>L1/L2 memory (cacheable)"]
+    LB --> GB["Gateway · region B&#x3C;br/>L1/L2 memory (cacheable)"]
+    GA --> STORE[("Shared storage backends (keyv)&#x3C;br/>Redis · Memcache · MongoDB")]
+    GB --> STORE
+    GA -. stats .-> CH[("ClickHouse")]
+    GB -. stats .-> CH
+    GA -. config .-> M[("MongoDB")]
+    GB -. config .-> M
+    GA -. webhooks/queue .-> Q["airhorn · qified"]
+    GB -. webhooks/queue .-> Q
+</code></pre>
+<h2 id="explore-the-pieces">Explore the pieces</h2>
+<ul>
+<li><strong><a href="/docs/storage-backends">Storage backends</a></strong> — keyv providers.</li>
+<li><strong><a href="/docs/caching-layers">Caching layers</a></strong> — L1/L2 in memory with cacheable.</li>
+<li><strong><a href="/docs/gateway-and-api">Gateway &#x26; API</a></strong> — REST, gateway providers, and auth.</li>
+<li><strong><a href="/docs/realtime-and-webhooks">Realtime &#x26; webhooks</a></strong> — socket.io, airhorn, qified.</li>
+<li><strong><a href="/docs/statistics">Statistics</a></strong> — observability with ClickHouse.</li>
+</ul>

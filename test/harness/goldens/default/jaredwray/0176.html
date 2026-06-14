@@ -1,0 +1,148 @@
+<h1 id="contrib">Contrib</h1>
+<p>Contrib is a site that enabled auctions for memorabilia. In 2023 the team decided to shut the service down and open source the code.</p>
+<p><em>This code is provided as is and is not supported by the team</em></p>
+<p>If you would like to contribute to the project please read the <a href="CONTRIBUTING.md">Contributing</a> document. Contrib was built with the following features:</p>
+<ul>
+<li>Can easily scale to 1000s of auctions, customers, and influencers</li>
+<li>Non-profits have the ability to setup their own account and transaction fees are donated to the non-profit via stripe</li>
+<li>Influencers have their own profile and can upload and manage their auctions</li>
+<li>Influencers can post via the social networks with a short code url provided by contrib</li>
+<li>Auctions can be uploaded by the admin, or by the influencers</li>
+<li>Easy logon for all mobile users as the base profile is bound to the mobile number</li>
+<li>Because of the above, the user can easily change their profile picture and name</li>
+<li>Support for social logons via <code>passport.js</code> for twitter, facebook, and google</li>
+<li>Cloud Native by default using cloud services such as mongo atlas, stripe, sendgrid, and firebase, cloudflare (streaming), google cloud storage.</li>
+</ul>
+<p><img src="https://github.com/jaredwray/contrib/workflows/tests/badge.svg" alt="tests">
+<a href="https://codecov.io/gh/jaredwray/contrib"><img src="https://codecov.io/gh/jaredwray/contrib/branch/main/graph/badge.svg?token=2LIYGRVN4F" alt="codecov"></a></p>
+<ul>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#deploying-the-api">How to Deploy the App</a></li>
+<li><a href="#deploying-the-api">How to Deploy the API</a></li>
+<li><a href="#setting-up-cloud-services">How to Set Up Cloud Services</a></li>
+<li><a href="CONTRIBUTING.md">How to Contribute</a></li>
+<li><a href="CODE_OF_CONDUCT.md">Code of Conduct</a></li>
+<li><a href="LICENSE.md">License</a></li>
+</ul>
+<h2 id="getting-started">Getting Started</h2>
+<p>When using a mono repo you will want to install the dependencies for the entire repo. To do this you will want to run the following command: <code>yarn</code> This will install all dependencies for the entire repo. This will also install the dependencies for the <code>app</code> and <code>api</code> as well.</p>
+<p>Once you have installed the dependencies you can run the following commands: <code>yarn start</code> This will start the <code>app</code> on port 3000 and <code>api</code> on 3001 in development mode. You can also run the following commands: <code>yarn start:app</code> This will start the <code>app</code> on port 3000 in development mode. <code>yarn start:api</code> This will start the <code>api</code> on port 3001 in development mode.</p>
+<h3 id="building-contrib">Building Contrib</h3>
+<p>To build contrib for production you will want to run the following commands:</p>
+<p>Install all dependencies: <code>yarn</code></p>
+<p>Build the app and api: <code>yarn build</code></p>
+<p>This will build the <code>app</code> and place the static files in the <code>packages/app/dist</code> directory. It will also build the <code>api</code> and place it in the <code>packages/api/dist</code> directory.</p>
+<p>Build the Docker Container for API: <code>yarn docker:build</code></p>
+<p>At this point you can deploy the <code>app</code> to any static cloud host and then deploy the <code>api</code> to any cloud host that supports docker.</p>
+<h3 id="development-in-the-mono-repo">Development in the Mono Repo</h3>
+<p>The mono repo is built using <code>yarn</code> and there are easy scripts in the base <code>package.json</code> to help with development and build.</p>
+<ul>
+<li><code>yarn test</code> - this will test the <code>app</code> and <code>api</code></li>
+<li><code>yarn build</code> - this will build the <code>app</code> and <code>api</code></li>
+<li><code>yarn docker:build</code> - this will build the <code>api</code> in a docker container</li>
+<li><code>yarn docker:run</code> - this will run the <code>api</code> in a docker container</li>
+<li><code>yarn start</code> - this will start the <code>app</code> on port 3000 and <code>api</code> on 3001 in development mode</li>
+<li><code>yarn start:app</code> - this will start the <code>app</code> on port 3000 in development mode</li>
+<li><code>yarn start:api</code> - this will start the <code>api</code> on port 3001 in development mode</li>
+</ul>
+<h2 id="deploying-the-api">Deploying the API</h2>
+<p>The API is the brains in this system and all major business logic is handled here. The API is a standard nodejs application and can be built and served with the following ENV variables:</p>
+<pre><code></code></pre>
+<ul>
+<li>Build: <code>docker build --rm --pull -f "./Dockerfile" -t "contrib:latest" "./"</code></li>
+<li>Run: <code>docker run --rm -d -p 3000:3000/tcp contrib:latest</code></li>
+</ul>
+<h2 id="deploying-the-app">Deploying the App</h2>
+<p>The app is a standard react application and can be built and served statically with only one <code>ENV</code> variable provided which is <code>REACT_APP_API_URL={YOUR_API_URL}</code>.</p>
+<p>Commands to build:
+<code>yarn &#x26;&#x26; yarn build</code></p>
+<p>This will build the <code>app</code> and place the static files in the <code>packages/app/dist</code> directory. It will also build the <code>api</code> and place it in the <code>packages/api/dist</code> directory.</p>
+<p>You can do this on any static hosting service such as <code>Netlify</code>, <code>Vercel</code>, <code>AWS S3</code>, <code>Firebase</code>, <code>Cloudflare</code>, etc.</p>
+<h2 id="setting-up-cloud-services">Setting Up Cloud Services</h2>
+<h3 id="ups-delivery">UPS delivery:</h3>
+<p>To deliver auction winnings, we use UPS service.</p>
+<p>You can find all the necessary information about UPS for development here: <code>https://www.ups.com/upsdeveloperkit?loc=en_US</code>.</p>
+<h3 id="authentication-logic">Authentication logic:</h3>
+<p>To authenticate users, we use the PassportJs library. We use 3 authentication strategies: Google, Facebook, Twitter.</p>
+<p>To configure each of them to work correctly, you need to take the following steps:</p>
+<h4 id="auth-with-google-by-passportjs">Auth with Google by passport.js:</h4>
+<ol>
+<li>Log in to the Google Cloud Platform.</li>
+<li>Select the your project.</li>
+<li>Add the following links to the Authorized JavaScript origins field: <code>https://{YOUR_APP_URL}</code>,</li>
+<li>Add the following links to the Authorized Redirect URIs field: <code>https://{YOUR_APP_URL}/api/v1/auth/google/callback</code>.</li>
+<li>Get Client ID and Client secret for GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET envs.</li>
+<li>Register Google Strategy as indicated on this page: <code>http://www.passportjs.org/packages/passport-google-oauth20/</code></li>
+</ol>
+<h4 id="auth-with-facebook-by-passportjs">Auth with Facebook by passport.js:</h4>
+<ol>
+<li>Log in to the Facebook Developers.</li>
+<li>Go to Facebook Login => Setting</li>
+<li>Add the following links to the Valid OAuth Redirect URI: <code>https://{YOUR_APP_URL}/api/v1/auth/facebook/callback</code>.</li>
+<li>Get App ID and App Secret for FACEBOOK_APP_ID and FACEBOOK_APP_ID envs on the Settings => Basic.</li>
+<li>Register Facebook Strategy as indicated on this page: <code>http://www.passportjs.org/packages/passport-facebook/</code></li>
+</ol>
+<h4 id="auth-with-twitter-by-passportjs">Auth with Twitter by passport.js:</h4>
+<ol>
+<li>Log in to the Twittet Application Management.</li>
+<li>Go to the Setting tab.</li>
+<li>Add the following links to the Callback URL: <code>https://{YOUR_APP_URL}/api/v1/auth/twitter/callback</code>.</li>
+<li>Go to the API Keys tab, there you will find your Consumer key and Consumer secret keys for TWITTER_CONSUMER_KEY and TWITTER_CONSUMER_SECRET envs.</li>
+<li>Register Twitter Strategy as indicated on this page: <code>http://www.passportjs.org/packages/passport-twitter/</code></li>
+</ol>
+<h4 id="setup-webhook-to-notify-application-when-an-event-happens-in-an-account">Setup webhook to notify application when an event happens in an account</h4>
+<ol>
+<li>Sign in to Stripe <code>https://stripe.com/</code></li>
+<li>Go to <code>Developers/Webhooks</code> section</li>
+<li>If needs to receive events from customer's accounts connected to the Contrib's account - press <code>Add endpoint</code> in <code>Endpoints receiving events from Connect applications</code> section</li>
+<li>If needs to receive event from personal account - press <code>Add endpoint</code> in <code>Endpoints receiving events from your account</code></li>
+<li>In the appeared window enter the URL which will receive Stripe events on the server</li>
+<li>Enter description</li>
+<li>Select several events in <code>Events to send</code> section or press button <code>receive all events</code></li>
+<li>Press <code>Add endpoint</code></li>
+<li>Check the secret key in <code>Sign in secret</code> section</li>
+</ol>
+<p>Now webhook added and registered on Stripe side. On server side add new evn var with value from <code>Sign in secret</code> section.
+This value will be used to check webhook signature when event will be received.</p>
+<p>Every webhook will have personal sign in secret, so for every new webhook will require personal env var with defined secret value</p>
+<h4 id="configuring-scheduled-jobs-for-the-auctions">Configuring scheduled jobs for the auctions:</h4>
+<p>Go to Google Cloud Scheduler: <a href="https://console.cloud.google.com/cloudscheduler">https://console.cloud.google.com/cloudscheduler</a> and create follow jobs:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Frequency</th>
+<th>Timezone</th>
+<th>Target type</th>
+<th>URL</th>
+<th>HTTP method</th>
+<th>HTTP headers</th>
+<th>Body</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>contrib-auction-settle</td>
+<td>end auctions (change status to SETTLED)</td>
+<td>* * * * *</td>
+<td>America/Los_Angeles</td>
+<td>HTTP</td>
+<td>https://<code>{YOUR_API_URL}</code>/api/v1/auctions-settle</td>
+<td>POST</td>
+<td>Content-Type: application/json</td>
+<td>{ "key": "OUR_SECRET_KEY" }</td>
+</tr>
+<tr>
+<td>contrib-notify-auction-end</td>
+<td>send notifications</td>
+<td>* * * * *</td>
+<td>America/Los_Angeles</td>
+<td>HTTP</td>
+<td>https://<code>{YOUR_API_URL}</code>/api/v1/auctions-ends-notify</td>
+<td>POST</td>
+<td>Content-Type: application/json</td>
+<td>{ "key": "OUR_SECRET_KEY" }</td>
+</tr>
+</tbody>
+</table>

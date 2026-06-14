@@ -1,0 +1,92 @@
+<p><em>Logging is the act of keeping a log. A log (in this case) records events that occur in software.</em></p>
+<p>Subject to many opinions and differing principles of best practice, the best thing we could do for the <code>go-sdk</code> was
+to create an implementation as open &#x26; configurable as possible. To achieve this, we've integrated <a href="https://github.com/go-logr/logr">logr</a>,
+this allows the use of any logger that conforms to its API.</p>
+<p>Applications may already have a chosen logging solution at the point of introducing <code>openfeature</code>. An <a href="https://github.com/go-logr/logr#implementations-non-exhaustive">integration with logr</a>
+may already exist for their chosen solution (integrations exist for many of the popular logger packages in go). If not, they could write their own integration.</p>
+<h2 id="objective">Objective</h2>
+<p><em>Configure the popular go logger <a href="https://github.com/uber-go/zap">zap</a> with the go-sdk.</em></p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Golang 1.17+</li>
+</ul>
+<h2 id="scaffolding">Scaffolding</h2>
+<ol>
+<li>
+<p>Go get the following dependencies</p>
+<pre><code class="hljs language-shell">go get github.com/open-feature/go-sdk
+go get go.uber.org/zap
+go get github.com/go-logr/logr
+go get github.com/go-logr/zapr # an integration of zap with logr's API
+</code></pre>
+</li>
+<li>
+<p>Import all of the above into your <code>main.go</code> and create <code>func main()</code></p>
+<pre><code class="hljs language-go"><span class="hljs-keyword">package</span> main
+
+<span class="hljs-keyword">import</span> (
+    <span class="hljs-string">"github.com/go-logr/logr"</span>
+    <span class="hljs-string">"github.com/go-logr/zapr"</span>
+    <span class="hljs-string">"github.com/open-feature/go-sdk/pkg/openfeature"</span>
+    <span class="hljs-string">"go.uber.org/zap"</span>
+    <span class="hljs-string">"go.uber.org/zap/zapcore"</span>
+    <span class="hljs-string">"context"</span>
+    <span class="hljs-string">"log"</span>
+)
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
+
+}
+</code></pre>
+</li>
+</ol>
+<h2 id="integrating-the-logger">Integrating the logger</h2>
+<ol>
+<li>
+<p>Create the zap logger with preset development config (for the sake of this tutorial)</p>
+<pre><code class="hljs language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
+    zc := zap.NewDevelopmentConfig()
+    zc.Level = zap.NewAtomicLevelAt(zapcore.Level(<span class="hljs-number">-1</span>)) <span class="hljs-comment">// the level here decides the verbosity of our logs</span>
+    z, err := zc.Build()
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        log.Fatal(err)
+    }
+}
+</code></pre>
+</li>
+<li>
+<p>Create the zapr logger (zap logger that conforms to logr's interface)</p>
+<pre><code class="hljs language-go">l := zapr.NewLogger(z)
+</code></pre>
+</li>
+<li>
+<p>Set the logger to the global openfeature singleton</p>
+<pre><code class="hljs language-go">openfeature.SetLogger(l)
+</code></pre>
+</li>
+<li>
+<p>Create an openfeature client and invoke a flag evaluation</p>
+<pre><code class="hljs language-go">c := openfeature.NewClient(<span class="hljs-string">"log"</span>)
+
+evalCtx := openfeature.NewEvaluationContext(<span class="hljs-string">"foo"</span>, <span class="hljs-literal">nil</span>)
+
+c.BooleanValue(context.Background(), <span class="hljs-string">"bar"</span>, <span class="hljs-literal">false</span>, evalCtx)
+</code></pre>
+</li>
+<li>
+<p>Check the result of <code>go run main.go</code></p>
+<pre><code class="hljs language-shell">2022-09-02T14:22:31.109+0100    INFO    openfeature/openfeature.go:76   set global logger
+2022-09-02T14:22:31.110+0100    DEBUG   openfeature/client.go:230       evaluating flag {"flag": "bar", "type": "bool", "defaultValue": false, "evaluationContext": {"targetingKey":"foo","attributes":null}, "evaluationOptions": {}}
+2022-09-02T14:22:31.110+0100    DEBUG   openfeature/client.go:336       executing before hooks
+2022-09-02T14:22:31.110+0100    DEBUG   openfeature/client.go:349       executed before hooks
+2022-09-02T14:22:31.110+0100    DEBUG   openfeature/client.go:355       executing after hooks
+2022-09-02T14:22:31.110+0100    DEBUG   openfeature/client.go:364       executed after hooks
+2022-09-02T14:22:31.110+0100    DEBUG   openfeature/client.go:318       evaluated flag  {"flag": "bar", "details": {"FlagKey":"bar","FlagType":0,"Value":false,"ErrorCode":"","Reason":"","Variant":""}, "type": "bool"}
+2022-09-02T14:22:31.110+0100    DEBUG   openfeature/client.go:377       executing finally hooks
+2022-09-02T14:22:31.110+0100    DEBUG   openfeature/client.go:383       executed finally hooks
+</code></pre>
+</li>
+<li>
+<p>(optional) Tweak the level set in step 1 to decrease the verbosity</p>
+</li>
+</ol>

@@ -1,0 +1,84 @@
+<h1 id="binary-download">Binary Download</h1>
+<p>Docula publishes standalone binaries — a single executable file containing both Node.js and docula itself — for Linux, macOS (x64 and arm64), and Windows. Binaries are produced by the <a href="https://github.com/jaredwray/docula/actions/workflows/build-binaries.yaml"><code>build-binaries</code> GitHub Actions workflow</a> and attached to each release.</p>
+<p>Use a binary when you want to run docula without installing Node.js or pnpm/npm — for example, on a minimal CI image or a machine where you can't add a global npm dependency.</p>
+<h2 id="download">Download</h2>
+<p>Grab the artifact matching your platform from the <a href="https://github.com/jaredwray/docula/releases/latest">latest release</a>:</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Artifact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linux x64</td>
+<td><code>docula-linux-x64</code></td>
+</tr>
+<tr>
+<td>macOS arm64 (Apple Silicon)</td>
+<td><code>docula-macos-arm64</code></td>
+</tr>
+<tr>
+<td>Windows x64</td>
+<td><code>docula-windows-x64.exe</code></td>
+</tr>
+</tbody>
+</table>
+<p>On macOS and Linux, mark the file as executable after downloading:</p>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">chmod</span> +x docula-linux-x64
+./docula-linux-x64 version
+</code></pre>
+<h2 id="json-config-only">JSON Config Only</h2>
+<p>The standalone binary loads configuration from <strong><code>docula.config.json</code></strong> only. TypeScript (<code>.ts</code>) and ESM JavaScript (<code>.mjs</code>) config files are not supported when running the binary; if one is present and no <code>docula.config.json</code> exists, the binary exits with an error explaining the limitation.</p>
+<p>This restriction is intentional. Node.js's single-executable-application runtime can't dynamic-import file URLs, which is how <code>.ts</code> and <code>.mjs</code> configs are loaded under regular Node. Rather than ship a fragile transpiler inside the binary, the SEA path only reads JSON — which is data, not code.</p>
+<p>The practical consequence: <strong>no lifecycle hooks</strong> (<code>onPrepare</code>, etc.) in the binary. JSON can't carry functions. If you need <code>onPrepare</code>, run docula from Node.js with a <code>.ts</code> or <code>.mjs</code> config instead.</p>
+<h3 id="example">Example</h3>
+<p><code>docula.config.json</code> at the root of your site directory:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"githubPath"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"your-username/your-repo"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"siteTitle"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"My Project"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"siteDescription"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Project description"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"siteUrl"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"https://your-site.com"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"themeMode"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"light"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"template"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"modern"</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>The top-level object is the options bag — the same shape as the <code>options</code> export in a <code>.ts</code>/<code>.mjs</code> config. Every field documented on the <a href="./configuration">Configuration page</a> is supported, except for the function fields like <code>onPrepare</code>.</p>
+<p>Then build:</p>
+<pre><code class="hljs language-bash">./docula-linux-x64 build -s ./site -o ./dist
+</code></pre>
+<h2 id="using-json-outside-the-binary">Using JSON Outside the Binary</h2>
+<p><code>docula.config.json</code> is supported under regular Node too. It's checked after <code>docula.config.ts</code> and <code>docula.config.mjs</code>, so if you have both a <code>.ts</code> and a <code>.json</code> file in the same site directory, the <code>.ts</code> config wins.</p>
+<p>This means you can author one <code>docula.config.json</code> and use it from both:</p>
+<ul>
+<li>The standalone binary (only <code>.json</code> is read)</li>
+<li>A Node-installed docula (<code>.ts</code>/<code>.mjs</code> take priority if present, otherwise <code>.json</code> is used)</li>
+</ul>
+<h2 id="when-to-use-which">When to Use Which</h2>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Recommended config</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Standalone binary</td>
+<td><code>docula.config.json</code> (required)</td>
+</tr>
+<tr>
+<td>Node.js project with type checking</td>
+<td><code>docula.config.ts</code></td>
+</tr>
+<tr>
+<td>Node.js project without TypeScript</td>
+<td><code>docula.config.mjs</code></td>
+</tr>
+<tr>
+<td>Plain data, no hooks, run anywhere</td>
+<td><code>docula.config.json</code></td>
+</tr>
+</tbody>
+</table>

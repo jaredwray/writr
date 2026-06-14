@@ -1,0 +1,305 @@
+<blockquote>
+<p><strong>⚠️ The OpenFeature CLI is experimental!</strong>
+Feel free to give it a shot and provide feedback, but expect breaking changes.</p>
+</blockquote>
+<h2 id="overview">Overview</h2>
+<p>The OpenFeature CLI is a command-line tool designed to improve the developer experience when working with feature flags.
+It helps developers manage feature flags consistently across different environments and programming languages by providing powerful utilities for code generation, flag validation, and more.</p>
+<h2 id="setup">Setup</h2>
+<p>Before we jump in, let's get everything ready.
+You'll need to install the OpenFeature CLI.
+Choose the method that works best for you:</p>
+<h3 id="curl">curl</h3>
+<p>The OpenFeature CLI can be installed using a shell command.
+This method is suitable for most Unix-like operating systems.</p>
+<pre><code class="hljs language-bash">curl -fsSL https://openfeature.dev/scripts/install_cli.sh | sh
+</code></pre>
+<h3 id="docker">docker</h3>
+<p>The OpenFeature CLI is available as a Docker image in the <a href="https://github.com/open-feature/cli/pkgs/container/cli">GitHub Container Registry</a>.</p>
+<p>You can run the CLI in a Docker container using the following command:</p>
+<pre><code class="hljs language-bash">docker run -it -v $(<span class="hljs-built_in">pwd</span>):/local -w /local ghcr.io/open-feature/cli:latest
+</code></pre>
+<h3 id="go">go</h3>
+<p>If you have <code>Go >= 1.23</code> installed, you can install the CLI using the following command:</p>
+<pre><code class="hljs language-bash">go install github.com/open-feature/cli/cmd/openfeature@latest
+</code></pre>
+<h3 id="pre-built-binaries">pre-built binaries</h3>
+<p>Download the appropriate pre-built binary from the <a href="https://github.com/open-feature/cli/releases">releases page</a>.</p>
+<h2 id="your-first-flag-manifest">Your first flag manifest</h2>
+<p>Every great feature flagging setup starts with knowing what flags you have.
+Let's create a simple flag manifest that defines a few common flags you might use in a real project:</p>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">cat</span> > flags.json &#x3C;&#x3C; <span class="hljs-string">EOF
+{
+  "$schema": "https://raw.githubusercontent.com/open-feature/cli/refs/heads/main/schema/v0/flag-manifest.json",
+  "flags": {
+    "newUserOnboarding": {
+      "description": "Shows the new streamlined onboarding flow",
+      "flagType": "boolean",
+      "defaultValue": false
+    },
+    "maxLoginAttempts": {
+      "description": "Maximum number of login attempts before lockout",
+      "flagType": "integer",
+      "defaultValue": 3
+    },
+    "welcomeMessage": {
+      "description": "Personalized welcome message for users",
+      "flagType": "string",
+      "defaultValue": "Welcome!"
+    }
+  }
+}
+EOF</span>
+</code></pre>
+<p>This manifest defines three flags <code>newUserOnboarding</code>, <code>maxLoginAttempts</code> and <code>welcomeMessage</code> that you might find in any web application.
+Notice how each flag has a clear <code>description</code>, a <code>type</code>, and a sensible <code>default value</code>.</p>
+<h2 id="flag-manifest">Flag Manifest</h2>
+<p>The flag manifest is a JSON file that defines your feature flags and their properties.
+It serves as the source of truth for your feature flags and is used by the CLI to generate strongly typed accessors.
+The manifest file should be named <code>flags.json</code> and placed in the root of your project.</p>
+<h3 id="flag-manifest-structure">Flag Manifest Structure</h3>
+<p>The flag manifest file should follow the JSON schema defined <a href="https://raw.githubusercontent.com/open-feature/cli/refs/heads/main/schema/v0/flag-manifest.json">here</a>.</p>
+<p>The schema defines the following properties:</p>
+<ul>
+<li><code>$schema</code>: The URL of the JSON schema for validation.</li>
+<li><code>flags</code>: An object containing the feature flags.
+<ul>
+<li><code>flagKey</code>: A unique key for the flag.
+<ul>
+<li><code>description</code>: A description of what the flag does.</li>
+<li><code>flagType</code>: The type of the flag (e.g., <code>boolean</code>, <code>string</code>, <code>number</code>, <code>object</code>).</li>
+<li><code>defaultValue</code>: The default value of the flag.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="code-generation">Code generation</h2>
+<p>Let's generate strongly typed flag accessors.
+The OpenFeature CLI supports multiple languages, so let's see what's available through the <code>generate</code> command.</p>
+<pre><code class="hljs language-bash">❯ openfeature generate
+</code></pre>
+<p>This will display a list of supported languages and their respective description:</p>
+<pre><code class="hljs language-bash">Available generators:
+Generator | Description                                  | Stability
+csharp    | Generate typesafe C# client.                 | alpha
+go        | Generate typesafe accessors <span class="hljs-keyword">for</span> OpenFeature. | alpha
+java      | Generate typesafe Java client.               | alpha
+nestjs    | Generate typesafe NestJS decorators.         | alpha
+nodejs    | Generate typesafe Node.js client.            | alpha
+python    | Generate typesafe Python client.             | alpha
+react     | Generate typesafe React Hooks.               | alpha
+</code></pre>
+<p>Let's start with NodeJs decorators since it's widely used:</p>
+<pre><code class="hljs language-bash">❯ openfeature generate nodejs
+</code></pre>
+<p>After running this command, you should see output similar to the following:</p>
+<pre><code class="hljs language-bash">INFO  Generating a typesafe client <span class="hljs-keyword">for</span> Node.js
+SUCCESS  Created openfeature.ts
+SUCCESS  Successfully generated client. Happy coding!
+</code></pre>
+<p>This will create a <code>openfeature.ts</code> file with strongly typed accessors for the flags defined in your manifest.
+No more string literals, no more guessing what type a flag returns.
+The file will look something like this:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// AUTOMATICALLY GENERATED BY OPENFEATURE CLI, DO NOT EDIT.</span>
+<span class="hljs-keyword">import</span> {
+  <span class="hljs-title class_">OpenFeature</span>,
+  stringOrUndefined,
+  objectOrUndefined,
+} <span class="hljs-keyword">from</span> <span class="hljs-string">"@openfeature/server-sdk"</span>;
+<span class="hljs-keyword">import</span> type {
+  <span class="hljs-title class_">EvaluationContext</span>,
+  <span class="hljs-title class_">EvaluationDetails</span>,
+  <span class="hljs-title class_">FlagEvaluationOptions</span>,
+} <span class="hljs-keyword">from</span> <span class="hljs-string">"@openfeature/server-sdk"</span>;
+
+<span class="hljs-keyword">export</span> interface <span class="hljs-title class_">GeneratedClient</span> {
+  <span class="hljs-comment">/**
+  * Maximum number of login attempts before lockout
+  *
+  * **Details:**
+  * - flag key: `maxLoginAttempts`
+  * - default value: `3`
+  * - type: `number`
+  *
+  * Performs a flag evaluation that returns a number.
+  * <span class="hljs-doctag">@param</span> {<span class="hljs-type">EvaluationContext</span>} context The evaluation context used on an individual flag evaluation
+  * <span class="hljs-doctag">@param</span> {<span class="hljs-type">FlagEvaluationOptions</span>} options Additional flag evaluation options
+  * <span class="hljs-doctag">@returns</span> {<span class="hljs-type">Promise&#x3C;number></span>} Flag evaluation response
+  */</span>
+  <span class="hljs-title function_">maxLoginAttempts</span>(context?: <span class="hljs-title class_">EvaluationContext</span>, options?: <span class="hljs-title class_">FlagEvaluationOptions</span>): <span class="hljs-title class_">Promise</span>&#x3C;number>;
+
+  <span class="hljs-comment">/**
+  * Maximum number of login attempts before lockout
+  *
+  * **Details:**
+  * - flag key: `maxLoginAttempts`
+  * - default value: `3`
+  * - type: `number`
+  *
+  * Performs a flag evaluation that a returns an evaluation details object.
+  * <span class="hljs-doctag">@param</span> {<span class="hljs-type">EvaluationContext</span>} context The evaluation context used on an individual flag evaluation
+  * <span class="hljs-doctag">@param</span> {<span class="hljs-type">FlagEvaluationOptions</span>} options Additional flag evaluation options
+  * <span class="hljs-doctag">@returns</span> {<span class="hljs-type">Promise&#x3C;EvaluationDetails&#x3C;number>></span>} Flag evaluation details response
+  */</span>
+  <span class="hljs-title function_">maxLoginAttemptsDetails</span>(context?: <span class="hljs-title class_">EvaluationContext</span>, options?: <span class="hljs-title class_">FlagEvaluationOptions</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">EvaluationDetails</span>&#x3C;number>>;
+
+  <span class="hljs-comment">/**
+  * Shows the new streamlined onboarding flow
+  *
+  * **Details:**
+  * - flag key: `newUserOnboarding`
+  * - default value: `false`
+  * - type: `boolean`
+  *
+  * Performs a flag evaluation that returns a boolean.
+  * <span class="hljs-doctag">@param</span> {<span class="hljs-type">EvaluationContext</span>} context The evaluation context used on an individual flag evaluation
+  * <span class="hljs-doctag">@param</span> {<span class="hljs-type">FlagEvaluationOptions</span>} options Additional flag evaluation options
+  * <span class="hljs-doctag">@returns</span> {<span class="hljs-type">Promise&#x3C;boolean></span>} Flag evaluation response
+  */</span>
+  <span class="hljs-title function_">newUserOnboarding</span>(context?: <span class="hljs-title class_">EvaluationContext</span>, options?: <span class="hljs-title class_">FlagEvaluationOptions</span>): <span class="hljs-title class_">Promise</span>&#x3C;boolean>;
+
+  <span class="hljs-comment">/**
+  * Shows the new streamlined onboarding flow
+  *
+  * **Details:**
+  * - flag key: `newUserOnboarding`
+  * - default value: `false`
+  * - type: `boolean`
+  *
+  * Performs a flag evaluation that a returns an evaluation details object.
+  * <span class="hljs-doctag">@param</span> {<span class="hljs-type">EvaluationContext</span>} context The evaluation context used on an individual flag evaluation
+  * <span class="hljs-doctag">@param</span> {<span class="hljs-type">FlagEvaluationOptions</span>} options Additional flag evaluation options
+  * <span class="hljs-doctag">@returns</span> {<span class="hljs-type">Promise&#x3C;EvaluationDetails&#x3C;boolean>></span>} Flag evaluation details response
+  */</span>
+  <span class="hljs-title function_">newUserOnboardingDetails</span>(context?: <span class="hljs-title class_">EvaluationContext</span>, options?: <span class="hljs-title class_">FlagEvaluationOptions</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">EvaluationDetails</span>&#x3C;boolean>>;
+
+  <span class="hljs-comment">/**
+  * Personalized welcome message for users
+  *
+  * **Details:**
+  * - flag key: `welcomeMessage`
+  * - default value: `Welcome!`
+  * - type: `string`
+  *
+  * Performs a flag evaluation that returns a string.
+  * <span class="hljs-doctag">@param</span> {<span class="hljs-type">EvaluationContext</span>} context The evaluation context used on an individual flag evaluation
+  * <span class="hljs-doctag">@param</span> {<span class="hljs-type">FlagEvaluationOptions</span>} options Additional flag evaluation options
+  * <span class="hljs-doctag">@returns</span> {<span class="hljs-type">Promise&#x3C;string></span>} Flag evaluation response
+  */</span>
+  <span class="hljs-title function_">welcomeMessage</span>(context?: <span class="hljs-title class_">EvaluationContext</span>, options?: <span class="hljs-title class_">FlagEvaluationOptions</span>): <span class="hljs-title class_">Promise</span>&#x3C;string>;
+
+  <span class="hljs-comment">/**
+  * Personalized welcome message for users
+  *
+  * **Details:**
+  * - flag key: `welcomeMessage`
+  * - default value: `Welcome!`
+  * - type: `string`
+  *
+  * Performs a flag evaluation that a returns an evaluation details object.
+  * <span class="hljs-doctag">@param</span> {<span class="hljs-type">EvaluationContext</span>} context The evaluation context used on an individual flag evaluation
+  * <span class="hljs-doctag">@param</span> {<span class="hljs-type">FlagEvaluationOptions</span>} options Additional flag evaluation options
+  * <span class="hljs-doctag">@returns</span> {<span class="hljs-type">Promise&#x3C;EvaluationDetails&#x3C;string>></span>} Flag evaluation details response
+  */</span>
+  <span class="hljs-title function_">welcomeMessageDetails</span>(context?: <span class="hljs-title class_">EvaluationContext</span>, options?: <span class="hljs-title class_">FlagEvaluationOptions</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">EvaluationDetails</span>&#x3C;string>>;
+}
+
+<span class="hljs-comment">/**
+ * A factory function that returns a generated client that not bound to a domain.
+ * It was generated using the OpenFeature CLI and is compatible with `<span class="hljs-doctag">@openfeature</span>/server-sdk`.
+ *
+ * All domainless or unbound clients use the default provider set via {<span class="hljs-doctag">@link</span> OpenFeature.setProvider}.
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">EvaluationContext</span>} context Evaluation context that should be set on the client to used during flag evaluations
+ * <span class="hljs-doctag">@returns</span> {<span class="hljs-type">GeneratedClient</span>} Generated OpenFeature Client
+ */</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getGeneratedClient</span>(<span class="hljs-params">context?: EvaluationContext</span>): <span class="hljs-title class_">GeneratedClient</span>
+<span class="hljs-comment">/**
+ * A factory function that returns a domain-bound generated client that was
+ * created using the OpenFeature CLI and is compatible with the `<span class="hljs-doctag">@openfeature</span>/server-sdk`.
+ *
+ * If there is already a provider bound to this domain via {<span class="hljs-doctag">@link</span> OpenFeature.setProvider}, this provider will be used.
+ * Otherwise, the default provider is used until a provider is assigned to that domain.
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">string</span>} domain An identifier which logically binds clients with providers
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">EvaluationContext</span>} context Evaluation context that should be set on the client to used during flag evaluations
+ * <span class="hljs-doctag">@returns</span> {<span class="hljs-type">GeneratedClient</span>} Generated OpenFeature Client
+ */</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getGeneratedClient</span>(<span class="hljs-params">domain: string, context?: EvaluationContext</span>): <span class="hljs-title class_">GeneratedClient</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getGeneratedClient</span>(<span class="hljs-params">domainOrContext?: string | EvaluationContext, contextOrUndefined?: EvaluationContext</span>): <span class="hljs-title class_">GeneratedClient</span> {
+  <span class="hljs-keyword">const</span> domain = <span class="hljs-title function_">stringOrUndefined</span>(domainOrContext);
+  <span class="hljs-keyword">const</span> context =
+    objectOrUndefined&#x3C;<span class="hljs-title class_">EvaluationContext</span>>(domainOrContext) ??
+    objectOrUndefined&#x3C;<span class="hljs-title class_">EvaluationContext</span>>(contextOrUndefined);
+
+  <span class="hljs-keyword">const</span> client = domain ? <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>(domain, context) : <span class="hljs-title class_">OpenFeature</span>.<span class="hljs-title function_">getClient</span>(context)
+
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">maxLoginAttempts</span>: (context?: <span class="hljs-title class_">EvaluationContext</span>, options?: <span class="hljs-title class_">FlagEvaluationOptions</span>): <span class="hljs-title class_">Promise</span>&#x3C;number> => {
+      <span class="hljs-keyword">return</span> client.<span class="hljs-title function_">getNumberValue</span>(<span class="hljs-string">"maxLoginAttempts"</span>, <span class="hljs-number">3</span>, context, options);
+    },
+
+    <span class="hljs-attr">maxLoginAttemptsDetails</span>: (context?: <span class="hljs-title class_">EvaluationContext</span>, options?: <span class="hljs-title class_">FlagEvaluationOptions</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">EvaluationDetails</span>&#x3C;number>> => {
+      <span class="hljs-keyword">return</span> client.<span class="hljs-title function_">getNumberDetails</span>(<span class="hljs-string">"maxLoginAttempts"</span>, <span class="hljs-number">3</span>, context, options);
+    },
+
+    <span class="hljs-attr">newUserOnboarding</span>: (context?: <span class="hljs-title class_">EvaluationContext</span>, options?: <span class="hljs-title class_">FlagEvaluationOptions</span>): <span class="hljs-title class_">Promise</span>&#x3C;boolean> => {
+      <span class="hljs-keyword">return</span> client.<span class="hljs-title function_">getBooleanValue</span>(<span class="hljs-string">"newUserOnboarding"</span>, <span class="hljs-literal">false</span>, context, options);
+    },
+
+    <span class="hljs-attr">newUserOnboardingDetails</span>: (context?: <span class="hljs-title class_">EvaluationContext</span>, options?: <span class="hljs-title class_">FlagEvaluationOptions</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">EvaluationDetails</span>&#x3C;boolean>> => {
+      <span class="hljs-keyword">return</span> client.<span class="hljs-title function_">getBooleanDetails</span>(<span class="hljs-string">"newUserOnboarding"</span>, <span class="hljs-literal">false</span>, context, options);
+    },
+
+    <span class="hljs-attr">welcomeMessage</span>: (context?: <span class="hljs-title class_">EvaluationContext</span>, options?: <span class="hljs-title class_">FlagEvaluationOptions</span>): <span class="hljs-title class_">Promise</span>&#x3C;string> => {
+      <span class="hljs-keyword">return</span> client.<span class="hljs-title function_">getStringValue</span>(<span class="hljs-string">"welcomeMessage"</span>, <span class="hljs-string">"Welcome!"</span>, context, options);
+    },
+
+    <span class="hljs-attr">welcomeMessageDetails</span>: (context?: <span class="hljs-title class_">EvaluationContext</span>, options?: <span class="hljs-title class_">FlagEvaluationOptions</span>): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-title class_">EvaluationDetails</span>&#x3C;string>> => {
+      <span class="hljs-keyword">return</span> client.<span class="hljs-title function_">getStringDetails</span>(<span class="hljs-string">"welcomeMessage"</span>, <span class="hljs-string">"Welcome!"</span>, context, options);
+    },
+  }
+}
+</code></pre>
+<p>You can now use the generated client in your Node.js application, and it will provide type-safe access to your feature flags.</p>
+<h2 id="using-the-generated-client">Using the generated client</h2>
+<p>Now that we have our generated client, we can use it in our Node.js application.
+Let's create a simple server that uses the generated client to evaluate flags:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { getGeneratedClient } <span class="hljs-keyword">from</span> <span class="hljs-string">'./openfeature'</span>;
+
+<span class="hljs-comment">// Create your strongly typed client</span>
+<span class="hljs-keyword">const</span> flags = <span class="hljs-title function_">getGeneratedClient</span>();
+
+<span class="hljs-comment">// You get this type-safe approach:</span>
+<span class="hljs-keyword">const</span> isEnabled = <span class="hljs-keyword">await</span> flags.<span class="hljs-title function_">newUserOnboarding</span>();
+<span class="hljs-keyword">const</span> attempts = <span class="hljs-keyword">await</span> flags.<span class="hljs-title function_">maxLoginAttempts</span>();
+<span class="hljs-keyword">const</span> message = <span class="hljs-keyword">await</span> flags.<span class="hljs-title function_">welcomeMessage</span>();
+
+...
+<span class="hljs-keyword">const</span> details = <span class="hljs-keyword">await</span> flags.<span class="hljs-title function_">newUserOnboardingDetails</span>(); <span class="hljs-comment">// Returns Promise&#x3C;EvaluationDetails&#x3C;boolean>></span>
+</code></pre>
+<h2 id="configuration">Configuration</h2>
+<p>The OpenFeature CLI uses an optional configuration file to override default settings and customize the behavior of the CLI.
+This file can be in JSON or YAML format and should be named either <code>.openfeature.json</code> or <code>.openfeature.yaml</code>.</p>
+<h3 id="configuration-file-structure">Configuration File Structure</h3>
+<pre><code class="hljs language-yaml"><span class="hljs-comment"># Example .openfeature.yaml</span>
+<span class="hljs-attr">manifest:</span> <span class="hljs-string">"flags/manifest.json"</span> <span class="hljs-comment"># Overrides the default manifest path</span>
+<span class="hljs-attr">generate:</span>
+  <span class="hljs-attr">output:</span> <span class="hljs-string">"src/flags"</span> <span class="hljs-comment"># Overrides the default output directory</span>
+  <span class="hljs-comment"># Any language-specific options can be specified here</span>
+  <span class="hljs-comment"># For example, for React:</span>
+  <span class="hljs-attr">react:</span>
+    <span class="hljs-attr">output:</span> <span class="hljs-string">"src/flags/react"</span> <span class="hljs-comment"># Overrides the default React output directory</span>
+  <span class="hljs-comment"># For Go:</span>
+  <span class="hljs-attr">go:</span>
+    <span class="hljs-attr">package:</span> <span class="hljs-string">"github.com/myorg/myrepo/flags"</span> <span class="hljs-comment"># Overrides the default Go package name</span>
+    <span class="hljs-attr">output:</span> <span class="hljs-string">"src/flags/go"</span> <span class="hljs-comment"># Overrides the default Go output directory</span>
+</code></pre>
+<h2 id="next-steps">Next Steps</h2>
+<p>Want to dive deeper?
+Here are some great next steps:</p>
+<ul>
+<li>Explore more generators: Try <code>openfeature generate</code> to see all supported languages</li>
+<li>Set up provider integration: Connect your generated code to a real feature flag service using <a href="/ecosystem?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Provider">OpenFeature providers</a></li>
+<li>Contribute: Visit the <a href="https://github.com/open-feature/cli">GitHub repository</a> to contribute or report issues</li>
+<li>Join the community: Drop by the <a href="https://cloud-native.slack.com/archives/C07DY4TUDK6">#openfeature-cli</a> channel in CNCF Slack</li>
+</ul>

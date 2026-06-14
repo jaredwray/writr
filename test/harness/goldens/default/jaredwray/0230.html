@@ -1,0 +1,84 @@
+<p>We're stoked to announce the first release of the <a href="/docs/reference/sdks/client/web/react">@openfeature/react-sdk</a>!
+This SDK is a distribution of our SDK for the web with extensions to support idiomatic React development and features.
+This blog highlights a few of these, with a few implementation details for the real React nerds. 🤓</p>
+<h2 id="features">Features</h2>
+<h3 id="context-provider">Context Provider</h3>
+<p>The <a href="/specification/glossary#client">OpenFeature client</a> is a lightweight abstraction used to evaluate feature flags, implemented by every SDK.
+Essentially, they represent a <em>scope</em> for feature flag evaluations.
+React's <a href="https://react.dev/reference/react/createContext#provider"><em>context provider</em></a> concept provides a means of sharing data and objects across multiple components without explicitly passing them through <a href="https://react.dev/learn/passing-props-to-a-component"><em>props</em></a>.
+A context provider is an ideal means of providing a bounded scope for flag evaluations by associating a react context with an OpenFeature client; the OpenFeature React SDK's <code>OpenFeatureProvider</code> does exactly this.
+Within the scope of this React provider, all flag evaluation hooks will make use of the bound OpenFeature client and its associated <a href="/specification/glossary#provider">OpenFeature provider</a>.</p>
+<pre><code class="hljs language-tsx"><span class="hljs-keyword">function</span> <span class="hljs-title function_">App</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">OpenFeatureProvider</span>></span>
+      {/* components in this scope share the same OpenFeature client and OpenFeature Provider */}
+      <span class="hljs-tag">&#x3C;<span class="hljs-name">MyPage</span>/></span>
+    <span class="hljs-tag">&#x3C;/<span class="hljs-name">OpenFeatureProvider</span>></span></span>
+  );
+}
+</code></pre>
+<h3 id="re-rendering-with-flag-changes">Re-rendering with Flag Changes</h3>
+<p>The most fundamental feature of the React SDK is support for re-rending components using feature flags when the effective values of those flags change.
+Flag value changes could be the result of changes in the evaluation context which is the basis for flag evaluations rules, or change in the flag definitions themselves.
+Changes in the evaluation context are best exemplified by changes to user properties in an application; for example, a user logging in, adding something to their cart, or changing their subscriber level.
+Any of these examples could mean that we need to re-evaluate feature flags in light of this new information.
+The flag evaluation hooks provided by the React SDK do this automatically (by default) when the bound provider emits a <a href="https://openfeature.dev/specification/types#provider-events"><em>PROVIDER_CONTEXT_CHANGED</em></a> event.</p>
+<pre><code class="hljs language-tsx"><span class="hljs-keyword">function</span> <span class="hljs-title function_">MyPage</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-comment">// the "value" returned here is always up-to-date with changes in rules or contextual data</span>
+  <span class="hljs-keyword">const</span> { <span class="hljs-attr">value</span>: showNewMessage } = <span class="hljs-title function_">useFlag</span>(<span class="hljs-string">"new-message"</span>, <span class="hljs-literal">false</span>);
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">div</span>></span>
+      <span class="hljs-tag">&#x3C;<span class="hljs-name">header</span>></span>
+        {showNewMessage ? (
+          <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Welcome to this OpenFeature-enabled React app!<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>
+        ) : (
+          <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Welcome to this React app.<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>
+        )}
+      <span class="hljs-tag">&#x3C;/<span class="hljs-name">header</span>></span>
+    <span class="hljs-tag">&#x3C;/<span class="hljs-name">div</span>></span></span>
+  );
+}
+</code></pre>
+<p>Additionally, some feature flag solutions support realtime updates when flag configurations themselves are changed and the bound provider emits a <a href="https://openfeature.dev/specification/types#provider-events">PROVIDER_CONFIGURATION_CHANGED</a> event.
+The React SDK also supports re-rendering in these cases so that a change in a flag definition immediately reflects those changes in the user interface.
+Both of these features can be disabled per-flag, or for the scope of the <a href="#context-provider">context provider</a>.</p>
+<h3 id="built-in-suspense">Built-in Suspense</h3>
+<p>React's suspense provides a powerful mechanism to simplify rendering when components require asynchronous data or have asynchronous side-effects.
+Without suspense, when a component makes an HTTP request or performs some other asynchronous operation, the developer must track the resolution of the corresponding promise, and display loading indicators (referred to by React as <a href="https://react.dev/reference/react/Suspense#displaying-a-fallback-while-content-is-loading"><em>fallbacks</em></a>) accordingly.
+React's Suspense paradigm uses some clever tricks to track this status for developers, and shows a specified fallback until the promise is resolved.
+Even more conveniently, within a <a href="https://react.dev/reference/react/Suspense#suspense"><em>suspense boundary</em></a>, all promises are tracked as a group; when a new asynchronous call is added to any components in this scope, the developer need not make any changes to suspend rendering while this call is awaited!</p>
+<p>Most feature flags solutions require some network I/O to retrieve their flag values or rules.
+Until this I/O is complete, we may want to suspend the UI to prevent users from seeing unexpected content or layout changes.
+The React SDK supports suspense while the provider is becoming ready, and while the provider is reconciling changes based on changes to the evaluation context.
+This means that you can easily show fallback elements until your feature flag provider is ready to evaluate flags.</p>
+<pre><code class="hljs language-tsx">{<span class="hljs-comment">/* suspense boundary and fallback */</span>}
+&#x3C;<span class="hljs-title class_">Suspense</span> fallback={<span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">Fallback</span> /></span></span>}>
+  <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">Greeting</span> /></span></span>
+&#x3C;/<span class="hljs-title class_">Suspense</span>>
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">Fallback</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">return</span> (<span class="xml"><span class="hljs-tag">&#x3C;></span>Loading...<span class="hljs-tag">&#x3C;/></span></span>);
+}
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">Greeting</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-comment">// this hook will cause the component to suspend until the provider is ready</span>
+  <span class="hljs-keyword">const</span> { <span class="hljs-attr">value</span>: showEmoji } = <span class="hljs-title function_">useFlag</span>(<span class="hljs-string">"show-emoji"</span>, <span class="hljs-literal">false</span>);
+
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&#x3C;></span>
+      {showEmoji ? (
+        <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>👋 Welcome to this React app!<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>
+      ) : (
+        <span class="hljs-tag">&#x3C;<span class="hljs-name">p</span>></span>Welcome to this React app!<span class="hljs-tag">&#x3C;/<span class="hljs-name">p</span>></span>
+      )}
+    <span class="hljs-tag">&#x3C;/></span></span>
+  );
+}
+</code></pre>
+<h2 id="compatibility">Compatibility</h2>
+<p>As previously mentioned, the React SDK is built on top of the existing <code>@openfeature/web-sdk</code>.
+Any OpenFeature provider built to support the web SDK can also be used with the <code>@openfeature/react-sdk</code>, no changes required.</p>
+<h2 id="future-plans">Future Plans</h2>
+<p>We have a few enhancements in mind, particularly around mutating evaluation context and an API that provides components (in addition to hooks), but we're excited to get feedback from the community on what we've built so far!
+If you're a React dev (or you're just looking for an excuse to familiarize yourself with the library) take the OpenFeature React SDK for a spin and let us know how it goes!
+You can play around with our test app <a href="https://github.com/open-feature/react-test-app">here</a> to familiarize yourself with some of the features.</p>

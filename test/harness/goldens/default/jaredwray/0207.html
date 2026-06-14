@@ -1,0 +1,30 @@
+<blockquote>
+<p><strong>Availability:</strong> Registered in both the Node and browser builds.</p>
+</blockquote>
+<h2 id="match">match</h2>
+<h3 id="match-1">{{match}}</h3>
+<p>Returns an array of strings that match the given glob pattern(s).</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>files</code> <strong>{Array|String}</strong>: Array of file paths or a single file path string.</li>
+<li><code>patterns</code> <strong>{Array|String}</strong>: One or more glob patterns. Comma-separated strings are also supported.</li>
+<li><code>options</code> <strong>{Object}</strong>: Options to pass to micromatch.</li>
+<li><code>returns</code> <strong>{Array}</strong>: Array of matches</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{match (readdir "foo") "*.js"}}
+{{match (readdir "foo") (toRegex "\\.js$")}}
+</code></pre>
+<h3 id="ismatch">{{isMatch}}</h3>
+<p>Returns true if a filepath matches the given pattern.</p>
+<p><strong>Params</strong></p>
+<ul>
+<li><code>filepath</code> <strong>{String}</strong>: The file path to test.</li>
+<li><code>pattern</code> <strong>{String|Array}</strong>: The glob pattern(s) to match against.</li>
+<li><code>options</code> <strong>{Object}</strong>: Options to pass to micromatch.</li>
+<li><code>returns</code> <strong>{Boolean}</strong></li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="hljs language-html">{{isMatch "foo.md" "*.md"}}
+<span class="hljs-comment">&#x3C;!-- results in: true --></span>
+</code></pre>

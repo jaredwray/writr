@@ -1,0 +1,94 @@
+<h1 id="caching">Caching</h1>
+<p>Docula uses a <code>.cache</code> directory inside your site folder to store intermediate build artifacts. This improves rebuild performance by avoiding redundant work when nothing has changed.</p>
+<h2 id="what-is-cached">What is cached</h2>
+<h3 id="template-overrides">Template overrides</h3>
+<p>When you use <a href="/docs/partial-templates">partial template overrides</a>, Docula merges your override files with the built-in template into <code>.cache/templates/{templateName}/</code>. On subsequent builds, Docula compares content hashes (stored in <code>.manifest.json</code>) and incrementally updates only the files that have been added, changed, or removed.</p>
+<pre><code>site/
+  .cache/
+    templates/
+      modern/          # merged template (built-in + your overrides)
+        home.hbs
+        docs.hbs
+        includes/
+          footer.hbs   # your custom override
+          sidebar.hbs  # from the built-in template
+          ...
+</code></pre>
+<h3 id="github-api-data">GitHub API data</h3>
+<p>When your site is configured with a <a href="/docs/github-integration">GitHub integration</a>, Docula caches the API responses for releases and contributors to <code>.cache/github/github-data.json</code>. On subsequent builds, Docula checks the file's age against the configured TTL and skips the API call if the cache is still fresh.</p>
+<pre><code>site/
+  .cache/
+    github/
+      github-data.json   # cached releases and contributors
+</code></pre>
+<p>By default the cache TTL is <strong>3600 seconds (1 hour)</strong>. You can change this in your config:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">DoculaOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'docula'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">Partial</span>&#x3C;<span class="hljs-title class_">DoculaOptions</span>> = {
+  <span class="hljs-attr">cache</span>: {
+    <span class="hljs-attr">github</span>: {
+      <span class="hljs-attr">ttl</span>: <span class="hljs-number">7200</span>, <span class="hljs-comment">// 2 hours</span>
+    },
+  },
+};
+</code></pre>
+<p>Set <code>ttl</code> to <code>0</code> to disable GitHub caching entirely and always fetch fresh data from the API.</p>
+<h3 id="build-manifest-differential-builds">Build manifest (differential builds)</h3>
+<p>Docula tracks content hashes for all source files (documents, changelog entries, assets, config, and templates) in a build manifest. On subsequent builds, only changed content is re-processed:</p>
+<ul>
+<li><strong>Documents and changelog entries</strong> — Parsed markdown objects are cached to disk. Unchanged files are loaded from cache instead of being re-parsed through the Writr renderer.</li>
+<li><strong>Assets</strong> — Unchanged assets (favicon, logo, CSS, JS, public folder files) are not re-copied to the output directory.</li>
+<li><strong>Full build skip</strong> — If nothing has changed and the output directory exists, the build returns immediately. This is especially useful in <code>--watch</code> mode.</li>
+</ul>
+<pre><code>site/
+  .cache/
+    build/
+      manifest.json      # content hashes for all source files
+      documents.json     # cached parsed document objects
+      changelog.json     # cached parsed changelog entry objects
+</code></pre>
+<p>A config change (e.g., changing <code>siteTitle</code>) invalidates the entire manifest and forces a full rebuild. A template change re-renders all pages but reuses cached parsed documents.</p>
+<h2 id="clearing-the-cache">Clearing the cache</h2>
+<p>Use the <code>--clean</code> flag to remove <strong>all</strong> caching along with the output directory:</p>
+<pre><code class="hljs language-bash">npx docula build --clean
+</code></pre>
+<p>This deletes both the output directory (e.g., <code>dist/</code>) and the entire <code>.cache/</code> directory (including template and GitHub caches), forcing a full rebuild on the next run.</p>
+<p>You can also manually delete the <code>.cache</code> directory at any time. Docula will recreate it as needed.</p>
+<h2 id="git-and-the-cache">Git and the cache</h2>
+<p>The <code>.cache</code> directory contains only generated files and should not be committed to version control. By default, Docula automatically adds <code>.cache</code> to your site folder's <code>.gitignore</code> the first time the cache is created. If the <code>.gitignore</code> file does not exist, Docula creates it.</p>
+<p>If you prefer to manage your <code>.gitignore</code> manually, you can disable this behavior in your config:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">DoculaOptions</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'docula'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">options</span>: <span class="hljs-title class_">Partial</span>&#x3C;<span class="hljs-title class_">DoculaOptions</span>> = {
+  <span class="hljs-attr">autoUpdateIgnores</span>: <span class="hljs-literal">false</span>,
+};
+</code></pre>
+<p>When disabled, you should add <code>.cache</code> to your <code>.gitignore</code> yourself:</p>
+<pre><code># .gitignore
+.cache
+</code></pre>
+<h2 id="configuration-reference">Configuration reference</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>autoUpdateIgnores</code></td>
+<td><code>boolean</code></td>
+<td><code>true</code></td>
+<td>Automatically add <code>.cache</code> to the site folder's <code>.gitignore</code> on first cache creation</td>
+</tr>
+<tr>
+<td><code>cache.github.ttl</code></td>
+<td><code>number</code></td>
+<td><code>3600</code></td>
+<td>Time-to-live in seconds for cached GitHub API data. Set to <code>0</code> to disable.</td>
+</tr>
+</tbody>
+</table>
