@@ -62,7 +62,7 @@
     "website:serve": "rimraf ./site/README.md ./site/dist && pnpm docula dev"
   },
   "dependencies": {
-    "ai": "^6.0.138",
+    "ai": "^6.0.203",
     "cacheable": "^2.3.4",
     "hashery": "^2.0.0",
     "hookified": "^2.1.0",
@@ -86,9 +86,9 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@ai-sdk/anthropic": "^3.0.64",
-    "@ai-sdk/google": "^3.0.53",
-    "@ai-sdk/openai": "^3.0.48",
+    "@ai-sdk/anthropic": "^3.0.84",
+    "@ai-sdk/google": "^3.0.82",
+    "@ai-sdk/openai": "^3.0.71",
     "@biomejs/biome": "^2.4.8",
     "@monstermann/tinybench-pretty-printer": "^0.3.0",
     "@types/js-yaml": "^4.0.9",
