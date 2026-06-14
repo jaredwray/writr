@@ -63,7 +63,7 @@
   },
   "dependencies": {
     "ai": "^6.0.203",
-    "cacheable": "^2.3.4",
+    "cacheable": "^2.3.5",
     "hashery": "^2.0.0",
     "hookified": "^2.1.0",
     "html-react-parser": "^6.0.1",
