@@ -1,0 +1,68 @@
+<h1 id="keyvredis">@keyv/redis</h1>
+<blockquote>
+<p>Redis storage adapter for Keyv</p>
+</blockquote>
+<p><a href="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml"><img src="https://github.com/jaredwray/keyv/actions/workflows/tests.yaml/badge.svg" alt="build"></a>
+<a href="https://codecov.io/gh/jaredwray/keyv"><img src="https://codecov.io/gh/jaredwray/keyv/branch/main/graph/badge.svg?token=bRzR3RyOXZ" alt="codecov"></a>
+<a href="https://www.npmjs.com/package/@keyv/redis"><img src="https://img.shields.io/npm/v/@keyv/redis.svg" alt="npm"></a>
+<a href="https://npmjs.com/package/@keyv/redis"><img src="https://img.shields.io/npm/dm/@keyv/redis" alt="npm"></a></p>
+<p>Redis storage adapter for <a href="https://github.com/jaredwray/keyv">Keyv</a>.</p>
+<p>TTL functionality is handled directly by Redis so no timestamps are stored and expired keys are cleaned up internally.</p>
+<h2 id="install">Install</h2>
+<pre><code class="hljs language-shell">npm install --save keyv @keyv/redis
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'keyv'</span>);
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+keyv.<span class="hljs-title function_">on</span>(<span class="hljs-string">'error'</span>, handleConnectionError);
+</code></pre>
+<p>Any valid <a href="https://github.com/luin/ioredis#connect-to-redis"><code>Redis</code></a> options will be passed directly through.</p>
+<p>e.g:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>, { <span class="hljs-attr">disable_resubscribing</span>: <span class="hljs-literal">true</span> });
+</code></pre>
+<p>Or you can manually create a storage adapter instance and pass it to Keyv:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">KeyvRedis</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'@keyv/redis'</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'keyv'</span>);
+
+<span class="hljs-keyword">const</span> keyvRedis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: keyvRedis });
+</code></pre>
+<p>Or reuse a previous Redis instance:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">KeyvRedis</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'@keyv/redis'</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">Redis</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'ioredis'</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'keyv'</span>);
+
+<span class="hljs-keyword">const</span> redis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Redis</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> keyvRedis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(redis);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: keyvRedis });
+</code></pre>
+<p>Or reuse a previous Redis cluster:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">KeyvRedis</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'@keyv/redis'</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">Redis</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'ioredis'</span>);
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'keyv'</span>);
+
+<span class="hljs-keyword">const</span> redis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Redis</span>.<span class="hljs-title class_">Cluster</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>);
+<span class="hljs-keyword">const</span> keyvRedis = <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvRedis</span>(redis);
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: keyvRedis });
+</code></pre>
+<h2 id="options">Options</h2>
+<h3 id="useredissets">useRedisSets</h3>
+<p>The <code>useRedisSets</code> option lets you decide whether to use Redis sets for key management. By default, this option is set to <code>true</code>.</p>
+<p>When <code>useRedisSets</code> is enabled (<code>true</code>):</p>
+<ul>
+<li>A namespace for the Redis sets is created, and all created keys are added to this. This allows for group management of keys.</li>
+<li>When a key is deleted, it's removed not only from the main storage but also from the Redis set.</li>
+<li>When clearing all keys (using the <code>clear</code> function), all keys in the Redis set are looked up for deletion. The set itself is also deleted.</li>
+</ul>
+<p><strong>Note</strong>: In high-performance scenarios, enabling <code>useRedisSets</code> might lead to memory leaks. If you're running a high-performance application or service, it is recommended to set <code>useRedisSets</code> to <code>false</code>.</p>
+<p>If you decide to set <code>useRedisSets</code> as <code>false</code>, keys will be handled individually and Redis sets won't be utilized.</p>
+<p>However, please note that setting <code>useRedisSets</code> to <code>false</code> could lead to performance issues in production when using the <code>clear</code> function, as it will need to iterate over all keys to delete them.</p>
+<h4 id="example">Example</h4>
+<p>Here's how you can use the <code>useRedisSets</code> option:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Keyv</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'keyv'</span>);
+
+<span class="hljs-keyword">const</span> keyv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>(<span class="hljs-string">'redis://user:pass@localhost:6379'</span>, { <span class="hljs-attr">useRedisSets</span>: <span class="hljs-literal">false</span> });
+</code></pre>
+<h2 id="license">License</h2>
+<p>MIT © Jared Wray</p>

@@ -1,0 +1,271 @@
+<h1 id="markdown-it-">markdown-it </h1>
+<p><a href="https://github.com/markdown-it/markdown-it/actions/workflows/ci.yml"><img src="https://github.com/markdown-it/markdown-it/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+<a href="https://www.npmjs.org/package/markdown-it"><img src="https://img.shields.io/npm/v/markdown-it.svg?style=flat" alt="NPM version"></a>
+<a href="https://coveralls.io/github/markdown-it/markdown-it?branch=master"><img src="https://coveralls.io/repos/markdown-it/markdown-it/badge.svg?branch=master&#x26;service=github" alt="Coverage Status"></a>
+<a href="https://gitter.im/markdown-it/markdown-it"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Gitter"></a></p>
+<blockquote>
+<p>Markdown parser done right. Fast and easy to extend.</p>
+</blockquote>
+<p><strong><a href="https://markdown-it.github.io">Live demo</a></strong></p>
+<ul>
+<li>Follows the <strong><a href="http://spec.commonmark.org/">CommonMark spec</a></strong> + adds syntax extensions &#x26; sugar (URL autolinking, typographer).</li>
+<li>Configurable syntax! You can add new rules and even replace existing ones.</li>
+<li>High speed.</li>
+<li><a href="https://github.com/markdown-it/markdown-it/tree/master/docs/security.md">Safe</a> by default.</li>
+<li>Community-written <strong><a href="https://www.npmjs.org/browse/keyword/markdown-it-plugin">plugins</a></strong> and <a href="https://www.npmjs.org/browse/keyword/markdown-it">other packages</a> on npm.</li>
+</ul>
+<p><strong>Table of content</strong></p>
+<ul>
+<li><a href="#install">Install</a></li>
+<li><a href="#usage-examples">Usage examples</a>
+<ul>
+<li><a href="#simple">Simple</a></li>
+<li><a href="#init-with-presets-and-options">Init with presets and options</a></li>
+<li><a href="#plugins-load">Plugins load</a></li>
+<li><a href="#syntax-highlighting">Syntax highlighting</a></li>
+<li><a href="#linkify">Linkify</a></li>
+</ul>
+</li>
+<li><a href="#api">API</a></li>
+<li><a href="#syntax-extensions">Syntax extensions</a>
+<ul>
+<li><a href="#manage-rules">Manage rules</a></li>
+</ul>
+</li>
+<li><a href="#benchmark">Benchmark</a></li>
+<li><a href="#markdown-it-for-enterprise">markdown-it for enterprise</a></li>
+<li><a href="#authors">Authors</a></li>
+<li><a href="#references--thanks">References / Thanks</a></li>
+</ul>
+<h2 id="install">Install</h2>
+<p><strong>node.js</strong>:</p>
+<pre><code class="hljs language-bash">npm install markdown-it
+</code></pre>
+<p><strong>browser (CDN):</strong></p>
+<ul>
+<li><a href="http://www.jsdelivr.com/#!markdown-it" title="jsDelivr CDN">jsDeliver CDN</a></li>
+<li><a href="https://cdnjs.com/libraries/markdown-it" title="cdnjs.com">cdnjs.com CDN</a></li>
+</ul>
+<h2 id="usage-examples">Usage examples</h2>
+<p>See also:</p>
+<ul>
+<li><strong><a href="https://markdown-it.github.io/markdown-it/">API documentation</a></strong> - for more
+info and examples.</li>
+<li><a href="https://github.com/markdown-it/markdown-it/tree/master/docs">Development info</a> -
+for plugins writers.</li>
+</ul>
+<h3 id="simple">Simple</h3>
+<pre><code class="hljs language-js"><span class="hljs-comment">// node.js</span>
+<span class="hljs-comment">// can use `require('markdown-it')` for CJS</span>
+<span class="hljs-keyword">import</span> markdownit <span class="hljs-keyword">from</span> <span class="hljs-string">'markdown-it'</span>
+<span class="hljs-keyword">const</span> md = <span class="hljs-title function_">markdownit</span>()
+<span class="hljs-keyword">const</span> result = md.<span class="hljs-title function_">render</span>(<span class="hljs-string">'# markdown-it rulezz!'</span>);
+
+<span class="hljs-comment">// browser with UMD build, added to "window" on script load</span>
+<span class="hljs-comment">// Note, there is no dash in "markdownit".</span>
+<span class="hljs-keyword">const</span> md = <span class="hljs-variable language_">window</span>.<span class="hljs-title function_">markdownit</span>();
+<span class="hljs-keyword">const</span> result = md.<span class="hljs-title function_">render</span>(<span class="hljs-string">'# markdown-it rulezz!'</span>);
+</code></pre>
+<p>Single line rendering, without paragraph wrap:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> markdownit <span class="hljs-keyword">from</span> <span class="hljs-string">'markdown-it'</span>
+<span class="hljs-keyword">const</span> md = <span class="hljs-title function_">markdownit</span>()
+<span class="hljs-keyword">const</span> result = md.<span class="hljs-title function_">renderInline</span>(<span class="hljs-string">'__markdown-it__ rulezz!'</span>);
+</code></pre>
+<h3 id="init-with-presets-and-options">Init with presets and options</h3>
+<p>(*) presets define combinations of active rules and options. Can be
+<code>"commonmark"</code>, <code>"zero"</code> or <code>"default"</code> (if skipped). See
+<a href="https://markdown-it.github.io/markdown-it/#MarkdownIt.new">API docs</a> for more details.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> markdownit <span class="hljs-keyword">from</span> <span class="hljs-string">'markdown-it'</span>
+
+<span class="hljs-comment">// commonmark mode</span>
+<span class="hljs-keyword">const</span> md = <span class="hljs-title function_">markdownit</span>(<span class="hljs-string">'commonmark'</span>)
+
+<span class="hljs-comment">// default mode</span>
+<span class="hljs-keyword">const</span> md = <span class="hljs-title function_">markdownit</span>()
+
+<span class="hljs-comment">// enable everything</span>
+<span class="hljs-keyword">const</span> md = <span class="hljs-title function_">markdownit</span>({
+  <span class="hljs-attr">html</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">linkify</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">typographer</span>: <span class="hljs-literal">true</span>
+})
+
+<span class="hljs-comment">// full options list (defaults)</span>
+<span class="hljs-keyword">const</span> md = <span class="hljs-title function_">markdownit</span>({
+  <span class="hljs-comment">// Enable HTML tags in source</span>
+  <span class="hljs-attr">html</span>:         <span class="hljs-literal">false</span>,
+
+  <span class="hljs-comment">// Use '/' to close single tags (&#x3C;br />).</span>
+  <span class="hljs-comment">// This is only for full CommonMark compatibility.</span>
+  <span class="hljs-attr">xhtmlOut</span>:     <span class="hljs-literal">false</span>,
+
+  <span class="hljs-comment">// Convert '\n' in paragraphs into &#x3C;br></span>
+  <span class="hljs-attr">breaks</span>:       <span class="hljs-literal">false</span>,
+
+  <span class="hljs-comment">// CSS language prefix for fenced blocks. Can be</span>
+  <span class="hljs-comment">// useful for external highlighters.</span>
+  <span class="hljs-attr">langPrefix</span>:   <span class="hljs-string">'language-'</span>,
+
+  <span class="hljs-comment">// Autoconvert URL-like text to links</span>
+  <span class="hljs-attr">linkify</span>:      <span class="hljs-literal">false</span>,
+
+  <span class="hljs-comment">// Enable some language-neutral replacement + quotes beautification</span>
+  <span class="hljs-comment">// For the full list of replacements, see https://github.com/markdown-it/markdown-it/blob/master/lib/rules_core/replacements.mjs</span>
+  <span class="hljs-attr">typographer</span>:  <span class="hljs-literal">false</span>,
+
+  <span class="hljs-comment">// Double + single quotes replacement pairs, when typographer enabled,</span>
+  <span class="hljs-comment">// and smartquotes on. Could be either a String or an Array.</span>
+  <span class="hljs-comment">//</span>
+  <span class="hljs-comment">// For example, you can use '«»„“' for Russian, '„“‚‘' for German,</span>
+  <span class="hljs-comment">// and ['«\xA0', '\xA0»', '‹\xA0', '\xA0›'] for French (including nbsp).</span>
+  <span class="hljs-attr">quotes</span>: <span class="hljs-string">'“”‘’'</span>,
+
+  <span class="hljs-comment">// Highlighter function. Should return escaped HTML,</span>
+  <span class="hljs-comment">// or '' if the source string is not changed and should be escaped externally.</span>
+  <span class="hljs-comment">// If result starts with &#x3C;pre... internal wrapper is skipped.</span>
+  <span class="hljs-attr">highlight</span>: <span class="hljs-keyword">function</span> (<span class="hljs-params"><span class="hljs-comment">/*str, lang*/</span></span>) { <span class="hljs-keyword">return</span> <span class="hljs-string">''</span>; }
+});
+</code></pre>
+<h3 id="plugins-load">Plugins load</h3>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> markdownit <span class="hljs-keyword">from</span> <span class="hljs-string">'markdown-it'</span>
+
+<span class="hljs-keyword">const</span> md = markdownit
+  .<span class="hljs-title function_">use</span>(plugin1)
+  .<span class="hljs-title function_">use</span>(plugin2, opts, ...)
+  .<span class="hljs-title function_">use</span>(plugin3);
+</code></pre>
+<h3 id="syntax-highlighting">Syntax highlighting</h3>
+<p>Apply syntax highlighting to fenced code blocks with the <code>highlight</code> option:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> markdownit <span class="hljs-keyword">from</span> <span class="hljs-string">'markdown-it'</span>
+<span class="hljs-keyword">import</span> hljs <span class="hljs-keyword">from</span> <span class="hljs-string">'highlight.js'</span> <span class="hljs-comment">// https://highlightjs.org</span>
+
+<span class="hljs-comment">// Actual default values</span>
+<span class="hljs-keyword">const</span> md = <span class="hljs-title function_">markdownit</span>({
+  <span class="hljs-attr">highlight</span>: <span class="hljs-keyword">function</span> (<span class="hljs-params">str, lang</span>) {
+    <span class="hljs-keyword">if</span> (lang &#x26;&#x26; hljs.<span class="hljs-title function_">getLanguage</span>(lang)) {
+      <span class="hljs-keyword">try</span> {
+        <span class="hljs-keyword">return</span> hljs.<span class="hljs-title function_">highlight</span>(str, { <span class="hljs-attr">language</span>: lang }).<span class="hljs-property">value</span>;
+      } <span class="hljs-keyword">catch</span> (__) {}
+    }
+
+    <span class="hljs-keyword">return</span> <span class="hljs-string">''</span>; <span class="hljs-comment">// use external default escaping</span>
+  }
+});
+</code></pre>
+<p>Or with full wrapper override (if you need assign class to <code>&#x3C;pre></code> or <code>&#x3C;code></code>):</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> markdownit <span class="hljs-keyword">from</span> <span class="hljs-string">'markdown-it'</span>
+<span class="hljs-keyword">import</span> hljs <span class="hljs-keyword">from</span> <span class="hljs-string">'highlight.js'</span> <span class="hljs-comment">// https://highlightjs.org</span>
+
+<span class="hljs-comment">// Actual default values</span>
+<span class="hljs-keyword">const</span> md = <span class="hljs-title function_">markdownit</span>({
+  <span class="hljs-attr">highlight</span>: <span class="hljs-keyword">function</span> (<span class="hljs-params">str, lang</span>) {
+    <span class="hljs-keyword">if</span> (lang &#x26;&#x26; hljs.<span class="hljs-title function_">getLanguage</span>(lang)) {
+      <span class="hljs-keyword">try</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">'&#x3C;pre>&#x3C;code class="hljs">'</span> +
+               hljs.<span class="hljs-title function_">highlight</span>(str, { <span class="hljs-attr">language</span>: lang, <span class="hljs-attr">ignoreIllegals</span>: <span class="hljs-literal">true</span> }).<span class="hljs-property">value</span> +
+               <span class="hljs-string">'&#x3C;/code>&#x3C;/pre>'</span>;
+      } <span class="hljs-keyword">catch</span> (__) {}
+    }
+
+    <span class="hljs-keyword">return</span> <span class="hljs-string">'&#x3C;pre>&#x3C;code class="hljs">'</span> + md.<span class="hljs-property">utils</span>.<span class="hljs-title function_">escapeHtml</span>(str) + <span class="hljs-string">'&#x3C;/code>&#x3C;/pre>'</span>;
+  }
+});
+</code></pre>
+<h3 id="linkify">Linkify</h3>
+<p><code>linkify: true</code> uses <a href="https://github.com/markdown-it/linkify-it">linkify-it</a>. To
+configure linkify-it, access the linkify instance through <code>md.linkify</code>:</p>
+<pre><code class="hljs language-js">md.<span class="hljs-property">linkify</span>.<span class="hljs-title function_">set</span>({ <span class="hljs-attr">fuzzyEmail</span>: <span class="hljs-literal">false</span> });  <span class="hljs-comment">// disables converting email to link</span>
+</code></pre>
+<h2 id="api">API</h2>
+<p><strong><a href="https://markdown-it.github.io/markdown-it/">API documentation</a></strong></p>
+<p>If you are going to write plugins, please take a look at
+<a href="https://github.com/markdown-it/markdown-it/tree/master/docs">Development info</a>.</p>
+<h2 id="syntax-extensions">Syntax extensions</h2>
+<p>Embedded (enabled by default):</p>
+<ul>
+<li><a href="https://help.github.com/articles/organizing-information-with-tables/">Tables</a> (GFM)</li>
+<li><a href="https://help.github.com/articles/basic-writing-and-formatting-syntax/#styling-text">Strikethrough</a> (GFM)</li>
+</ul>
+<p>Via plugins:</p>
+<ul>
+<li><a href="https://github.com/markdown-it/markdown-it-sub">subscript</a></li>
+<li><a href="https://github.com/markdown-it/markdown-it-sup">superscript</a></li>
+<li><a href="https://github.com/markdown-it/markdown-it-footnote">footnote</a></li>
+<li><a href="https://github.com/markdown-it/markdown-it-deflist">definition list</a></li>
+<li><a href="https://github.com/markdown-it/markdown-it-abbr">abbreviation</a></li>
+<li><a href="https://github.com/markdown-it/markdown-it-emoji">emoji</a></li>
+<li><a href="https://github.com/markdown-it/markdown-it-container">custom container</a></li>
+<li><a href="https://github.com/markdown-it/markdown-it-ins">insert</a></li>
+<li><a href="https://github.com/markdown-it/markdown-it-mark">mark</a></li>
+<li>... and <a href="https://www.npmjs.org/browse/keyword/markdown-it-plugin">others</a></li>
+</ul>
+<h3 id="manage-rules">Manage rules</h3>
+<p>By default all rules are enabled, but can be restricted by options. On plugin
+load all its rules are enabled automatically.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> markdownit <span class="hljs-keyword">from</span> <span class="hljs-string">'markdown-it'</span>
+
+<span class="hljs-comment">// Activate/deactivate rules, with currying</span>
+<span class="hljs-keyword">const</span> md = <span class="hljs-title function_">markdownit</span>()
+  .<span class="hljs-title function_">disable</span>([<span class="hljs-string">'link'</span>, <span class="hljs-string">'image'</span>])
+  .<span class="hljs-title function_">enable</span>([<span class="hljs-string">'link'</span>])
+  .<span class="hljs-title function_">enable</span>(<span class="hljs-string">'image'</span>);
+
+<span class="hljs-comment">// Enable everything</span>
+<span class="hljs-keyword">const</span> md = <span class="hljs-title function_">markdownit</span>({
+  <span class="hljs-attr">html</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">linkify</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">typographer</span>: <span class="hljs-literal">true</span>,
+});
+</code></pre>
+<p>You can find all rules in sources:</p>
+<ul>
+<li><a href="lib/parser_core.mjs"><code>parser_core.mjs</code></a></li>
+<li><a href="lib/parser_block.mjs"><code>parser_block.mjs</code></a></li>
+<li><a href="lib/parser_inline.mjs"><code>parser_inline.mjs</code></a></li>
+</ul>
+<h2 id="benchmark">Benchmark</h2>
+<p>Here is the result of readme parse at MB Pro Retina 2013 (2.4 GHz):</p>
+<pre><code class="hljs language-bash">npm run benchmark-deps
+benchmark/benchmark.mjs readme
+
+Selected samples: (1 of 28)
+ > README
+
+Sample: README.md (7774 bytes)
+ > commonmark-reference x 1,222 ops/sec ±0.96% (97 runs sampled)
+ > current x 743 ops/sec ±0.84% (97 runs sampled)
+ > current-commonmark x 1,568 ops/sec ±0.84% (98 runs sampled)
+ > marked x 1,587 ops/sec ±4.31% (93 runs sampled)
+</code></pre>
+<p><strong>Note.</strong> CommonMark version runs with <a href="https://github.com/markdown-it/markdown-it/blob/master/benchmark/implementations/current-commonmark/index.mjs">simplified link normalizers</a>
+for more "honest" compare. Difference is ≈1.5×.</p>
+<p>As you can see, <code>markdown-it</code> doesn't pay with speed for its flexibility.
+Slowdown of "full" version caused by additional features not available in
+other implementations.</p>
+<h2 id="markdown-it-for-enterprise">markdown-it for enterprise</h2>
+<p>Available as part of the Tidelift Subscription.</p>
+<p>The maintainers of <code>markdown-it</code> and thousands of other packages are working with Tidelift to deliver commercial support and maintenance for the open source dependencies you use to build your applications. Save time, reduce risk, and improve code health, while paying the maintainers of the exact dependencies you use. <a href="https://tidelift.com/subscription/pkg/npm-markdown-it?utm_source=npm-markdown-it&#x26;utm_medium=referral&#x26;utm_campaign=enterprise&#x26;utm_term=repo">Learn more.</a></p>
+<h2 id="authors">Authors</h2>
+<ul>
+<li>Alex Kocharin <a href="https://github.com/rlidwka">github/rlidwka</a></li>
+<li>Vitaly Puzrin <a href="https://github.com/puzrin">github/puzrin</a></li>
+</ul>
+<p><em>markdown-it</em> is the result of the decision of the authors who contributed to
+99% of the <em>Remarkable</em> code to move to a project with the same authorship but
+new leadership (Vitaly and Alex). It's not a fork.</p>
+<h2 id="references--thanks">References / Thanks</h2>
+<p>Big thanks to <a href="https://github.com/jgm">John MacFarlane</a> for his work on the
+CommonMark spec and reference implementations. His work saved us a lot of time
+during this project's development.</p>
+<p><strong>Related Links:</strong></p>
+<ul>
+<li><a href="https://github.com/jgm/CommonMark">https://github.com/jgm/CommonMark</a> - reference CommonMark implementations in C &#x26; JS,
+also contains latest spec &#x26; online demo.</li>
+<li><a href="http://talk.commonmark.org">http://talk.commonmark.org</a> - CommonMark forum, good place to collaborate
+developers' efforts.</li>
+</ul>
+<p><strong>Ports</strong></p>
+<ul>
+<li><a href="https://github.com/digitalmoksha/motion-markdown-it">motion-markdown-it</a> - Ruby/RubyMotion</li>
+<li><a href="https://github.com/ExecutableBookProject/markdown-it-py">markdown-it-py</a>- Python</li>
+</ul>

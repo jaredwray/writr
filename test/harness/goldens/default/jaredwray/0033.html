@@ -1,0 +1,44 @@
+<h1 id="agentsmd">AGENTS.md</h1>
+<p>Guidelines for AI coding agents (Claude, Gemini, Codex).</p>
+<h2 id="project">Project</h2>
+<p>Writr is a Node.js markdown rendering library built with TypeScript. It simplifies markdown-to-HTML conversion by removing remark/unified complexity while leveraging the powerful unified processor ecosystem. Key features include built-in caching, frontmatter support, React rendering, GitHub Flavored Markdown (GFM), syntax highlighting, math support, and hook/event capabilities via hookified.</p>
+<h2 id="commands">Commands</h2>
+<ul>
+<li><code>pnpm install</code> - Install dependencies</li>
+<li><code>pnpm build</code> - Build for production (ESM + type definitions)</li>
+<li><code>pnpm lint</code> - Run Biome linter with auto-fix</li>
+<li><code>pnpm test</code> - Run linter and Vitest with coverage</li>
+<li><code>pnpm test:ci</code> - CI-specific testing (strict linting + coverage)</li>
+<li><code>pnpm benchmark</code> - Run performance benchmarks</li>
+<li><code>pnpm clean</code> - Remove node_modules, coverage, and dist directories</li>
+<li><code>pnpm website:build</code> - Build documentation website</li>
+<li><code>pnpm website:serve</code> - Serve documentation website locally</li>
+</ul>
+<p><strong>Use pnpm, not npm.</strong></p>
+<h2 id="development-rules">Development Rules</h2>
+<ol>
+<li><strong>Always run <code>pnpm build</code> before committing</strong> - Build must succeed</li>
+<li><strong>Always run <code>pnpm test</code> before committing</strong> - All tests must pass</li>
+<li><strong>Follow existing code style</strong> - Biome enforces formatting and linting</li>
+<li><strong>Mirror source structure in tests</strong> - Test files go in <code>test/</code> matching <code>src/</code> structure</li>
+<li><strong>Maintain ESM-only compatibility</strong> - This is an ESM-only package</li>
+<li><strong>Test on Node.js >= 22</strong> - Minimum supported version is Node 22</li>
+</ol>
+<h2 id="structure">Structure</h2>
+<ul>
+<li><code>src/writr.ts</code> - Main Writr class with markdown rendering, React support, and file operations</li>
+<li><code>src/writr-cache.ts</code> - Caching implementation using Cacheable</li>
+<li><code>test/</code> - Test files (Vitest) mirroring src structure</li>
+<li><code>test/content-fixtures.ts</code> - Shared test markdown content and fixtures</li>
+<li><code>benchmark/</code> - Performance benchmarks using tinybench</li>
+<li><code>site/</code> - Documentation website (built with docula)</li>
+</ul>
+<h2 id="key-technologies">Key Technologies</h2>
+<ul>
+<li><strong>unified/remark/rehype</strong> - Core markdown processing pipeline</li>
+<li><strong>hookified</strong> - Hook and event emitter capabilities</li>
+<li><strong>cacheable</strong> - Built-in caching system</li>
+<li><strong>react</strong> - React component rendering support</li>
+<li><strong>biome</strong> - Linting and formatting</li>
+<li><strong>vitest</strong> - Testing framework with coverage</li>
+</ul>

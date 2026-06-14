@@ -1,0 +1,97 @@
+<h1 id="utilizing-keyv-for-caching-in-nestjs-a-step-by-step-guide">Utilizing Keyv for Caching in NestJS: A Step-by-Step Guide</h1>
+<p>Caching is an essential technique to enhance the performance of your application by storing frequently used data temporarily so that it can be quickly retrieved later. In this blog post, we'll explore how to use Keyv, a simple yet powerful key-value store for Node.js, to implement caching in a NestJS application. We will cover the basics of setting up Keyv with NestJS and demonstrate some examples of how to cache data effectively.</p>
+<h2 id="1-setting-up-the-project">1. Setting Up the Project</h2>
+<p>First, let's create a new NestJS project using the Nest CLI:</p>
+<pre><code class="hljs language-bash">$ npm i -g @nestjs/cli
+$ nest new nestjs-keyv-cache
+$ <span class="hljs-built_in">cd</span> nestjs-keyv-cache
+</code></pre>
+<h2 id="2-installing-keyv-and-its-dependencies">2. Installing Keyv and its Dependencies</h2>
+<p>To begin, install Keyv and a storage adapter of your choice. In this example, we'll use SQLite:</p>
+<pre><code class="hljs language-bash">$ npm install keyv keyv-sqlite
+</code></pre>
+<h2 id="3-integrating-keyv-with-nestjs">3. Integrating Keyv with NestJS</h2>
+<p>Create a new module named 'CacheModule' to manage the Keyv integration:</p>
+<pre><code class="hljs language-bash">$ nest generate module cache
+</code></pre>
+<p>Then, update the cache.module.ts file to import and configure Keyv:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Module</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">KeyvSqlite</span> <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv-sqlite'</span>;
+
+@<span class="hljs-title class_">Module</span>({
+  <span class="hljs-attr">providers</span>: [
+    {
+      <span class="hljs-attr">provide</span>: <span class="hljs-string">'KEYV_INSTANCE'</span>,
+      <span class="hljs-attr">useFactory</span>: <span class="hljs-function">() =></span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Keyv</span>({ <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">KeyvSqlite</span>(<span class="hljs-string">'sqlite://cache.sqlite'</span>) }),
+    },
+  ],
+  <span class="hljs-attr">exports</span>: [<span class="hljs-string">'KEYV_INSTANCE'</span>],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CacheModule</span> {}
+</code></pre>
+<p>Don't forget to import the CacheModule in app.module.ts:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Module</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheModule</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'./cache/cache.module'</span>;
+
+@<span class="hljs-title class_">Module</span>({
+  <span class="hljs-attr">imports</span>: [<span class="hljs-title class_">CacheModule</span>],
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AppModule</span> {}
+</code></pre>
+<h2 id="4-creating-a-caching-service-with-keyv">4. Creating a Caching Service with Keyv</h2>
+<p>Now, create a service to manage caching using Keyv:</p>
+<pre><code class="hljs language-bash">$ nest generate service cache
+Update the cache.service.ts file with caching methods:
+</code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Inject</span>, <span class="hljs-title class_">Injectable</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Keyv</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'keyv'</span>;
+
+@<span class="hljs-title class_">Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CacheService</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">@Inject(<span class="hljs-string">'KEYV_INSTANCE'</span>) private readonly keyv: Keyv</span>) {}
+
+  <span class="hljs-keyword">async</span> get&#x3C;T>(<span class="hljs-attr">key</span>: string): <span class="hljs-title class_">Promise</span>&#x3C;T> {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">keyv</span>.<span class="hljs-property">get</span>&#x3C;T>(key);
+  }
+
+  <span class="hljs-keyword">async</span> set&#x3C;T>(<span class="hljs-attr">key</span>: string, <span class="hljs-attr">value</span>: T, ttl?: number): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-keyword">void</span>> {
+    <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">keyv</span>.<span class="hljs-property">set</span>&#x3C;T>(key, value, ttl);
+  }
+
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">delete</span>(<span class="hljs-attr">key</span>: string): <span class="hljs-title class_">Promise</span>&#x3C;<span class="hljs-keyword">void</span>> {
+    <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">keyv</span>.<span class="hljs-title function_">delete</span>(key);
+  }
+}
+</code></pre>
+<h2 id="5-implementing-caching-in-a-sample-controller">5. Implementing Caching in a Sample Controller</h2>
+<p>Create a sample controller to demonstrate caching usage:</p>
+<pre><code class="hljs language-bash">$ nest generate controller sample
+</code></pre>
+<p>Update the sample.controller.ts file to use the caching service:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Controller</span>, <span class="hljs-title class_">Get</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'@nestjs/common'</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">CacheService</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">'../cache/cache.service'</span>;
+
+@<span class="hljs-title class_">Controller</span>(<span class="hljs-string">'sample'</span>)
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SampleController</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">private readonly cacheService: CacheService</span>) {}
+
+  @<span class="hljs-title class_">Get</span>()
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">getData</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-keyword">const</span> cacheKey = <span class="hljs-string">'sample-data'</span>;
+    <span class="hljs-keyword">let</span> data = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">cacheService</span>.<span class="hljs-property">get</span>&#x3C;string>(cacheKey);
+
+    <span class="hljs-keyword">if</span> (!data) {
+      <span class="hljs-comment">// Simulate fetching data from an external API</span>
+      data = <span class="hljs-string">'Sample data from external API'</span>;
+      <span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">cacheService</span>.<span class="hljs-title function_">set</span>(cacheKey, data, <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>); <span class="hljs-comment">// Cache for 1 minute</span>
+    }
+
+    <span class="hljs-keyword">return</span> {
+      data,
+      <span class="hljs-attr">source</span>: data === <span class="hljs-string">'Sample data from external API'</span> ? <span class="hljs-string">'API'</span> : <span class="hljs-string">'Cache'</span>,
+    };
+  }
+}
+</code></pre>
+<p>This SampleController demonstrates how to use the CacheService to cache and retrieve data. When a request is made to the /sample endpoint, the getData() method first checks if the data is available in the cache. If the data is not cached, it simulates fetching data from an external API, caches the data for 1 minute, and then returns the data along with its source (either "API" or "Cache").</p>

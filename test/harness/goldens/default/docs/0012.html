@@ -1,0 +1,1186 @@
+<h1 id=""><img src="https://raw.githubusercontent.com/syntax-tree/mdast/e6b43aa/logo.svg?sanitize=true" alt="mdast"></h1>
+<p><strong>M</strong>ark<strong>d</strong>own <strong>A</strong>bstract <strong>S</strong>yntax <strong>T</strong>ree.</p>
+<hr>
+<p><strong>mdast</strong> is a specification for representing markdown in a <a href="https://github.com/syntax-tree/unist#syntax-tree">syntax
+tree</a>.
+It implements <strong><a href="https://github.com/syntax-tree/unist">unist</a></strong>.
+It can represent several flavours of <a href="https://daringfireball.net/projects/markdown/">markdown</a>,
+such as <a href="https://commonmark.org">CommonMark</a> and <a href="https://github.github.com/gfm/">GitHub Flavored Markdown</a>.</p>
+<p>This document may not be released.
+See <a href="https://github.com/syntax-tree/mdast/releases">releases</a> for released documents.
+The latest released version is <a href="https://github.com/syntax-tree/mdast/releases/tag/5.0.0"><code>5.0.0</code></a>.</p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li><a href="#introduction">Introduction</a>
+<ul>
+<li><a href="#where-this-specification-fits">Where this specification fits</a></li>
+</ul>
+</li>
+<li><a href="#types">Types</a></li>
+<li><a href="#nodes-abstract">Nodes (abstract)</a>
+<ul>
+<li><a href="#literal"><code>Literal</code></a></li>
+<li><a href="#parent"><code>Parent</code></a></li>
+</ul>
+</li>
+<li><a href="#nodes">Nodes</a>
+<ul>
+<li><a href="#blockquote"><code>Blockquote</code></a></li>
+<li><a href="#break"><code>Break</code></a></li>
+<li><a href="#code"><code>Code</code></a></li>
+<li><a href="#definition"><code>Definition</code></a></li>
+<li><a href="#emphasis"><code>Emphasis</code></a></li>
+<li><a href="#heading"><code>Heading</code></a></li>
+<li><a href="#html"><code>Html</code></a></li>
+<li><a href="#image"><code>Image</code></a></li>
+<li><a href="#imagereference"><code>ImageReference</code></a></li>
+<li><a href="#inlinecode"><code>InlineCode</code></a></li>
+<li><a href="#link"><code>Link</code></a></li>
+<li><a href="#linkreference"><code>LinkReference</code></a></li>
+<li><a href="#list"><code>List</code></a></li>
+<li><a href="#listitem"><code>ListItem</code></a></li>
+<li><a href="#paragraph"><code>Paragraph</code></a></li>
+<li><a href="#root"><code>Root</code></a></li>
+<li><a href="#strong"><code>Strong</code></a></li>
+<li><a href="#text"><code>Text</code></a></li>
+<li><a href="#thematicbreak"><code>ThematicBreak</code></a></li>
+</ul>
+</li>
+<li><a href="#mixin">Mixin</a>
+<ul>
+<li><a href="#alternative"><code>Alternative</code></a></li>
+<li><a href="#association"><code>Association</code></a></li>
+<li><a href="#reference"><code>Reference</code></a></li>
+<li><a href="#resource"><code>Resource</code></a></li>
+</ul>
+</li>
+<li><a href="#enumeration">Enumeration</a>
+<ul>
+<li><a href="#referencetype"><code>referenceType</code></a></li>
+</ul>
+</li>
+<li><a href="#content-model">Content model</a>
+<ul>
+<li><a href="#content"><code>Content</code></a></li>
+<li><a href="#flowcontent"><code>FlowContent</code></a></li>
+<li><a href="#listcontent"><code>ListContent</code></a></li>
+<li><a href="#phrasingcontent"><code>PhrasingContent</code></a></li>
+</ul>
+</li>
+<li><a href="#extensions">Extensions</a>
+<ul>
+<li><a href="#gfm">GFM</a>
+<ul>
+<li><a href="#delete"><code>Delete</code></a></li>
+<li><a href="#listitem-gfm"><code>ListItem</code> (GFM)</a></li>
+<li><a href="#footnotedefinition"><code>FootnoteDefinition</code></a></li>
+<li><a href="#footnotereference"><code>FootnoteReference</code></a></li>
+<li><a href="#table"><code>Table</code></a></li>
+<li><a href="#tablecell"><code>TableCell</code></a></li>
+<li><a href="#tablerow"><code>TableRow</code></a></li>
+<li><a href="#aligntype"><code>alignType</code></a></li>
+<li><a href="#flowcontent-gfm"><code>FlowContent</code> (GFM)</a></li>
+<li><a href="#listcontent-gfm"><code>ListContent</code> (GFM)</a></li>
+<li><a href="#phrasingcontent-gfm"><code>PhrasingContent</code> (GFM)</a></li>
+<li><a href="#rowcontent"><code>RowContent</code></a></li>
+<li><a href="#tablecontent"><code>TableContent</code></a></li>
+</ul>
+</li>
+<li><a href="#frontmatter">Frontmatter</a>
+<ul>
+<li><a href="#yaml"><code>Yaml</code></a></li>
+<li><a href="#frontmattercontent"><code>FrontmatterContent</code></a></li>
+<li><a href="#flowcontent-frontmatter"><code>FlowContent</code> (frontmatter)</a></li>
+</ul>
+</li>
+<li><a href="#mdx">MDX</a></li>
+</ul>
+</li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#list-of-utilities">List of utilities</a></li>
+<li><a href="#references">References</a></li>
+<li><a href="#security">Security</a></li>
+<li><a href="#related">Related</a></li>
+<li><a href="#contribute">Contribute</a></li>
+<li><a href="#acknowledgments">Acknowledgments</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h2 id="introduction">Introduction</h2>
+<p>This document defines a format for representing <a href="https://daringfireball.net/projects/markdown/">markdown</a> as an <a href="https://github.com/syntax-tree/unist#syntax-tree">abstract
+syntax tree</a>.
+Development of mdast started in July 2014,
+in <strong><a href="https://github.com/remarkjs/remark">remark</a></strong>,
+before <a href="https://github.com/syntax-tree/unist">unist</a> existed.
+This specification is written in a <a href="https://heycam.github.io/webidl/">Web IDL</a>-like grammar.</p>
+<h3 id="where-this-specification-fits">Where this specification fits</h3>
+<p>mdast extends <a href="https://github.com/syntax-tree/unist">unist</a>,
+a format for syntax trees,
+to benefit from its <a href="https://github.com/syntax-tree/unist#list-of-utilities">ecosystem of utilities</a>.</p>
+<p>mdast relates to <a href="https://www.ecma-international.org/ecma-262/9.0/index.html">JavaScript</a> in that it has a rich <a href="#list-of-utilities">ecosystem of
+utilities</a> for working with compliant syntax trees in
+JavaScript.
+However,
+mdast is not limited to JavaScript and can be used in other programming
+languages.</p>
+<p>mdast relates to the <a href="https://github.com/unifiedjs/unified">unified</a> and <a href="https://github.com/remarkjs/remark">remark</a> projects in that mdast syntax
+trees are used throughout their ecosystems.</p>
+<h2 id="types">Types</h2>
+<p>If you are using TypeScript,
+you can use the unist types by installing them with npm:</p>
+<pre><code class="hljs language-sh">npm install @types/mdast
+</code></pre>
+<h2 id="nodes-abstract">Nodes (abstract)</h2>
+<h3 id="literal"><code>Literal</code></h3>
+<pre><code class="hljs language-idl">interface Literal &#x3C;: UnistLiteral {
+  value: string
+}
+</code></pre>
+<p><strong>Literal</strong> (<a href="https://github.com/syntax-tree/unist#literal"><strong>UnistLiteral</strong></a>) represents an abstract
+interface in mdast containing a value.</p>
+<p>Its <code>value</code> field is a <code>string</code>.</p>
+<h3 id="parent"><code>Parent</code></h3>
+<pre><code class="hljs language-idl">interface Parent &#x3C;: UnistParent {
+  children: [MdastContent]
+}
+</code></pre>
+<p><strong>Parent</strong> (<a href="https://github.com/syntax-tree/unist#parent"><strong>UnistParent</strong></a>) represents an abstract
+interface in mdast containing other nodes (said to be <a href="https://github.com/syntax-tree/unist#child"><em>children</em></a>).</p>
+<p>Its content is limited to only other <a href="#content-model"><strong>mdast content</strong></a>.</p>
+<h2 id="nodes">Nodes</h2>
+<h3 id="blockquote"><code>Blockquote</code></h3>
+<pre><code class="hljs language-idl">interface Blockquote &#x3C;: Parent {
+  type: 'blockquote'
+  children: [FlowContent]
+}
+</code></pre>
+<p><strong>Blockquote</strong> (<a href="#parent"><strong>Parent</strong></a>) represents a section quoted from
+somewhere else.</p>
+<p><strong>Blockquote</strong> can be used where <a href="#flowcontent"><strong>flow</strong></a> content is
+expected.
+Its content model is also <a href="#flowcontent"><strong>flow</strong></a> content.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown"><span class="hljs-quote">> Alpha bravo charlie.</span>
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'blockquote'</span>,
+  <span class="hljs-attr">children</span>: [{
+    <span class="hljs-attr">type</span>: <span class="hljs-string">'paragraph'</span>,
+    <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'Alpha bravo charlie.'</span>}]
+  }]
+}
+</code></pre>
+<h3 id="break"><code>Break</code></h3>
+<pre><code class="hljs language-idl">interface Break &#x3C;: Node {
+  type: 'break'
+}
+</code></pre>
+<p><strong>Break</strong> (<a href="https://github.com/syntax-tree/unist#node"><strong>Node</strong></a>) represents a line break,
+such as in poems or addresses.</p>
+<p><strong>Break</strong> can be used where <a href="#phrasingcontent"><strong>phrasing</strong></a> content is
+expected.
+It has no content model.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown">foo··
+bar
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'paragraph'</span>,
+  <span class="hljs-attr">children</span>: [
+    {<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'foo'</span>},
+    {<span class="hljs-attr">type</span>: <span class="hljs-string">'break'</span>},
+    {<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'bar'</span>}
+  ]
+}
+</code></pre>
+<h3 id="code"><code>Code</code></h3>
+<pre><code class="hljs language-idl">interface Code &#x3C;: Literal {
+  type: 'code'
+  lang: string?
+  meta: string?
+}
+</code></pre>
+<p><strong>Code</strong> (<a href="#literal"><strong>Literal</strong></a>) represents a block of preformatted text,
+such as ASCII art or computer code.</p>
+<p><strong>Code</strong> can be used where <a href="#flowcontent"><strong>flow</strong></a> content is expected.
+Its content is represented by its <code>value</code> field.</p>
+<p>This node relates to the <a href="#phrasingcontent"><strong>phrasing</strong></a> content concept
+<a href="#inlinecode"><strong>InlineCode</strong></a>.</p>
+<p>A <code>lang</code> field can be present.
+It represents the language of computer code being marked up.</p>
+<p>If the <code>lang</code> field is present,
+a <code>meta</code> field can be present.
+It represents custom information relating to the node.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown"><span class="hljs-code">    foo()
+</span></code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'code'</span>,
+  <span class="hljs-attr">lang</span>: <span class="hljs-literal">null</span>,
+  <span class="hljs-attr">meta</span>: <span class="hljs-literal">null</span>,
+  <span class="hljs-attr">value</span>: <span class="hljs-string">'foo()'</span>
+}
+</code></pre>
+<p>And the following markdown:</p>
+<pre><code class="hljs language-markdown"><span class="hljs-code">```js highlight-line="2"
+foo()
+bar()
+baz()
+```</span>
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'code'</span>,
+  <span class="hljs-attr">lang</span>: <span class="hljs-string">'js'</span>,
+  <span class="hljs-attr">meta</span>: <span class="hljs-string">'highlight-line="2"'</span>,
+  <span class="hljs-attr">value</span>: <span class="hljs-string">'foo()\nbar()\nbaz()'</span>
+}
+</code></pre>
+<h3 id="definition"><code>Definition</code></h3>
+<pre><code class="hljs language-idl">interface Definition &#x3C;: Node {
+  type: 'definition'
+}
+
+Definition includes Association
+Definition includes Resource
+</code></pre>
+<p><strong>Definition</strong> (<a href="https://github.com/syntax-tree/unist#node"><strong>Node</strong></a>) represents a resource.</p>
+<p><strong>Definition</strong> can be used where <a href="#content"><strong>content</strong></a> is expected.
+It has no content model.</p>
+<p><strong>Definition</strong> includes the mixins <a href="#association"><strong>Association</strong></a> and
+<a href="#resource"><strong>Resource</strong></a>.</p>
+<p><strong>Definition</strong> should be associated with
+<a href="#linkreference"><strong>LinkReferences</strong></a> and
+<a href="#imagereference"><strong>ImageReferences</strong></a>.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown">[<span class="hljs-symbol">Alpha</span>]: <span class="hljs-link">https://example.com</span>
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'definition'</span>,
+  <span class="hljs-attr">identifier</span>: <span class="hljs-string">'alpha'</span>,
+  <span class="hljs-attr">label</span>: <span class="hljs-string">'Alpha'</span>,
+  <span class="hljs-attr">url</span>: <span class="hljs-string">'https://example.com'</span>,
+  <span class="hljs-attr">title</span>: <span class="hljs-literal">null</span>
+}
+</code></pre>
+<h3 id="emphasis"><code>Emphasis</code></h3>
+<pre><code class="hljs language-idl">interface Emphasis &#x3C;: Parent {
+  type: 'emphasis'
+  children: [PhrasingContent]
+}
+</code></pre>
+<p><strong>Emphasis</strong> (<a href="#parent"><strong>Parent</strong></a>) represents stress emphasis of its
+contents.</p>
+<p><strong>Emphasis</strong> can be used where <a href="#phrasingcontent"><strong>phrasing</strong></a> content is
+expected.
+Its content model is <a href="#phrasingcontent"><strong>phrasing</strong></a> content.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown"><span class="hljs-emphasis">*alpha*</span> <span class="hljs-emphasis">_bravo_</span>
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'paragraph'</span>,
+  <span class="hljs-attr">children</span>: [
+    {
+      <span class="hljs-attr">type</span>: <span class="hljs-string">'emphasis'</span>,
+      <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'alpha'</span>}]
+    },
+    {<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">' '</span>},
+    {
+      <span class="hljs-attr">type</span>: <span class="hljs-string">'emphasis'</span>,
+      <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'bravo'</span>}]
+    }
+  ]
+}
+</code></pre>
+<h3 id="heading"><code>Heading</code></h3>
+<pre><code class="hljs language-idl">interface Heading &#x3C;: Parent {
+  type: 'heading'
+  depth: 1 &#x3C;= number &#x3C;= 6
+  children: [PhrasingContent]
+}
+</code></pre>
+<p><strong>Heading</strong> (<a href="#parent"><strong>Parent</strong></a>) represents a heading of a section.</p>
+<p><strong>Heading</strong> can be used where <a href="#flowcontent"><strong>flow</strong></a> content is expected.
+Its content model is <a href="#phrasingcontent"><strong>phrasing</strong></a> content.</p>
+<p>A <code>depth</code> field must be present.
+A value of <code>1</code> is said to be the highest rank and <code>6</code> the lowest.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown"><span class="hljs-section"># Alpha</span>
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'heading'</span>,
+  <span class="hljs-attr">depth</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'Alpha'</span>}]
+}
+</code></pre>
+<h3 id="html"><code>Html</code></h3>
+<pre><code class="hljs language-idl">interface Html &#x3C;: Literal {
+  type: 'html'
+}
+</code></pre>
+<p><strong>Html</strong> (<a href="#literal"><strong>Literal</strong></a>) represents a fragment of raw <a href="https://html.spec.whatwg.org/multipage/">HTML</a>.</p>
+<p><strong>Html</strong> can be used where <a href="#flowcontent"><strong>flow</strong></a> or
+<a href="#phrasingcontent"><strong>phrasing</strong></a> content is expected.
+Its content is represented by its <code>value</code> field.</p>
+<p><strong>Html</strong> nodes do not have the restriction of being valid or complete HTML
+(<a href="https://html.spec.whatwg.org/multipage/">[HTML]</a>) constructs.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown"><span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">div</span>></span></span>
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{<span class="hljs-attr">type</span>: <span class="hljs-string">'html'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'&#x3C;div>'</span>}
+</code></pre>
+<h3 id="image"><code>Image</code></h3>
+<pre><code class="hljs language-idl">interface Image &#x3C;: Node {
+  type: 'image'
+}
+
+Image includes Resource
+Image includes Alternative
+</code></pre>
+<p><strong>Image</strong> (<a href="https://github.com/syntax-tree/unist#node"><strong>Node</strong></a>) represents an image.</p>
+<p><strong>Image</strong> can be used where <a href="#phrasingcontent"><strong>phrasing</strong></a> content is
+expected.
+It has no content model,
+but is described by its <code>alt</code> field.</p>
+<p><strong>Image</strong> includes the mixins <a href="#resource"><strong>Resource</strong></a> and
+<a href="#alternative"><strong>Alternative</strong></a>.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown">![<span class="hljs-string">alpha</span>](<span class="hljs-link">https://example.com/favicon.ico "bravo"</span>)
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'image'</span>,
+  <span class="hljs-attr">url</span>: <span class="hljs-string">'https://example.com/favicon.ico'</span>,
+  <span class="hljs-attr">title</span>: <span class="hljs-string">'bravo'</span>,
+  <span class="hljs-attr">alt</span>: <span class="hljs-string">'alpha'</span>
+}
+</code></pre>
+<h3 id="imagereference"><code>ImageReference</code></h3>
+<pre><code class="hljs language-idl">interface ImageReference &#x3C;: Node {
+  type: 'imageReference'
+}
+
+ImageReference includes Reference
+ImageReference includes Alternative
+</code></pre>
+<p><strong>ImageReference</strong> (<a href="https://github.com/syntax-tree/unist#node"><strong>Node</strong></a>) represents an image through
+association,
+or its original source if there is no association.</p>
+<p><strong>ImageReference</strong> can be used where <a href="#phrasingcontent"><strong>phrasing</strong></a>
+content is expected.
+It has no content model,
+but is described by its <code>alt</code> field.</p>
+<p><strong>ImageReference</strong> includes the mixins <a href="#reference"><strong>Reference</strong></a> and
+<a href="#alternative"><strong>Alternative</strong></a>.</p>
+<p><strong>ImageReference</strong> should be associated with a <a href="#definition"><strong>Definition</strong></a>.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown">![<span class="hljs-string">alpha</span>][<span class="hljs-symbol">bravo</span>]
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'imageReference'</span>,
+  <span class="hljs-attr">identifier</span>: <span class="hljs-string">'bravo'</span>,
+  <span class="hljs-attr">label</span>: <span class="hljs-string">'bravo'</span>,
+  <span class="hljs-attr">referenceType</span>: <span class="hljs-string">'full'</span>,
+  <span class="hljs-attr">alt</span>: <span class="hljs-string">'alpha'</span>
+}
+</code></pre>
+<h3 id="inlinecode"><code>InlineCode</code></h3>
+<pre><code class="hljs language-idl">interface InlineCode &#x3C;: Literal {
+  type: 'inlineCode'
+}
+</code></pre>
+<p><strong>InlineCode</strong> (<a href="#literal"><strong>Literal</strong></a>) represents a fragment of computer
+code,
+such as a file name,
+computer program,
+or anything a computer could parse.</p>
+<p><strong>InlineCode</strong> can be used where <a href="#phrasingcontent"><strong>phrasing</strong></a> content
+is expected.
+Its content is represented by its <code>value</code> field.</p>
+<p>This node relates to the <a href="#flowcontent"><strong>flow</strong></a> content concept
+<a href="#code"><strong>Code</strong></a>.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown"><span class="hljs-code">`foo()`</span>
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{<span class="hljs-attr">type</span>: <span class="hljs-string">'inlineCode'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'foo()'</span>}
+</code></pre>
+<h3 id="link"><code>Link</code></h3>
+<pre><code class="hljs language-idl">interface Link &#x3C;: Parent {
+  type: 'link'
+  children: [PhrasingContent]
+}
+
+Link includes Resource
+</code></pre>
+<p><strong>Link</strong> (<a href="#parent"><strong>Parent</strong></a>) represents a hyperlink.</p>
+<p><strong>Link</strong> can be used where <a href="#phrasingcontent"><strong>phrasing</strong></a> content is
+expected.
+Its content model is also <a href="#phrasingcontent"><strong>phrasing</strong></a> content.</p>
+<p><strong>Link</strong> includes the mixin <a href="#resource"><strong>Resource</strong></a>.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown">[<span class="hljs-string">alpha</span>](<span class="hljs-link">https://example.com "bravo"</span>)
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'link'</span>,
+  <span class="hljs-attr">url</span>: <span class="hljs-string">'https://example.com'</span>,
+  <span class="hljs-attr">title</span>: <span class="hljs-string">'bravo'</span>,
+  <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'alpha'</span>}]
+}
+</code></pre>
+<h3 id="linkreference"><code>LinkReference</code></h3>
+<pre><code class="hljs language-idl">interface LinkReference &#x3C;: Parent {
+  type: 'linkReference'
+  children: [PhrasingContent]
+}
+
+LinkReference includes Reference
+</code></pre>
+<p><strong>LinkReference</strong> (<a href="#parent"><strong>Parent</strong></a>) represents a hyperlink through
+association,
+or its original source if there is no association.</p>
+<p><strong>LinkReference</strong> can be used where <a href="#phrasingcontent"><strong>phrasing</strong></a> content
+is expected.
+Its content model is also <a href="#phrasingcontent"><strong>phrasing</strong></a> content.</p>
+<p><strong>LinkReference</strong> includes the mixin <a href="#reference"><strong>Reference</strong></a>.</p>
+<p><strong>LinkReferences</strong> should be associated with a <a href="#definition"><strong>Definition</strong></a>.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown">[<span class="hljs-string">alpha</span>][<span class="hljs-symbol">Bravo</span>]
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'linkReference'</span>,
+  <span class="hljs-attr">identifier</span>: <span class="hljs-string">'bravo'</span>,
+  <span class="hljs-attr">label</span>: <span class="hljs-string">'Bravo'</span>,
+  <span class="hljs-attr">referenceType</span>: <span class="hljs-string">'full'</span>,
+  <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'alpha'</span>}]
+}
+</code></pre>
+<h3 id="list"><code>List</code></h3>
+<pre><code class="hljs language-idl">interface List &#x3C;: Parent {
+  type: 'list'
+  ordered: boolean?
+  start: number?
+  spread: boolean?
+  children: [ListContent]
+}
+</code></pre>
+<p><strong>List</strong> (<a href="#parent"><strong>Parent</strong></a>) represents a list of items.</p>
+<p><strong>List</strong> can be used where <a href="#flowcontent"><strong>flow</strong></a> content is expected.
+Its content model is <a href="#listcontent"><strong>list</strong></a> content.</p>
+<p>An <code>ordered</code> field can be present.
+It represents that the items have been intentionally ordered (when <code>true</code>),
+or that the order of items is not important (when <code>false</code> or not present).</p>
+<p>A <code>start</code> field can be present.
+It represents,
+when the <code>ordered</code> field is <code>true</code>,
+the starting number of the list.</p>
+<p>A <code>spread</code> field can be present.
+It represents that one or more of its children are separated with a blank line
+from its <a href="https://github.com/syntax-tree/unist#sibling">siblings</a> (when <code>true</code>),
+or not (when <code>false</code> or not present).</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown"><span class="hljs-bullet">1.</span> foo
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'list'</span>,
+  <span class="hljs-attr">ordered</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">start</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">spread</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">children</span>: [{
+    <span class="hljs-attr">type</span>: <span class="hljs-string">'listItem'</span>,
+    <span class="hljs-attr">spread</span>: <span class="hljs-literal">false</span>,
+    <span class="hljs-attr">children</span>: [{
+      <span class="hljs-attr">type</span>: <span class="hljs-string">'paragraph'</span>,
+      <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'foo'</span>}]
+    }]
+  }]
+}
+</code></pre>
+<h3 id="listitem"><code>ListItem</code></h3>
+<pre><code class="hljs language-idl">interface ListItem &#x3C;: Parent {
+  type: 'listItem'
+  spread: boolean?
+  children: [FlowContent]
+}
+</code></pre>
+<p><strong>ListItem</strong> (<a href="#parent"><strong>Parent</strong></a>) represents an item in a
+<a href="#list"><strong>List</strong></a>.</p>
+<p><strong>ListItem</strong> can be used where <a href="#listcontent"><strong>list</strong></a> content is expected.
+Its content model is <a href="#flowcontent"><strong>flow</strong></a> content.</p>
+<p>A <code>spread</code> field can be present.
+It represents that the item contains two or more <a href="https://github.com/syntax-tree/unist#child"><em>children</em></a>
+separated by a blank line (when <code>true</code>),
+or not (when <code>false</code> or not present).</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown"><span class="hljs-bullet">*</span> bar
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'listItem'</span>,
+  <span class="hljs-attr">spread</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">children</span>: [{
+    <span class="hljs-attr">type</span>: <span class="hljs-string">'paragraph'</span>,
+    <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'bar'</span>}]
+  }]
+}
+</code></pre>
+<h3 id="paragraph"><code>Paragraph</code></h3>
+<pre><code class="hljs language-idl">interface Paragraph &#x3C;: Parent {
+  type: 'paragraph'
+  children: [PhrasingContent]
+}
+</code></pre>
+<p><strong>Paragraph</strong> (<a href="#parent"><strong>Parent</strong></a>) represents a unit of discourse dealing
+with a particular point or idea.</p>
+<p><strong>Paragraph</strong> can be used where <a href="#content"><strong>content</strong></a> is expected.
+Its content model is <a href="#phrasingcontent"><strong>phrasing</strong></a> content.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown">Alpha bravo charlie.
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'paragraph'</span>,
+  <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'Alpha bravo charlie.'</span>}]
+}
+</code></pre>
+<h3 id="root"><code>Root</code></h3>
+<pre><code class="hljs language-idl">interface Root &#x3C;: Parent {
+  type: 'root'
+}
+</code></pre>
+<p><strong>Root</strong> (<a href="#parent"><strong>Parent</strong></a>) represents a document.</p>
+<p><strong>Root</strong> can be used as the <a href="https://github.com/syntax-tree/unist#root"><em>root</em></a> of a <a href="https://github.com/syntax-tree/unist#tree"><em>tree</em></a>,
+never as a <a href="https://github.com/syntax-tree/unist#child"><em>child</em></a>.
+Its content model is <strong>not</strong> limited to <a href="#flowcontent"><strong>flow</strong></a> content,
+but instead can contain any <a href="#content-model"><strong>mdast content</strong></a> with the
+restriction that all content must be of the same category.</p>
+<h3 id="strong"><code>Strong</code></h3>
+<pre><code class="hljs language-idl">interface Strong &#x3C;: Parent {
+  type: 'strong'
+  children: [PhrasingContent]
+}
+</code></pre>
+<p><strong>Strong</strong> (<a href="#parent"><strong>Parent</strong></a>) represents strong importance,
+seriousness,
+or urgency for its contents.</p>
+<p><strong>Strong</strong> can be used where <a href="#phrasingcontent"><strong>phrasing</strong></a> content is
+expected.
+Its content model is <a href="#phrasingcontent"><strong>phrasing</strong></a> content.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown"><span class="hljs-strong">**alpha**</span> <span class="hljs-strong">__bravo__</span>
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'paragraph'</span>,
+  <span class="hljs-attr">children</span>: [
+    {
+      <span class="hljs-attr">type</span>: <span class="hljs-string">'strong'</span>,
+      <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'alpha'</span>}]
+    },
+    {<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">' '</span>},
+    {
+      <span class="hljs-attr">type</span>: <span class="hljs-string">'strong'</span>,
+      <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'bravo'</span>}]
+    }
+  ]
+}
+</code></pre>
+<h3 id="text"><code>Text</code></h3>
+<pre><code class="hljs language-idl">interface Text &#x3C;: Literal {
+  type: 'text'
+}
+</code></pre>
+<p><strong>Text</strong> (<a href="#literal"><strong>Literal</strong></a>) represents everything that is just text.</p>
+<p><strong>Text</strong> can be used where <a href="#phrasingcontent"><strong>phrasing</strong></a> content is
+expected.
+Its content is represented by its <code>value</code> field.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown">Alpha bravo charlie.
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'Alpha bravo charlie.'</span>}
+</code></pre>
+<h3 id="thematicbreak"><code>ThematicBreak</code></h3>
+<pre><code class="hljs language-idl">interface ThematicBreak &#x3C;: Node {
+  type: 'thematicBreak'
+}
+</code></pre>
+<p><strong>ThematicBreak</strong> (<a href="https://github.com/syntax-tree/unist#node"><strong>Node</strong></a>) represents a thematic break,
+such as a scene change in a story,
+a transition to another topic,
+or a new document.</p>
+<p><strong>ThematicBreak</strong> can be used where <a href="#flowcontent"><strong>flow</strong></a> content is
+expected.
+It has no content model.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown"><span class="hljs-strong">***
+</span></code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{<span class="hljs-attr">type</span>: <span class="hljs-string">'thematicBreak'</span>}
+</code></pre>
+<h2 id="mixin">Mixin</h2>
+<h3 id="alternative"><code>Alternative</code></h3>
+<pre><code class="hljs language-idl">interface mixin Alternative {
+  alt: string?
+}
+</code></pre>
+<p><strong>Alternative</strong> represents a node with a fallback</p>
+<p>An <code>alt</code> field should be present.
+It represents equivalent content for environments that cannot represent the
+node as intended.</p>
+<h3 id="association"><code>Association</code></h3>
+<pre><code class="hljs language-idl">interface mixin Association {
+  identifier: string
+  label: string?
+}
+</code></pre>
+<p><strong>Association</strong> represents an internal relation from one node to another.</p>
+<p>An <code>identifier</code> field must be present.
+It can match another node.
+<code>identifier</code> is a source value: character escapes and character references are
+<em>not</em> parsed.
+Its value must be normalized.</p>
+<p>A <code>label</code> field can be present.
+<code>label</code> is a string value: it works just like <code>title</code> on a link or a <code>lang</code> on
+code: character escapes and character references are parsed.</p>
+<p>To normalize a value,
+collapse markdown whitespace (<code>[\t\n\r ]+</code>) to a space,
+trim the optional initial and/or final space,
+and perform case-folding.</p>
+<p>Whether the value of <code>identifier</code> (or normalized <code>label</code> if there is no
+<code>identifier</code>) is expected to be a unique identifier or not depends on the type
+of node including the <strong>Association</strong>.
+An example of this is that they should be unique on
+<a href="#definition"><strong>Definition</strong></a>,
+whereas multiple <a href="#linkreference"><strong>LinkReference</strong></a>s can be non-unique to
+be associated with one definition.</p>
+<h3 id="reference"><code>Reference</code></h3>
+<pre><code class="hljs language-idl">interface mixin Reference {
+  referenceType: string
+}
+
+Reference includes Association
+</code></pre>
+<p><strong>Reference</strong> represents a marker that is <a href="#association"><strong>associated</strong></a>
+to another node.</p>
+<p>A <code>referenceType</code> field must be present.
+Its value must be a <a href="#referencetype"><strong>referenceType</strong></a>.
+It represents the explicitness of the reference.</p>
+<h3 id="resource"><code>Resource</code></h3>
+<pre><code class="hljs language-idl">interface mixin Resource {
+  url: string
+  title: string?
+}
+</code></pre>
+<p><strong>Resource</strong> represents a reference to resource.</p>
+<p>A <code>url</code> field must be present.
+It represents a URL to the referenced resource.</p>
+<p>A <code>title</code> field can be present.
+It represents  advisory information for the resource,
+such as would be appropriate for a tooltip.</p>
+<h2 id="enumeration">Enumeration</h2>
+<h3 id="referencetype"><code>referenceType</code></h3>
+<pre><code class="hljs language-idl">enum referenceType {
+  'shortcut' | 'collapsed' | 'full'
+}
+</code></pre>
+<p><strong>referenceType</strong> represents the explicitness of a reference.</p>
+<ul>
+<li><strong>shortcut</strong>: the reference is implicit,
+its identifier inferred from its content</li>
+<li><strong>collapsed</strong>: the reference is explicit,
+its identifier inferred from its content</li>
+<li><strong>full</strong>: the reference is explicit,
+its identifier explicitly set</li>
+</ul>
+<h2 id="content-model">Content model</h2>
+<pre><code class="hljs language-idl">type MdastContent = FlowContent | ListContent | PhrasingContent
+</code></pre>
+<p>Each node in mdast falls into one or more categories of <strong>Content</strong> that group
+nodes with similar characteristics together.</p>
+<h3 id="content"><code>Content</code></h3>
+<pre><code class="hljs language-idl">type Content = Definition | Paragraph
+</code></pre>
+<p><strong>Content</strong> represents runs of text that form definitions and paragraphs.</p>
+<h3 id="flowcontent"><code>FlowContent</code></h3>
+<pre><code class="hljs language-idl">type FlowContent =
+  Blockquote | Code | Heading | Html | List | ThematicBreak | Content
+</code></pre>
+<p><strong>Flow</strong> content represent the sections of document.</p>
+<h3 id="listcontent"><code>ListContent</code></h3>
+<pre><code class="hljs language-idl">type ListContent = ListItem
+</code></pre>
+<p><strong>List</strong> content represent the items in a list.</p>
+<h3 id="phrasingcontent"><code>PhrasingContent</code></h3>
+<pre><code class="hljs language-idl">type PhrasingContent = Break | Emphasis | Html | Image | ImageReference
+  | InlineCode | Link | LinkReference | Strong | Text
+</code></pre>
+<p><strong>Phrasing</strong> content represent the text in a document and its markup.</p>
+<h2 id="extensions">Extensions</h2>
+<p>Markdown syntax is often extended.
+It is not a goal of this specification to list all possible extensions.
+However,
+a short list of frequently used extensions are shown below.</p>
+<h3 id="gfm">GFM</h3>
+<p>The following interfaces are found in <a href="https://github.github.com/gfm/">GitHub Flavored Markdown</a>.</p>
+<h4 id="delete"><code>Delete</code></h4>
+<pre><code class="hljs language-idl">interface Delete &#x3C;: Parent {
+  type: 'delete'
+  children: [PhrasingContent]
+}
+</code></pre>
+<p><strong>Delete</strong> (<a href="#parent"><strong>Parent</strong></a>) represents contents that are no longer
+accurate or no longer relevant.</p>
+<p><strong>Delete</strong> can be used where <a href="#phrasingcontent"><strong>phrasing</strong></a> content is
+expected.
+Its content model is <a href="#phrasingcontent"><strong>phrasing</strong></a> content.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown">~~alpha~~
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'delete'</span>,
+  <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'alpha'</span>}]
+}
+</code></pre>
+<h4 id="listitem-gfm"><code>ListItem</code> (GFM)</h4>
+<pre><code class="hljs language-idl">interface ListItemGfm &#x3C;: ListItem {
+  checked: boolean?
+}
+</code></pre>
+<p>In GFM,
+a <code>checked</code> field can be present.
+It represents whether the item is done (when <code>true</code>),
+not done (when <code>false</code>),
+or indeterminate or not applicable (when <code>null</code> or not present).</p>
+<h4 id="footnotedefinition"><code>FootnoteDefinition</code></h4>
+<pre><code class="hljs language-idl">interface FootnoteDefinition &#x3C;: Parent {
+  type: 'footnoteDefinition'
+  children: [FlowContent]
+}
+
+FootnoteDefinition includes Association
+</code></pre>
+<p><strong>FootnoteDefinition</strong> (<a href="#parent"><strong>Parent</strong></a>) represents content relating
+to the document that is outside its flow.</p>
+<p><strong>FootnoteDefinition</strong> can be used where <a href="#flowcontent"><strong>flow</strong></a> content is
+expected.
+Its content model is also <a href="#flowcontent"><strong>flow</strong></a> content.</p>
+<p><strong>FootnoteDefinition</strong> includes the mixin
+<a href="#association"><strong>Association</strong></a>.</p>
+<p><strong>FootnoteDefinition</strong> should be associated with
+<a href="#footnotereference"><strong>FootnoteReferences</strong></a>.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown">[<span class="hljs-symbol">^alpha</span>]: <span class="hljs-link">bravo and charlie.</span>
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'footnoteDefinition'</span>,
+  <span class="hljs-attr">identifier</span>: <span class="hljs-string">'alpha'</span>,
+  <span class="hljs-attr">label</span>: <span class="hljs-string">'alpha'</span>,
+  <span class="hljs-attr">children</span>: [{
+    <span class="hljs-attr">type</span>: <span class="hljs-string">'paragraph'</span>,
+    <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'bravo and charlie.'</span>}]
+  }]
+}
+</code></pre>
+<h4 id="footnotereference"><code>FootnoteReference</code></h4>
+<pre><code class="hljs language-idl">interface FootnoteReference &#x3C;: Node {
+  type: 'footnoteReference'
+}
+
+FootnoteReference includes Association
+</code></pre>
+<p><strong>FootnoteReference</strong> (<a href="https://github.com/syntax-tree/unist#node"><strong>Node</strong></a>) represents a marker through
+association.</p>
+<p><strong>FootnoteReference</strong> can be used where <a href="#phrasingcontent"><strong>phrasing</strong></a>
+content is expected.
+It has no content model.</p>
+<p><strong>FootnoteReference</strong> includes the mixin <a href="#association"><strong>Association</strong></a>.</p>
+<p><strong>FootnoteReference</strong> should be associated with a
+<a href="#footnotedefinition"><strong>FootnoteDefinition</strong></a>.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown">[^alpha]
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'footnoteReference'</span>,
+  <span class="hljs-attr">identifier</span>: <span class="hljs-string">'alpha'</span>,
+  <span class="hljs-attr">label</span>: <span class="hljs-string">'alpha'</span>
+}
+</code></pre>
+<h4 id="table"><code>Table</code></h4>
+<pre><code class="hljs language-idl">interface Table &#x3C;: Parent {
+  type: 'table'
+  align: [alignType]?
+  children: [TableContent]
+}
+</code></pre>
+<p><strong>Table</strong> (<a href="#parent"><strong>Parent</strong></a>) represents two-dimensional data.</p>
+<p><strong>Table</strong> can be used where <a href="#flowcontent"><strong>flow</strong></a> content is expected.
+Its content model is <a href="#tablecontent"><strong>table</strong></a> content.</p>
+<p>The <a href="https://github.com/syntax-tree/unist#head"><em>head</em></a> of the node represents the labels of the columns.</p>
+<p>An <code>align</code> field can be present.
+If present,
+it must be a list of <a href="#aligntype"><strong>alignType</strong>s</a>.
+It represents how cells in columns are aligned.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown">| foo | bar |
+| :-- | :-: |
+| baz | qux |
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'table'</span>,
+  <span class="hljs-attr">align</span>: [<span class="hljs-string">'left'</span>, <span class="hljs-string">'center'</span>],
+  <span class="hljs-attr">children</span>: [
+    {
+      <span class="hljs-attr">type</span>: <span class="hljs-string">'tableRow'</span>,
+      <span class="hljs-attr">children</span>: [
+        {
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'tableCell'</span>,
+          <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'foo'</span>}]
+        },
+        {
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'tableCell'</span>,
+          <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'bar'</span>}]
+        }
+      ]
+    },
+    {
+      <span class="hljs-attr">type</span>: <span class="hljs-string">'tableRow'</span>,
+      <span class="hljs-attr">children</span>: [
+        {
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'tableCell'</span>,
+          <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'baz'</span>}]
+        },
+        {
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'tableCell'</span>,
+          <span class="hljs-attr">children</span>: [{<span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'qux'</span>}]
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+<h4 id="tablecell"><code>TableCell</code></h4>
+<pre><code class="hljs language-idl">interface TableCell &#x3C;: Parent {
+  type: 'tableCell'
+  children: [PhrasingContent]
+}
+</code></pre>
+<p><strong>TableCell</strong> (<a href="#parent"><strong>Parent</strong></a>) represents a header cell in a
+<a href="#table"><strong>Table</strong></a>,
+if its parent is a <a href="https://github.com/syntax-tree/unist#head"><em>head</em></a>,
+or a data cell otherwise.</p>
+<p><strong>TableCell</strong> can be used where <a href="#rowcontent"><strong>row</strong></a> content is expected.
+Its content model is <a href="#phrasingcontent"><strong>phrasing</strong></a> content excluding
+<a href="#break"><strong>Break</strong></a> nodes.</p>
+<p>For an example,
+see <a href="#table"><strong>Table</strong></a>.</p>
+<h4 id="tablerow"><code>TableRow</code></h4>
+<pre><code class="hljs language-idl">interface TableRow &#x3C;: Parent {
+  type: 'tableRow'
+  children: [RowContent]
+}
+</code></pre>
+<p><strong>TableRow</strong> (<a href="#parent"><strong>Parent</strong></a>) represents a row of cells in a table.</p>
+<p><strong>TableRow</strong> can be used where <a href="#tablecontent"><strong>table</strong></a> content is
+expected.
+Its content model is <a href="#rowcontent"><strong>row</strong></a> content.</p>
+<p>If the node is a <a href="https://github.com/syntax-tree/unist#head"><em>head</em></a>,
+it represents the labels of the columns for its parent <a href="#table"><strong>Table</strong></a>.</p>
+<p>For an example,
+see <a href="#table"><strong>Table</strong></a>.</p>
+<h4 id="aligntype"><code>alignType</code></h4>
+<pre><code class="hljs language-idl">enum alignType {
+  'left' | 'right' | 'center' | null
+}
+</code></pre>
+<p><strong>alignType</strong> represents how phrasing content is aligned
+(<a href="https://drafts.csswg.org/css-text/">[CSSTEXT]</a>).</p>
+<ul>
+<li><strong><code>'left'</code></strong>: See the <a href="https://drafts.csswg.org/css-text/#valdef-text-align-left"><code>left</code></a> value of the <code>text-align</code> CSS
+property</li>
+<li><strong><code>'right'</code></strong>: See the <a href="https://drafts.csswg.org/css-text/#valdef-text-align-right"><code>right</code></a> value of the <code>text-align</code>
+CSS property</li>
+<li><strong><code>'center'</code></strong>: See the <a href="https://drafts.csswg.org/css-text/#valdef-text-align-center"><code>center</code></a> value of the <code>text-align</code>
+CSS property</li>
+<li><strong><code>null</code></strong>: phrasing content is aligned as defined by the host environment</li>
+</ul>
+<h4 id="flowcontent-gfm"><code>FlowContent</code> (GFM)</h4>
+<pre><code class="hljs language-idl">type FlowContentGfm = FootnoteDefinition | Table | FlowContent
+</code></pre>
+<h4 id="listcontent-gfm"><code>ListContent</code> (GFM)</h4>
+<pre><code class="hljs language-idl">type ListContentGfm = ListItemGfm
+</code></pre>
+<h4 id="phrasingcontent-gfm"><code>PhrasingContent</code> (GFM)</h4>
+<pre><code class="hljs language-idl">type PhrasingContentGfm = FootnoteReference | Delete | PhrasingContent
+</code></pre>
+<h4 id="rowcontent"><code>RowContent</code></h4>
+<pre><code class="hljs language-idl">type RowContent = TableCell
+</code></pre>
+<p><strong>Row</strong> content represent the cells in a row.</p>
+<h4 id="tablecontent"><code>TableContent</code></h4>
+<pre><code class="hljs language-idl">type TableContent = TableRow
+</code></pre>
+<p><strong>Table</strong> content represent the rows in a table.</p>
+<h3 id="frontmatter">Frontmatter</h3>
+<p>The following interfaces are found with YAML.</p>
+<h4 id="yaml"><code>Yaml</code></h4>
+<pre><code class="hljs language-idl">interface Yaml &#x3C;: Literal {
+  type: 'yaml'
+}
+</code></pre>
+<p><strong>Yaml</strong> (<a href="#literal"><strong>Literal</strong></a>) represents a collection of metadata for
+the document in the YAML (<a href="https://yaml.org">[YAML]</a>) data serialisation language.</p>
+<p><strong>Yaml</strong> can be used where <a href="#frontmattercontent"><strong>frontmatter</strong></a> content is
+expected.
+Its content is represented by its <code>value</code> field.</p>
+<p>For example,
+the following markdown:</p>
+<pre><code class="hljs language-markdown">---
+<span class="hljs-section">foo: bar
+---</span>
+</code></pre>
+<p>Yields:</p>
+<pre><code class="hljs language-js">{<span class="hljs-attr">type</span>: <span class="hljs-string">'yaml'</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">'foo: bar'</span>}
+</code></pre>
+<h4 id="frontmattercontent"><code>FrontmatterContent</code></h4>
+<pre><code class="hljs language-idl">type FrontmatterContent = Yaml
+</code></pre>
+<p><strong>Frontmatter</strong> content represent out-of-band information about the document.</p>
+<p>If frontmatter is present,
+it must be limited to one node in the <a href="https://github.com/syntax-tree/unist#tree"><em>tree</em></a>,
+and can only exist as a <a href="https://github.com/syntax-tree/unist#head"><em>head</em></a>.</p>
+<h4 id="flowcontent-frontmatter"><code>FlowContent</code> (frontmatter)</h4>
+<pre><code class="hljs language-idl">type FlowContentFrontmatter = FrontmatterContent | FlowContent
+</code></pre>
+<h3 id="mdx">MDX</h3>
+<p>See <a href="https://mdxjs.com/packages/remark-mdx/#syntax-tree"><code>remark-mdx</code></a>.</p>
+<h2 id="glossary">Glossary</h2>
+<p>See the <a href="https://github.com/syntax-tree/unist#glossary">unist glossary</a>.</p>
+<h2 id="list-of-utilities">List of utilities</h2>
+<p>See the <a href="https://github.com/syntax-tree/unist#list-of-utilities">unist list of utilities</a> for more utilities.</p>
+<ul>
+<li><a href="https://gitlab.com/staltz/mdast-add-list-metadata"><code>mdast-add-list-metadata</code></a>
+— enhance the metadata of <code>list</code> and <code>listItem</code> nodes</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-assert"><code>mdast-util-assert</code></a>
+— assert nodes</li>
+<li><a href="https://github.com/mike-north/mdast-builder"><code>mdast-builder</code></a>
+— build mdast structures with composable functions</li>
+<li><a href="https://github.com/syntax-tree/mdast-comment-marker"><code>mdast-comment-marker</code></a>
+— parse a comment marker</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-compact"><code>mdast-util-compact</code></a>
+— make a tree compact</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-definitions"><code>mdast-util-definitions</code></a>
+— find definition nodes</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-directive"><code>mdast-util-directive</code></a>
+— parse and serialize directives</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-find-and-replace"><code>mdast-util-find-and-replace</code></a>
+— find and replace text</li>
+<li><a href="https://gitlab.com/staltz/mdast-flatten-image-paragraphs"><code>mdast-flatten-image-paragraphs</code></a>
+— flatten <code>paragraph</code> and <code>image</code> into one <code>image</code> node</li>
+<li><a href="https://gitlab.com/staltz/mdast-flatten-listitem-paragraphs"><code>mdast-flatten-listitem-paragraphs</code></a>
+— flatten <code>listItem</code> and (nested) paragraph into one listItem node</li>
+<li><a href="https://gitlab.com/staltz/mdast-flatten-nested-lists"><code>mdast-flatten-nested-lists</code></a>
+— transform a tree to avoid lists in lists</li>
+<li><a href="https://github.com/bitcrowd/mdast-util-from-adf"><code>mdast-util-from-adf</code></a>
+— build mdast syntax tree from Atlassian Document Format (ADF)</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-from-markdown"><code>mdast-util-from-markdown</code></a>
+— parse markdown</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-frontmatter"><code>mdast-util-frontmatter</code></a>
+— parse and serialize frontmatter</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-gfm"><code>mdast-util-gfm</code></a>
+— parse and serialize GFM</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-gfm-autolink-literal"><code>mdast-util-gfm-autolink-literal</code></a>
+— parse and serialize GFM autolink literals</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-gfm-footnote"><code>mdast-util-gfm-footnote</code></a>
+— parse and serialize GFM footnotes</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-gfm-strikethrough"><code>mdast-util-gfm-strikethrough</code></a>
+— parse and serialize GFM strikethrough</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-gfm-table"><code>mdast-util-gfm-table</code></a>
+— parse and serialize GFM tables</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-gfm-task-list-item"><code>mdast-util-gfm-task-list-item</code></a>
+— parse and serialize GFM task list items</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-gridtables"><code>mdast-util-gridtables</code></a>
+— parse and serialize gridtables</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-heading-range"><code>mdast-util-heading-range</code></a>
+— markdown heading as ranges</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-heading-style"><code>mdast-util-heading-style</code></a>
+— get the style of a heading node</li>
+<li><a href="https://github.com/Xunnamius/unified-utils/tree/main/packages/mdast-util-hidden"><code>mdast-util-hidden</code></a>
+— prevent nodes from being seen by transformers.</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-math"><code>mdast-util-math</code></a>
+— parse and serialize math</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-mdx"><code>mdast-util-mdx</code></a>
+— parse and serialize MDX</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-mdx-expression"><code>mdast-util-mdx-expression</code></a>
+— parse and serialize MDX expressions</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-mdx-jsx"><code>mdast-util-mdx-jsx</code></a>
+— parse and serialize MDX JSX</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-mdxjs-esm"><code>mdast-util-mdxjs-esm</code></a>
+— parse and serialize MDX ESM</li>
+<li><a href="https://gitlab.com/staltz/mdast-move-images-to-root"><code>mdast-move-images-to-root</code></a>
+— move image nodes up the tree until they are direct children of the root</li>
+<li><a href="https://github.com/syntax-tree/mdast-normalize-headings"><code>mdast-normalize-headings</code></a>
+— ensure at most one top-level heading is in the document</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-phrasing"><code>mdast-util-phrasing</code></a>
+— check if a node is phrasing content</li>
+<li><a href="https://github.com/syntax-tree/mdast-squeeze-paragraphs"><code>mdast-squeeze-paragraphs</code></a>
+— remove empty paragraphs</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-toc"><code>mdast-util-toc</code></a>
+— generate a table of contents from a tree</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-to-hast"><code>mdast-util-to-hast</code></a>
+— transform to hast</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-to-markdown"><code>mdast-util-to-markdown</code></a>
+— serialize markdown</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-to-nlcst"><code>mdast-util-to-nlcst</code></a>
+— transform to nlcst</li>
+<li><a href="https://github.com/syntax-tree/mdast-util-to-string"><code>mdast-util-to-string</code></a>
+— get the plain text content of a node</li>
+<li><a href="https://github.com/syntax-tree/mdast-zone"><code>mdast-zone</code></a>
+— HTML comments as ranges or markers</li>
+</ul>
+<h2 id="references">References</h2>
+<ul>
+<li><strong>unist</strong>:
+<a href="https://github.com/syntax-tree/unist">Universal Syntax Tree</a>.
+T. Wormer; et al.</li>
+<li><strong>Markdown</strong>:
+<a href="https://daringfireball.net/projects/markdown/">Markdown</a>.
+J. Gruber.</li>
+<li><strong>CommonMark</strong>:
+<a href="https://commonmark.org">CommonMark</a>.
+J. MacFarlane; et al.</li>
+<li><strong>GFM</strong>:
+<a href="https://github.github.com/gfm/">GitHub Flavored Markdown</a>.
+GitHub.</li>
+<li><strong>HTML</strong>:
+<a href="https://html.spec.whatwg.org/multipage/">HTML Standard</a>,
+A. van Kesteren; et al.
+WHATWG.</li>
+<li><strong>CSSTEXT</strong>:
+<a href="https://drafts.csswg.org/css-text/">CSS Text</a>,
+CSS Text, E. Etemad, K. Ishii.
+W3C.</li>
+<li><strong>JavaScript</strong>:
+<a href="https://www.ecma-international.org/ecma-262/9.0/index.html">ECMAScript Language Specification</a>.
+Ecma International.</li>
+<li><strong>YAML</strong>:
+<a href="https://yaml.org">YAML Ain’t Markup Language</a>,
+O. Ben-Kiki, C. Evans, I. döt Net.</li>
+<li><strong>Web IDL</strong>:
+<a href="https://heycam.github.io/webidl/">Web IDL</a>,
+C. McCormack.
+W3C.</li>
+</ul>
+<h2 id="security">Security</h2>
+<p>As mdast can contain HTML and be used to represent HTML,
+and improper use of HTML can open you up to a <a href="https://en.wikipedia.org/wiki/Cross-site_scripting">cross-site scripting (XSS)</a>
+attack,
+improper use of mdast is also unsafe.
+When transforming to HTML (typically through <a href="https://github.com/syntax-tree/hast"><strong>hast</strong></a>),
+always be careful with user input and use <a href="https://github.com/syntax-tree/hast-util-sanitize"><code>hast-util-santize</code></a> to
+make the hast tree safe.</p>
+<h2 id="related">Related</h2>
+<ul>
+<li><a href="https://github.com/syntax-tree/hast">hast</a>
+— Hypertext Abstract Syntax Tree format</li>
+<li><a href="https://github.com/syntax-tree/nlcst">nlcst</a>
+— Natural Language Concrete Syntax Tree format</li>
+<li><a href="https://github.com/syntax-tree/xast">xast</a>
+— Extensible Abstract Syntax Tree</li>
+</ul>
+<h2 id="contribute">Contribute</h2>
+<p>See <a href="https://github.com/syntax-tree/.github/blob/HEAD/contributing.md"><code>contributing.md</code></a> in <a href="https://github.com/syntax-tree/.github"><code>syntax-tree/.github</code></a> for
+ways to get started.
+See <a href="https://github.com/syntax-tree/.github/blob/HEAD/support.md"><code>support.md</code></a> for ways to get help.
+Ideas for new utilities and tools can be posted in <a href="https://github.com/syntax-tree/ideas"><code>syntax-tree/ideas</code></a>.</p>
+<p>A curated list of awesome <code>syntax-tree</code>,
+unist,
+mdast,
+hast,
+xast,
+and nlcst resources,
+can be found in <a href="https://github.com/syntax-tree/awesome-syntax-tree">awesome syntax-tree</a>.</p>
+<p>This project has a <a href="https://github.com/syntax-tree/.github/blob/HEAD/code-of-conduct.md">code of conduct</a>.
+By interacting with this repository,
+organization,
+or community you agree to abide by its terms.</p>
+<h2 id="acknowledgments">Acknowledgments</h2>
+<p>The initial release of this project was authored by
+<a href="https://github.com/wooorm"><strong>@wooorm</strong></a>.</p>
+<p>Special thanks to <a href="https://github.com/eush77"><strong>@eush77</strong></a> for their work,
+ideas,
+and incredibly valuable feedback!</p>
+<p>Thanks to
+<a href="https://github.com/anandthakker"><strong>@anandthakker</strong></a>,
+<a href="https://github.com/arobase-che"><strong>@arobase-che</strong></a>,
+<a href="https://github.com/BarryThePenguin"><strong>@BarryThePenguin</strong></a>,
+<a href="https://github.com/chinesedfan"><strong>@chinesedfan</strong></a>,
+<a href="https://github.com/ChristianMurphy"><strong>@ChristianMurphy</strong></a>,
+<a href="https://github.com/craftzdog"><strong>@craftzdog</strong></a>,
+<a href="https://github.com/d4rekanguok"><strong>@d4rekanguok</strong></a>,
+<a href="https://github.com/detj"><strong>@detj</strong></a>,
+<a href="https://github.com/dominictarr"><strong>@dominictarr</strong></a>,
+<a href="https://github.com/gkatsev"><strong>@gkatsev</strong></a>,
+<a href="https://github.com/Hamms"><strong>@Hamms</strong></a>,
+<a href="https://github.com/Hypercubed"><strong>@Hypercubed</strong></a>,
+<a href="https://github.com/ikatyang"><strong>@ikatyang</strong></a>,
+<a href="https://github.com/izumin5210"><strong>@izumin5210</strong></a>,
+<a href="https://github.com/jasonLaster"><strong>@jasonLaster</strong></a>,
+<a href="https://github.com/Justineo"><strong>@Justineo</strong></a>,
+<a href="https://github.com/justjake"><strong>@justjake</strong></a>,
+<a href="https://github.com/KyleAMathews"><strong>@KyleAMathews</strong></a>,
+<a href="https://github.com/laysent"><strong>@laysent</strong></a>,
+<a href="https://github.com/macklinu"><strong>@macklinu</strong></a>,
+<a href="https://github.com/mike-north"><strong>@mike-north</strong></a>,
+<a href="https://github.com/Murderlon"><strong>@Murderlon</strong></a>,
+<a href="https://github.com/nevik"><strong>@nevik</strong></a>,
+<a href="https://github.com/Rokt33r"><strong>@Rokt33r</strong></a>,
+<a href="https://github.com/rhysd"><strong>@rhysd</strong></a>,
+<a href="https://github.com/rubys"><strong>@rubys</strong></a>,
+<a href="https://github.com/Sarah-Seo"><strong>@Sarah-Seo</strong></a>,
+<a href="https://github.com/sethvincent"><strong>@sethvincent</strong></a>,
+<a href="https://github.com/silvenon"><strong>@silvenon</strong></a>,
+<a href="https://github.com/simov"><strong>@simov</strong></a>,
+<a href="https://github.com/staltz"><strong>@staltz</strong></a>,
+<a href="https://github.com/stefanprobst"><strong>@stefanprobst</strong></a>,
+<a href="https://github.com/tmcw"><strong>@tmcw</strong></a>,
+and <a href="https://github.com/vhf"><strong>@vhf</strong></a>
+for contributing to mdast and related projects!</p>
+<h2 id="license">License</h2>
+<p><a href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a> © <a href="https://wooorm.com">Titus Wormer</a></p>
