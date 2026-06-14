@@ -22,13 +22,13 @@ importers:
         version: 2.1.1
       html-react-parser:
         specifier: ^6.0.1
-        version: 6.0.1(@types/react@19.2.14)(react@19.2.5)
+        version: 6.0.1(@types/react@19.2.17)(react@19.2.7)
       js-yaml:
         specifier: ^4.1.1
         version: 4.1.1
       react:
-        specifier: ^19.2.4
-        version: 19.2.5
+        specifier: ^19.2.7
+        version: 19.2.7
       rehype-highlight:
         specifier: ^7.0.2
         version: 7.0.2
@@ -100,14 +100,14 @@ importers:
         specifier: ^24.13.2
         version: 24.13.2
       '@types/react':
-        specifier: ^19.2.14
-        version: 19.2.14
+        specifier: ^19.2.17
+        version: 19.2.17
       '@vitest/coverage-v8':
         specifier: ^4.1.8
         version: 4.1.8(vitest@4.1.8)
       docula:
         specifier: ^2.0.0
-        version: 2.0.0(@types/react@19.2.14)(zod@4.3.6)
+        version: 2.0.0(@types/react@19.2.17)(zod@4.3.6)
       dotenv:
         specifier: ^17.3.1
         version: 17.4.2
@@ -786,8 +786,8 @@ packages:
   '@types/node@24.13.2':
     resolution: {integrity: sha512-fRa09kZTgu8o71KFcDjUFuc7F+dEbZYZmkI0mg5YBTRs0yMKjYHsq/c0urDKeDb+D5qVgXOdFcuu+DZPKOITwA==}
 
-  '@types/react@19.2.14':
-    resolution: {integrity: sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==}
+  '@types/react@19.2.17':
+    resolution: {integrity: sha512-MXfmqaVPEVgkBT/aY0aGCkRWWtByiYQXo3xdQ8r5RzuFrPiRn8Gar2tQdXSUQ2GKV3bkXckek89V8wQBY2Q/Aw==}
 
   '@types/ungap__structured-clone@1.2.0':
     resolution: {integrity: sha512-ZoaihZNLeZSxESbk9PUAPZOlSpcKx81I1+4emtULDVmBLkYutTcMlCj2K9VNlf9EWODxdO6gkAqEaLorXwZQVA==}
@@ -1986,6 +1986,10 @@ packages:
     resolution: {integrity: sha512-llUJLzz1zTUBrskt2pwZgLq59AemifIftw4aB7JxOqf1HY2FDaGDxgwpAPVzHU1kdWabH7FauP4i1oEeer2WCA==}
     engines: {node: '>=0.10.0'}
 
+  react@19.2.7:
+    resolution: {integrity: sha512-HNe9WslTbXmFK8o8cmwgAeJFSBvt1bPdHCVKtaaV+WlAN36mpT4hcRpwbf3fY56ar2oIXzsBpOAiIRHAdY0OlQ==}
+    engines: {node: '>=0.10.0'}
+
   registry-auth-token@5.1.1:
     resolution: {integrity: sha512-P7B4+jq8DeD2nMsAcdfaqHbssgHtZ7Z5+++a5ask90fvmJ8p5je4mOa+wzu+DB4vQ5tdJV/xywY+UnVFeQLV5Q==}
     engines: {node: '>=14'}
@@ -2952,7 +2956,7 @@ snapshots:
     dependencies:
       undici-types: 7.18.2
 
-  '@types/react@19.2.14':
+  '@types/react@19.2.17':
     dependencies:
       csstype: 3.2.3
 
@@ -3232,7 +3236,7 @@ snapshots:
 
   doctypes@1.1.0: {}
 
-  docula@2.0.0(@types/react@19.2.14)(zod@4.3.6):
+  docula@2.0.0(@types/react@19.2.17)(zod@4.3.6):
     dependencies:
       '@ai-sdk/anthropic': 3.0.84(zod@4.3.6)
       '@ai-sdk/google': 3.0.82(zod@4.3.6)
@@ -3240,12 +3244,12 @@ snapshots:
       '@cacheable/net': 2.0.7
       ai: 6.0.203(zod@4.3.6)
       colorette: 2.0.20
-      ecto: 4.8.7(@types/react@19.2.14)
+      ecto: 4.8.7(@types/react@19.2.17)
       hashery: 2.0.0
       jiti: 2.7.0
       serve-handler: 6.1.7
       update-notifier: 7.3.1
-      writr: 6.1.2(@types/react@19.2.14)
+      writr: 6.1.2(@types/react@19.2.17)
     transitivePeerDependencies:
       - '@types/react'
       - chokidar
@@ -3284,7 +3288,7 @@ snapshots:
       es-errors: 1.3.0
       gopd: 1.2.0
 
-  ecto@4.8.7(@types/react@19.2.14):
+  ecto@4.8.7(@types/react@19.2.17):
     dependencies:
       '@jaredwray/fumanchu': 4.7.0
       cacheable: 2.3.5
@@ -3294,7 +3298,7 @@ snapshots:
       liquidjs: 10.27.0
       nunjucks: 3.2.4
       pug: 3.0.4
-      writr: 6.1.2(@types/react@19.2.14)
+      writr: 6.1.2(@types/react@19.2.17)
     transitivePeerDependencies:
       - '@types/react'
       - chokidar
@@ -3594,7 +3598,7 @@ snapshots:
 
   html-escaper@2.0.2: {}
 
-  html-react-parser@6.0.1(@types/react@19.2.14)(react@19.2.5):
+  html-react-parser@6.0.1(@types/react@19.2.17)(react@19.2.5):
     dependencies:
       domhandler: 6.0.1
       html-dom-parser: 7.0.1
@@ -3602,7 +3606,17 @@ snapshots:
       react-property: 2.0.2
       style-to-js: 1.1.21
     optionalDependencies:
-      '@types/react': 19.2.14
+      '@types/react': 19.2.17
+
+  html-react-parser@6.0.1(@types/react@19.2.17)(react@19.2.7):
+    dependencies:
+      domhandler: 6.0.1
+      html-dom-parser: 7.0.1
+      react: 19.2.7
+      react-property: 2.0.2
+      style-to-js: 1.1.21
+    optionalDependencies:
+      '@types/react': 19.2.17
 
   html-void-elements@3.0.0: {}
 
@@ -4487,6 +4501,8 @@ snapshots:
 
   react@19.2.5: {}
 
+  react@19.2.7: {}
+
   registry-auth-token@5.1.1:
     dependencies:
       '@pnpm/npm-conf': 3.0.2
@@ -5001,13 +5017,13 @@ snapshots:
       string-width: 7.2.0
       strip-ansi: 7.2.0
 
-  writr@6.1.2(@types/react@19.2.14):
+  writr@6.1.2(@types/react@19.2.17):
     dependencies:
       ai: 6.0.203(zod@4.3.6)
       cacheable: 2.3.4
       hashery: 2.0.0
       hookified: 2.1.1
-      html-react-parser: 6.0.1(@types/react@19.2.14)(react@19.2.5)
+      html-react-parser: 6.0.1(@types/react@19.2.17)(react@19.2.5)
       js-yaml: 4.1.1
       react: 19.2.5
       rehype-highlight: 7.0.2
