@@ -3,6 +3,7 @@
   "version": "6.1.2",
   "description": "Markdown Rendering Simplified",
   "type": "module",
+  "packageManager": "pnpm@11.6.0",
   "main": "./dist/writr.mjs",
   "types": "./dist/writr.d.mts",
   "exports": {
@@ -17,7 +18,7 @@
   },
   "author": "Jared Wray <me@jaredwray.com>",
   "engines": {
-    "node": ">=20"
+    "node": "^22.18.0"
   },
   "license": "MIT",
   "keywords": [
