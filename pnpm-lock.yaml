@@ -10,7 +10,7 @@ importers:
     dependencies:
       ai:
         specifier: ^6.0.203
-        version: 6.0.203(zod@4.3.6)
+        version: 6.0.203(zod@4.4.3)
       cacheable:
         specifier: ^2.3.5
         version: 2.3.5
@@ -72,18 +72,18 @@ importers:
         specifier: ^11.0.5
         version: 11.0.5
       zod:
-        specifier: ^4.3.6
-        version: 4.3.6
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@ai-sdk/anthropic':
         specifier: ^3.0.84
-        version: 3.0.84(zod@4.3.6)
+        version: 3.0.84(zod@4.4.3)
       '@ai-sdk/google':
         specifier: ^3.0.82
-        version: 3.0.82(zod@4.3.6)
+        version: 3.0.82(zod@4.4.3)
       '@ai-sdk/openai':
         specifier: ^3.0.71
-        version: 3.0.71(zod@4.3.6)
+        version: 3.0.71(zod@4.4.3)
       '@biomejs/biome':
         specifier: ^2.5.0
         version: 2.5.0
@@ -107,7 +107,7 @@ importers:
         version: 4.1.8(vitest@4.1.8)
       docula:
         specifier: ^2.0.0
-        version: 2.0.0(@types/react@19.2.17)(zod@4.3.6)
+        version: 2.0.0(@types/react@19.2.17)(zod@4.4.3)
       dotenv:
         specifier: ^17.3.1
         version: 17.4.2
@@ -2476,16 +2476,19 @@ packages:
   zod@4.3.6:
     resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
 
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
 
-  '@ai-sdk/anthropic@3.0.84(zod@4.3.6)':
+  '@ai-sdk/anthropic@3.0.84(zod@4.4.3)':
     dependencies:
       '@ai-sdk/provider': 3.0.10
-      '@ai-sdk/provider-utils': 4.0.29(zod@4.3.6)
-      zod: 4.3.6
+      '@ai-sdk/provider-utils': 4.0.29(zod@4.4.3)
+      zod: 4.4.3
 
   '@ai-sdk/gateway@3.0.129(zod@4.3.6)':
     dependencies:
@@ -2494,17 +2497,24 @@ snapshots:
       '@vercel/oidc': 3.2.0
       zod: 4.3.6
 
-  '@ai-sdk/google@3.0.82(zod@4.3.6)':
+  '@ai-sdk/gateway@3.0.129(zod@4.4.3)':
     dependencies:
       '@ai-sdk/provider': 3.0.10
-      '@ai-sdk/provider-utils': 4.0.29(zod@4.3.6)
-      zod: 4.3.6
+      '@ai-sdk/provider-utils': 4.0.29(zod@4.4.3)
+      '@vercel/oidc': 3.2.0
+      zod: 4.4.3
 
-  '@ai-sdk/openai@3.0.71(zod@4.3.6)':
+  '@ai-sdk/google@3.0.82(zod@4.4.3)':
     dependencies:
       '@ai-sdk/provider': 3.0.10
-      '@ai-sdk/provider-utils': 4.0.29(zod@4.3.6)
-      zod: 4.3.6
+      '@ai-sdk/provider-utils': 4.0.29(zod@4.4.3)
+      zod: 4.4.3
+
+  '@ai-sdk/openai@3.0.71(zod@4.4.3)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.10
+      '@ai-sdk/provider-utils': 4.0.29(zod@4.4.3)
+      zod: 4.4.3
 
   '@ai-sdk/provider-utils@4.0.29(zod@4.3.6)':
     dependencies:
@@ -2512,6 +2522,13 @@ snapshots:
       '@standard-schema/spec': 1.1.0
       eventsource-parser: 3.0.8
       zod: 4.3.6
+
+  '@ai-sdk/provider-utils@4.0.29(zod@4.4.3)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.10
+      '@standard-schema/spec': 1.1.0
+      eventsource-parser: 3.0.8
+      zod: 4.4.3
 
   '@ai-sdk/provider@3.0.10':
     dependencies:
@@ -3055,6 +3072,14 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       zod: 4.3.6
 
+  ai@6.0.203(zod@4.4.3):
+    dependencies:
+      '@ai-sdk/gateway': 3.0.129(zod@4.4.3)
+      '@ai-sdk/provider': 3.0.10
+      '@ai-sdk/provider-utils': 4.0.29(zod@4.4.3)
+      '@opentelemetry/api': 1.9.0
+      zod: 4.4.3
+
   ansi-align@3.0.1:
     dependencies:
       string-width: 4.2.3
@@ -3240,13 +3265,13 @@ snapshots:
 
   doctypes@1.1.0: {}
 
-  docula@2.0.0(@types/react@19.2.17)(zod@4.3.6):
+  docula@2.0.0(@types/react@19.2.17)(zod@4.4.3):
     dependencies:
-      '@ai-sdk/anthropic': 3.0.84(zod@4.3.6)
-      '@ai-sdk/google': 3.0.82(zod@4.3.6)
-      '@ai-sdk/openai': 3.0.71(zod@4.3.6)
+      '@ai-sdk/anthropic': 3.0.84(zod@4.4.3)
+      '@ai-sdk/google': 3.0.82(zod@4.4.3)
+      '@ai-sdk/openai': 3.0.71(zod@4.4.3)
       '@cacheable/net': 2.0.7
-      ai: 6.0.203(zod@4.3.6)
+      ai: 6.0.203(zod@4.4.3)
       colorette: 2.0.20
       ecto: 4.8.7(@types/react@19.2.17)
       hashery: 2.0.0
@@ -5061,5 +5086,7 @@ snapshots:
   xdg-basedir@5.1.0: {}
 
   zod@4.3.6: {}
+
+  zod@4.4.3: {}
 
   zwitch@2.0.4: {}
