@@ -16,6 +16,10 @@
     "type": "git",
     "url": "https://github.com/jaredwray/writr.git"
   },
+  "homepage": "https://github.com/jaredwray/writr#readme",
+  "bugs": {
+    "url": "https://github.com/jaredwray/writr/issues"
+  },
   "author": "Jared Wray <me@jaredwray.com>",
   "engines": {
     "node": "^22.18.0"
