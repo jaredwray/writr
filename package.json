@@ -98,13 +98,13 @@
     "@ai-sdk/anthropic": "^3.0.84",
     "@ai-sdk/google": "^3.0.82",
     "@ai-sdk/openai": "^3.0.71",
-    "@biomejs/biome": "^2.5.0",
+    "@biomejs/biome": "^2.5.3",
     "@monstermann/tinybench-pretty-printer": "^0.3.0",
     "@types/js-yaml": "^4.0.9",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
-    "@vitest/coverage-v8": "^4.1.8",
+    "@vitest/coverage-v8": "^4.1.10",
     "docula": "^2.0.0",
     "dotenv": "^17.3.1",
     "markdown-it": "^14.2.0",
@@ -114,7 +114,7 @@
     "tsdown": "^0.22.2",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.10"
   },
   "files": [
     "dist",
