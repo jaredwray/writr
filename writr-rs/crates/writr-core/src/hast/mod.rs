@@ -4,6 +4,8 @@
 
 pub mod from_mdast;
 pub mod property_info;
+#[cfg(feature = "raw-html")]
+pub mod raw;
 pub mod slug;
 pub mod to_html;
 

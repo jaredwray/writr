@@ -14,9 +14,10 @@ toc = []
 emoji = []
 math = []
 mdx = []
-raw-html = []
+raw-html = ["dep:html5ever"]
 slug = []
 highlight = []
 
 [dependencies]
+html5ever = { version = "0.39.0", optional = true }
 markdown = { workspace = true }

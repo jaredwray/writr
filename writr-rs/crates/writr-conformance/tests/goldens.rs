@@ -84,7 +84,6 @@ fn default_profile() {
 }
 
 #[test]
-#[ignore = "gate: M6"]
 fn mdx_profile() {
 	run_profile("mdx");
 }

@@ -3,6 +3,7 @@
 //! alerts (folded into conversion) → toc → emoji.
 
 pub mod emoji;
+pub mod gfm_autolink;
 pub mod toc;
 
 use markdown::mdast;

@@ -4,3 +4,4 @@
 pub mod emoji_table;
 pub mod property_info_data;
 pub mod slug_ranges;
+pub mod unicode_data;
