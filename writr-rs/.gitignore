@@ -2,3 +2,4 @@
 **/*.node
 npm/**/*.node
 npm/**/*.wasm
+**/*.wasm

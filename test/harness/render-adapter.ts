@@ -1,6 +1,7 @@
 import { Writr } from "../../src/writr.js";
 import { normalize } from "./normalize.js";
 import type { Profile } from "./profiles.js";
+import { WritrRustAdapter } from "./writr-rust-adapter.js";
 
 /**
  * A pluggable markdown rendering backend. The current JS engine implements
@@ -65,8 +66,7 @@ function throwIfEmitted(emitted: unknown): void {
 
 /**
  * Select the active adapter from the `HARNESS_ENGINE` environment variable.
- * Defaults to the JS engine. A `writr-rust` adapter can be wired here when the
- * native engine lands.
+ * Defaults to the JS engine.
  */
 export function getAdapter(
 	engine = process.env.HARNESS_ENGINE ?? "writr-js",
@@ -74,9 +74,11 @@ export function getAdapter(
 	switch (engine) {
 		case "writr-js":
 			return new WritrJsAdapter();
+		case "writr-rust":
+			return new WritrRustAdapter();
 		default:
 			throw new Error(
-				`Unknown HARNESS_ENGINE "${engine}". Known engines: writr-js. ` +
+				`Unknown HARNESS_ENGINE "${engine}". Known engines: writr-js, writr-rust. ` +
 					`Add a RenderAdapter implementation to register a new engine.`,
 			);
 	}

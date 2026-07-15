@@ -26,6 +26,12 @@ mod mdast_util;
 pub use error::RenderError;
 pub use options::RenderOptions;
 
+/// The KaTeX version embedded by the math stage (for drift auditing).
+#[cfg(feature = "math")]
+pub const KATEX_VERSION: &str = writr_katex::KATEX_VERSION;
+#[cfg(not(feature = "math"))]
+pub const KATEX_VERSION: &str = "disabled";
+
 /// Render markdown to HTML under the given options.
 ///
 /// For non-MDX options this never fails on any input (matching the JS

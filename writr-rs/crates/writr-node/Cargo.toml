@@ -1,0 +1,21 @@
+[package]
+name = "writr-node"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Node.js bindings (napi-rs) for the writr-rs markdown engine"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { version = "3", default-features = false, features = ["napi8"] }
+napi-derive = "3"
+writr-core = { path = "../writr-core" }
+serde_json = { workspace = true }
+markdown = { workspace = true, features = ["serde"] }
+
+[build-dependencies]
+napi-build = "2"
