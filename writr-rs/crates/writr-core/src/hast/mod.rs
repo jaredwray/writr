@@ -3,6 +3,8 @@
 //! is observable in serialized attribute order).
 
 pub mod from_mdast;
+#[cfg(feature = "highlight")]
+pub mod highlight;
 pub mod property_info;
 #[cfg(feature = "raw-html")]
 pub mod raw;

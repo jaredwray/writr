@@ -1,0 +1,13 @@
+[package]
+name = "writr-hljs"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "highlight.js 11.11.1 engine port for writr-rs — byte-compatible hljs tokenization"
+
+[dependencies]
+fancy-regex = "0.16"
+serde = { workspace = true }
+serde_json = { workspace = true }

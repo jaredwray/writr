@@ -1,0 +1,1 @@
+[{"aliases":["pycon"],"contains":[{"$ref":1}]},{"className":"meta.prompt","starts":{"$ref":2},"variants":[{"$ref":4},{"$ref":5}]},{"end":{"$re":" |$","$flags":""},"starts":{"$ref":3}},{"end":"$","subLanguage":"python"},{"begin":{"$re":"^>>>(?=[ ]|$)","$flags":""}},{"begin":{"$re":"^\\.\\.\\.(?=[ ]|$)","$flags":""}}]

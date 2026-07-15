@@ -135,5 +135,9 @@ fn transform(mdast: markdown::mdast::Node, options: &RenderOptions) -> hast::Nod
 	if options.slug {
 		hast::slug::transform(&mut tree);
 	}
+	#[cfg(feature = "highlight")]
+	if options.highlight {
+		hast::highlight::transform(&mut tree);
+	}
 	tree
 }

@@ -168,6 +168,11 @@ pub fn protocol_start(tokenizer: &mut Tokenizer) -> State {
         matches!(tokenizer.current, Some(b'H' | b'h'))
             // Source: <https://github.com/github/cmark-gfm/blob/ef1cfcb/extensions/autolink.c#L214>.
             && !matches!(tokenizer.previous, Some(b'A'..=b'Z' | b'a'..=b'z'))
+            // WRITR-RS PATCH: micromark's `previousUnbalanced` — no autolink
+            // literal while an unbalanced `[` (open or abandoned label
+            // start) precedes, preventing nested links in `[url](url)`.
+            && tokenizer.tokenize_state.label_starts.is_empty()
+            && tokenizer.tokenize_state.label_starts_loose.is_empty()
     {
         tokenizer.enter(Name::GfmAutolinkLiteralProtocol);
         tokenizer.attempt(
@@ -272,6 +277,9 @@ pub fn www_start(tokenizer: &mut Tokenizer) -> State {
         matches!(tokenizer.current, Some(b'W' | b'w'))
             // Source: <https://github.com/github/cmark-gfm/blob/ef1cfcb/extensions/autolink.c#L156>.
             && matches!(tokenizer.previous, None | Some(b'\t' | b'\n' | b' ' | b'(' | b'*' | b'_' | b'[' | b']' | b'~'))
+            // WRITR-RS PATCH: micromark's `previousUnbalanced` (see above).
+            && tokenizer.tokenize_state.label_starts.is_empty()
+            && tokenizer.tokenize_state.label_starts_loose.is_empty()
     {
         tokenizer.enter(Name::GfmAutolinkLiteralWww);
         tokenizer.attempt(
@@ -644,7 +652,11 @@ pub fn resolve(tokenizer: &mut Tokenizer) {
                         let mut range = (0, 0, Name::GfmAutolinkLiteralEmail);
 
                         if let Some(start) = peek_bytes_atext(bytes, min, byte_index) {
-                            let (start, kind) = peek_protocol(bytes, min, start);
+                            // WRITR-RS PATCH: micromark does not support
+                            // `mailto:`/`xmpp:` prefixes on email literals
+                            // (cmark-gfm does; the JS pipeline follows
+                            // micromark, leaving the protocol as text).
+                            let kind = Name::GfmAutolinkLiteralEmail;
 
                             if let Some(end) = peek_bytes_email_domain(
                                 bytes,

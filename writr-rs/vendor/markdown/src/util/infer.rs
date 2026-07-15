@@ -72,7 +72,27 @@ pub fn list_loose(events: &[Event], mut index: usize, include_items: bool) -> bo
                 }
 
                 if !at_empty_list_item && !at_empty_block_quote {
-                    return true;
+                    // WRITR-RS PATCH: a blank line makes the list loose only
+                    // when another item follows it — trailing blank lines
+                    // inside the list span (lookahead that failed to
+                    // continue the list) leave it tight, matching micromark.
+                    let mut ahead = index + 1;
+                    let mut ahead_balance = balance;
+                    while ahead < events.len() {
+                        let later = &events[ahead];
+                        if later.kind == Kind::Enter {
+                            ahead_balance += 1;
+                            if ahead_balance == 2 && later.name == Name::ListItem {
+                                return true;
+                            }
+                        } else {
+                            if ahead_balance == 1 && later.name == *name {
+                                break;
+                            }
+                            ahead_balance -= 1;
+                        }
+                        ahead += 1;
+                    }
                 }
             }
 
@@ -126,7 +146,27 @@ pub fn list_item_loose(events: &[Event], mut index: usize) -> bool {
                 }
 
                 if !at_prefix {
-                    return true;
+                    // WRITR-RS PATCH: a blank line spreads the item only
+                    // when more content follows inside it — a trailing
+                    // blank (failed continuation lookahead) leaves the item
+                    // tight, matching micromark.
+                    let mut ahead = index + 1;
+                    let mut ahead_balance = balance;
+                    while ahead < events.len() {
+                        let later = &events[ahead];
+                        if later.kind == Kind::Enter {
+                            if ahead_balance == 1 && later.name != Name::BlankLineEnding {
+                                return true;
+                            }
+                            ahead_balance += 1;
+                        } else {
+                            if ahead_balance == 1 && later.name == Name::ListItem {
+                                break;
+                            }
+                            ahead_balance -= 1;
+                        }
+                        ahead += 1;
+                    }
                 }
             }
 

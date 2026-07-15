@@ -40,14 +40,14 @@ pub fn start(tokenizer: &mut Tokenizer) -> State {
         Some(b'#') => {
             tokenizer.attempt(
                 State::Next(StateName::FlowAfter),
-                State::Next(StateName::FlowBeforeContent),
+                State::Next(StateName::FlowBeforeGfmTable),  // WRITR-RS PATCH: fall through the null hooks (table) like micromark
             );
             State::Retry(StateName::HeadingAtxStart)
         }
         Some(b'$' | b'`' | b'~') => {
             tokenizer.attempt(
                 State::Next(StateName::FlowAfter),
-                State::Next(StateName::FlowBeforeContent),
+                State::Next(StateName::FlowBeforeGfmTable),  // WRITR-RS PATCH: fall through the null hooks (table) like micromark
             );
             State::Retry(StateName::RawFlowStart)
         }
@@ -56,7 +56,7 @@ pub fn start(tokenizer: &mut Tokenizer) -> State {
         Some(b'*' | b'_') => {
             tokenizer.attempt(
                 State::Next(StateName::FlowAfter),
-                State::Next(StateName::FlowBeforeContent),
+                State::Next(StateName::FlowBeforeGfmTable),  // WRITR-RS PATCH: fall through the null hooks (table) like micromark
             );
             State::Retry(StateName::ThematicBreakStart)
         }
@@ -70,14 +70,14 @@ pub fn start(tokenizer: &mut Tokenizer) -> State {
         Some(b'e' | b'i') => {
             tokenizer.attempt(
                 State::Next(StateName::FlowAfter),
-                State::Next(StateName::FlowBeforeContent),
+                State::Next(StateName::FlowBeforeGfmTable),  // WRITR-RS PATCH: fall through the null hooks (table) like micromark
             );
             State::Retry(StateName::MdxEsmStart)
         }
         Some(b'{') => {
             tokenizer.attempt(
                 State::Next(StateName::FlowAfter),
-                State::Next(StateName::FlowBeforeContent),
+                State::Next(StateName::FlowBeforeGfmTable),  // WRITR-RS PATCH: fall through the null hooks (table) like micromark
             );
             State::Retry(StateName::MdxExpressionFlowStart)
         }
