@@ -57,7 +57,6 @@ fn commonmark_profile() {
 }
 
 #[test]
-#[ignore = "gate: M2a"]
 fn gfm_only_profile() {
 	run_profile("gfm-only");
 }
