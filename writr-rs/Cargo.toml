@@ -4,6 +4,7 @@ members = [
 	"crates/writr-core",
 	"crates/writr-conformance",
 	"crates/writr-hljs",
+	"crates/writr-katex",
 ]
 
 [workspace.package]

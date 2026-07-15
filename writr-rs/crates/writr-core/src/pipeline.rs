@@ -139,5 +139,9 @@ fn transform(mdast: markdown::mdast::Node, options: &RenderOptions) -> hast::Nod
 	if options.highlight {
 		hast::highlight::transform(&mut tree);
 	}
+	#[cfg(feature = "math")]
+	if options.math {
+		hast::katex::transform(&mut tree);
+	}
 	tree
 }

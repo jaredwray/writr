@@ -760,8 +760,12 @@ fn convert(arena: &Arena, handle: usize) -> Node {
 			let mut element = Element::new(&tag_name);
 			for attr in attrs {
 				let attr_name = match &attr.name.prefix {
-					Some(prefix) => format!("{prefix}:{}", attr.name.local),
-					None => attr.name.local.to_string(),
+					// html5ever uses an EMPTY prefix for adjusted foreign
+					// attributes like `xmlns`; parse5 reports no prefix.
+					Some(prefix) if !prefix.is_empty() => {
+						format!("{prefix}:{}", attr.name.local)
+					}
+					_ => attr.name.local.to_string(),
 				};
 				if PROTO_PROPERTY_NAMES.contains(&attr_name.as_str()) {
 					continue;
@@ -936,6 +940,17 @@ fn js_number_from_string(value: &str) -> Option<f64> {
 // ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
+
+/// Parse an HTML fragment into hast nodes (hast-util-from-html-isomorphic
+/// with `fragment: true` — parse5's template fragment context). Used by the
+/// KaTeX stage to splice rendered markup.
+pub fn parse_fragment(html: &str) -> Vec<Node> {
+	let driver = Driver::new();
+	driver.raw(html);
+	let (sink, children) = driver.into_fragment();
+	let arena = sink.arena.borrow();
+	convert_children(&arena, &children)
+}
 
 /// Apply raw-HTML processing to a hast tree (the rehype-raw stage).
 pub fn process(tree: &Node) -> Node {

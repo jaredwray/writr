@@ -62,7 +62,6 @@ fn gfm_only_profile() {
 }
 
 #[test]
-#[ignore = "gate: M2b"]
 fn rawhtml_profile() {
 	run_profile("rawhtml");
 }
@@ -78,7 +77,6 @@ fn no_math_profile() {
 }
 
 #[test]
-#[ignore = "gate: M4/M5"]
 fn default_profile() {
 	run_profile("default");
 }
