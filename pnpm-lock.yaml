@@ -15,8 +15,8 @@ importers:
         specifier: ^2.5.0
         version: 2.5.0
       hashery:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^3.0.1
+        version: 3.0.1
       hookified:
         specifier: ^3.0.0
         version: 3.0.0
@@ -1375,6 +1375,10 @@ packages:
     resolution: {integrity: sha512-0Qf1UYWmzQ7IgJbciYmxfbH3TXGR8CJQx7syxue+XptHPXYiEO1lmkYQen2PBWLikgei0kwylMZHoUmP8G96lg==}
     engines: {node: '>=22.18'}
 
+  hashery@3.0.1:
+    resolution: {integrity: sha512-jfLVt3/SEkJzW/OCSK7Bxdl+FpXYDpEE84QOU4wzKRpO7rNoafNK718Z71GPQR/ozfQmKxXS++MhbrL/eKaTow==}
+    engines: {node: '>=22.18'}
+
   hasown@2.0.3:
     resolution: {integrity: sha512-ej4AhfhfL2Q2zpMmLo7U1Uv9+PyhIZpgQLGT1F9miIGmiCJIoCgSmczFdrc97mWT4kVY72KA+WnnhJ5pghSvSg==}
     engines: {node: '>= 0.4'}
@@ -1436,6 +1440,10 @@ packages:
 
   hookified@3.0.0:
     resolution: {integrity: sha512-x+jzDjd9CWxdgl6u/K4pjnvw7PZx6ZSpiPGAV43uXlJiJy7r2jIEUxxU1Cv7+rwy1GK5Qt5S+Jp7n81DpcUvTA==}
+    engines: {node: '>=22.18.0'}
+
+  hookified@3.0.1:
+    resolution: {integrity: sha512-mtpUIV7U9reosQ16+OHWBd0Ca07fs1ryChQjBPuUMZnrRdLTCW+kEfkTcFudkaevp3gVe5H9FxDCBxYIdO+QQA==}
     engines: {node: '>=22.18.0'}
 
   html-dom-parser@8.0.0:
@@ -3554,6 +3562,10 @@ snapshots:
     dependencies:
       hookified: 3.0.0
 
+  hashery@3.0.1:
+    dependencies:
+      hookified: 3.0.1
+
   hasown@2.0.3:
     dependencies:
       function-bind: 1.1.2
@@ -3675,6 +3687,8 @@ snapshots:
   hookified@2.2.0: {}
 
   hookified@3.0.0: {}
+
+  hookified@3.0.1: {}
 
   html-dom-parser@8.0.0:
     dependencies:
