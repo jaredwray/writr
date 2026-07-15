@@ -1,0 +1,4 @@
+/target
+**/*.node
+npm/**/*.node
+npm/**/*.wasm

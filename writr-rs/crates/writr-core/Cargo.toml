@@ -1,0 +1,22 @@
+[package]
+name = "writr-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Rust markdown engine for writr — byte-compatible with the unified/remark/rehype pipeline"
+
+[features]
+default = ["gfm", "toc", "emoji", "math", "mdx", "raw-html", "slug", "highlight"]
+gfm = []
+toc = []
+emoji = []
+math = []
+mdx = []
+raw-html = []
+slug = []
+highlight = []
+
+[dependencies]
+markdown = { workspace = true }
