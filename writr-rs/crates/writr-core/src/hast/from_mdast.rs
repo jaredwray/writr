@@ -1043,7 +1043,11 @@ mod tests {
 	fn normalize_uri_matches_micromark() {
 		assert_eq!(normalize_uri("https://a.com/b c"), "https://a.com/b%20c");
 		assert_eq!(normalize_uri("a%20b"), "a%20b");
-		assert_eq!(normalize_uri("a%2xb"), "a%252xb");
+		// micromark accepts any two ASCII alphanumerics after `%` (not just
+		// hex digits), so `%2x` passes through unchanged.
+		assert_eq!(normalize_uri("a%2xb"), "a%2xb");
+		assert_eq!(normalize_uri("a%2-b"), "a%252-b");
+		assert_eq!(normalize_uri("100%"), "100%25");
 		assert_eq!(normalize_uri("é"), "%C3%A9");
 		assert_eq!(normalize_uri("a\"b<c>"), "a%22b%3Cc%3E");
 		assert_eq!(normalize_uri("?query=1&x=2"), "?query=1&x=2");

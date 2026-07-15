@@ -17,9 +17,11 @@ mod frontmatter;
 mod js;
 mod options;
 mod pipeline;
+mod slugger;
 
 mod generated;
 pub mod hast;
+mod mdast_util;
 
 pub use error::RenderError;
 pub use options::RenderOptions;

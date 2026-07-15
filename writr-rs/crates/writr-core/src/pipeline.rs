@@ -91,7 +91,7 @@ pub fn render_to_hast(
 	options: &RenderOptions,
 ) -> Result<hast::Node, RenderError> {
 	let mdast = parse_to_mdast(input, options)?;
-	Ok(transform(&mdast, options))
+	Ok(transform(mdast, options))
 }
 
 /// Parse the (frontmatter-stripped) body to mdast.
@@ -106,14 +106,25 @@ pub fn parse_to_mdast(
 }
 
 /// mdast transforms + conversion + hast transforms.
-fn transform(mdast: &markdown::mdast::Node, options: &RenderOptions) -> hast::Node {
-	// mdast stage: [toc] and [emoji] land in M3; alerts are folded into
-	// the conversion below.
-	let tree = from_mdast::from_mdast(
-		mdast,
+fn transform(mdast: markdown::mdast::Node, options: &RenderOptions) -> hast::Node {
+	// mdast stage (writr order: alerts → toc → emoji; alerts are folded
+	// into the conversion below).
+	let mut mdast = mdast;
+	if options.toc {
+		crate::mdast_util::toc::transform(&mut mdast);
+	}
+	if options.emoji {
+		crate::mdast_util::emoji::transform(&mut mdast);
+	}
+
+	let mut tree = from_mdast::from_mdast(
+		&mdast,
 		from_mdast::Options::from_render_options(options),
 	);
-	// hast stage: [rawHtml] (M2b), [slug] (M3), [highlight] (M4),
-	// [math] (M5) transforms land in their milestones.
+
+	// hast stage: [rawHtml] (M2b) → slug → [highlight] (M4) → [math] (M5).
+	if options.slug {
+		hast::slug::transform(&mut tree);
+	}
 	tree
 }

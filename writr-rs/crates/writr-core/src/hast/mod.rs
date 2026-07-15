@@ -4,6 +4,7 @@
 
 pub mod from_mdast;
 pub mod property_info;
+pub mod slug;
 pub mod to_html;
 
 /// A hast node.

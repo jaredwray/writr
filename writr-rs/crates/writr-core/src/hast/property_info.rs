@@ -238,8 +238,10 @@ mod tests {
 		let info = find(Space::Html, "bogus");
 		assert_eq!(info.attribute, "bogus");
 		assert!(!info.defined);
-		// `data` alone (nothing after) is not a data attribute.
-		assert!(!find(Space::Html, "data").defined);
+		// `data` alone is the real `<object data>` attribute, not a data-*.
+		let data = find(Space::Html, "data");
+		assert!(data.defined);
+		assert_eq!(data.attribute, "data");
 		// Invalid data name characters fall through to unknown.
 		assert!(!find(Space::Html, "data-foo!bar").defined);
 	}

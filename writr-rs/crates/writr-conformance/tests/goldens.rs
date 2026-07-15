@@ -68,13 +68,11 @@ fn rawhtml_profile() {
 }
 
 #[test]
-#[ignore = "gate: M3"]
 fn no_highlight_profile() {
 	run_profile("no-highlight");
 }
 
 #[test]
-#[ignore = "gate: M3"]
 fn no_math_profile() {
 	run_profile("no-math");
 }
