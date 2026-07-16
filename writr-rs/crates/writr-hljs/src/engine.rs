@@ -144,6 +144,7 @@ impl<'a> Engine<'a> {
 			self.emitter.open_node(&aliased);
 		}
 
+		let code = self.code;
 		let mut index = 0usize;
 		loop {
 			if self.resume_same_position {
@@ -154,8 +155,8 @@ impl<'a> Engine<'a> {
 			let Some(event) = self.exec_matcher(index) else {
 				break;
 			};
-			let before = self.code[index..event.index].to_string();
-			let processed = self.process_lexeme(&before, Some(&event));
+			let before = &code[index..event.index];
+			let processed = self.process_lexeme(before, Some(&event));
 			if self.aborted {
 				// Illegal with `ignoreIllegals: false` — the JS engine throws
 				// and the catch returns relevance 0 with the partial emitter.
@@ -168,8 +169,8 @@ impl<'a> Engine<'a> {
 			}
 			index = event.index + processed;
 		}
-		let tail = self.code[index.min(self.code.len())..].to_string();
-		self.process_lexeme(&tail, None);
+		let tail = &code[index.min(code.len())..];
+		self.process_lexeme(tail, None);
 
 		HighlightResult {
 			root: self.emitter.finish(),
@@ -325,7 +326,7 @@ impl<'a> Engine<'a> {
 	fn do_begin_match(&mut self, event: &MatchEvent, position: usize) -> usize {
 		let top_index = self.top_index();
 		let new_mode_index = self.language.modes[top_index].contains[position];
-		let lexeme = event.lexeme().to_string();
+		let lexeme = event.lexeme();
 
 		let callbacks = {
 			let mode = &self.language.modes[new_mode_index];
@@ -333,7 +334,7 @@ impl<'a> Engine<'a> {
 		};
 		for callback in callbacks.into_iter().flatten() {
 			if self.run_callback(callback, event, new_mode_index) {
-				return self.do_ignore(&lexeme, top_index);
+				return self.do_ignore(lexeme, top_index);
 			}
 		}
 
@@ -342,14 +343,15 @@ impl<'a> Engine<'a> {
 			(mode.skip, mode.exclude_begin, mode.return_begin)
 		};
 		if skip {
-			self.mode_buffer.push_str(&lexeme);
+			self.mode_buffer.push_str(lexeme);
 		} else {
 			if exclude_begin {
-				self.mode_buffer.push_str(&lexeme);
+				self.mode_buffer.push_str(lexeme);
 			}
 			self.process_buffer();
 			if !return_begin && !exclude_begin {
-				self.mode_buffer = lexeme.clone();
+				self.mode_buffer.clear();
+				self.mode_buffer.push_str(lexeme);
 			}
 		}
 		self.start_new_mode(new_mode_index, event);
@@ -378,8 +380,9 @@ impl<'a> Engine<'a> {
 	}
 
 	fn do_end_match(&mut self, event: &MatchEvent) -> Option<usize> {
-		let lexeme = event.lexeme().to_string();
-		let remainder = &self.code[event.index..].to_string();
+		let code = self.code;
+		let lexeme = event.lexeme();
+		let remainder = &code[event.index..];
 
 		// Frame index of the mode that ends (after endsParent chains).
 		let target = self.end_of_mode(self.stack.len() - 1, event, remainder)?;
@@ -400,7 +403,7 @@ impl<'a> Engine<'a> {
 			Some(CompiledScope::Wrap(name)) => {
 				self.process_buffer();
 				let aliased = self.language.alias(name);
-				self.emit_keyword(&lexeme, &aliased);
+				self.emit_keyword(lexeme, &aliased);
 			}
 			Some(CompiledScope::Multi(scope)) => {
 				self.process_buffer();
@@ -409,14 +412,15 @@ impl<'a> Engine<'a> {
 			}
 			None => {
 				if origin_skip {
-					self.mode_buffer.push_str(&lexeme);
+					self.mode_buffer.push_str(lexeme);
 				} else {
 					if !(origin_return_end || origin_exclude_end) {
-						self.mode_buffer.push_str(&lexeme);
+						self.mode_buffer.push_str(lexeme);
 					}
 					self.process_buffer();
 					if origin_exclude_end {
-						self.mode_buffer = lexeme.clone();
+						self.mode_buffer.clear();
+						self.mode_buffer.push_str(lexeme);
 					}
 				}
 			}
@@ -553,9 +557,11 @@ impl<'a> Engine<'a> {
 		// emissions, so `self` must not hold the borrow.
 		let buffer = std::mem::take(&mut self.mode_buffer);
 		let mut last_index = 0usize;
-		let mut out = String::new();
-		// Collect emissions first (pattern exec borrows the language).
-		let mut emissions: Vec<(String, Option<String>)> = Vec::new();
+		// Segment the buffer into byte spans — plain runs between keyword
+		// emissions are always contiguous, so text is materialized once,
+		// straight into the emitter. `plain.1 == last_index` throughout.
+		let mut plain = (0usize, 0usize);
+		let mut emissions: Vec<((usize, usize), Option<String>)> = Vec::new();
 		let mut relevance_gain = 0.0;
 		{
 			let mode = &self.language.modes[top_index];
@@ -567,42 +573,57 @@ impl<'a> Engine<'a> {
 				if end == start {
 					break; // zero-width guard
 				}
-				out.push_str(&buffer[last_index..start]);
-				let matched = buffer[start..end].to_string();
+				let matched = &buffer[start..end];
+				let lowered;
 				let word = if self.language.case_insensitive {
-					matched.to_lowercase()
+					lowered = matched.to_lowercase();
+					lowered.as_str()
 				} else {
-					matched.clone()
+					matched
 				};
-				if let Some((kind, keyword_relevance)) = keywords.get(&word) {
-					emissions.push((std::mem::take(&mut out), None));
-					let hits = self.keyword_hits.entry(word.clone()).or_insert(0);
-					*hits += 1;
-					if *hits <= MAX_KEYWORD_HITS {
+				if let Some((kind, keyword_relevance)) = keywords.get(word) {
+					plain.1 = start;
+					emissions.push((plain, None));
+					let hits = match self.keyword_hits.get_mut(word) {
+						Some(hits) => {
+							*hits += 1;
+							*hits
+						}
+						None => {
+							self.keyword_hits.insert(word.to_string(), 1);
+							1
+						}
+					};
+					if hits <= MAX_KEYWORD_HITS {
 						relevance_gain += keyword_relevance;
 					}
 					if kind.starts_with('_') {
-						out.push_str(&matched);
+						plain = (start, end);
 					} else {
 						let aliased = self.language.alias(kind);
-						emissions.push((matched, Some(aliased)));
+						emissions.push(((start, end), Some(aliased)));
+						plain = (end, end);
 					}
 				} else {
-					out.push_str(&matched);
+					plain.1 = end;
 				}
 				last_index = end;
 			}
 		}
-		out.push_str(&buffer[last_index.min(buffer.len())..]);
-		emissions.push((out, None));
+		plain.1 = buffer.len();
+		emissions.push((plain, None));
 		self.relevance += relevance_gain;
 
-		for (text, scope) in emissions {
+		for ((start, end), scope) in emissions {
 			match scope {
-				Some(scope) => self.emit_keyword(&text, &scope),
-				None => self.emitter.add_text(&text),
+				Some(scope) => self.emit_keyword(&buffer[start..end], &scope),
+				None => self.emitter.add_text(&buffer[start..end]),
 			}
 		}
+		// Hand the (cleared) allocation back for the next mode's buffer.
+		let mut buffer = buffer;
+		buffer.clear();
+		self.mode_buffer = buffer;
 	}
 
 	fn process_sub_language(&mut self) {
