@@ -254,8 +254,8 @@ pub fn after(tokenizer: &mut Tokenizer) -> State {
     let start = &tokenizer.tokenize_state.label_starts[start_index];
 
     let indices = (
-        tokenizer.events[start.start.1].point.index,
-        tokenizer.events[tokenizer.tokenize_state.end].point.index,
+        tokenizer.events[start.start.1].point.offset(),
+        tokenizer.events[tokenizer.tokenize_state.end].point.offset(),
     );
 
     // We don’t care about virtual spaces, so `indices` and `as_str` are fine.

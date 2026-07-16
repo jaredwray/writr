@@ -235,10 +235,11 @@ pub fn resolve(tokenizer: &mut Tokenizer) -> Option<Subresult> {
                 tokenizer.events[exit + 1].point = tokenizer.events[enter].point.clone();
                 tokenizer.events[exit + 1].link = Some(Link {
                     previous: None,
-                    next: Some(exit + 4),
+                    next: Some((exit + 4) as u32),
                     content: Content::Text,
                 });
-                tokenizer.events[exit + 4].link.as_mut().unwrap().previous = Some(exit + 1);
+                tokenizer.events[exit + 4].link.as_mut().unwrap().previous =
+                    Some((exit + 1) as u32);
                 // Remove *including* HeadingSetextUnderline:Exit, until the line ending.
                 tokenizer.map.add(enter + 1, exit - enter, vec![]);
                 // Remove old Paragraph:Enter.

@@ -61,9 +61,9 @@ pub fn link_to(events: &mut [Event], previous: usize, next: usize) {
         .link
         .as_mut()
         .expect("expected `link` on previous");
-    link_previous.next = Some(next);
+    link_previous.next = Some(next as u32);
     let link_next = events[next].link.as_mut().expect("expected `link` on next");
-    link_next.previous = Some(previous);
+    link_next.previous = Some(previous as u32);
 
     debug_assert_eq!(
         events[previous].link.as_ref().unwrap().content,
@@ -156,12 +156,12 @@ pub fn subtokenize(
                     let end = &events[index + 1].point;
 
                     state = tokenizer.push(
-                        (enter.point.index, enter.point.vs),
-                        (end.index, end.vs),
+                        (enter.point.offset(), enter.point.vs as usize),
+                        (end.offset(), end.vs as usize),
                         state,
                     );
 
-                    link_index = link_curr.next;
+                    link_index = link_curr.next.map(|next| next as usize);
                 }
 
                 let mut result = tokenizer.flush(state, true)?;
@@ -209,7 +209,7 @@ pub fn divide_events(
         if current.index > end.index || (current.index == end.index && current.vs > end.vs) {
             slices.push((link_index, slice_start));
             slice_start = child_index;
-            link_index = events[link_index].link.as_ref().unwrap().next.unwrap();
+            link_index = events[link_index].link.as_ref().unwrap().next.unwrap() as usize;
         }
 
         // Fix sublinks.
@@ -227,7 +227,7 @@ pub fn divide_events(
                     old_prev + link_index - (slices.len() - 1) * 2
                 };
                 prev_event.link.as_mut().unwrap().next =
-                    Some(new_link + acc_before.1 - acc_before.0);
+                    Some((new_link + acc_before.1 - acc_before.0) as u32);
             }
         }
 
@@ -237,9 +237,9 @@ pub fn divide_events(
         // reference back to *this* event.
         if let Some(sublink_curr) = &child_events[child_index].link {
             if let Some(next) = sublink_curr.next {
-                let sublink_next = child_events[next].link.as_mut().unwrap();
+                let sublink_next = child_events[next as usize].link.as_mut().unwrap();
 
-                old_prev = sublink_next.previous;
+                old_prev = sublink_next.previous.map(|previous| previous as usize);
 
                 sublink_next.previous = sublink_next
                     .previous
@@ -247,7 +247,8 @@ pub fn divide_events(
                     // minus 2 events (the enter and exit) for each removed
                     // link.
                     .map(|previous| {
-                        previous + link_index - (slices.len() * 2) + acc_before.1 - acc_before.0
+                        (previous as usize + link_index - (slices.len() * 2) + acc_before.1
+                            - acc_before.0) as u32
                     });
             }
         }

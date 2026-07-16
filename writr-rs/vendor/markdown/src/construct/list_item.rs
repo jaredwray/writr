@@ -386,7 +386,7 @@ pub fn resolve(tokenizer: &mut Tokenizer) -> Option<Subresult> {
                 let end = skip::opt(&tokenizer.events, index, &[Name::ListItem]) - 1;
                 let marker = skip::to(&tokenizer.events, index, &[Name::ListItemMarker]);
                 // Guaranteed to be a valid ASCII byte.
-                let marker = tokenizer.parse_state.bytes[tokenizer.events[marker].point.index];
+                let marker = tokenizer.parse_state.bytes[tokenizer.events[marker].point.offset()];
                 let current = (marker, balance, index, end);
 
                 let mut list_index = lists_wip.len();

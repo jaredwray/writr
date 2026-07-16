@@ -35,7 +35,9 @@ fn shift_links(events: &mut [Event], jumps: &[(usize, usize, usize)]) {
         } else {
             if let Some(link) = &events[index].link {
                 if let Some(next) = link.next {
-                    events[next].link.as_mut().unwrap().previous = Some(index + add - rm);
+                    let next = next as usize;
+                    events[next].link.as_mut().unwrap().previous =
+                        Some((index + add - rm) as u32);
 
                     while jump_index < jumps.len() && jumps[jump_index].0 <= next {
                         add = jumps[jump_index].2;
@@ -43,7 +45,7 @@ fn shift_links(events: &mut [Event], jumps: &[(usize, usize, usize)]) {
                         jump_index += 1;
                     }
 
-                    events[index].link.as_mut().unwrap().next = Some(next + add - rm);
+                    events[index].link.as_mut().unwrap().next = Some((next + add - rm) as u32);
                     index = next;
                     continue;
                 }

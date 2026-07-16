@@ -648,7 +648,7 @@ fn on_enter_hard_break(context: &mut CompileContext) {
 
 /// Handle [`Enter`][Kind::Enter]:[`Frontmatter`][Name::Frontmatter].
 fn on_enter_frontmatter(context: &mut CompileContext) {
-    let index = context.events[context.index].point.index;
+    let index = context.events[context.index].point.offset();
     let byte = context.bytes[index];
     let node = if byte == b'+' {
         Node::Toml(Toml {
@@ -1278,7 +1278,7 @@ fn on_exit_heading_setext_text(context: &mut CompileContext) {
 /// Handle [`Exit`][Kind::Exit]:[`HeadingSetextUnderlineSequence`][Name::HeadingSetextUnderlineSequence].
 fn on_exit_heading_setext_underline_sequence(context: &mut CompileContext) {
     let position = SlicePosition::from_exit_event(context.events, context.index);
-    let head = context.bytes[position.start.index];
+    let head = context.bytes[position.start.offset()];
     let depth = if head == b'-' { 2 } else { 1 };
 
     if let Node::Heading(node) = context.tail_mut() {
@@ -1717,7 +1717,11 @@ fn on_exit_resource_title_string(context: &mut CompileContext) {
 
 /// Create a position from an event.
 fn position_from_event(event: &Event) -> Position {
-    let end = Point::new(event.point.line, event.point.column, event.point.index);
+    let end = Point::new(
+        event.point.line as usize,
+        event.point.column as usize,
+        event.point.offset(),
+    );
     Position {
         start: end.clone(),
         end,

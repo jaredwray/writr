@@ -274,9 +274,9 @@ pub struct TokenizeState<'a> {
 #[derive(Debug)]
 pub struct Tokenizer<'a> {
     /// Jump between line endings.
-    column_start: Vec<(usize, usize)>,
+    column_start: Vec<(u32, u32)>,
     // First line where this tokenizer starts.
-    first_line: usize,
+    first_line: u32,
     /// WRITR-RS PATCH (perf): exclusive end (index) of the current feed
     /// range, kept up to date by `push_impl` so `consume_data_run` never
     /// bulk-consumes past a chunk boundary.
@@ -420,7 +420,7 @@ impl<'a> Tokenizer<'a> {
         #[cfg(feature = "log")]
         log::trace!("position: define skip: {:?} -> ({:?})", point.line, info);
 
-        let at = point.line - self.first_line;
+        let at = (point.line - self.first_line) as usize;
 
         if at >= self.column_start.len() {
             self.column_start.push(info);
@@ -434,7 +434,7 @@ impl<'a> Tokenizer<'a> {
     /// Increment the current positional info if we’re right after a line
     /// ending, which has a skip defined.
     fn account_for_potential_skip(&mut self) {
-        let at = self.point.line - self.first_line;
+        let at = (self.point.line - self.first_line) as usize;
 
         if self.point.column == 1 && at != self.column_start.len() {
             self.move_to(self.column_start[at]);
@@ -473,7 +473,7 @@ impl<'a> Tokenizer<'a> {
         self.consume();
         let bytes = self.parse_state.bytes;
         let markers = self.tokenize_state.markers;
-        let start = self.point.index;
+        let start = self.point.index as usize;
         let end = self.feed_end_index.min(bytes.len());
         let mut index = start;
         while index < end {
@@ -484,8 +484,8 @@ impl<'a> Tokenizer<'a> {
             index += 1;
         }
         if index > start {
-            self.point.column += index - start;
-            self.point.index = index;
+            self.point.column += (index - start) as u32;
+            self.point.index = index as u32;
             self.point.vs = 0;
             self.previous = Some(bytes[index - 1]);
         }
@@ -496,8 +496,8 @@ impl<'a> Tokenizer<'a> {
         // WRITR-RS PATCH (perf): fast path — every byte except `\r` and
         // `\t` is `ByteAction::Normal(byte)`; handle it without the
         // `byte_action` call/enum round trip.
-        if self.point.index < self.parse_state.bytes.len() {
-            let byte = self.parse_state.bytes[self.point.index];
+        if (self.point.index as usize) < self.parse_state.bytes.len() {
+            let byte = self.parse_state.bytes[self.point.index as usize];
             if byte != b'\r' && byte != b'\t' {
                 self.previous = Some(byte);
                 self.point.vs = 0;
@@ -507,7 +507,7 @@ impl<'a> Tokenizer<'a> {
                     self.point.line += 1;
                     self.point.column = 1;
 
-                    if self.point.line - self.first_line + 1 > self.column_start.len() {
+                    if (self.point.line - self.first_line + 1) as usize > self.column_start.len() {
                         self.column_start.push((self.point.index, self.point.vs));
                     }
 
@@ -538,7 +538,7 @@ impl<'a> Tokenizer<'a> {
                     self.point.line += 1;
                     self.point.column = 1;
 
-                    if self.point.line - self.first_line + 1 > self.column_start.len() {
+                    if (self.point.line - self.first_line + 1) as usize > self.column_start.len() {
                         self.column_start.push((self.point.index, self.point.vs));
                     }
 
@@ -556,7 +556,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     /// Move (virtual) bytes.
-    fn move_to(&mut self, to: (usize, usize)) {
+    fn move_to(&mut self, to: (u32, u32)) {
         let (to_index, to_vs) = to;
         while self.point.index < to_index || self.point.index == to_index && self.point.vs < to_vs {
             self.move_one();
@@ -688,7 +688,7 @@ impl<'a> Tokenizer<'a> {
 
     /// Flush.
     pub fn flush(&mut self, state: State, resolve: bool) -> Result<Subresult, message::Message> {
-        let to = (self.point.index, self.point.vs);
+        let to = (self.point.offset(), self.point.vs as usize);
         let state = push_impl(self, to, to, state, true);
 
         state.to_result()?;
@@ -757,12 +757,12 @@ fn push_impl(
     flush: bool,
 ) -> State {
     debug_assert!(
-        from.0 > tokenizer.point.index
-            || (from.0 == tokenizer.point.index && from.1 >= tokenizer.point.vs),
+        from.0 > tokenizer.point.offset()
+            || (from.0 == tokenizer.point.offset() && from.1 >= tokenizer.point.vs as usize),
         "cannot move backwards"
     );
 
-    tokenizer.move_to(from);
+    tokenizer.move_to((from.0 as u32, from.1 as u32));
     // WRITR-RS PATCH (perf): see `feed_end_index`. Restored on return so
     // nested/outer `push_impl` calls (attempts, container flows) keep their
     // own clamp.
@@ -797,8 +797,8 @@ fn push_impl(
                 }
             }
             State::Next(name) => {
-                let action = if tokenizer.point.index < to.0
-                    || (tokenizer.point.index == to.0 && tokenizer.point.vs < to.1)
+                let action = if tokenizer.point.offset() < to.0
+                    || (tokenizer.point.offset() == to.0 && (tokenizer.point.vs as usize) < to.1)
                 {
                     Some(byte_action(tokenizer.parse_state.bytes, &tokenizer.point))
                 } else if flush {
@@ -850,12 +850,12 @@ fn push_impl(
 
 /// Figure out how to handle a byte.
 fn byte_action(bytes: &[u8], point: &Point) -> ByteAction {
-    if point.index < bytes.len() {
-        let byte = bytes[point.index];
+    if point.offset() < bytes.len() {
+        let byte = bytes[point.offset()];
 
         if byte == b'\r' {
             // CRLF.
-            if point.index < bytes.len() - 1 && bytes[point.index + 1] == b'\n' {
+            if point.offset() < bytes.len() - 1 && bytes[point.offset() + 1] == b'\n' {
                 ByteAction::Ignore
             }
             // CR.
@@ -863,11 +863,11 @@ fn byte_action(bytes: &[u8], point: &Point) -> ByteAction {
                 ByteAction::Normal(b'\n')
             }
         } else if byte == b'\t' {
-            let remainder = point.column % TAB_SIZE;
+            let remainder = point.column % TAB_SIZE as u32;
             let vs = if remainder == 0 {
                 0
             } else {
-                TAB_SIZE - remainder
+                TAB_SIZE as u32 - remainder
             };
 
             // On the tab itself, first send it.

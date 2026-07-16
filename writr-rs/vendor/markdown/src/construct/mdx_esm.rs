@@ -55,7 +55,7 @@ pub fn start(tokenizer: &mut Tokenizer) -> State {
         && matches!(tokenizer.current, Some(b'e' | b'i'))
     {
         // Place where keyword starts.
-        tokenizer.tokenize_state.start = tokenizer.point.index;
+        tokenizer.tokenize_state.start = tokenizer.point.offset();
         tokenizer.enter(Name::MdxEsm);
         tokenizer.enter(Name::MdxEsmData);
         tokenizer.consume();
@@ -79,7 +79,7 @@ pub fn word(tokenizer: &mut Tokenizer) -> State {
         let slice = Slice::from_indices(
             tokenizer.parse_state.bytes,
             tokenizer.tokenize_state.start,
-            tokenizer.point.index,
+            tokenizer.point.offset(),
         );
 
         if matches!(slice.as_str(), "export" | "import") && tokenizer.current == Some(b' ') {

@@ -183,7 +183,7 @@ pub fn protocol_start(tokenizer: &mut Tokenizer) -> State {
             State::Next(StateName::GfmAutolinkLiteralDomainInside),
             State::Nok,
         );
-        tokenizer.tokenize_state.start = tokenizer.point.index;
+        tokenizer.tokenize_state.start = tokenizer.point.offset();
         State::Retry(StateName::GfmAutolinkLiteralProtocolPrefixInside)
     } else {
         State::Nok
@@ -211,7 +211,7 @@ pub fn protocol_prefix_inside(tokenizer: &mut Tokenizer) -> State {
     match tokenizer.current {
         Some(b'A'..=b'Z' | b'a'..=b'z')
             // `5` is size of `https`
-            if tokenizer.point.index - tokenizer.tokenize_state.start < 5 =>
+            if tokenizer.point.offset() - tokenizer.tokenize_state.start < 5 =>
         {
             tokenizer.consume();
             State::Next(StateName::GfmAutolinkLiteralProtocolPrefixInside)
@@ -220,7 +220,7 @@ pub fn protocol_prefix_inside(tokenizer: &mut Tokenizer) -> State {
             let slice = Slice::from_indices(
                 tokenizer.parse_state.bytes,
                 tokenizer.tokenize_state.start,
-                tokenizer.point.index,
+                tokenizer.point.offset(),
             );
             let name = slice.as_str().to_ascii_lowercase();
 
@@ -374,7 +374,7 @@ pub fn domain_inside(tokenizer: &mut Tokenizer) -> State {
         }
         _ => {
             // Source: <https://github.com/github/cmark-gfm/blob/ef1cfcb/extensions/autolink.c#L12>.
-            if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)
+            if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.offset())
                 == CharacterKind::Other
             {
                 tokenizer.tokenize_state.seen = true;
@@ -479,7 +479,7 @@ pub fn path_inside(tokenizer: &mut Tokenizer) -> State {
         _ => {
             // Source: <https://github.com/github/cmark-gfm/blob/ef1cfcb/extensions/autolink.c#L12>.
             if tokenizer.current.is_none()
-                || kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)
+                || kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.offset())
                     == CharacterKind::Whitespace
             {
                 State::Retry(StateName::GfmAutolinkLiteralPathAfter)
@@ -552,7 +552,7 @@ pub fn trail(tokenizer: &mut Tokenizer) -> State {
         }
         _ => {
             // Whitespace is the end of the URL, anything else is continuation.
-            if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)
+            if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.offset())
                 == CharacterKind::Whitespace
             {
                 State::Ok
@@ -644,7 +644,7 @@ pub fn resolve(tokenizer: &mut Tokenizer) {
                 let mut byte_index = 0;
                 let mut replace = Vec::new();
                 let mut point = tokenizer.events[index - 1].point.clone();
-                let start_index = point.index;
+                let start_index = point.offset();
                 let mut min = 0;
 
                 while byte_index < bytes.len() {

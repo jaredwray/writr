@@ -235,7 +235,7 @@ pub fn name_before(tokenizer: &mut Tokenizer) -> State {
         _ => {
             if id_start_opt(char_after_index(
                 tokenizer.parse_state.bytes,
-                tokenizer.point.index,
+                tokenizer.point.offset(),
             )) {
                 tokenizer.enter(Name::MdxJsxTagName);
                 tokenizer.enter(Name::MdxJsxTagNamePrimary);
@@ -275,7 +275,7 @@ pub fn closing_tag_name_before(tokenizer: &mut Tokenizer) -> State {
     // Start of a closing tag name.
     else if id_start_opt(char_after_index(
         tokenizer.parse_state.bytes,
-        tokenizer.point.index,
+        tokenizer.point.offset(),
     )) {
         tokenizer.enter(Name::MdxJsxTagName);
         tokenizer.enter(Name::MdxJsxTagNamePrimary);
@@ -305,7 +305,7 @@ pub fn closing_tag_name_before(tokenizer: &mut Tokenizer) -> State {
 /// ```
 pub fn primary_name(tokenizer: &mut Tokenizer) -> State {
     // End of name.
-    if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)
+    if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.offset())
         == CharacterKind::Whitespace
         || matches!(tokenizer.current, Some(b'.' | b'/' | b':' | b'>' | b'{'))
     {
@@ -318,7 +318,7 @@ pub fn primary_name(tokenizer: &mut Tokenizer) -> State {
     else if matches!(tokenizer.current, Some(0x80..=0xBF))
         || id_cont_opt(char_after_index(
             tokenizer.parse_state.bytes,
-            tokenizer.point.index,
+            tokenizer.point.offset(),
         ))
     {
         tokenizer.consume();
@@ -370,7 +370,7 @@ pub fn primary_name_after(tokenizer: &mut Tokenizer) -> State {
             if matches!(tokenizer.current, Some(b'/' | b'>' | b'{'))
                 || id_start_opt(char_after_index(
                     tokenizer.parse_state.bytes,
-                    tokenizer.point.index,
+                    tokenizer.point.offset(),
                 ))
             {
                 tokenizer.exit(Name::MdxJsxTagName);
@@ -396,7 +396,7 @@ pub fn member_name_before(tokenizer: &mut Tokenizer) -> State {
     // Start of a member name.
     if id_start_opt(char_after_index(
         tokenizer.parse_state.bytes,
-        tokenizer.point.index,
+        tokenizer.point.offset(),
     )) {
         tokenizer.enter(Name::MdxJsxTagNameMember);
         tokenizer.consume();
@@ -419,7 +419,7 @@ pub fn member_name_before(tokenizer: &mut Tokenizer) -> State {
 pub fn member_name(tokenizer: &mut Tokenizer) -> State {
     // End of name.
     // Note: no `:` allowed here.
-    if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)
+    if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.offset())
         == CharacterKind::Whitespace
         || matches!(tokenizer.current, Some(b'.' | b'/' | b'>' | b'{'))
     {
@@ -432,7 +432,7 @@ pub fn member_name(tokenizer: &mut Tokenizer) -> State {
     else if matches!(tokenizer.current, Some(0x80..=0xBF))
         || id_cont_opt(char_after_index(
             tokenizer.parse_state.bytes,
-            tokenizer.point.index,
+            tokenizer.point.offset(),
         ))
     {
         tokenizer.consume();
@@ -476,7 +476,7 @@ pub fn member_name_after(tokenizer: &mut Tokenizer) -> State {
             if matches!(tokenizer.current, Some(b'/' | b'>' | b'{'))
                 || id_start_opt(char_after_index(
                     tokenizer.parse_state.bytes,
-                    tokenizer.point.index,
+                    tokenizer.point.offset(),
                 ))
             {
                 tokenizer.exit(Name::MdxJsxTagName);
@@ -502,7 +502,7 @@ pub fn local_name_before(tokenizer: &mut Tokenizer) -> State {
     // Start of a local name.
     if id_start_opt(char_after_index(
         tokenizer.parse_state.bytes,
-        tokenizer.point.index,
+        tokenizer.point.offset(),
     )) {
         tokenizer.enter(Name::MdxJsxTagNameLocal);
         tokenizer.consume();
@@ -531,7 +531,7 @@ pub fn local_name_before(tokenizer: &mut Tokenizer) -> State {
 /// ```
 pub fn local_name(tokenizer: &mut Tokenizer) -> State {
     // End of local name (note that we don’t expect another colon, or a member).
-    if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)
+    if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.offset())
         == CharacterKind::Whitespace
         || matches!(tokenizer.current, Some(b'/' | b'>' | b'{'))
     {
@@ -544,7 +544,7 @@ pub fn local_name(tokenizer: &mut Tokenizer) -> State {
     else if matches!(tokenizer.current, Some(0x80..=0xBF))
         || id_cont_opt(char_after_index(
             tokenizer.parse_state.bytes,
-            tokenizer.point.index,
+            tokenizer.point.offset(),
         ))
     {
         tokenizer.consume();
@@ -574,7 +574,7 @@ pub fn local_name_after(tokenizer: &mut Tokenizer) -> State {
     if matches!(tokenizer.current, Some(b'/' | b'>' | b'{'))
         || id_start_opt(char_after_index(
             tokenizer.parse_state.bytes,
-            tokenizer.point.index,
+            tokenizer.point.offset(),
         ))
     {
         tokenizer.exit(Name::MdxJsxTagName);
@@ -626,7 +626,7 @@ pub fn attribute_before(tokenizer: &mut Tokenizer) -> State {
             // Start of an attribute name.
             if id_start_opt(char_after_index(
                 tokenizer.parse_state.bytes,
-                tokenizer.point.index,
+                tokenizer.point.offset(),
             )) {
                 tokenizer.enter(Name::MdxJsxTagAttribute);
                 tokenizer.enter(Name::MdxJsxTagAttributeName);
@@ -669,7 +669,7 @@ pub fn attribute_expression_after(tokenizer: &mut Tokenizer) -> State {
 /// ```
 pub fn attribute_primary_name(tokenizer: &mut Tokenizer) -> State {
     // End of attribute name or tag.
-    if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)
+    if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.offset())
         == CharacterKind::Whitespace
         || matches!(tokenizer.current, Some(b'/' | b':' | b'=' | b'>' | b'{'))
     {
@@ -685,7 +685,7 @@ pub fn attribute_primary_name(tokenizer: &mut Tokenizer) -> State {
     else if matches!(tokenizer.current, Some(0x80..=0xBF))
         || id_cont_opt(char_after_index(
             tokenizer.parse_state.bytes,
-            tokenizer.point.index,
+            tokenizer.point.offset(),
         ))
     {
         tokenizer.consume();
@@ -736,12 +736,12 @@ pub fn attribute_primary_name_after(tokenizer: &mut Tokenizer) -> State {
         }
         _ => {
             // End of tag / new attribute.
-            if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)
+            if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.offset())
                 == CharacterKind::Whitespace
                 || matches!(tokenizer.current, Some(b'/' | b'>' | b'{'))
                 || id_start_opt(char_after_index(
                     tokenizer.parse_state.bytes,
-                    tokenizer.point.index,
+                    tokenizer.point.offset(),
                 ))
             {
                 tokenizer.exit(Name::MdxJsxTagAttributeName);
@@ -769,7 +769,7 @@ pub fn attribute_local_name_before(tokenizer: &mut Tokenizer) -> State {
     // Start of a local name.
     if id_start_opt(char_after_index(
         tokenizer.parse_state.bytes,
-        tokenizer.point.index,
+        tokenizer.point.offset(),
     )) {
         tokenizer.enter(Name::MdxJsxTagAttributeNameLocal);
         tokenizer.consume();
@@ -793,7 +793,7 @@ pub fn attribute_local_name_before(tokenizer: &mut Tokenizer) -> State {
 /// ```
 pub fn attribute_local_name(tokenizer: &mut Tokenizer) -> State {
     // End of local name (note that we don’t expect another colon).
-    if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)
+    if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.offset())
         == CharacterKind::Whitespace
         || matches!(tokenizer.current, Some(b'/' | b'=' | b'>' | b'{'))
     {
@@ -810,7 +810,7 @@ pub fn attribute_local_name(tokenizer: &mut Tokenizer) -> State {
     else if matches!(tokenizer.current, Some(0x80..=0xBF))
         || id_cont_opt(char_after_index(
             tokenizer.parse_state.bytes,
-            tokenizer.point.index,
+            tokenizer.point.offset(),
         ))
     {
         tokenizer.consume();
@@ -850,7 +850,7 @@ pub fn attribute_local_name_after(tokenizer: &mut Tokenizer) -> State {
             if matches!(tokenizer.current, Some(b'/' | b'>' | b'{'))
                 || id_start_opt(char_after_index(
                     tokenizer.parse_state.bytes,
-                    tokenizer.point.index,
+                    tokenizer.point.offset(),
                 ))
             {
                 tokenizer.exit(Name::MdxJsxTagAttribute);
@@ -1039,7 +1039,7 @@ pub fn es_whitespace_start(tokenizer: &mut Tokenizer) -> State {
             State::Next(StateName::MdxJsxEsWhitespaceEolAfter)
         }
         _ => {
-            if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)
+            if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.offset())
                 == CharacterKind::Whitespace
             {
                 tokenizer.enter(Name::MdxJsxEsWhitespace);
@@ -1069,7 +1069,7 @@ pub fn es_whitespace_inside(tokenizer: &mut Tokenizer) -> State {
             State::Next(StateName::MdxJsxEsWhitespaceInside)
         }
         Some(_)
-            if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)
+            if kind_after_index(tokenizer.parse_state.bytes, tokenizer.point.offset())
                 == CharacterKind::Whitespace =>
         {
             tokenizer.consume();
@@ -1126,7 +1126,7 @@ fn crash(tokenizer: &Tokenizer, at: &str, expect: &str) -> State {
             format_char_opt(if tokenizer.current.is_none() {
                 None
             } else {
-                char_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)
+                char_after_index(tokenizer.parse_state.bytes, tokenizer.point.offset())
             }),
             at,
             expect

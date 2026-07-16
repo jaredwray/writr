@@ -310,13 +310,13 @@ pub fn containers_after(tokenizer: &mut Tokenizer) -> State {
         let current = tokenizer.events.len();
         let previous = tokenizer.tokenize_state.document_data_index;
         if let Some(previous) = previous {
-            tokenizer.events[previous].link.as_mut().unwrap().next = Some(current);
+            tokenizer.events[previous].link.as_mut().unwrap().next = Some(current as u32);
         }
         tokenizer.tokenize_state.document_data_index = Some(current);
         tokenizer.enter_link(
             Name::Data,
             Link {
-                previous,
+                previous: previous.map(|previous| previous as u32),
                 next: None,
                 content: Content::Flow,
             },
@@ -368,8 +368,8 @@ pub fn flow_end(tokenizer: &mut Tokenizer) -> State {
     tokenizer.tokenize_state.document_exits.push(None);
 
     let state = child.push(
-        (child.point.index, child.point.vs),
-        (tokenizer.point.index, tokenizer.point.vs),
+        (child.point.offset(), child.point.vs as usize),
+        (tokenizer.point.offset(), tokenizer.point.vs as usize),
         state,
     );
 

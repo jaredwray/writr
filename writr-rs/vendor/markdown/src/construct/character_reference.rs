@@ -167,8 +167,8 @@ pub fn value(tokenizer: &mut Tokenizer) -> State {
             // Guaranteed to be valid ASCII bytes.
             let slice = Slice::from_indices(
                 tokenizer.parse_state.bytes,
-                tokenizer.point.index - tokenizer.tokenize_state.size,
-                tokenizer.point.index,
+                tokenizer.point.offset() - tokenizer.tokenize_state.size,
+                tokenizer.point.offset(),
             );
 
             if decode_named(slice.as_str(), true).is_none() {

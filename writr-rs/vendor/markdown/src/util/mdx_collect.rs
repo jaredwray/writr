@@ -39,7 +39,7 @@ pub fn collect(
                 .serialize();
                 result
                     .stops
-                    .push((result.value.len(), events[index].point.index));
+                    .push((result.value.len(), events[index].point.offset()));
                 result.value.push_str(&value);
             }
         } else if stop.contains(&events[index].name) {

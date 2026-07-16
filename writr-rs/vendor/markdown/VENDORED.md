@@ -62,6 +62,12 @@ Combined ~39% faster than upstream 1.0.0 on writr's benchmark corpus:
 - `src/tokenizer.rs` `move_one`: inline fast path for the `Normal` byte
   action (everything except `\r`/`\t`).
 - `src/tokenizer.rs` `Tokenizer::new`: pre-sized events buffer.
+- `src/event.rs` `Point`/`Link`: positional fields and event-link indices
+  are `u32` (was `usize`), shrinking `Event` from 80 to 40 bytes and
+  halving the memory traffic of event pushes, splices, and resolver walks.
+  Documents are thereby capped at 4 GiB (`u32` byte offsets), far above any
+  practical markdown input. `Point::offset()` is the `usize` accessor for
+  slicing; the public unist/mdast API is unchanged (`usize` everywhere).
 
 ## Local changes to packaging
 

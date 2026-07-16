@@ -136,8 +136,8 @@ fn trim_data(
         if diff > 0 || slice.after > 0 {
             let exit_point = tokenizer.events[exit_index].point.clone();
             let mut enter_point = exit_point.clone();
-            enter_point.index -= diff;
-            enter_point.column -= diff;
+            enter_point.index -= diff as u32;
+            enter_point.column -= diff as u32;
             enter_point.vs = 0;
 
             tokenizer.map.add(
@@ -184,8 +184,8 @@ fn trim_data(
         if index > 0 || slice.before > 0 {
             let enter_point = tokenizer.events[exit_index - 1].point.clone();
             let mut exit_point = enter_point.clone();
-            exit_point.index += index;
-            exit_point.column += index;
+            exit_point.index += index as u32;
+            exit_point.column += index as u32;
             exit_point.vs = 0;
 
             tokenizer.map.add(

@@ -159,12 +159,13 @@ pub fn resolve(tokenizer: &mut Tokenizer) -> Result<Option<Subresult>, message::
                 tokenizer.map.add(exit_index + 1, 2, vec![]);
 
                 // Link Enter:Content to Enter:Content on this line and vice versa.
-                tokenizer.events[exit_index - 1].link.as_mut().unwrap().next = Some(enter_index);
+                tokenizer.events[exit_index - 1].link.as_mut().unwrap().next =
+                    Some(enter_index as u32);
                 tokenizer.events[enter_index]
                     .link
                     .as_mut()
                     .unwrap()
-                    .previous = Some(exit_index - 1);
+                    .previous = Some((exit_index - 1) as u32);
 
                 // Potential next start.
                 exit_index = enter_index + 1;

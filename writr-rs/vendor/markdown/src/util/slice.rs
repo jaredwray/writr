@@ -45,7 +45,7 @@ impl<'a> Position<'a> {
     ///
     /// > 👉 **Note**: indices cannot represent virtual spaces.
     pub fn to_indices(&self) -> (usize, usize) {
-        (self.start.index, self.end.index)
+        (self.start.offset(), self.end.offset())
     }
 }
 
@@ -65,10 +65,10 @@ pub struct Slice<'a> {
 impl<'a> Slice<'a> {
     /// Get a slice for a position.
     pub fn from_position(bytes: &'a [u8], position: &Position) -> Slice<'a> {
-        let mut before = position.start.vs;
-        let mut after = position.end.vs;
-        let mut start = position.start.index;
-        let mut end = position.end.index;
+        let mut before = position.start.vs as usize;
+        let mut after = position.end.vs as usize;
+        let mut start = position.start.offset();
+        let mut end = position.end.offset();
 
         // If we have virtual spaces before, it means we are past the actual
         // character at that index, and those virtual spaces.

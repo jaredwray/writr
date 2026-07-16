@@ -238,10 +238,12 @@ fn get_sequences(tokenizer: &mut Tokenizer) -> Vec<Sequence> {
                 let end = index + 1;
                 let exit = &tokenizer.events[end];
 
-                let marker = tokenizer.parse_state.bytes[enter.point.index];
-                let before_char = char_before_index(tokenizer.parse_state.bytes, enter.point.index);
+                let marker = tokenizer.parse_state.bytes[enter.point.offset()];
+                let before_char =
+                    char_before_index(tokenizer.parse_state.bytes, enter.point.offset());
                 let before = classify_opt(before_char);
-                let after_char = char_after_index(tokenizer.parse_state.bytes, exit.point.index);
+                let after_char =
+                    char_after_index(tokenizer.parse_state.bytes, exit.point.offset());
                 let after = classify_opt(after_char);
                 let open = after == CharacterKind::Other
                     || (after == CharacterKind::Punctuation && before != CharacterKind::Other)
@@ -261,7 +263,7 @@ fn get_sequences(tokenizer: &mut Tokenizer) -> Vec<Sequence> {
                     stack: stack.clone(),
                     start_point: enter.point.clone(),
                     end_point: exit.point.clone(),
-                    size: exit.point.index - enter.point.index,
+                    size: exit.point.offset() - enter.point.offset(),
                     open: if marker == b'_' {
                         open && (before != CharacterKind::Other || !close)
                     } else {
@@ -346,10 +348,10 @@ fn match_sequences(
     // No need to worry about `VS`, because sequences are only actual characters.
     sequences[open].size -= take;
     sequences[close].size -= take;
-    sequences[open].end_point.column -= take;
-    sequences[open].end_point.index -= take;
-    sequences[close].start_point.column += take;
-    sequences[close].start_point.index += take;
+    sequences[open].end_point.column -= take as u32;
+    sequences[open].end_point.index -= take as u32;
+    sequences[close].start_point.column += take as u32;
+    sequences[close].start_point.index += take as u32;
 
     // Opening.
     tokenizer.map.add_before(

@@ -3477,12 +3477,16 @@ pub enum Content {
 }
 
 /// Link to another event.
+///
+/// WRITR-RS PATCH (perf): event indices are `u32` (was `usize`) — documents
+/// are capped at 4 GiB, and the narrower fields halve `Event`'s size, which
+/// halves the memory traffic of every event push, splice, and resolver walk.
 #[derive(Clone, Debug)]
 pub struct Link {
     /// Previous event.
-    pub previous: Option<usize>,
+    pub previous: Option<u32>,
     /// Next event.
-    pub next: Option<usize>,
+    pub next: Option<u32>,
     /// Content type.
     pub content: Content,
 }
@@ -3491,49 +3495,57 @@ pub struct Link {
 ///
 /// The interface for the location in the document comes from unist
 /// [`Point`](https://github.com/syntax-tree/unist#point).
+///
+/// WRITR-RS PATCH (perf): fields are `u32` (was `usize`), shrinking `Point`
+/// from 32 to 16 bytes — see [`Link`].
 #[derive(Clone, Debug)]
 pub struct Point {
     /// 1-indexed line number.
-    pub line: usize,
+    pub line: u32,
     /// 1-indexed column number.
     ///
     /// This is increased up to a tab stop for tabs.
     /// Some editors count tabs as 1 character, so this position is not the
     /// same as editors.
-    pub column: usize,
+    pub column: u32,
     /// 0-indexed position in the document.
     ///
     /// Also an `index` into `bytes`.
-    pub index: usize,
+    pub index: u32,
     /// Virtual step on the same `index`.
-    pub vs: usize,
+    pub vs: u32,
 }
 
 impl Point {
     /// Create a unist point.
     pub fn to_unist(&self) -> unist::Point {
         unist::Point {
-            line: self.line,
-            column: self.column,
-            offset: self.index,
+            line: self.line as usize,
+            column: self.column as usize,
+            offset: self.index as usize,
         }
+    }
+
+    /// `index` as a `usize`, for slicing `bytes`.
+    pub fn offset(&self) -> usize {
+        self.index as usize
     }
 
     /// Create a new point, that is shifted from the close earlier current
     /// point, to `index`.
     pub fn shift_to(&self, bytes: &[u8], index: usize) -> Point {
         let mut next = self.clone();
-        debug_assert!(index > next.index, "expected to shift forward");
+        debug_assert!(index > next.offset(), "expected to shift forward");
 
-        while next.index < index {
-            match bytes[next.index] {
+        while next.offset() < index {
+            match bytes[next.offset()] {
                 b'\n' | b'\r' => unreachable!("cannot move past line endings"),
                 b'\t' => {
-                    let remainder = next.column % TAB_SIZE;
+                    let remainder = next.column % TAB_SIZE as u32;
                     let vs = if remainder == 0 {
                         0
                     } else {
-                        TAB_SIZE - remainder
+                        TAB_SIZE as u32 - remainder
                     };
                     next.index += 1;
                     next.column += 1 + vs;
