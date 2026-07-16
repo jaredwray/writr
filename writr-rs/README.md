@@ -126,43 +126,53 @@ docs-pipeline workload):
 
 | Engine | minimal profile | default profile (gfm+emoji+toc+slug+highlight+math) |
 | ------ | --------------- | ---------------------------------------------------- |
-| **writr-rs `renderBatch` (all cores)** | **~31,000 docs/s** | **~9,900 docs/s** |
-| markdown-it (single-threaded loop) | ~24,000 docs/s | *(not comparable — no highlight/math/slugs)* |
-| marked (single-threaded loop) | ~19,500 docs/s | *(not comparable)* |
+| **writr-rs `renderBatchBuffer` (bytes in/out, all cores)** | **~34,000 docs/s** | — |
+| **writr-rs `renderBatch` (all cores)** | **~33,000 docs/s** | **~9,700 docs/s** |
+| markdown-it (single-threaded loop) | ~22,000 docs/s | *(not comparable — no highlight/math/slugs)* |
+| marked (single-threaded loop) | ~15,000 docs/s | *(not comparable)* |
 | writr JS | ~1,700 docs/s | ~690 docs/s |
 
 `renderBatch` renders across all cores in one native call — a mode no
 JS markdown library can express in-process. Even on 4 shared vCPUs it beats
-markdown-it by ~30% and marked by ~60%; on an 8-core machine the multiple
-roughly doubles. With writr's render cache on top, repeat renders measure in
-the millions of ops/s.
+markdown-it by ~50% and marked by ~120%; on an 8-core machine the multiple
+roughly doubles. `renderBatchBuffer` additionally moves documents in and
+HTML out as one packed Buffer each way (zero per-document JS strings), so
+the main-thread marshalling cost stops growing with the batch. With writr's
+render cache on top, repeat renders measure in the millions of ops/s.
 
 **Single-document latency** (one doc per call, single core):
 
 | Engine | minimal profile | default profile |
 | ------ | --------------- | ---------------- |
-| writr-rs (sync, napi) | ~10,400 ops/s | **~3,300 ops/s** |
-| writr JS (sync) | ~1,700 ops/s | ~690 ops/s |
-| marked / markdown-it | ~26–31K ops/s | *(not comparable)* |
+| writr-rs (sync, napi) | ~11,000 ops/s | **~4,000 ops/s** |
+| writr JS (sync) | ~1,700 ops/s | ~565 ops/s |
+| marked / markdown-it | ~20–24K ops/s | *(not comparable)* |
 
-writr-rs is ~5–6× writr-JS per call with no cache warm-up. For bare
-CommonMark single-doc latency markdown-it's hand-tuned JS is still ~3×
-faster than our micromark-faithful parser — that trade is deliberate:
+writr-rs is ~5–6.5× writr-JS per call with no cache warm-up. For bare
+CommonMark single-doc latency markdown-it's hand-tuned JS is still ~2×
+faster than our micromark-faithful parser (51µs vs ~109µs through the
+addon, ~96µs engine-side) — that trade is deliberate:
 
 - The parser is the vendored markdown-rs (a faithful micromark port) —
   that architecture is *why* 2,041 goldens match byte-exactly. The perf
   patches in `vendor/markdown` (documented in `VENDORED.md`) make it
-  **~39% faster than upstream markdown-rs 1.0.0** on this corpus
+  **~1.6× the speed of upstream markdown-rs 1.0.0** on this corpus
   (single-pass `EditMap::consume`, bulk data-run consumption,
   construct-aware data markers, ASCII classification table, inlined
-  byte-advance fast path); further parser work is the main remaining
-  headroom.
+  byte-advance fast path, 40-byte `u32` events); a position-exact state
+  machine simply does more work per byte than a loose line scanner, and
+  fusing out the intermediate mdast stage (~10% more) is the documented
+  next step if that niche ever matters more than parity.
 - The hljs engine races per-rule automata (`regex` crate) with non-fancy
-  prefilters in front of the backtracking fallback and memoizes probes —
-  ~3.4× faster than a naive union port, byte-identical on all 2,111
-  fixtures.
+  prefilters in front of the backtracking fallback, memoizes probes, and
+  keeps the hot loop copy-free (borrowed lexemes, span-based keyword
+  segmentation) — byte-identical on all 2,111 fixtures.
+- The serializer streams attributes and entity-escaped text straight into
+  a capacity-seeded output buffer (no per-node/per-attribute strings).
 - KaTeX renders are memoized at two levels (HTML string in QuickJS glue,
   parsed hast fragment in the pipeline), so repeated formulas cost a clone.
+- Native release builds can squeeze out another ~2–5% with profile-guided
+  optimization: `pnpm build:rs:pgo`.
 
 ## Parity-critical pinned versions
 
