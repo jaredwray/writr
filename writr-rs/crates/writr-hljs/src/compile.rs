@@ -142,8 +142,11 @@ pub fn rewrite_backreferences(regexps: &[&str], join_with: &str) -> String {
 					i += 1;
 					while i < bytes.len() && bytes[i] != b']' {
 						if bytes[i] == b'\\' && i + 1 < bytes.len() {
-							out.push_str(&source[i..i + 2]);
-							i += 2;
+							// Decode the escaped char (may be multi-byte).
+							out.push('\\');
+							let c = source[i + 1..].chars().next().expect("char");
+							out.push(c);
+							i += 1 + c.len_utf8();
 						} else {
 							let c = source[i..].chars().next().expect("char");
 							out.push(c);
@@ -167,8 +170,11 @@ pub fn rewrite_backreferences(regexps: &[&str], join_with: &str) -> String {
 						out.push_str(&(number + offset).to_string());
 						i = j;
 					} else {
-						out.push_str(&source[i..i + 2]);
-						i += 2;
+						// Decode the escaped char (may be multi-byte).
+						out.push('\\');
+						let c = source[i + 1..].chars().next().expect("char");
+						out.push(c);
+						i += 1 + c.len_utf8();
 					}
 				}
 				b'(' => {
@@ -837,6 +843,13 @@ mod tests {
 		let language = compile_json(r#"[{"keywords":{"$pattern":true,"keyword":"kw"}}]"#);
 		let result = engine::highlight(&language, "kw!", None);
 		assert_eq!(spans(&result.root), "<hljs-keyword>kw</>!");
+	}
+
+	#[test]
+	fn rewrite_backreferences_multibyte_escapes() {
+		// Escaped multi-byte chars must not split UTF-8 sequences.
+		assert_eq!(rewrite_backreferences(&[r"\é"], "|"), r"(\é)");
+		assert_eq!(rewrite_backreferences(&[r"[\é]a"], "|"), r"([\é]a)");
 	}
 
 	#[test]

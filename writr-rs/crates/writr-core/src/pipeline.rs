@@ -108,25 +108,30 @@ fn transform(mdast: markdown::mdast::Node, options: &RenderOptions) -> hast::Nod
 	// into the conversion below). The gfm autolink-literal find-and-replace
 	// belongs to parsing itself (remark-gfm registers it as a
 	// mdast-util-from-markdown transform), so it runs before everything.
+	#[allow(unused_mut)]
 	let mut mdast = mdast;
+	#[cfg(feature = "gfm")]
 	if options.gfm {
 		crate::mdast_util::gfm_autolink::transform(&mut mdast);
 	}
+	#[cfg(feature = "toc")]
 	if options.toc {
 		crate::mdast_util::toc::transform(&mut mdast);
 	}
+	#[cfg(feature = "emoji")]
 	if options.emoji {
 		crate::mdast_util::emoji::transform(&mut mdast);
 	}
 
-	let mut tree =
-		from_mdast::from_mdast(&mdast, from_mdast::Options::from_render_options(options));
+	#[allow(unused_mut)]
+	let mut tree = from_mdast::from_mdast(&mdast, from_mdast::Options::from_render_options(options));
 
 	// hast stage: raw → slug → [highlight] (M4) → [math] (M5).
 	#[cfg(feature = "raw-html")]
 	if options.raw_html {
 		tree = hast::raw::process(&tree);
 	}
+	#[cfg(feature = "slug")]
 	if options.slug {
 		hast::slug::transform(&mut tree);
 	}

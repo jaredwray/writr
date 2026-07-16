@@ -271,10 +271,15 @@ fn translate_escape(
 			}
 		}
 		'k' => {
-			// Named backreference `\k<name>`.
-			out.push_str("\\k");
+			// Named backreference `\k<name>`; a bare `\k` is an identity
+			// escape in JS (annex B) — literal `k`.
+			if chars.get(*i + 1) == Some(&'<') {
+				out.push_str("\\k");
+			} else {
+				out.push('k');
+			}
 		}
-		'p' | 'P' => {
+		'p' | 'P' if unicode => {
 			// Unicode property (u-flag grammars); same syntax in Rust —
 			// consume the `{Name}` payload so the brace isn't re-escaped.
 			out.push('\\');
@@ -290,6 +295,10 @@ fn translate_escape(
 				}
 				*i = j;
 			}
+		}
+		'p' | 'P' => {
+			// Without the `u` flag, JS treats `\p` as an identity escape.
+			out.push(next);
 		}
 		'c' => {
 			// Control escape `\cX` → \x{01..1A}.
@@ -736,6 +745,16 @@ mod tests {
 			.unwrap()
 			.exec_from(text, 0)
 			.map(|m| (m.index, m.text().to_string()))
+	}
+
+	#[test]
+	fn annex_b_identity_escapes() {
+		// `\p` is a property escape only under the `u` flag; bare `\k` is
+		// an identity escape unless it opens a named backreference.
+		assert_eq!(m(r"a\p", "", "xap"), Some((1, "ap".into())));
+		assert_eq!(m(r"\p{Lu}", "", "xp{Lu}"), Some((1, "p{Lu}".into())));
+		assert_eq!(m(r"\p{Lu}", "u", "xÉy"), Some((1, "É".into())));
+		assert_eq!(m(r"\ka", "", "kab"), Some((0, "ka".into())));
 	}
 
 	#[test]

@@ -17,6 +17,7 @@ mod frontmatter;
 mod js;
 mod options;
 mod pipeline;
+#[cfg(any(feature = "slug", feature = "toc"))]
 mod slugger;
 
 mod generated;

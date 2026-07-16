@@ -10,6 +10,7 @@ pub mod katex;
 pub mod property_info;
 #[cfg(any(feature = "raw-html", feature = "math"))]
 pub mod raw;
+#[cfg(feature = "slug")]
 pub mod slug;
 pub mod to_html;
 

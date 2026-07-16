@@ -25,7 +25,12 @@ const { chromium } = require("playwright-core");
 const native = require(join(nodeDir, "index.js"));
 
 // --- 1. bundle ---------------------------------------------------------------
-const esbuild = join(root, "..", "node_modules", ".bin", "esbuild");
+// esbuild is a devDependency of crates/writr-node (a fresh root install does
+// not expose transitive bins); fall back to a repo-root or PATH install.
+const esbuild = [
+	join(nodeDir, "node_modules", ".bin", "esbuild"),
+	join(root, "..", "node_modules", ".bin", "esbuild"),
+].find((path) => existsSync(path)) ?? "esbuild";
 const bundle = join(nodeDir, "node_modules", ".writr-browser-smoke.mjs");
 execSync(
 	`${esbuild} ${join(nodeDir, "browser.js")} --bundle --format=esm ` +

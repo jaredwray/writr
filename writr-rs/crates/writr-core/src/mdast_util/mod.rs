@@ -2,8 +2,11 @@
 //! parse and mdast→hast conversion), in writr's registration order:
 //! alerts (folded into conversion) → toc → emoji.
 
+#[cfg(feature = "emoji")]
 pub mod emoji;
+#[cfg(feature = "gfm")]
 pub mod gfm_autolink;
+#[cfg(feature = "toc")]
 pub mod toc;
 
 use markdown::mdast;

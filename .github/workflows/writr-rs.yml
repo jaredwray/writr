@@ -44,6 +44,13 @@ jobs:
       - name: Tests
         run: cargo test --workspace
         working-directory: writr-rs
+      - name: Feature matrix compiles
+        run: |
+          cargo check -p writr-core --no-default-features
+          for f in gfm toc slug emoji math raw-html highlight mdx parallel; do
+            cargo check -p writr-core --no-default-features --features "$f"
+          done
+        working-directory: writr-rs
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
       # 97.75% at gate introduction; every uncovered line is documented as
