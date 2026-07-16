@@ -62,6 +62,16 @@ impl Element {
 		self.properties.push((name.into(), value.into()));
 	}
 
+	/// JS object-assign semantics: an existing key keeps its position but
+	/// takes the new value (`properties[name] = value`).
+	pub fn set_property(&mut self, name: &str, value: impl Into<PropertyValue>) {
+		if let Some(slot) = self.properties.iter_mut().find(|(key, _)| key == name) {
+			slot.1 = value.into();
+		} else {
+			self.properties.push((name.into(), value.into()));
+		}
+	}
+
 	/// First value for a property name, if present.
 	pub fn property(&self, name: &str) -> Option<&PropertyValue> {
 		self.properties

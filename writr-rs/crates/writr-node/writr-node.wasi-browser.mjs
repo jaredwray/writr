@@ -52,5 +52,7 @@ export default __napiModule.exports;
 export const engineVersion = __napiModule.exports.engineVersion;
 export const render = __napiModule.exports.render;
 export const renderAsync = __napiModule.exports.renderAsync;
+export const renderBatch = __napiModule.exports.renderBatch;
+export const renderBatchAsync = __napiModule.exports.renderBatchAsync;
 export const renderToMdast = __napiModule.exports.renderToMdast;
 export const validate = __napiModule.exports.validate;

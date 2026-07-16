@@ -73,7 +73,7 @@ Browser (bundler-friendly ESM; the wasm is fetched at runtime; single-threaded
 build, so **no SharedArrayBuffer and no COOP/COEP headers required**):
 
 ```js
-import { render } from "writr-rs/crates/writr-node/browser.js";
+import { render, renderBatch } from "writr-rs/crates/writr-node/browser.mjs";
 ```
 
 ## Building

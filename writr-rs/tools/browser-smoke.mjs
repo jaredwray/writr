@@ -1,6 +1,6 @@
 // Browser-compatibility smoke test for the writr-rs wasm build.
 //
-// 1. Bundles crates/writr-node/browser.js with esbuild (as a user's bundler
+// 1. Bundles crates/writr-node/browser.mjs with esbuild (as a user's bundler
 //    would), leaving the .wasm to be fetched at runtime.
 // 2. Serves the bundle + wasm over HTTP with NO cross-origin-isolation
 //    headers — the single-threaded build must not need SharedArrayBuffer.
@@ -33,7 +33,7 @@ const esbuild = [
 ].find((path) => existsSync(path)) ?? "esbuild";
 const bundle = join(nodeDir, "node_modules", ".writr-browser-smoke.mjs");
 execSync(
-	`${esbuild} ${join(nodeDir, "browser.js")} --bundle --format=esm ` +
+	`${esbuild} ${join(nodeDir, "browser.mjs")} --bundle --format=esm ` +
 		`--platform=browser --external:./writr-node.wasm32-wasi.wasm ` +
 		`--outfile=${bundle}`,
 	{ stdio: "inherit" },

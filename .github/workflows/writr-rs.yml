@@ -8,12 +8,16 @@ on:
       - 'writr-rs/**'
       - 'test/harness/**'
       - '.github/workflows/writr-rs.yml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
   pull_request:
     branches: [ main ]
     paths:
       - 'writr-rs/**'
       - 'test/harness/**'
       - '.github/workflows/writr-rs.yml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
 
 permissions:
   contents: read

@@ -663,10 +663,13 @@ impl<'a> State<'a> {
 		let mut element = Element::new(name.unwrap_or("div"));
 		for attribute in attributes {
 			if let mdast::AttributeContent::Property(property) = attribute {
+				// `set_property`: the JS handler assigns into a plain object,
+				// so a repeated attribute keeps its first position but takes
+				// the last value — never duplicate HTML attributes.
 				match &property.value {
-					None => element.push_property(&property.name, true),
+					None => element.set_property(&property.name, true),
 					Some(mdast::AttributeValue::Literal(value)) => {
-						element.push_property(&property.name, value.as_str());
+						element.set_property(&property.name, value.as_str());
 					}
 					Some(mdast::AttributeValue::Expression(_)) => {}
 				}

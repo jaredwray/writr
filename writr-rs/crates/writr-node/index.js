@@ -10,7 +10,7 @@
 //
 // Environment: set `WRITR_RS_FORCE_WASM=1` to load the WebAssembly build
 // (`writr-node.wasm32-wasi.wasm` via `writr-node.wasi.cjs`) instead of any
-// native artifact. Browsers use `browser.js`, which loads the same wasm.
+// native artifact. Browsers use `browser.mjs`, which loads the same wasm.
 "use strict";
 
 const { existsSync } = require("node:fs");

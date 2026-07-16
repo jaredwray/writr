@@ -181,3 +181,27 @@ fn katex_version_is_pinned() {
 	// KaTeX version for drift auditing.
 	assert_eq!(writr_core::KATEX_VERSION, "0.16.45");
 }
+
+#[test]
+fn mdx_duplicate_attributes_use_js_object_semantics() {
+	// Oracle-verified against the JS engine: a repeated JSX attribute keeps
+	// its first position but takes the last value (`properties[name] = v`).
+	let options = writr_core::RenderOptions {
+		mdx: true,
+		slug: false,
+		toc: false,
+		emoji: false,
+		highlight: false,
+		math: false,
+		gfm: true,
+		raw_html: false,
+	};
+	assert_eq!(
+		writr_core::render("<div id=\"a\" id=\"b\">x</div>", &options).unwrap(),
+		"<p><div id=\"b\">x</div></p>"
+	);
+	assert_eq!(
+		writr_core::render("<div id=\"a\" className=\"c\" id=\"b\">x</div>", &options).unwrap(),
+		"<p><div id=\"b\" class=\"c\">x</div></p>"
+	);
+}

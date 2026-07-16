@@ -64,5 +64,7 @@ module.exports = __napiModule.exports;
 module.exports.engineVersion = __napiModule.exports.engineVersion;
 module.exports.render = __napiModule.exports.render;
 module.exports.renderAsync = __napiModule.exports.renderAsync;
+module.exports.renderBatch = __napiModule.exports.renderBatch;
+module.exports.renderBatchAsync = __napiModule.exports.renderBatchAsync;
 module.exports.renderToMdast = __napiModule.exports.renderToMdast;
 module.exports.validate = __napiModule.exports.validate;
