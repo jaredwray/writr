@@ -68,7 +68,8 @@ fn with_engine<T>(f: impl FnOnce(&Context) -> T) -> T {
 			runtime.set_max_stack_size(4 * 1024 * 1024);
 			let context = Context::full(&runtime).expect("QuickJS context");
 			context.with(|ctx| {
-				ctx.eval::<(), _>(KATEX_SOURCE).expect("katex.min.js evaluates");
+				ctx.eval::<(), _>(KATEX_SOURCE)
+					.expect("katex.min.js evaluates");
 				ctx.eval::<(), _>(BOOTSTRAP).expect("bootstrap evaluates");
 			});
 			context
@@ -116,7 +117,11 @@ mod tests {
 	#[test]
 	fn renders_inline_math() {
 		let html = render_math("a^2 + b^2 = c^2", false).expect("valid formula");
-		assert!(html.starts_with("<span class=\"katex\">"), "got: {}", &html[..80]);
+		assert!(
+			html.starts_with("<span class=\"katex\">"),
+			"got: {}",
+			&html[..80]
+		);
 		assert!(html.contains("katex-mathml"));
 		assert!(html.contains("annotation encoding=\"application/x-tex\""));
 	}

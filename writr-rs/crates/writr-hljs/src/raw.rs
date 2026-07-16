@@ -3,7 +3,8 @@
 //! like hljs's `compileMode` (which mutates its input).
 
 use serde_json::Value;
-use std::collections::HashMap;
+// FxHashMap throughout the grammar structures (see engine.rs).
+use rustc_hash::FxHashMap as HashMap;
 
 /// A regex reference: JS source + flags (grammar strings carry no flags).
 #[derive(Debug, Clone, PartialEq)]
@@ -216,9 +217,7 @@ fn as_re(value: &Value) -> Option<ReSpec> {
 
 fn as_re_value(value: &Value) -> Option<ReValue> {
 	match value {
-		Value::Array(items) => Some(ReValue::Many(
-			items.iter().filter_map(as_re).collect(),
-		)),
+		Value::Array(items) => Some(ReValue::Many(items.iter().filter_map(as_re).collect())),
 		other => as_re(other).map(ReValue::One),
 	}
 }
@@ -228,7 +227,7 @@ fn as_scope(value: &Value) -> Option<ScopeValue> {
 		Value::Null => Some(ScopeValue::Null),
 		Value::String(name) => Some(ScopeValue::Name(name.clone())),
 		Value::Object(map) if !map.contains_key("$re") => {
-			let mut multi = HashMap::new();
+			let mut multi = HashMap::default();
 			for (key, name) in map {
 				if let (Ok(position), Some(name)) = (key.parse::<usize>(), name.as_str()) {
 					multi.insert(position, name.to_string());
@@ -276,7 +275,10 @@ fn resolve_deep(objects: &[Value], value: &Value) -> Value {
 			)
 		}
 		Value::Array(items) => Value::Array(
-			items.iter().map(|item| resolve_deep(objects, item)).collect(),
+			items
+				.iter()
+				.map(|item| resolve_deep(objects, item))
+				.collect(),
 		),
 		other => other.clone(),
 	}
@@ -330,9 +332,9 @@ fn parse_mode(object: &Value, objects: &[Value]) -> WorkingMode {
 				mode.contains = entries;
 			}
 			"variants" => {
-				mode.variants = value.as_array().map(|items| {
-					items.iter().filter_map(as_ref).collect()
-				});
+				mode.variants = value
+					.as_array()
+					.map(|items| items.iter().filter_map(as_ref).collect());
 			}
 			"starts" => mode.starts = as_ref(value),
 			"subLanguage" => mode.sub_language = Some(value.clone()),
@@ -391,4 +393,85 @@ fn parse_mode(object: &Value, objects: &[Value]) -> WorkingMode {
 		}
 	}
 	mode
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use serde_json::json;
+
+	#[test]
+	#[should_panic(expected = "unknown grammar callback id")]
+	fn unknown_callback_panics() {
+		callback_from_id("no-such-callback");
+	}
+
+	#[test]
+	fn inherit_merges_flags_and_starts() {
+		let over = WorkingMode {
+			starts: Some(0),
+			skip: true,
+			exclude_begin: true,
+			exclude_end: true,
+			return_begin: true,
+			return_end: true,
+			ends_with_parent: true,
+			ends_parent: true,
+			..WorkingMode::default()
+		};
+		let mut arena = WorkingArena {
+			modes: vec![WorkingMode::default(), over],
+		};
+		let merged = arena.inherit(0, &[1]);
+		let mode = &arena.modes[merged];
+		assert_eq!(mode.starts, Some(0));
+		assert!(mode.skip && mode.exclude_begin && mode.exclude_end);
+		assert!(mode.return_begin && mode.return_end);
+		assert!(mode.ends_with_parent && mode.ends_parent);
+		assert!(!mode.is_compiled);
+	}
+
+	#[test]
+	fn scope_values_reject_unexpected_shapes() {
+		assert_eq!(as_scope(&json!(5)), None);
+		assert_eq!(as_scope(&json!({"$re": "x"})), None);
+		assert_eq!(as_scope(&json!(null)), Some(ScopeValue::Null));
+	}
+
+	#[test]
+	fn illegal_arrays_and_nested_contains_parse() {
+		let arena = WorkingArena::from_json(
+			r#"[{"illegal":["x","y"],"contains":[[{"$ref":1}],"self"]},
+			    {"begin":"a"}]"#,
+		);
+		assert_eq!(arena.modes[0].illegal.as_ref().map(Vec::len), Some(2));
+		assert_eq!(
+			arena.modes[0].contains,
+			vec![Contained::Mode(1), Contained::SelfRef]
+		);
+	}
+
+	#[test]
+	fn non_object_arena_entries_become_default_modes() {
+		let arena = WorkingArena::from_json(r#"[{"name":"t"},"stray-string"]"#);
+		assert!(arena.modes[1].begin.is_none());
+		assert!(arena.modes[1].name.is_none());
+	}
+
+	#[test]
+	fn class_name_aliases_ignore_unexpected_shapes() {
+		let arena = WorkingArena::from_json(
+			r#"[{"classNameAliases": 5},
+			    {"classNameAliases": {"good": "keyword", "bad": 7}}]"#,
+		);
+		assert!(arena.modes[0].class_name_aliases.is_empty());
+		assert_eq!(
+			arena.modes[1]
+				.class_name_aliases
+				.get("good")
+				.map(String::as_str),
+			Some("keyword")
+		);
+		assert!(!arena.modes[1].class_name_aliases.contains_key("bad"));
+	}
 }

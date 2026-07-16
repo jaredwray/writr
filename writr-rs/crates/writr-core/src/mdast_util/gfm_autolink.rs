@@ -27,7 +27,10 @@ fn previous_ok(input: &str, match_start: usize, email: bool) -> bool {
 	if match_start == 0 {
 		return true;
 	}
-	let prev = input[..match_start].chars().next_back().expect("non-empty prefix");
+	let prev = input[..match_start]
+		.chars()
+		.next_back()
+		.expect("non-empty prefix");
 	let code = prev as u32;
 	if email && code == 47 {
 		return false;
@@ -78,21 +81,20 @@ fn find_url_match(value: &str, from: usize) -> Option<(usize, usize, usize, usiz
 	let mut i = from;
 	while i < bytes.len() {
 		// Alternative 1: `https?://` (case-insensitive).
-		let after_protocol = if bytes[i..].len() >= 7
-			&& bytes[i..i + 4].eq_ignore_ascii_case(b"http")
-		{
-			let mut p = i + 4;
-			if p < bytes.len() && (bytes[p] | 0x20) == b's' {
-				p += 1;
-			}
-			if bytes[p..].starts_with(b"://") {
-				Some(p + 3)
+		let after_protocol =
+			if bytes[i..].len() >= 7 && bytes[i..i + 4].eq_ignore_ascii_case(b"http") {
+				let mut p = i + 4;
+				if p < bytes.len() && (bytes[p] | 0x20) == b's' {
+					p += 1;
+				}
+				if bytes[p..].starts_with(b"://") {
+					Some(p + 3)
+				} else {
+					None
+				}
 			} else {
 				None
-			}
-		} else {
-			None
-		};
+			};
 		// Alternative 2: `www(?=\.)`.
 		let www = after_protocol.is_none()
 			&& bytes[i..].len() >= 4
@@ -102,9 +104,7 @@ fn find_url_match(value: &str, from: usize) -> Option<(usize, usize, usize, usiz
 		if let Some(domain_start) = after_protocol.or(if www { Some(i + 3) } else { None }) {
 			// `([-.\w]+)` — at least one.
 			let mut d = domain_start;
-			while d < bytes.len()
-				&& (is_word(bytes[d]) || bytes[d] == b'-' || bytes[d] == b'.')
-			{
+			while d < bytes.len() && (is_word(bytes[d]) || bytes[d] == b'-' || bytes[d] == b'.') {
 				d += 1;
 			}
 			if d > domain_start {
@@ -173,8 +173,7 @@ fn split_url(url: &str) -> (String, Option<String>) {
 fn url_pass(value: &str) -> Option<Vec<Found>> {
 	let mut found = Vec::new();
 	let mut last_index = 0;
-	while let Some((start, domain_start, domain_end, path_end)) =
-		find_url_match(value, last_index)
+	while let Some((start, domain_start, domain_end, path_end)) = find_url_match(value, last_index)
 	{
 		let mut protocol = &value[start..domain_start];
 		let mut domain = value[domain_start..domain_end].to_string();
@@ -182,7 +181,7 @@ fn url_pass(value: &str) -> Option<Vec<Found>> {
 		let mut prefix = "";
 
 		let ok = previous_ok(value, start, false);
-		let www = protocol.len() >= 1 && (protocol.as_bytes()[0] | 0x20) == b'w';
+		let www = !protocol.is_empty() && (protocol.as_bytes()[0] | 0x20) == b'w';
 		if www {
 			domain = format!("{protocol}{domain}");
 			protocol = "";
@@ -236,9 +235,7 @@ fn find_email_match(value: &str, from: usize) -> Option<(usize, usize, usize)> {
 			// attempting every position).
 			let atext_start = i;
 			let mut a = i;
-			while a < bytes.len()
-				&& (is_word(bytes[a]) || matches!(bytes[a], b'-' | b'.' | b'+'))
-			{
+			while a < bytes.len() && (is_word(bytes[a]) || matches!(bytes[a], b'-' | b'.' | b'+')) {
 				a += 1;
 			}
 			if a < bytes.len() && bytes[a] == b'@' {
@@ -294,7 +291,10 @@ fn lookbehind_ok(value: &str, index: usize) -> bool {
 	if index == 0 {
 		return true;
 	}
-	let prev = value[..index].chars().next_back().expect("non-empty prefix");
+	let prev = value[..index]
+		.chars()
+		.next_back()
+		.expect("non-empty prefix");
 	let code = prev as u32;
 	if code > 0xFFFF {
 		// Astral punctuation/symbols do satisfy the /u lookbehind — but the
@@ -363,10 +363,7 @@ fn splice(children: &mut Vec<mdast::Node>, index: usize, value: &str, found: Vec
 }
 
 fn walk(node: &mut mdast::Node, pass: &dyn Fn(&str) -> Option<Vec<Found>>) {
-	if matches!(
-		node,
-		mdast::Node::Link(_) | mdast::Node::LinkReference(_)
-	) {
+	if matches!(node, mdast::Node::Link(_) | mdast::Node::LinkReference(_)) {
 		return;
 	}
 	let Some(children) = node.children_mut() else {
@@ -447,6 +444,36 @@ mod tests {
 	fn rejects_bad_domains_and_labels() {
 		// Email label ending in a digit; domain part containing `_`.
 		assert_eq!(render("a\\_a@b.c1"), "<p>a_a@b.c1</p>");
-		assert_eq!(render("x http\\://a\\_b.com y"), "<p>x http://a_b.com y</p>");
+		assert_eq!(
+			render("x http\\://a\\_b.com y"),
+			"<p>x http://a_b.com y</p>"
+		);
+	}
+
+	// Direct pass-level checks (a `None` result means find-and-replace
+	// leaves the text node untouched, exactly like the JS transforms
+	// returning `false` for every candidate).
+
+	#[test]
+	fn email_pass_rejects_dotless_and_word_preceded_candidates() {
+		// `a@b`: the domain regex needs at least one `.`-group.
+		assert!(email_pass("mail a@b thing").is_none());
+		// `a@` with no domain characters at all never matches.
+		assert!(email_pass("m a@ y").is_none());
+		// A slash rejects the match at `u`; rescans inside the run then fail
+		// the lookbehind (previous char is a word character).
+		assert!(email_pass("/user@bar.example.com").is_none());
+		// Astral previous characters fail the `charCodeAt` gate.
+		assert!(email_pass("\u{1F600}foo@bar.example.com").is_none());
+	}
+
+	#[test]
+	fn url_pass_rejects_protocol_without_domain() {
+		// `https?://` followed by no `[-.\w]` characters never matches.
+		assert!(url_pass("go http:// nowhere").is_none());
+		assert!(url_pass("https://! x").is_none());
+		// A domain of only dots survives `isCorrectDomain` but splits to an
+		// empty URL, which the replacer rejects.
+		assert!(url_pass("http://... y").is_none());
 	}
 }

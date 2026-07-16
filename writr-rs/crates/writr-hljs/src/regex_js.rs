@@ -1,4 +1,9 @@
-//! JavaScript regex semantics over fancy-regex.
+//! JavaScript regex semantics over the regex crate, with fancy-regex as the
+//! fallback for patterns using lookarounds or backreferences. Both backends
+//! implement leftmost-first alternation (Perl-style), so a pattern compiles
+//! to the same match semantics either way; the regex-crate backend is
+//! preferred because its automata engines avoid fancy-regex's backtracking
+//! VM on the hot tokenizer paths.
 //!
 //! highlight.js grammars are written against JS `RegExp`. The differences
 //! that matter here:
@@ -14,10 +19,18 @@
 //!
 //! `exec` mirrors `RegExp.prototype.exec` with `lastIndex` (byte offsets).
 
-use fancy_regex::Regex;
-
 const JS_WS: &str = r"\t\n\x0B\f\r \x{00A0}\x{1680}\x{2000}-\x{200A}\x{2028}\x{2029}\x{202F}\x{205F}\x{3000}\x{FEFF}";
 const WORD: &str = "0-9A-Za-z_";
+
+/// How `\b`/`\B` (outside classes) are encoded.
+#[derive(Clone, Copy, PartialEq)]
+enum BoundaryStyle {
+	/// `(?-u:\b)` — regex-crate syntax; fancy-regex's parser rejects it.
+	FlagGroup,
+	/// Explicit `[0-9A-Za-z_]` lookarounds — accepted by fancy-regex, but
+	/// they force its backtracking VM.
+	Lookaround,
+}
 
 #[derive(Debug)]
 pub struct TranslateError(pub String);
@@ -30,6 +43,14 @@ impl std::fmt::Display for TranslateError {
 
 /// Translate a JS pattern (given its flags) to regex-crate syntax.
 pub fn translate(pattern: &str, flags: &str) -> Result<String, TranslateError> {
+	translate_with(pattern, flags, BoundaryStyle::FlagGroup)
+}
+
+fn translate_with(
+	pattern: &str,
+	flags: &str,
+	boundary: BoundaryStyle,
+) -> Result<String, TranslateError> {
 	let dot_all = flags.contains('s');
 	let unicode = flags.contains('u');
 	let mut out = String::with_capacity(pattern.len() + 16);
@@ -49,7 +70,7 @@ pub fn translate(pattern: &str, flags: &str) -> Result<String, TranslateError> {
 				let Some(&next) = chars.get(i) else {
 					return Err(TranslateError("trailing backslash".into()));
 				};
-				translate_escape(&chars, &mut i, next, &mut out, false, unicode)?;
+				translate_escape(&chars, &mut i, next, &mut out, false, unicode, boundary)?;
 				i += 1;
 			}
 			'[' => {
@@ -138,6 +159,7 @@ fn is_quantifier(chars: &[char], open: usize) -> bool {
 /// Translate one escape sequence. `i` points at the char after `\`; the
 /// caller advances past it. For multi-char escapes (`\u`, `\x`) this
 /// consumes extra characters by advancing `i`.
+#[allow(clippy::too_many_arguments)]
 fn translate_escape(
 	chars: &[char],
 	i: &mut usize,
@@ -145,6 +167,7 @@ fn translate_escape(
 	out: &mut String,
 	in_class: bool,
 	unicode: bool,
+	boundary: BoundaryStyle,
 ) -> Result<(), TranslateError> {
 	match next {
 		'd' => out.push_str(if in_class { "0-9" } else { "[0-9]" }),
@@ -154,11 +177,7 @@ fn translate_escape(
 			}
 			out.push_str("[^0-9]");
 		}
-		'w' => out.push_str(if in_class {
-			WORD
-		} else {
-			"[0-9A-Za-z_]"
-		}),
+		'w' => out.push_str(if in_class { WORD } else { "[0-9A-Za-z_]" }),
 		'W' => {
 			if in_class {
 				return Err(TranslateError("\\W inside class".into()));
@@ -185,8 +204,10 @@ fn translate_escape(
 		'b' => {
 			if in_class {
 				out.push_str(r"\x08");
+			} else if boundary == BoundaryStyle::FlagGroup {
+				// JS non-unicode `\b` is the ASCII word boundary.
+				out.push_str(r"(?-u:\b)");
 			} else {
-				// ASCII word boundary via lookarounds.
 				out.push_str(&format!(
 					"(?:(?<=[{WORD}])(?![{WORD}])|(?<![{WORD}])(?=[{WORD}]))"
 				));
@@ -196,9 +217,13 @@ fn translate_escape(
 			if in_class {
 				return Err(TranslateError("\\B inside class".into()));
 			}
-			out.push_str(&format!(
-				"(?:(?<=[{WORD}])(?=[{WORD}])|(?<![{WORD}])(?![{WORD}]))"
-			));
+			if boundary == BoundaryStyle::FlagGroup {
+				out.push_str(r"(?-u:\B)");
+			} else {
+				out.push_str(&format!(
+					"(?:(?<=[{WORD}])(?=[{WORD}])|(?<![{WORD}])(?![{WORD}]))"
+				));
+			}
 		}
 		'u' => {
 			// `\uHHHH` or (with u flag) `\u{...}`.
@@ -335,8 +360,10 @@ fn translate_class(
 	// `[^]` and `[\s\S]`/`[\w\W]`/`[\d\D]` match any character.
 	if (negated && body.is_empty())
 		|| (!negated
-			&& matches!(body.as_str(), r"\s\S" | r"\S\s" | r"\w\W" | r"\W\w" | r"\d\D" | r"\D\d"))
-	{
+			&& matches!(
+				body.as_str(),
+				r"\s\S" | r"\S\s" | r"\w\W" | r"\W\w" | r"\d\D" | r"\D\d"
+			)) {
 		out.push_str("(?s:.)");
 		return Ok(end + 1);
 	}
@@ -344,7 +371,9 @@ fn translate_class(
 		// Positive class with a negative shorthand plus other members: the
 		// negative set alone covers nearly everything; grammars in the
 		// common set don't hit this — fail loudly if one ever does.
-		return Err(TranslateError(format!("mixed negative shorthand in class: [{body}]")));
+		return Err(TranslateError(format!(
+			"mixed negative shorthand in class: [{body}]"
+		)));
 	}
 
 	out.push('[');
@@ -356,7 +385,15 @@ fn translate_class(
 		if c == '\\' {
 			i += 1;
 			let next = chars[i];
-			translate_escape(chars, &mut i, next, out, true, unicode)?;
+			translate_escape(
+				chars,
+				&mut i,
+				next,
+				out,
+				true,
+				unicode,
+				BoundaryStyle::FlagGroup,
+			)?;
 			i += 1;
 			continue;
 		}
@@ -388,10 +425,10 @@ pub fn count_capture_groups(pattern: &str) -> usize {
 			b'[' if !in_class => in_class = true,
 			b']' if in_class => in_class = false,
 			b'(' if !in_class => {
-				if bytes.get(i + 1) != Some(&b'?') {
-					count += 1;
-				} else if bytes.get(i + 2) == Some(&b'<')
-					&& !matches!(bytes.get(i + 3), Some(&b'=') | Some(&b'!'))
+				// Plain `(` or a named group `(?<name>` both capture.
+				if bytes.get(i + 1) != Some(&b'?')
+					|| (bytes.get(i + 2) == Some(&b'<')
+						&& !matches!(bytes.get(i + 3), Some(&b'=') | Some(&b'!')))
 				{
 					count += 1;
 				}
@@ -406,10 +443,28 @@ pub fn count_capture_groups(pattern: &str) -> usize {
 /// A compiled JS-semantics regex.
 #[derive(Debug)]
 pub struct JsRegex {
-	regex: Regex,
+	backend: Backend,
 	/// Original JS source (used for `terminatorEnd` concatenation).
 	pub source: String,
 	pub group_count: usize,
+}
+
+/// The compiled form: the regex crate whenever the pattern has no fancy
+/// features (lookarounds, backreferences), fancy-regex otherwise.
+///
+/// A fancy pattern additionally carries a "prefilter" when one can be
+/// derived: a non-fancy regex matching a superset of the fancy pattern's
+/// match START positions (lookaround guards dropped; a trailing `(?=Y)`
+/// kept as the sequence `(?:Y)`). `find_from` then leapfrogs — the
+/// prefilter's DFA skips the stretch where no match can start, and the
+/// backtracking VM only scans from the first candidate onward.
+#[derive(Debug)]
+enum Backend {
+	Fast(regex::Regex),
+	Fancy {
+		regex: fancy_regex::Regex,
+		prefilter: Option<regex::Regex>,
+	},
 }
 
 /// One match: byte offsets into the haystack.
@@ -427,16 +482,208 @@ impl JsMatch {
 	}
 }
 
+/// Derive a non-fancy "start superset" prefilter from a translated pattern.
+///
+/// Soundness: every zero-width guard (lookahead/lookbehind) can be dropped
+/// without losing any candidate match START — any accepting path of the
+/// original at position `p` is an accepting path of the guard-free pattern
+/// at `p`. A positive lookahead after which nothing more is consumed can
+/// instead be kept as a plain sequence `(?:Y)` (tighter, still a start
+/// superset: the original requires `Y` to follow). Backreferences consume
+/// text and cannot be dropped — a pattern relying on them in consumed
+/// position yields `None` (no prefilter, scan as before).
+fn defancy_prefilter(pattern: &str) -> Option<String> {
+	let chars: Vec<char> = pattern.chars().collect();
+	let out = defancy(&chars)?;
+	if out.is_empty() || out == "(?i)" || out == "(?m)" || out == "(?i)(?m)" {
+		return None;
+	}
+	Some(out)
+}
+
+fn defancy(chars: &[char]) -> Option<String> {
+	let mut out = String::with_capacity(chars.len());
+	let mut i = 0;
+	while i < chars.len() {
+		match chars[i] {
+			'\\' => {
+				let next = *chars.get(i + 1)?;
+				if (next.is_ascii_digit() && next != '0') || next == 'k' {
+					return None; // backreference in consumed position
+				}
+				out.push('\\');
+				out.push(next);
+				i += 2;
+			}
+			'[' => {
+				let start = i;
+				i += 1;
+				if chars.get(i) == Some(&'^') {
+					i += 1;
+				}
+				while i < chars.len() && chars[i] != ']' {
+					if chars[i] == '\\' {
+						i += 1;
+					}
+					i += 1;
+				}
+				i = (i + 1).min(chars.len());
+				out.extend(&chars[start..i]);
+			}
+			'(' if lookaround_len(chars, i).is_some() => {
+				let prefix = lookaround_len(chars, i).expect("checked");
+				let positive_ahead = chars[i + 2] == '=';
+				let close = matching_paren(chars, i)?;
+				let trailing = chars[close + 1..].iter().all(|&c| c == ')');
+				let sequenced = if positive_ahead && trailing {
+					defancy(&chars[i + prefix..close])
+				} else {
+					None
+				};
+				match sequenced {
+					Some(inner) => {
+						out.push_str("(?:");
+						out.push_str(&inner);
+						out.push(')');
+						i = close + 1;
+					}
+					None => {
+						// Drop the guard (and any quantifier on it).
+						i = skip_quantifier(chars, close + 1);
+					}
+				}
+			}
+			c => {
+				out.push(c);
+				i += 1;
+			}
+		}
+	}
+	Some(out)
+}
+
+/// If `i` starts a lookaround group, its prefix length: `(?=`/`(?!` → 3,
+/// `(?<=`/`(?<!` → 4. Named groups (`(?<name>`) are not lookarounds.
+fn lookaround_len(chars: &[char], i: usize) -> Option<usize> {
+	if chars.get(i) != Some(&'(') || chars.get(i + 1) != Some(&'?') {
+		return None;
+	}
+	match chars.get(i + 2) {
+		Some('=') | Some('!') => Some(3),
+		Some('<') if matches!(chars.get(i + 3), Some('=') | Some('!')) => Some(4),
+		_ => None,
+	}
+}
+
+/// Index of the `)` closing the group opened at `open` (class- and
+/// escape-aware).
+fn matching_paren(chars: &[char], open: usize) -> Option<usize> {
+	let mut depth = 0usize;
+	let mut i = open;
+	while i < chars.len() {
+		match chars[i] {
+			'\\' => i += 1,
+			'[' => {
+				i += 1;
+				if chars.get(i) == Some(&'^') {
+					i += 1;
+				}
+				while i < chars.len() && chars[i] != ']' {
+					if chars[i] == '\\' {
+						i += 1;
+					}
+					i += 1;
+				}
+			}
+			'(' => depth += 1,
+			')' => {
+				depth -= 1;
+				if depth == 0 {
+					return Some(i);
+				}
+			}
+			_ => {}
+		}
+		i += 1;
+	}
+	None
+}
+
+/// Skip a quantifier (`?`, `*`, `+`, `{n[,m]}`) plus a lazy `?` suffix.
+fn skip_quantifier(chars: &[char], mut i: usize) -> usize {
+	match chars.get(i) {
+		Some('?') | Some('*') | Some('+') => i += 1,
+		Some('{') => {
+			let mut j = i + 1;
+			while j < chars.len() && (chars[j].is_ascii_digit() || chars[j] == ',') {
+				j += 1;
+			}
+			if chars.get(j) == Some(&'}') && j > i + 1 {
+				i = j + 1;
+			}
+		}
+		_ => return i,
+	}
+	if chars.get(i) == Some(&'?') {
+		i += 1;
+	}
+	i
+}
+
 impl JsRegex {
 	pub fn new(js_source: &str, flags: &str) -> Result<Self, TranslateError> {
-		let translated = translate(js_source, flags)?;
-		let regex = Regex::new(&translated)
-			.map_err(|error| TranslateError(format!("{error} (from /{js_source}/{flags})")))?;
+		// Prefer the regex crate; its parser rejects fancy features
+		// (lookarounds, backreferences), for which we fall back to
+		// fancy-regex with the lookaround `\b` encoding.
+		let fast = translate_with(js_source, flags, BoundaryStyle::FlagGroup)?;
+		let backend = match regex::Regex::new(&fast) {
+			Ok(regex) => Backend::Fast(regex),
+			Err(_) => {
+				let fancy = translate_with(js_source, flags, BoundaryStyle::Lookaround)?;
+				let regex = fancy_regex::Regex::new(&fancy).map_err(|error| {
+					TranslateError(format!("{error} (from /{js_source}/{flags})"))
+				})?;
+				let prefilter =
+					defancy_prefilter(&fast).and_then(|pattern| regex::Regex::new(&pattern).ok());
+				Backend::Fancy { regex, prefilter }
+			}
+		};
 		Ok(Self {
-			regex,
+			backend,
 			source: js_source.to_string(),
 			group_count: count_capture_groups(js_source),
 		})
+	}
+
+	/// Match span only (no capture materialization) — the regex crate can
+	/// answer this from its DFA engines without capture tracking, so it is
+	/// substantially cheaper than `exec_from` for callers that race
+	/// several regexes and only materialize the winner.
+	pub fn find_from(&self, text: &str, last_index: usize) -> Option<(usize, usize)> {
+		if last_index > text.len() {
+			return None;
+		}
+		match &self.backend {
+			Backend::Fast(regex) => regex
+				.find_at(text, last_index)
+				.map(|m| (m.start(), m.end())),
+			Backend::Fancy { regex, prefilter } => {
+				let from = match prefilter {
+					// Leapfrog: no fancy match can start before the first
+					// prefilter candidate, so start the VM scan there.
+					Some(pre) => match pre.find_at(text, last_index) {
+						Some(candidate) => candidate.start(),
+						None => return None,
+					},
+					None => last_index,
+				};
+				regex
+					.find_from_pos(text, from)
+					.ok()
+					.flatten()
+					.map(|m| (m.start(), m.end()))
+			}
+		}
 	}
 
 	/// `regex.exec(text)` with `lastIndex` semantics (byte offset).
@@ -444,20 +691,39 @@ impl JsRegex {
 		if last_index > text.len() {
 			return None;
 		}
-		let captures = self.regex.captures_from_pos(text, last_index).ok()??;
-		let whole = captures.get(0).expect("group 0 always present");
-		Some(JsMatch {
-			index: whole.start(),
-			end: whole.end(),
-			groups: (0..captures.len())
-				.map(|i| captures.get(i).map(|m| m.as_str().to_string()))
-				.collect(),
-		})
+		match &self.backend {
+			Backend::Fast(regex) => {
+				let captures = regex.captures_at(text, last_index)?;
+				let whole = captures.get(0).expect("group 0 always present");
+				Some(JsMatch {
+					index: whole.start(),
+					end: whole.end(),
+					groups: (0..captures.len())
+						.map(|i| captures.get(i).map(|m| m.as_str().to_string()))
+						.collect(),
+				})
+			}
+			Backend::Fancy { regex, prefilter } => {
+				let from = match prefilter {
+					Some(pre) => pre.find_at(text, last_index)?.start(),
+					None => last_index,
+				};
+				let captures = regex.captures_from_pos(text, from).ok()??;
+				let whole = captures.get(0).expect("group 0 always present");
+				Some(JsMatch {
+					index: whole.start(),
+					end: whole.end(),
+					groups: (0..captures.len())
+						.map(|i| captures.get(i).map(|m| m.as_str().to_string()))
+						.collect(),
+				})
+			}
+		}
 	}
 
 	/// `startsWith`: does the regex match at position 0 of `lexeme`?
 	pub fn starts_with(&self, lexeme: &str) -> bool {
-		matches!(self.exec_from(lexeme, 0), Some(m) if m.index == 0)
+		matches!(self.find_from(lexeme, 0), Some((0, _)))
 	}
 }
 
@@ -514,7 +780,10 @@ mod tests {
 	#[test]
 	fn group_counting() {
 		assert_eq!(count_capture_groups(r"(a)(?:b)(?=c)(?<x>d)[()]"), 2);
-		assert_eq!(count_capture_groups(r"(-?)(\b0[xX][a-fA-F0-9]+|(\b\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)"), 5);
+		assert_eq!(
+			count_capture_groups(r"(-?)(\b0[xX][a-fA-F0-9]+|(\b\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)"),
+			5
+		);
 	}
 
 	#[test]
@@ -530,5 +799,148 @@ mod tests {
 		let re = JsRegex::new(r"end", "").unwrap();
 		assert!(re.starts_with("end of it"));
 		assert!(!re.starts_with("the end"));
+	}
+
+	#[test]
+	fn translate_is_public_and_reports_errors() {
+		assert_eq!(translate(r"\d+\w", "").unwrap(), "[0-9]+[0-9A-Za-z_]");
+		let error = translate("a\\", "").unwrap_err();
+		assert!(error.to_string().contains("trailing backslash"));
+	}
+
+	#[test]
+	fn dot_all_flag() {
+		assert_eq!(m(r"a.b", "s", "a\nb"), Some((0, "a\nb".into())));
+	}
+
+	#[test]
+	fn literal_braces_and_quantifiers() {
+		assert_eq!(m(r"a{2}", "", "caaa"), Some((1, "aa".into())));
+		assert_eq!(m(r"a{2,3}", "", "aaaa"), Some((0, "aaa".into())));
+		assert_eq!(m(r"{x}", "", "a{x}"), Some((1, "{x}".into())));
+		assert_eq!(m(r"a{", "", "a{"), Some((0, "a{".into())));
+		// `}` escaping scans back for an open quantifier brace.
+		assert_eq!(m(r"}1}", "", "}1}"), Some((0, "}1}".into())));
+		assert_eq!(m(r"a1}", "", "a1}"), Some((0, "a1}".into())));
+		assert_eq!(m(r"1}", "", "1}"), Some((0, "1}".into())));
+	}
+
+	#[test]
+	fn class_shorthand_limits() {
+		// Negative shorthands inside classes are unsupported (grammars in the
+		// common set never use them) and must fail loudly.
+		assert!(JsRegex::new(r"[^\D]", "").is_err());
+		assert!(JsRegex::new(r"[^\W]", "").is_err());
+		assert!(JsRegex::new(r"[^\S]", "").is_err());
+		assert!(JsRegex::new(r"[^\B]", "").is_err());
+		assert!(JsRegex::new(r"[a\S]", "").is_err());
+		assert!(JsRegex::new(r"[abc", "").is_err());
+		// Outside classes the negative shorthands work.
+		assert_eq!(m(r"\D", "", "5a"), Some((1, "a".into())));
+		assert_eq!(m(r"\W", "", "a!"), Some((1, "!".into())));
+		assert_eq!(m(r"a\Sb", "", "a b axb"), Some((4, "axb".into())));
+	}
+
+	#[test]
+	fn class_members_and_empty_class() {
+		assert_eq!(m(r"[\b]", "", "a\u{8}"), Some((1, "\u{8}".into())));
+		assert_eq!(m(r"[\s]", "", "x\u{FEFF}"), Some((1, "\u{FEFF}".into())));
+		assert_eq!(m(r"[a[]", "", "["), Some((0, "[".into())));
+		assert_eq!(m(r"[a&]", "", "&"), Some((0, "&".into())));
+		assert_eq!(m(r"[a~]", "", "~"), Some((0, "~".into())));
+		assert_eq!(m(r"[-a]", "", "-"), Some((0, "-".into())));
+		// `[]` matches nothing in JS.
+		assert_eq!(translate(r"x[]y", "").unwrap(), "x[^\\x00-\\x{10FFFF}]y");
+	}
+
+	#[test]
+	fn escape_sequences() {
+		assert_eq!(m(r"é", "", "é"), Some((0, "é".into())));
+		assert_eq!(m("\\u00e9", "", "xé"), Some((1, "é".into())));
+		assert_eq!(m(r"\uq", "", "uq"), Some((0, "uq".into())));
+		assert_eq!(m(r"\x41", "", "A"), Some((0, "A".into())));
+		assert_eq!(m(r"\xZ", "", "xZ"), Some((0, "xZ".into())));
+		assert_eq!(m("a\\0", "", "a\0b"), Some((0, "a\0".into())));
+		assert_eq!(m(r"\v", "", "\u{B}"), Some((0, "\u{B}".into())));
+		assert_eq!(m(r"\cJ", "", "\n"), Some((0, "\n".into())));
+		assert_eq!(m(r"\c1", "", "c1"), Some((0, "c1".into())));
+		assert_eq!(m(r"a\c", "", "ac"), Some((0, "ac".into())));
+		assert_eq!(m(r"\q\y", "", "qy"), Some((0, "qy".into())));
+		assert_eq!(m(r"\p{Lu}+", "u", "abcDEF"), Some((3, "DEF".into())));
+		assert_eq!(m(r"\P{L}", "u", "ab1"), Some((2, "1".into())));
+		assert_eq!(m(r"\pL", "u", "1A"), Some((1, "A".into())));
+	}
+
+	#[test]
+	fn backreferences_via_fancy() {
+		// Numbered backreference: consumed position → no prefilter, still
+		// correct match semantics.
+		let re = JsRegex::new(r"(ab)\1", "").unwrap();
+		assert_eq!(re.find_from("xabab", 0), Some((1, 5)));
+		let found = re.exec_from("xabab", 0).unwrap();
+		assert_eq!(
+			(found.index, found.end, found.groups[1].as_deref()),
+			(1, 5, Some("ab"))
+		);
+		// Named backreference.
+		let re = JsRegex::new(r"(?<w>ab)\k<w>", "").unwrap();
+		assert_eq!(re.find_from("abab", 0), Some((0, 4)));
+	}
+
+	#[test]
+	fn boundary_fallback_encoding() {
+		// A lookaround forces the fancy backend, which needs the explicit
+		// lookaround encoding of \b/\B.
+		let re = JsRegex::new(r"\Bnd(?=\s)", "").unwrap();
+		assert_eq!(re.find_from("end of", 0), Some((1, 3)));
+		let re = JsRegex::new(r"\bof(?=f)", "").unwrap();
+		assert_eq!(re.find_from("x off", 0), Some((2, 4)));
+	}
+
+	#[test]
+	fn prefilter_shapes() {
+		// Trailing lookahead becomes a sequenced prefilter.
+		let re = JsRegex::new(r"a(?=b)", "").unwrap();
+		assert_eq!(re.find_from("xxab", 0), Some((2, 3)));
+		assert_eq!(re.exec_from("xxab", 0).map(|m| m.index), Some(2));
+		assert!(re.exec_from("xxa", 0).is_none());
+		// Mid-pattern guard is dropped (start superset stays sound).
+		let re = JsRegex::new(r"a(?=b).", "").unwrap();
+		assert_eq!(re.find_from("ab", 0), Some((0, 2)));
+		// Lookbehind is dropped.
+		let re = JsRegex::new(r"(?<=a)b", "").unwrap();
+		assert_eq!(re.find_from("xxab", 0), Some((3, 4)));
+		// A pure guard leaves an empty prefilter → none; scanning still works.
+		let re = JsRegex::new(r"(?!a)", "").unwrap();
+		assert_eq!(re.find_from("ab", 0), Some((1, 1)));
+		// A class containing literal "(?=" is not treated as a group.
+		let re = JsRegex::new(r"[(?=]a(?=b)", "").unwrap();
+		assert_eq!(re.find_from("q?ab", 0), Some((1, 3)));
+	}
+
+	#[test]
+	fn defancy_internals() {
+		fn dc(pattern: &str) -> Option<String> {
+			defancy(&pattern.chars().collect::<Vec<char>>())
+		}
+		// Quantified lookarounds are dropped together with their quantifier.
+		assert_eq!(dc("a(?!b)*c").as_deref(), Some("ac"));
+		assert_eq!(dc("a(?!b)*?c").as_deref(), Some("ac"));
+		assert_eq!(dc("a(?!b){2,3}c").as_deref(), Some("ac"));
+		// Unbalanced lookaround / trailing backslash: no prefilter.
+		assert_eq!(dc("(?=a"), None);
+		assert_eq!(dc("a\\"), None);
+	}
+
+	#[test]
+	fn find_from_bounds() {
+		let re = JsRegex::new("a", "").unwrap();
+		assert!(re.find_from("aa", 5).is_none());
+	}
+
+	#[test]
+	fn double_parse_failure_reports_source() {
+		let error = JsRegex::new(r"(?=a", "").unwrap_err();
+		assert!(error.to_string().contains("(?=a"));
 	}
 }

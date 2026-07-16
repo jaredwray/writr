@@ -6,7 +6,7 @@
 //! `writr-rust` engine.
 
 use writr_conformance::{
-	corpus_goldens, diagnostic_goldens, harness_dir, load_allowlist, profile, check,
+	check, corpus_goldens, diagnostic_goldens, harness_dir, load_allowlist, profile,
 };
 
 const ENGINE: &str = "writr-rust";
@@ -29,7 +29,10 @@ fn run_profile(profile_name: &str) {
 	let total = goldens.len();
 	for golden in &goldens {
 		if let Some(report) = check(golden, &profile.options) {
-			if allowlist.matches(ENGINE, profile_name, &golden.id).is_some() {
+			if allowlist
+				.matches(ENGINE, profile_name, &golden.id)
+				.is_some()
+			{
 				allowed += 1;
 				continue;
 			}

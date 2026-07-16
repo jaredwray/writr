@@ -22,6 +22,16 @@ export interface RenderOptions {
   caching?: boolean
 }
 
+/**
+ * Render many documents under the same options — across all cores on
+ * native builds (order preserved). This is the highest-throughput path
+ * for multi-document workloads.
+ */
+export declare function renderBatch(inputs: Array<string>, options?: RenderOptions | undefined | null): Array<string>
+
+/** `renderBatch`, computed off the main thread. */
+export declare function renderBatchAsync(inputs: Array<string>, options?: RenderOptions | undefined | null): Promise<Array<string>>
+
 /** Parse markdown to mdast, returned as a JSON string. */
 export declare function renderToMdast(input: string, options?: RenderOptions | undefined | null): string
 

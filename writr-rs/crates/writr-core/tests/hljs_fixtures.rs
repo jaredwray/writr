@@ -56,14 +56,13 @@ fn corpus_fences_match_lowlight() {
 			// Clamp to char boundaries for slicing.
 			let clamp = |s: &str, i: usize| {
 				let mut i = i.min(s.len());
-				while i > 0 && !s.is_char_boundary(i) { i -= 1; }
+				while i > 0 && !s.is_char_boundary(i) {
+					i -= 1;
+				}
 				i
 			};
 			let (ef, af) = (clamp(&fixture.html, from), clamp(&actual, from));
-			let (et, at2) = (
-				clamp(&fixture.html, at + 80),
-				clamp(&actual, at + 80),
-			);
+			let (et, at2) = (clamp(&fixture.html, at + 80), clamp(&actual, at + 80));
 			failures.push(format!(
 				"[{} #{}]\n  expected: …{}…\n  actual:   …{}…",
 				fixture.lang,
@@ -84,8 +83,4 @@ fn corpus_fences_match_lowlight() {
 			failures[..shown].join("\n\n")
 		);
 	}
-}
-
-fn preview(html: &str) -> &str {
-	&html[..html.len().min(240)]
 }

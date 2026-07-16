@@ -4,12 +4,17 @@
 
 use crate::compile::{CompiledLanguage, CompiledScope, RuleKind, SubLanguage};
 use crate::raw::Callback;
-use crate::registry;
 use crate::regex_js::JsMatch;
+use crate::registry;
 use crate::tree::{Emitter, HlNode};
-use std::collections::HashMap;
+// FxHashMap: the engine's maps are keyed by small integers/short strings
+// and are on the tokenizer hot path — SipHash showed up in profiles.
+use rustc_hash::FxHashMap as HashMap;
 
 const MAX_KEYWORD_HITS: usize = 7;
+
+/// Per-(mode, rule) probe memo: (position searched from, match span).
+type RuleMemo = HashMap<(usize, usize), (usize, Option<(usize, usize)>)>;
 
 /// Saved mode stack for sub-language continuations (compiled-mode indexes,
 /// `[0]` is the language root).
@@ -82,6 +87,11 @@ struct Engine<'a> {
 	keyword_hits: HashMap<String, usize>,
 	/// Per-mode matcher rotation (`regexIndex`).
 	regex_index: HashMap<usize, usize>,
+	/// Per-(mode, rule) match-span memo: (position searched from, span). A
+	/// cached span stays valid for any later query position at or before
+	/// the cached match's start, so each rule scans the code roughly once
+	/// per run instead of once per union exec.
+	rule_memo: RuleMemo,
 	/// Per-mode callback data (`END_SAME_AS_BEGIN`'s `_beginMatch`).
 	mode_data: HashMap<usize, Option<String>>,
 	/// Sub-language continuations by language name.
@@ -101,10 +111,11 @@ impl<'a> Engine<'a> {
 			stack: vec![language.root],
 			mode_buffer: String::new(),
 			relevance: 0.0,
-			keyword_hits: HashMap::new(),
-			regex_index: HashMap::new(),
-			mode_data: HashMap::new(),
-			continuations: HashMap::new(),
+			keyword_hits: HashMap::default(),
+			regex_index: HashMap::default(),
+			rule_memo: HashMap::default(),
+			mode_data: HashMap::default(),
+			continuations: HashMap::default(),
 			resume_same_position: false,
 			last_begin_index: None,
 			ignore_illegals,
@@ -169,40 +180,93 @@ impl<'a> Engine<'a> {
 	}
 
 	/// `ResumableMultiRegex.exec`.
+	///
+	/// The JS engine compiles `rules[index..]` into one `(a)|(b)|…` union
+	/// and scans with `lastIndex`. Here each rule races individually
+	/// (leftmost match wins, ties broken by rule order — exactly the
+	/// union's alternation semantics) so simple rules run on the regex
+	/// crate's automata engines even when a sibling rule needs
+	/// fancy-regex's backtracking VM.
 	fn exec_matcher(&mut self, last_index: usize) -> Option<MatchEvent> {
 		let top_index = self.top_index();
 		let matcher = &self.language.modes[top_index].matcher;
 		if matcher.rules.is_empty() {
 			return None;
 		}
-		let regex_index = (*self.regex_index.get(&top_index).unwrap_or(&0))
-			.min(matcher.rules.len() - 1);
+		let regex_index =
+			(*self.regex_index.get(&top_index).unwrap_or(&0)).min(matcher.rules.len() - 1);
 		let resuming = regex_index != 0;
 
-		let multi = matcher.matcher_at(regex_index);
 		let mut base = regex_index;
-		let mut result = multi.regex.exec_from(self.code, last_index);
+		let mut result = self.race(top_index, regex_index, last_index);
 
 		if resuming {
 			let take_second = match &result {
-				Some(m) => m.index != last_index,
+				Some((_, start)) => *start != last_index,
 				None => true,
 			};
 			if take_second {
-				let full = matcher.matcher_at(0);
 				base = 0;
-				result = full.regex.exec_from(self.code, last_index + 1);
+				result = self.race(top_index, 0, last_index + 1);
 			}
 		}
 
-		let m = result?;
-		let event = to_event(matcher, base, &m);
+		let (position, start) = result?;
+		let matcher = &self.language.modes[top_index].matcher;
+		// Materialize captures for the winner only. Re-running from the
+		// match's own start yields the identical (leftmost-first) match.
+		let m = matcher
+			.rule_at(base + position)
+			.exec_from(self.code, start)
+			.expect("winner re-exec matches");
+		let event = to_event(matcher, base, position, &m);
 		let next = base + event.position + 1;
 		self.regex_index.insert(
 			top_index,
 			if next == matcher.begin_count { 0 } else { next },
 		);
 		Some(event)
+	}
+
+	/// Race `rules[base..]` from `from`: leftmost match, ties to the
+	/// earliest-listed rule. Returns the winning rule's offset within the
+	/// slice and its match start.
+	fn race(&mut self, mode: usize, base: usize, from: usize) -> Option<(usize, usize)> {
+		let rule_count = self.language.modes[mode].matcher.rules.len();
+		let mut best: Option<(usize, usize)> = None;
+		for position in 0..rule_count - base {
+			if let Some((start, _)) = self.rule_probe(mode, base + position, from) {
+				if best.is_none_or(|(_, b)| start < b) {
+					best = Some((position, start));
+				}
+				// A match at `from` itself cannot be beaten by later rules.
+				if start == from {
+					break;
+				}
+			}
+		}
+		best
+	}
+
+	/// One rule's `find_from` (span only), memoized per run (see
+	/// `rule_memo`).
+	fn rule_probe(&mut self, mode: usize, rule: usize, from: usize) -> Option<(usize, usize)> {
+		let key = (mode, rule);
+		if let Some((searched_from, cached)) = self.rule_memo.get(&key) {
+			if *searched_from <= from {
+				match cached {
+					None => return None,
+					Some(span) if span.0 >= from => return Some(*span),
+					_ => {}
+				}
+			}
+		}
+		let result = self.language.modes[mode]
+			.matcher
+			.rule_at(rule)
+			.find_from(self.code, from);
+		self.rule_memo.insert(key, (from, result));
+		result
 	}
 
 	fn process_lexeme(&mut self, text_before: &str, event: Option<&MatchEvent>) -> usize {
@@ -303,8 +367,9 @@ impl<'a> Engine<'a> {
 				.chars()
 				.next()
 				.map(char::len_utf8)
-				.unwrap_or_else(|| next_char_len_at_least_one());
-			self.mode_buffer.push_str(&lexeme[..advance.min(lexeme.len())]);
+				.unwrap_or_else(next_char_len_at_least_one);
+			self.mode_buffer
+				.push_str(&lexeme[..advance.min(lexeme.len())]);
 			advance.max(1)
 		} else {
 			self.resume_same_position = true;
@@ -483,7 +548,10 @@ impl<'a> Engine<'a> {
 			self.mode_buffer = buffer;
 			return;
 		}
-		let buffer = self.mode_buffer.clone();
+		// Take (not clone) the buffer: the caller clears it right after, and
+		// the keyword pattern below borrows the language while we build
+		// emissions, so `self` must not hold the borrow.
+		let buffer = std::mem::take(&mut self.mode_buffer);
 		let mut last_index = 0usize;
 		let mut out = String::new();
 		// Collect emissions first (pattern exec borrows the language).
@@ -493,12 +561,14 @@ impl<'a> Engine<'a> {
 			let mode = &self.language.modes[top_index];
 			let keywords = mode.keywords.as_ref().expect("checked above");
 			let pattern = &mode.keyword_pattern;
-			while let Some(m) = pattern.exec_from(&buffer, last_index) {
-				if m.end == m.index {
+			// Span-only scanning: the keyword pattern's captures are never
+			// consulted, and `find_from` avoids capture tracking entirely.
+			while let Some((start, end)) = pattern.find_from(&buffer, last_index) {
+				if end == start {
 					break; // zero-width guard
 				}
-				out.push_str(&buffer[last_index..m.index]);
-				let matched = m.text().to_string();
+				out.push_str(&buffer[last_index..start]);
+				let matched = buffer[start..end].to_string();
 				let word = if self.language.case_insensitive {
 					matched.to_lowercase()
 				} else {
@@ -520,7 +590,7 @@ impl<'a> Engine<'a> {
 				} else {
 					out.push_str(&matched);
 				}
-				last_index = m.end;
+				last_index = end;
 			}
 		}
 		out.push_str(&buffer[last_index.min(buffer.len())..]);
@@ -640,45 +710,272 @@ fn js_is_truly_opening_tag(code: &str, event: &MatchEvent) -> bool {
 fn is_js_ws(c: char) -> bool {
 	matches!(
 		c,
-		'\t' | '\n'
-			| '\u{000B}' | '\u{000C}' | '\r' | ' '
-			| '\u{00A0}' | '\u{1680}'
-			| '\u{2000}'..='\u{200A}'
-			| '\u{2028}' | '\u{2029}' | '\u{202F}' | '\u{205F}' | '\u{3000}'
-			| '\u{FEFF}'
+		'\t' | '\n' | '\u{000B}' | '\u{000C}' | '\r' | ' ' | '\u{00A0}' | '\u{1680}' | '\u{2000}'
+			..='\u{200A}'
+				| '\u{2028}' | '\u{2029}'
+				| '\u{202F}' | '\u{205F}'
+				| '\u{3000}' | '\u{FEFF}'
 	)
 }
 
 fn next_char_len(code: &str, index: usize) -> usize {
-	code[index..].chars().next().map(char::len_utf8).unwrap_or(1)
+	code[index..]
+		.chars()
+		.next()
+		.map(char::len_utf8)
+		.unwrap_or(1)
 }
 
 fn next_char_len_at_least_one() -> usize {
 	1
 }
 
-fn to_event(matcher: &crate::compile::Matcher, base: usize, m: &JsMatch) -> MatchEvent {
-	let multi = matcher.matcher_at(base);
-	for &(group_start, position, group_count) in &multi.match_at {
-		if m.groups.get(group_start).cloned().flatten().is_some() {
-			let rule = &matcher.rules[base + position];
-			let groups: Vec<Option<String>> = (group_start..=group_start + group_count)
-				.map(|i| m.groups.get(i).cloned().flatten())
-				.collect();
-			return MatchEvent {
-				kind: rule.kind,
-				index: m.index,
-				groups,
-				position,
-			};
-		}
-	}
-	// Unreachable in practice: the winning alternative's wrapper group
-	// always participates (possibly as an empty string).
+fn to_event(
+	matcher: &crate::compile::Matcher,
+	base: usize,
+	position: usize,
+	m: &JsMatch,
+) -> MatchEvent {
+	// The rule regex is wrapped (`(rule)`) like the JS union wraps every
+	// alternative, so groups[1] is the wrapper and groups[2..] the rule's
+	// own captures — the same layout the union's `matchAt` slice produced.
+	let rule = &matcher.rules[base + position];
 	MatchEvent {
-		kind: matcher.rules[base].kind,
+		kind: rule.kind,
 		index: m.index,
-		groups: vec![Some(String::new())],
-		position: 0,
+		groups: m.groups[1..].to_vec(),
+		position,
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::compile::{CompiledLanguage, Compiler};
+	use crate::raw::WorkingArena;
+
+	fn lang(json: &str) -> CompiledLanguage {
+		Compiler::compile(WorkingArena::from_json(json), "synthetic")
+	}
+
+	fn spans(nodes: &[HlNode]) -> String {
+		let mut out = String::new();
+		for node in nodes {
+			match node {
+				HlNode::Text(value) => out.push_str(value),
+				HlNode::Span {
+					class_names,
+					children,
+				} => {
+					out.push_str(&format!("<{}>", class_names.join(" ")));
+					out.push_str(&spans(children));
+					out.push_str("</>");
+				}
+			}
+		}
+		out
+	}
+
+	fn flat(nodes: &[HlNode]) -> String {
+		let mut out = String::new();
+		for node in nodes {
+			match node {
+				HlNode::Text(value) => out.push_str(value),
+				HlNode::Span { children, .. } => out.push_str(&flat(children)),
+			}
+		}
+		out
+	}
+
+	#[test]
+	fn zero_width_begin_then_end_consumes_a_character() {
+		// SAFE_MODE escape: a zero-width begin immediately followed by a
+		// zero-width end at the same index writes one raw character through.
+		let language = lang(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"scope":"strong","begin":"(?=a)","end":"(?=a)"}]"#,
+		);
+		let result = highlight(&language, "xa y", None);
+		assert_eq!(flat(&result.root), "xa y");
+		assert_eq!(spans(&result.root), "x<hljs-strong>a y</>");
+	}
+
+	#[test]
+	fn zero_width_illegal_appends_literal_newline() {
+		// ignoreIllegals + zero-width illegal: upstream advances one char and
+		// appends a literal "\n" (which also lands after the final char).
+		let language = lang(r#"[{"illegal":"$"}]"#);
+		let result = highlight(&language, "a\nb", None);
+		assert_eq!(flat(&result.root), "a\nb\n");
+	}
+
+	#[test]
+	fn ignored_begin_resumes_at_same_position() {
+		// shebang-begin ignores matches away from index 0; the first rule is
+		// not the last begin rule, so the matcher resumes rotated, finds
+		// nothing, and re-scans from the next position.
+		let language = lang(
+			r#"[{"contains":[{"$ref":1},{"$ref":2}]},
+			    {"scope":"strong","begin":"q","on:begin":{"$callback":"shebang-begin"}},
+			    {"scope":"emphasis","begin":"z"}]"#,
+		);
+		let result = highlight(&language, "aq", None);
+		assert_eq!(spans(&result.root), "aq");
+
+		// Same, but the rotated re-scan finds a later match and falls back to
+		// the full rule set one character further on.
+		let result = highlight(&language, "aqz", None);
+		assert_eq!(spans(&result.root), "aq<hljs-emphasis>z</>");
+
+		// At index 0 the shebang callback accepts the match (the mode then
+		// closes at the default \B|\b terminator right after the lexeme).
+		let result = highlight(&language, "q!", None);
+		assert_eq!(spans(&result.root), "<hljs-strong>q</>!");
+	}
+
+	#[test]
+	fn ignored_zero_width_begin_at_rotation_reset() {
+		// The ignored rule is the last begin rule, so regexIndex wraps to 0
+		// and doIgnore consumes one character; with an empty lexeme there is
+		// nothing to write through (upstream would append "undefined").
+		let language = lang(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"scope":"strong","begin":"(?=z)","on:begin":{"$callback":"shebang-begin"}}]"#,
+		);
+		let result = highlight(&language, "az", None);
+		assert_eq!(spans(&result.root), "a");
+	}
+
+	#[test]
+	fn ends_with_parent_chain_stops_at_root() {
+		// END_SAME_AS_BEGIN rejects the mismatched end; endsWithParent then
+		// walks to the root frame, which never ends.
+		let language = lang(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"scope":"strong","begin":"<(\\w+)>","end":"<(\\w+)>","endsWithParent":true,
+			     "on:begin":{"$callback":"end-same-as-begin:begin"},
+			     "on:end":{"$callback":"end-same-as-begin:end"}}]"#,
+		);
+		let result = highlight(&language, "<a>mid<b>end<a>tail", None);
+		assert_eq!(flat(&result.root), "<a>mid<b>end<a>tail");
+		assert_eq!(spans(&result.root), "<hljs-strong><a>mid<b>end<a></>tail");
+	}
+
+	#[test]
+	fn multi_scope_skips_non_participating_groups() {
+		let language = lang(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"scope":{"1":"title","2":"literal"},"match":"(a)(x)?"}]"#,
+		);
+		let result = highlight(&language, "a.", None);
+		assert_eq!(spans(&result.root), "<hljs-title>a</>.");
+		let result = highlight(&language, "ax.", None);
+		assert_eq!(spans(&result.root), "<hljs-title>a</><hljs-literal>x</>.");
+	}
+
+	#[test]
+	fn unregistered_sub_language_falls_back_to_text() {
+		let language = lang(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"begin":"a","end":"b","subLanguage":"nosuchlang"}]"#,
+		);
+		let result = highlight(&language, "a x b", None);
+		assert_eq!(spans(&result.root), "a x b");
+	}
+
+	#[test]
+	fn zero_width_keyword_match_breaks_scan() {
+		let language = lang(r#"[{"keywords":{"$pattern":"\\w*","keyword":"kw"}}]"#);
+		let result = highlight(&language, "kw x", None);
+		assert_eq!(spans(&result.root), "<hljs-keyword>kw</> x");
+	}
+
+	#[test]
+	fn auto_detection_aborts_on_illegal_and_keeps_baseline() {
+		// json's `\S` illegal aborts the candidate (ignoreIllegals: false);
+		// unknown subset names are skipped; the plain-text baseline wins.
+		let subset = vec!["json".to_string(), "nosuchlang".to_string()];
+		let (result, name) = highlight_auto(&subset, "!!!");
+		assert!(name.is_none());
+		assert_eq!(result.relevance, 0.0);
+		assert_eq!(flat(&result.root), "!!!");
+	}
+
+	#[test]
+	fn auto_detection_picks_the_best_candidate() {
+		let (result, name) = highlight_auto(&["css".to_string()], ".x{color:red}");
+		assert_eq!(name.as_deref(), Some("css"));
+		assert!(result.relevance > 0.0);
+	}
+
+	#[test]
+	fn skip_modes_buffer_their_content() {
+		// skip on begin and end: the lexemes stay in the surrounding buffer
+		// and the skipped mode contributes no relevance or scope.
+		let language = lang(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"scope":"strong","begin":"q","end":"e","contains":[{"$ref":2}]},
+			    {"begin":"x","end":"y","skip":true}]"#,
+		);
+		let result = highlight(&language, "q axyb e.", None);
+		assert_eq!(flat(&result.root), "q axyb e.");
+		assert_eq!(spans(&result.root), "<hljs-strong>q axyb e</>.");
+	}
+
+	#[test]
+	fn exclude_begin_and_end_move_delimiters_outside() {
+		let language = lang(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"scope":"strong","begin":"<","end":">","excludeBegin":true,"excludeEnd":true}]"#,
+		);
+		let result = highlight(&language, "a<b>c", None);
+		assert_eq!(flat(&result.root), "a<b>c");
+		assert_eq!(spans(&result.root), "a<<hljs-strong>b</>>c");
+	}
+
+	#[test]
+	fn return_begin_reprocesses_the_lexeme() {
+		let language = lang(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"scope":"strong","begin":"ab","end":"d","returnBegin":true,"contains":[{"$ref":2}]},
+			    {"scope":"emphasis","begin":"a"}]"#,
+		);
+		let result = highlight(&language, "abcd.", None);
+		assert_eq!(flat(&result.root), "abcd.");
+		assert_eq!(
+			spans(&result.root),
+			"<hljs-strong><hljs-emphasis>a</>bcd</>."
+		);
+	}
+
+	#[test]
+	fn empty_begin_scope_wrap_emits_nothing() {
+		let language = lang(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"begin":"(?=q)","beginScope":"title","end":"z"}]"#,
+		);
+		let result = highlight(&language, "qz.", None);
+		assert_eq!(spans(&result.root), "qz.");
+	}
+
+	#[test]
+	fn underscore_keyword_scopes_emit_plain_text() {
+		let language = lang(r#"[{"keywords":{"_hidden":"foo","keyword":"kw"}}]"#);
+		let result = highlight(&language, "foo kw", None);
+		assert_eq!(spans(&result.root), "foo <hljs-keyword>kw</>");
+	}
+
+	#[test]
+	fn empty_sub_language_buffer_is_skipped() {
+		// excludeBegin flushes the begin lexeme to the parent and returnEnd
+		// leaves the end lexeme unconsumed, so the sub-language buffer is
+		// empty when the mode ends.
+		let language = lang(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"begin":"a","end":"b","excludeBegin":true,"returnEnd":true,
+			     "subLanguage":"nosuchlang"}]"#,
+		);
+		let result = highlight(&language, "ab c", None);
+		assert_eq!(spans(&result.root), "ab c");
 	}
 }

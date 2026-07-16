@@ -175,7 +175,12 @@ fn insert_into_list(list: &mut mdast::List, depth: usize, id: String, children: 
 
 /// `insert()` for list items: descend into a trailing list, creating one
 /// when needed (depth decreases by one either way).
-fn insert_into_item(item: &mut mdast::ListItem, depth: usize, id: String, children: Vec<mdast::Node>) {
+fn insert_into_item(
+	item: &mut mdast::ListItem,
+	depth: usize,
+	id: String,
+	children: Vec<mdast::Node>,
+) {
 	if let Some(mdast::Node::List(tail)) = item.children.last_mut() {
 		insert_into_list(tail, depth - 1, id, children);
 	} else {
@@ -215,14 +220,45 @@ mod tests {
 	#[test]
 	fn heading_expression_matches() {
 		for value in [
-			"toc", "TOC", "Toc", "contents", "Contents", "content",
-			"Table of Contents", "table-of-contents", "Table of-Content",
+			"toc",
+			"TOC",
+			"Toc",
+			"contents",
+			"Contents",
+			"content",
+			"Table of Contents",
+			"table-of-contents",
+			"Table of-Content",
 			"TABLE-OF CONTENTS",
 		] {
 			assert!(heading_matches(value), "{value} should match");
 		}
-		for value in ["toc!", " toc", "the contents", "table of stuff", "tocx", "table ofcontents"] {
+		for value in [
+			"toc!",
+			" toc",
+			"the contents",
+			"table of stuff",
+			"tocx",
+			"table ofcontents",
+		] {
 			assert!(!heading_matches(value), "{value} should not match");
 		}
+	}
+
+	#[test]
+	fn non_root_trees_are_left_alone() {
+		// remark-toc only ever receives a root; the guard simply returns.
+		let mut tree = mdast::Node::Text(mdast::Text {
+			value: "toc".into(),
+			position: None,
+		});
+		transform(&mut tree);
+		assert_eq!(
+			tree,
+			mdast::Node::Text(mdast::Text {
+				value: "toc".into(),
+				position: None,
+			})
+		);
 	}
 }

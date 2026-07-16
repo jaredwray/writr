@@ -86,6 +86,52 @@ pub fn validate(input: String, options: Option<RenderOptions>) -> Result<()> {
 	writr_core::validate(&input, &to_core(options)).map_err(map_error)
 }
 
+fn batch(inputs: &[String], options: &writr_core::RenderOptions) -> Result<Vec<String>> {
+	writr_core::render_batch(inputs, options)
+		.into_iter()
+		.collect::<std::result::Result<Vec<_>, _>>()
+		.map_err(map_error)
+}
+
+/// Render many documents under the same options — across all cores on
+/// native builds (order preserved). This is the highest-throughput path
+/// for multi-document workloads.
+#[napi]
+pub fn render_batch(inputs: Vec<String>, options: Option<RenderOptions>) -> Result<Vec<String>> {
+	batch(&inputs, &to_core(options))
+}
+
+pub struct RenderBatchTask {
+	inputs: Vec<String>,
+	options: writr_core::RenderOptions,
+}
+
+#[napi]
+impl Task for RenderBatchTask {
+	type Output = Vec<String>;
+	type JsValue = Vec<String>;
+
+	fn compute(&mut self) -> Result<Vec<String>> {
+		batch(&self.inputs, &self.options)
+	}
+
+	fn resolve(&mut self, _env: Env, output: Vec<String>) -> Result<Vec<String>> {
+		Ok(output)
+	}
+}
+
+/// `renderBatch`, computed off the main thread.
+#[napi]
+pub fn render_batch_async(
+	inputs: Vec<String>,
+	options: Option<RenderOptions>,
+) -> AsyncTask<RenderBatchTask> {
+	AsyncTask::new(RenderBatchTask {
+		inputs,
+		options: to_core(options),
+	})
+}
+
 /// Parse markdown to mdast, returned as a JSON string.
 #[napi]
 pub fn render_to_mdast(input: String, options: Option<RenderOptions>) -> Result<String> {

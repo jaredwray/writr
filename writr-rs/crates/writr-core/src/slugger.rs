@@ -64,7 +64,10 @@ mod tests {
 	#[test]
 	fn matches_github_slugger() {
 		assert_eq!(slug_once("Hello World"), "hello-world");
-		assert_eq!(slug_once("Hello, World! (Punctuation)"), "hello-world-punctuation");
+		assert_eq!(
+			slug_once("Hello, World! (Punctuation)"),
+			"hello-world-punctuation"
+		);
 		assert_eq!(slug_once("Café Über Ünïcode"), "café-über-ünïcode");
 		assert_eq!(slug_once("Launch 🚀"), "launch-");
 		assert_eq!(slug_once("Launch :rocket:"), "launch-rocket");

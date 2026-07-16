@@ -5,9 +5,9 @@
 pub mod from_mdast;
 #[cfg(feature = "highlight")]
 pub mod highlight;
-pub mod property_info;
 #[cfg(feature = "math")]
 pub mod katex;
+pub mod property_info;
 #[cfg(any(feature = "raw-html", feature = "math"))]
 pub mod raw;
 pub mod slug;

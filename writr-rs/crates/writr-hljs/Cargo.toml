@@ -9,5 +9,7 @@ description = "highlight.js 11.11.1 engine port for writr-rs — byte-compatible
 
 [dependencies]
 fancy-regex = "0.16"
+regex = "1"
+rustc-hash = "2"
 serde = { workspace = true }
 serde_json = { workspace = true }

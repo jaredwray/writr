@@ -63,7 +63,11 @@ pub fn at_break(tokenizer: &mut Tokenizer) -> State {
 pub fn inside(tokenizer: &mut Tokenizer) -> State {
     if let Some(byte) = tokenizer.current {
         if byte != b'\n' && !tokenizer.tokenize_state.markers.contains(&byte) {
-            tokenizer.consume();
+            // WRITR-RS PATCH (perf): consume the whole plain run at once
+            // instead of one state-machine round trip per byte. Stops at
+            // markers, `\n`, and the bytes `byte_action` treats specially
+            // (`\r`, `\t`), so per-byte semantics are unchanged.
+            tokenizer.consume_data_run();
             return State::Next(StateName::DataInside);
         }
     }

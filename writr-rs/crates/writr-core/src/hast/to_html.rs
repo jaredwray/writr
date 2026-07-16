@@ -11,8 +11,8 @@ use crate::js;
 
 /// `html-void-elements@3.0.0`.
 const VOID_ELEMENTS: &[&str] = &[
-	"area", "base", "basefont", "bgsound", "br", "col", "command", "embed", "frame", "hr",
-	"image", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr",
+	"area", "base", "basefont", "bgsound", "br", "col", "command", "embed", "frame", "hr", "image",
+	"img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr",
 ];
 
 /// Subset escaped in text nodes.
@@ -76,23 +76,18 @@ fn serialize_element(output: &mut String, node: &Element, space: Space, options:
 	} else {
 		space
 	};
-	let mut self_closing =
-		space == Space::Html && VOID_ELEMENTS.contains(&node.tag_name.to_lowercase().as_str());
+	let self_closing = space == Space::Html
+		&& VOID_ELEMENTS
+			.iter()
+			.any(|void| void.eq_ignore_ascii_case(&node.tag_name));
 
 	let attributes = serialize_attributes(&node.properties, child_space);
 
-	let mut content = String::new();
 	let children = if child_space == Space::Html && node.tag_name == "template" {
 		node.template_content.as_deref().unwrap_or(&node.children)
 	} else {
 		&node.children
 	};
-	all(&mut content, children, Some(node), child_space, options);
-
-	// A void element with actual content is serialized with a closing tag.
-	if !content.is_empty() {
-		self_closing = false;
-	}
 
 	output.push('<');
 	output.push_str(&node.tag_name);
@@ -103,8 +98,13 @@ fn serialize_element(output: &mut String, node: &Element, space: Space, options:
 	// With defaults (`closeSelfClosing: false`, SVG `closeEmptyElements:
 	// false`) no ` /` is ever emitted before `>`.
 	output.push('>');
-	output.push_str(&content);
-	if !self_closing {
+	// Serialize children straight into the parent buffer (no per-level
+	// copy); "did this element have content" falls out of the length.
+	let content_start = output.len();
+	all(output, children, Some(node), child_space, options);
+	let had_content = output.len() > content_start;
+	// A void element with actual content is serialized with a closing tag.
+	if !self_closing || had_content {
 		output.push_str("</");
 		output.push_str(&node.tag_name);
 		output.push('>');
@@ -317,7 +317,10 @@ mod tests {
 		let mut input = element("input", vec![]);
 		input.push_property("checked", false);
 		input.push_property("tabIndex", f64::NAN);
-		assert_eq!(to_html(&Node::Element(input), Options::default()), "<input>");
+		assert_eq!(
+			to_html(&Node::Element(input), Options::default()),
+			"<input>"
+		);
 	}
 
 	#[test]
@@ -400,6 +403,105 @@ mod tests {
 
 	#[test]
 	fn doctype_serializes_lowercase() {
-		assert_eq!(to_html(&Node::Doctype, Options::default()), "<!doctype html>");
+		assert_eq!(
+			to_html(&Node::Doctype, Options::default()),
+			"<!doctype html>"
+		);
+	}
+
+	// Expectations below are verbatim hast-util-to-html@9.0.5 outputs on the
+	// same trees.
+
+	#[test]
+	fn comma_separated_properties_join_with_commas() {
+		// JS: `<input accept=".jpg, .png">` (comma-separated-tokens
+		// stringify with `padLeft`).
+		let mut input = element("input", vec![]);
+		input.push_property("accept", vec![".jpg".to_string(), ".png".to_string()]);
+		assert_eq!(
+			to_html(&Node::Element(input), Options::default()),
+			"<input accept=\".jpg, .png\">"
+		);
+
+		// Interior empty entries survive: JS `<input accept="a, , b">`.
+		let mut input = element("input", vec![]);
+		input.push_property(
+			"accept",
+			vec!["a".to_string(), String::new(), "b".to_string()],
+		);
+		assert_eq!(
+			to_html(&Node::Element(input), Options::default()),
+			"<input accept=\"a, , b\">"
+		);
+	}
+
+	#[test]
+	fn overloaded_boolean_download() {
+		let a = |value: PropertyValue| {
+			let mut a = element("a", vec![]);
+			a.properties.push(("download".to_string(), value));
+			to_html(&Node::Element(a), Options::default())
+		};
+		// JS: value === attribute or '' → bare attribute.
+		assert_eq!(
+			a(PropertyValue::String("download".into())),
+			"<a download></a>"
+		);
+		assert_eq!(a(PropertyValue::String(String::new())), "<a download></a>");
+		// Any other string is kept.
+		assert_eq!(
+			a(PropertyValue::String("file.txt".into())),
+			"<a download=\"file.txt\"></a>"
+		);
+		// Non-strings coerce via `Boolean(value)`.
+		assert_eq!(a(PropertyValue::Bool(true)), "<a download></a>");
+		assert_eq!(a(PropertyValue::Number(0.0)), "<a></a>");
+		assert_eq!(
+			a(PropertyValue::List(vec!["x".into(), "y".into()])),
+			"<a download></a>"
+		);
+	}
+
+	#[test]
+	fn boolean_properties_coerce_like_js() {
+		let input = |value: PropertyValue| {
+			let mut input = element("input", vec![]);
+			input.properties.push(("checked".to_string(), value));
+			to_html(&Node::Element(input), Options::default())
+		};
+		// Strings equal to the attribute name (or empty) coerce to boolean…
+		assert_eq!(
+			input(PropertyValue::String("checked".into())),
+			"<input checked>"
+		);
+		assert_eq!(input(PropertyValue::String(String::new())), "<input>");
+		// …while any other string is kept verbatim (JS `<input checked="yes">`).
+		assert_eq!(
+			input(PropertyValue::String("yes".into())),
+			"<input checked=\"yes\">"
+		);
+		// Numbers and lists use JS truthiness (`Boolean([])` is true).
+		assert_eq!(input(PropertyValue::Number(0.0)), "<input>");
+		assert_eq!(input(PropertyValue::Number(7.0)), "<input checked>");
+		assert_eq!(input(PropertyValue::List(Vec::new())), "<input checked>");
+	}
+
+	#[test]
+	fn comments_encode_leading_and_bang_sequences() {
+		// JS: `<!---&#x3E;x-->` and `<!--a--!&#x3E;b-->`.
+		assert_eq!(
+			to_html(&Node::Comment("->x".into()), Options::default()),
+			"<!---&#x3E;x-->"
+		);
+		assert_eq!(
+			to_html(&Node::Comment("a--!>b".into()), Options::default()),
+			"<!--a--!&#x3E;b-->"
+		);
+		// Multi-byte characters pass through untouched: JS
+		// `<!--héé💯&#x3C;!--->`.
+		assert_eq!(
+			to_html(&Node::Comment("héé💯<!-".into()), Options::default()),
+			"<!--héé💯&#x3C;!--->"
+		);
 	}
 }

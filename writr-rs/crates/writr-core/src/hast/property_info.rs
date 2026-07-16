@@ -59,7 +59,13 @@ impl Info<'_> {
 	}
 }
 
-fn tables(space: Space) -> (&'static [(&'static str, &'static str)], &'static [(&'static str, &'static str, u8)]) {
+/// Per-space lookup tables: (normal names, property definitions).
+type SpaceTables = (
+	&'static [(&'static str, &'static str)],
+	&'static [(&'static str, &'static str, u8)],
+);
+
+fn tables(space: Space) -> SpaceTables {
 	match space {
 		Space::Html => (HTML_NORMAL, HTML_PROPERTIES),
 		Space::Svg => (SVG_NORMAL, SVG_PROPERTIES),
@@ -88,9 +94,9 @@ fn is_valid_data_name(value: &str) -> bool {
 	if bytes.len() <= 4 || !bytes[..4].eq_ignore_ascii_case(b"data") {
 		return false;
 	}
-	bytes[4..].iter().all(|&b| {
-		b == b'-' || b == b'.' || b == b':' || b == b'_' || b.is_ascii_alphanumeric()
-	})
+	bytes[4..]
+		.iter()
+		.all(|&b| b == b'-' || b == b'.' || b == b':' || b == b'_' || b.is_ascii_alphanumeric())
 }
 
 /// Port of property-information's `find(schema, value)`.
@@ -244,5 +250,84 @@ mod tests {
 		assert_eq!(data.attribute, "data");
 		// Invalid data name characters fall through to unknown.
 		assert!(!find(Space::Html, "data-foo!bar").defined);
+	}
+
+	#[test]
+	fn value_flags_match_property_information() {
+		// booleanish: serialized with an explicit value ("true"/"false").
+		let editable = find(Space::Html, "contentEditable");
+		assert_eq!(editable.attribute, "contenteditable");
+		assert!(editable.booleanish());
+		assert!(!editable.boolean());
+
+		// overloaded boolean: `download` on `<a>`.
+		let download = find(Space::Html, "download");
+		assert!(download.overloaded_boolean());
+		assert!(!download.boolean());
+
+		// numbers and comma lists.
+		assert!(find(Space::Html, "rows").number());
+		assert!(find(Space::Html, "tabIndex").number());
+		assert!(find(Space::Html, "accept").comma_separated());
+		assert!(!find(Space::Html, "accept").space_separated());
+		let charset = find(Space::Html, "acceptCharset");
+		assert_eq!(charset.attribute, "accept-charset");
+		assert!(charset.space_separated());
+		// SVG `kernelMatrix` is comma-or-space separated.
+		let kernel = find(Space::Svg, "kernelMatrix");
+		assert!(kernel.flags & COMMA_OR_SPACE_SEPARATED != 0);
+	}
+
+	#[test]
+	fn data_names_with_mixed_dashes() {
+		// A dash followed by a non-lowercase character stays literal; the
+		// following `-b` still camel-cases (property-information's
+		// `/-[a-z]/g` replacement): `data-foo--bar` → `dataFoo-Bar`.
+		let info = find(Space::Html, "data-foo--bar");
+		assert_eq!(info.property, "dataFoo-Bar");
+		assert_eq!(info.attribute, "data-foo--bar");
+		assert!(info.defined);
+
+		// Property-style names containing `-<lowercase>` keep the attribute
+		// as-is (the `dash.test(rest)` guard).
+		let info = find(Space::Html, "dataFoo-bar");
+		assert_eq!(info.property, "dataFoo-bar");
+		assert_eq!(info.attribute, "dataFoo-bar");
+		assert!(info.defined);
+
+		// `.` and `:` are valid data-name characters.
+		let info = find(Space::Html, "data-a.b:c");
+		assert_eq!(info.property, "dataA.b:c");
+		assert_eq!(info.attribute, "data-a.b:c");
+		assert!(info.defined);
+	}
+
+	#[test]
+	fn data_name_validity() {
+		// `/^data[-\w.:]+$/i` needs `data` plus at least one more character.
+		assert!(!is_valid_data_name("data"));
+		assert!(!is_valid_data_name("dat"));
+		assert!(!is_valid_data_name("xata-y"));
+		assert!(is_valid_data_name("DATA-Y"));
+
+		// A trailing dash has nothing to camel-case: `data-x-` → `dataX-`
+		// (property-information's `/-[a-z]/g` finds no match in `x-`).
+		let info = find(Space::Html, "data-x-");
+		assert_eq!(info.property, "dataX-");
+		assert_eq!(info.attribute, "data-x-");
+		assert!(info.defined);
+	}
+
+	#[test]
+	fn svg_namespaced_attributes() {
+		let xlink = find(Space::Svg, "xlink:href");
+		assert_eq!(xlink.property, "xLinkHref");
+		assert_eq!(xlink.attribute, "xlink:href");
+
+		// Unknown names keep their case in both spaces.
+		let unknown = find(Space::Svg, "BOGUS-Attr");
+		assert_eq!(unknown.property, "BOGUS-Attr");
+		assert_eq!(unknown.attribute, "BOGUS-Attr");
+		assert!(!unknown.defined);
 	}
 }

@@ -37,9 +37,7 @@ fn collect(node: &Node, top_level: bool, out: &mut String) {
 /// `h1`–`h6` rank check (hast-util-heading-rank).
 fn is_heading(tag_name: &str) -> bool {
 	let bytes = tag_name.as_bytes();
-	bytes.len() == 2
-		&& (bytes[0] == b'h' || bytes[0] == b'H')
-		&& (b'1'..=b'6').contains(&bytes[1])
+	bytes.len() == 2 && (bytes[0] == b'h' || bytes[0] == b'H') && (b'1'..=b'6').contains(&bytes[1])
 }
 
 /// Add `id`s to headings that lack one.
@@ -60,7 +58,9 @@ fn visit(node: &mut Node, slugger: &mut Slugger) {
 					out
 				};
 				let slug = slugger.slug(&value);
-				element.properties.push(("id".into(), PropertyValue::String(slug)));
+				element
+					.properties
+					.push(("id".into(), PropertyValue::String(slug)));
 			}
 			for child in &mut element.children {
 				visit(child, slugger);
@@ -100,15 +100,25 @@ mod tests {
 	#[test]
 	fn slugs_headings_and_dedupes() {
 		let mut tree = Node::Root(vec![
-			Node::Element(Element::with_children("h1", vec![Node::text("Hello World")])),
+			Node::Element(Element::with_children(
+				"h1",
+				vec![Node::text("Hello World")],
+			)),
 			Node::Element(Element::with_children("h2", vec![Node::text("Duplicate")])),
 			Node::Element(Element::with_children("h2", vec![Node::text("Duplicate")])),
-			Node::Element(Element::with_children("p", vec![Node::text("not a heading")])),
+			Node::Element(Element::with_children(
+				"p",
+				vec![Node::text("not a heading")],
+			)),
 		]);
 		transform(&mut tree);
-		let Node::Root(children) = &tree else { unreachable!() };
+		let Node::Root(children) = &tree else {
+			unreachable!()
+		};
 		let id = |index: usize| -> Option<&PropertyValue> {
-			let Node::Element(el) = &children[index] else { unreachable!() };
+			let Node::Element(el) = &children[index] else {
+				unreachable!()
+			};
 			el.property("id")
 		};
 		assert_eq!(id(0), Some(&PropertyValue::String("hello-world".into())));
@@ -123,8 +133,63 @@ mod tests {
 		heading.push_property("id", "custom");
 		let mut tree = Node::Root(vec![Node::Element(heading)]);
 		transform(&mut tree);
-		let Node::Root(children) = &tree else { unreachable!() };
-		let Node::Element(el) = &children[0] else { unreachable!() };
-		assert_eq!(el.property("id"), Some(&PropertyValue::String("custom".into())));
+		let Node::Root(children) = &tree else {
+			unreachable!()
+		};
+		let Node::Element(el) = &children[0] else {
+			unreachable!()
+		};
+		assert_eq!(
+			el.property("id"),
+			Some(&PropertyValue::String("custom".into()))
+		);
+	}
+
+	#[test]
+	fn to_string_matches_hast_util_to_string() {
+		// hast-util-to-string@3: at the top level any node's `value` counts;
+		// nested, only text values do.
+		assert_eq!(to_string(&Node::text("plain")), "plain");
+		assert_eq!(
+			to_string(&Node::Comment("top comment".into())),
+			"top comment"
+		);
+		assert_eq!(to_string(&Node::Raw("<raw>".into())), "<raw>");
+		assert_eq!(to_string(&Node::Doctype), "");
+
+		let tree = Node::Root(vec![
+			Node::Element(Element::with_children(
+				"p",
+				vec![
+					Node::text("a"),
+					Node::Comment("nested comment".into()),
+					Node::Element(Element::with_children("b", vec![Node::text("b")])),
+				],
+			)),
+			Node::Doctype,
+			Node::text("c"),
+		]);
+		assert_eq!(to_string(&tree), "abc");
+	}
+
+	#[test]
+	fn id_truthiness_follows_js() {
+		// rehype-slug's guard is `!node.properties.id` — JS truthiness.
+		let with_id = |value: PropertyValue| {
+			let mut element = Element::new("h1");
+			element.properties.push(("id".to_string(), value));
+			element
+		};
+		assert!(!has_truthy_id(&Element::new("h1")));
+		assert!(!has_truthy_id(&with_id(PropertyValue::String(
+			String::new()
+		))));
+		assert!(has_truthy_id(&with_id(PropertyValue::String("x".into()))));
+		assert!(!has_truthy_id(&with_id(PropertyValue::Bool(false))));
+		assert!(has_truthy_id(&with_id(PropertyValue::Bool(true))));
+		assert!(!has_truthy_id(&with_id(PropertyValue::Number(0.0))));
+		assert!(!has_truthy_id(&with_id(PropertyValue::Number(f64::NAN))));
+		assert!(has_truthy_id(&with_id(PropertyValue::Number(3.0))));
+		assert!(has_truthy_id(&with_id(PropertyValue::List(Vec::new()))));
 	}
 }

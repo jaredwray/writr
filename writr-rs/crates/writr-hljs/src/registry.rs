@@ -95,9 +95,11 @@ pub fn get(name: &str) -> Option<&'static CompiledLanguage> {
 	let registry = registry();
 	let index = *registry.lookup.get(&name.to_lowercase())?;
 	let entry = &registry.entries[index];
-	Some(entry.compiled.get_or_init(|| {
-		Compiler::compile(WorkingArena::from_json(entry.json), entry.name)
-	}))
+	Some(
+		entry
+			.compiled
+			.get_or_init(|| Compiler::compile(WorkingArena::from_json(entry.json), entry.name)),
+	)
 }
 
 /// `lowlight.registered`.

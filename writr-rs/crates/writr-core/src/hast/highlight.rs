@@ -108,10 +108,7 @@ fn highlight_code(element: &mut Element) {
 
 	// Ensure a class list exists and unshift `hljs` (before the try —
 	// unregistered languages keep the class, matching upstream).
-	let has_class_list = matches!(
-		element.property("className"),
-		Some(PropertyValue::List(_))
-	);
+	let has_class_list = matches!(element.property("className"), Some(PropertyValue::List(_)));
 	if !has_class_list {
 		element.push_property("className", Vec::<String>::new());
 	}

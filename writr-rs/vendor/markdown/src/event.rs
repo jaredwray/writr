@@ -1024,6 +1024,8 @@ pub enum Name {
     /// > | mailto:context@example.com
     ///     ^^^^^^^^^^^^^^^^^^^^^^^^^^
     /// ```
+    // WRITR-RS PATCH: no longer constructed (see gfm_autolink_literal.rs).
+    #[allow(dead_code)]
     GfmAutolinkLiteralMailto,
     /// GFM extension: autolink w/ protocol.
     ///

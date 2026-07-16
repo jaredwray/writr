@@ -168,17 +168,11 @@ mod tests {
 		);
 		// `:x:` IS an emoji (❌) — the shared colon is consumed, so the
 		// remainder no longer forms a shortcode.
-		assert_eq!(
-			replaced(":x:dog:"),
-			Some(vec!["❌".into(), "dog:".into()])
-		);
+		assert_eq!(replaced(":x:dog:"), Some(vec!["❌".into(), "dog:".into()]));
 	}
 
 	#[test]
 	fn adjacent_shortcodes() {
-		assert_eq!(
-			replaced(":dog::cat:"),
-			Some(vec!["🐶".into(), "🐱".into()])
-		);
+		assert_eq!(replaced(":dog::cat:"), Some(vec!["🐶".into(), "🐱".into()]));
 	}
 }

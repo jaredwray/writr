@@ -17,8 +17,9 @@ fn setup_wasi_single_thread() {
 		.ok()
 		.map(PathBuf::from)
 		.unwrap_or_else(|| {
-			let manifest =
-				PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("cargo sets CARGO_MANIFEST_DIR"));
+			let manifest = PathBuf::from(
+				env::var("CARGO_MANIFEST_DIR").expect("cargo sets CARGO_MANIFEST_DIR"),
+			);
 			manifest.join("node_modules/emnapi/lib/wasm32-wasi")
 		});
 	assert!(

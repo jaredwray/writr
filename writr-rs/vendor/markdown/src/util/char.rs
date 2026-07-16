@@ -5,7 +5,8 @@ use alloc::{format, string::String};
 use core::str;
 
 /// Character kinds.
-#[derive(Debug, PartialEq, Eq)]
+// WRITR-RS PATCH (perf): Clone + Copy for the ASCII lookup table.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
     /// Whitespace.
     ///
@@ -88,12 +89,20 @@ pub fn kind_after_index(bytes: &[u8], index: usize) -> Kind {
 ///
 /// * [`micromark-util-classify-character` in `micromark`](https://github.com/micromark/micromark/blob/main/packages/micromark-util-classify-character/dev/index.js)
 pub fn classify(char: char) -> Kind {
+    // WRITR-RS PATCH (perf): ASCII fast path. The original checks
+    // `is_whitespace`, `is_ascii_punctuation`, then linearly scans the
+    // ~140-entry `PUNCTUATION` table — so classifying a plain ASCII letter
+    // walked the whole table. The table below encodes the identical
+    // decisions for ASCII; non-ASCII falls through to the original logic.
+    if (char as u32) < 128 {
+        return ASCII_KIND[char as usize];
+    }
     // Unicode whitespace.
     if char.is_whitespace() {
         Kind::Whitespace
     }
     // Unicode punctuation.
-    else if char.is_ascii_punctuation() || PUNCTUATION.contains(&char) {
+    else if PUNCTUATION.contains(&char) {
         Kind::Punctuation
     }
     // Everything else.
@@ -101,6 +110,41 @@ pub fn classify(char: char) -> Kind {
         Kind::Other
     }
 }
+
+/// WRITR-RS PATCH (perf): `classify` results for ASCII, matching
+/// `char::is_whitespace` and `char::is_ascii_punctuation` exactly.
+const ASCII_KIND: [Kind; 128] = {
+    let mut table = [Kind::Other; 128];
+    // ASCII whitespace per `char::is_whitespace`.
+    table[0x09] = Kind::Whitespace; // \t
+    table[0x0A] = Kind::Whitespace; // \n
+    table[0x0B] = Kind::Whitespace; // vertical tab
+    table[0x0C] = Kind::Whitespace; // form feed
+    table[0x0D] = Kind::Whitespace; // \r
+    table[0x20] = Kind::Whitespace; // space
+    // `char::is_ascii_punctuation`: !-/, :-@, [-`, {-~.
+    let mut i = 0x21;
+    while i <= 0x2F {
+        table[i] = Kind::Punctuation;
+        i += 1;
+    }
+    i = 0x3A;
+    while i <= 0x40 {
+        table[i] = Kind::Punctuation;
+        i += 1;
+    }
+    i = 0x5B;
+    while i <= 0x60 {
+        table[i] = Kind::Punctuation;
+        i += 1;
+    }
+    i = 0x7B;
+    while i <= 0x7E {
+        table[i] = Kind::Punctuation;
+        i += 1;
+    }
+    table
+};
 
 /// Like [`classify`], but supports eof as whitespace.
 pub fn classify_opt(char_opt: Option<char>) -> Kind {

@@ -61,8 +61,7 @@ fn walk(children: &mut Vec<Node>, parent_tag: Option<&str>) {
 					// the pre's parent level below via the code check).
 					let mut display_mode = math_display;
 					let mut scope_is_this = true;
-					if element.tag_name == "code" && language_math && parent_tag == Some("pre")
-					{
+					if element.tag_name == "code" && language_math && parent_tag == Some("pre") {
 						// The parent <pre> is the scope; handled one level up
 						// (when iterating the pre's parent). Skip here — the
 						// pre-level pass below replaces it.
@@ -121,8 +120,24 @@ fn walk(children: &mut Vec<Node>, parent_tag: Option<&str>) {
 }
 
 fn render(value: &str, display_mode: bool) -> Vec<Node> {
-	match writr_katex::render_math(value, display_mode) {
-		Ok(html) => super::raw::parse_fragment(&html),
-		Err(error) => vec![error_span(value, &error)],
+	// writr-katex memoizes (formula, display) → HTML string; memoize the
+	// html5ever parse of that string too — KaTeX output is deterministic,
+	// so repeated formulas cost one clone instead of a fragment parse.
+	thread_local! {
+		static PARSED: std::cell::RefCell<std::collections::HashMap<(String, bool), Vec<Node>>> =
+			std::cell::RefCell::new(std::collections::HashMap::new());
 	}
+	PARSED.with(|cache| {
+		if let Some(nodes) = cache.borrow().get(&(value.to_string(), display_mode)) {
+			return nodes.clone();
+		}
+		let nodes = match writr_katex::render_math(value, display_mode) {
+			Ok(html) => super::raw::parse_fragment(&html),
+			Err(error) => vec![error_span(value, &error)],
+		};
+		cache
+			.borrow_mut()
+			.insert((value.to_string(), display_mode), nodes.clone());
+		nodes
+	})
 }

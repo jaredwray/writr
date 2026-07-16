@@ -161,19 +161,19 @@ impl<'a> State<'a> {
 
 	fn one(&mut self, node: &'a mdast::Node, parent: Parent<'a>, index: usize) -> OneResult {
 		match node {
-			mdast::Node::Root(_) => {
-				OneResult::One(Node::Root(wrap(self.all_of(node), false)))
-			}
-			mdast::Node::Paragraph(_) => {
-				OneResult::One(Node::Element(Element::with_children("p", self.all_of(node))))
-			}
+			mdast::Node::Root(_) => OneResult::One(Node::Root(wrap(self.all_of(node), false))),
+			mdast::Node::Paragraph(_) => OneResult::One(Node::Element(Element::with_children(
+				"p",
+				self.all_of(node),
+			))),
 			mdast::Node::Heading(heading) => {
 				let tag = format!("h{}", heading.depth);
-				OneResult::One(Node::Element(Element::with_children(&tag, self.all_of(node))))
+				OneResult::One(Node::Element(Element::with_children(
+					&tag,
+					self.all_of(node),
+				)))
 			}
-			mdast::Node::ThematicBreak(_) => {
-				OneResult::One(Node::Element(Element::new("hr")))
-			}
+			mdast::Node::ThematicBreak(_) => OneResult::One(Node::Element(Element::new("hr"))),
 			mdast::Node::Blockquote(_) => self.blockquote(node),
 			mdast::Node::List(list) => OneResult::One(self.list(node, list)),
 			mdast::Node::ListItem(item) => OneResult::One(self.list_item(node, item, parent)),
@@ -186,20 +186,22 @@ impl<'a> State<'a> {
 			}
 			mdast::Node::Code(code) => OneResult::One(self.code(code)),
 			mdast::Node::InlineCode(code) => OneResult::One(inline_code(code)),
-			mdast::Node::Emphasis(_) => {
-				OneResult::One(Node::Element(Element::with_children("em", self.all_of(node))))
-			}
-			mdast::Node::Strong(_) => {
-				OneResult::One(Node::Element(Element::with_children("strong", self.all_of(node))))
-			}
-			mdast::Node::Delete(_) => {
-				OneResult::One(Node::Element(Element::with_children("del", self.all_of(node))))
-			}
+			mdast::Node::Emphasis(_) => OneResult::One(Node::Element(Element::with_children(
+				"em",
+				self.all_of(node),
+			))),
+			mdast::Node::Strong(_) => OneResult::One(Node::Element(Element::with_children(
+				"strong",
+				self.all_of(node),
+			))),
+			mdast::Node::Delete(_) => OneResult::One(Node::Element(Element::with_children(
+				"del",
+				self.all_of(node),
+			))),
 			mdast::Node::Text(text) => OneResult::One(Node::Text(trim_lines(&text.value))),
-			mdast::Node::Break(_) => OneResult::Many(vec![
-				Node::Element(Element::new("br")),
-				Node::newline(),
-			]),
+			mdast::Node::Break(_) => {
+				OneResult::Many(vec![Node::Element(Element::new("br")), Node::newline()])
+			}
 			mdast::Node::Link(link) => {
 				let mut element = Element::with_children("a", self.all_of(node));
 				element.properties = link_properties("href", &link.url, link.title.as_deref());
@@ -223,7 +225,10 @@ impl<'a> State<'a> {
 			mdast::Node::TableRow(_) => OneResult::One(self.table_row(node, parent, index)),
 			mdast::Node::TableCell(_) => {
 				// Normally unreachable (rows compile their own cells).
-				OneResult::One(Node::Element(Element::with_children("td", self.all_of(node))))
+				OneResult::One(Node::Element(Element::with_children(
+					"td",
+					self.all_of(node),
+				)))
 			}
 			mdast::Node::Math(math) => OneResult::One(block_math(math)),
 			mdast::Node::InlineMath(math) => OneResult::One(inline_math(math)),
@@ -439,8 +444,7 @@ impl<'a> State<'a> {
 		let mut children: Vec<Node> = Vec::new();
 		let result_count = results.len();
 		for (index, child) in results.into_iter().enumerate() {
-			let is_paragraph =
-				matches!(&child, Node::Element(el) if el.tag_name == "p");
+			let is_paragraph = matches!(&child, Node::Element(el) if el.tag_name == "p");
 			// Add eols before nodes, except before a tight first paragraph.
 			if loose || index != 0 || !is_paragraph {
 				children.push(Node::newline());
@@ -473,16 +477,15 @@ impl<'a> State<'a> {
 			if !lang.is_empty() {
 				// JS: `node.lang.split(/\s+/)` and take the first segment —
 				// which is `""` when the string starts with JS whitespace.
-				let first = lang
-					.split(crate::js::is_js_whitespace)
-					.next()
-					.unwrap_or("");
-				code_element
-					.push_property("className", vec![format!("language-{first}")]);
+				let first = lang.split(crate::js::is_js_whitespace).next().unwrap_or("");
+				code_element.push_property("className", vec![format!("language-{first}")]);
 			}
 		}
 		code_element.children = vec![Node::Text(value)];
-		Node::Element(Element::with_children("pre", vec![Node::Element(code_element)]))
+		Node::Element(Element::with_children(
+			"pre",
+			vec![Node::Element(code_element)],
+		))
 	}
 
 	fn link_reference(
@@ -495,8 +498,7 @@ impl<'a> State<'a> {
 			return OneResult::Many(self.revert_link(node, reference));
 		};
 		let mut element = Element::with_children("a", self.all_of(node));
-		element.properties =
-			link_properties("href", &definition.url, definition.title.as_deref());
+		element.properties = link_properties("href", &definition.url, definition.title.as_deref());
 		OneResult::One(Node::Element(element))
 	}
 
@@ -506,7 +508,11 @@ impl<'a> State<'a> {
 			return OneResult::One(Node::Text(format!(
 				"![{}{}",
 				reference.alt,
-				revert_suffix(&reference.reference_kind, reference.label.as_deref(), &reference.identifier)
+				revert_suffix(
+					&reference.reference_kind,
+					reference.label.as_deref(),
+					&reference.identifier
+				)
 			)));
 		};
 		let mut element = Element::new("img");
@@ -718,10 +724,7 @@ impl<'a> State<'a> {
 							format!("Back to reference {}", reference_index + 1)
 						},
 					);
-					anchor.push_property(
-						"className",
-						vec!["data-footnote-backref".to_string()],
-					);
+					anchor.push_property("className", vec!["data-footnote-backref".to_string()]);
 					anchor.children = children;
 					back_references.push(Node::Element(anchor));
 				}
@@ -831,11 +834,7 @@ const OCTICON_CAUTION: &str = "M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.
 // Stateless helpers
 // ---------------------------------------------------------------------------
 
-fn link_properties(
-	href_key: &str,
-	url: &str,
-	title: Option<&str>,
-) -> Vec<(String, PropertyValue)> {
+fn link_properties(href_key: &str, url: &str, title: Option<&str>) -> Vec<(String, PropertyValue)> {
 	let mut properties = vec![(
 		href_key.to_string(),
 		PropertyValue::String(normalize_uri(url)),
@@ -846,11 +845,7 @@ fn link_properties(
 	properties
 }
 
-fn revert_suffix(
-	kind: &mdast::ReferenceKind,
-	label: Option<&str>,
-	identifier: &str,
-) -> String {
+fn revert_suffix(kind: &mdast::ReferenceKind, label: Option<&str>, identifier: &str) -> String {
 	match kind {
 		mdast::ReferenceKind::Shortcut => "]".to_string(),
 		mdast::ReferenceKind::Collapsed => "][]".to_string(),
@@ -1074,5 +1069,257 @@ mod tests {
 			inline_code(&code),
 			Node::Element(Element::with_children("code", vec![Node::text("a b c d")]))
 		);
+	}
+
+	// The tests below feed hand-built mdast into `from_mdast` for shapes the
+	// markdown parser cannot emit (undefined references, bare table/list
+	// nodes, …). Every expectation is the verbatim output of the JS pair
+	// mdast-util-to-hast@13.2.1 + hast-util-to-html@9.0.5 on the same tree.
+
+	fn html_of(tree: &mdast::Node) -> String {
+		let hast = from_mdast(tree, Options::default());
+		crate::hast::to_html::to_html(&hast, crate::hast::to_html::Options::default())
+	}
+
+	fn text_node(value: &str) -> mdast::Node {
+		mdast::Node::Text(mdast::Text {
+			value: value.into(),
+			position: None,
+		})
+	}
+
+	fn paragraph_of(children: Vec<mdast::Node>) -> mdast::Node {
+		mdast::Node::Paragraph(mdast::Paragraph {
+			children,
+			position: None,
+		})
+	}
+
+	fn link_reference(
+		kind: mdast::ReferenceKind,
+		identifier: &str,
+		label: Option<&str>,
+		children: Vec<mdast::Node>,
+	) -> mdast::Node {
+		mdast::Node::LinkReference(mdast::LinkReference {
+			children,
+			position: None,
+			reference_kind: kind,
+			identifier: identifier.into(),
+			label: label.map(str::to_string),
+		})
+	}
+
+	#[test]
+	fn link_reference_without_definition_reverts() {
+		// JS: `<p>[alpha][Foo]</p>`
+		let tree = paragraph_of(vec![link_reference(
+			mdast::ReferenceKind::Full,
+			"foo",
+			Some("Foo"),
+			vec![text_node("alpha")],
+		)]);
+		assert_eq!(html_of(&tree), "<p>[alpha][Foo]</p>");
+
+		// Collapsed reference whose content is not text: JS
+		// `<p>[<code>c</code>][]</p>`.
+		let code = mdast::Node::InlineCode(mdast::InlineCode {
+			value: "c".into(),
+			position: None,
+		});
+		let tree = paragraph_of(vec![link_reference(
+			mdast::ReferenceKind::Collapsed,
+			"x",
+			Some("x"),
+			vec![code],
+		)]);
+		assert_eq!(html_of(&tree), "<p>[<code>c</code>][]</p>");
+
+		// Shortcut with no content: JS `<p>[]</p>`.
+		let tree = paragraph_of(vec![link_reference(
+			mdast::ReferenceKind::Shortcut,
+			"s",
+			Some("s"),
+			Vec::new(),
+		)]);
+		assert_eq!(html_of(&tree), "<p>[]</p>");
+
+		// Full reference with an empty label falls back to the identifier:
+		// JS `<p>[k][idz]</p>`.
+		let tree = paragraph_of(vec![link_reference(
+			mdast::ReferenceKind::Full,
+			"idz",
+			Some(""),
+			vec![text_node("k")],
+		)]);
+		assert_eq!(html_of(&tree), "<p>[k][idz]</p>");
+	}
+
+	#[test]
+	fn image_reference_without_definition_reverts() {
+		let image_reference = |kind, identifier: &str, label: Option<&str>, alt: &str| {
+			mdast::Node::ImageReference(mdast::ImageReference {
+				position: None,
+				alt: alt.into(),
+				reference_kind: kind,
+				identifier: identifier.into(),
+				label: label.map(str::to_string),
+			})
+		};
+		// JS: `<p>![ALT][Img]</p>`, `<p>![A2]</p>`, `<p>![A3][]</p>`.
+		let tree = paragraph_of(vec![image_reference(
+			mdast::ReferenceKind::Full,
+			"img",
+			Some("Img"),
+			"ALT",
+		)]);
+		assert_eq!(html_of(&tree), "<p>![ALT][Img]</p>");
+		let tree = paragraph_of(vec![image_reference(
+			mdast::ReferenceKind::Shortcut,
+			"im2",
+			None,
+			"A2",
+		)]);
+		assert_eq!(html_of(&tree), "<p>![A2]</p>");
+		let tree = paragraph_of(vec![image_reference(
+			mdast::ReferenceKind::Collapsed,
+			"im3",
+			None,
+			"A3",
+		)]);
+		assert_eq!(html_of(&tree), "<p>![A3][]</p>");
+	}
+
+	#[test]
+	fn bare_table_nodes_convert_without_a_table_parent() {
+		// A `tableCell` handled directly (rows normally compile their own
+		// cells): JS `<td>cell</td>`.
+		let cell = mdast::Node::TableCell(mdast::TableCell {
+			children: vec![text_node("cell")],
+			position: None,
+		});
+		assert_eq!(html_of(&cell), "<td>cell</td>");
+
+		// A `tableRow` without a parent renders as a body row (`td`, no
+		// alignment): JS `<tr>\n<td>c1</td>\n<td>c2</td>\n</tr>`.
+		let row = mdast::Node::TableRow(mdast::TableRow {
+			children: vec![
+				mdast::Node::TableCell(mdast::TableCell {
+					children: vec![text_node("c1")],
+					position: None,
+				}),
+				mdast::Node::TableCell(mdast::TableCell {
+					children: vec![text_node("c2")],
+					position: None,
+				}),
+			],
+			position: None,
+		});
+		assert_eq!(html_of(&row), "<tr>\n<td>c1</td>\n<td>c2</td>\n</tr>");
+	}
+
+	#[test]
+	fn bare_list_item_uses_its_own_spread() {
+		let item = |spread| {
+			mdast::Node::ListItem(mdast::ListItem {
+				children: vec![paragraph_of(vec![text_node(if spread {
+					"loose"
+				} else {
+					"item"
+				})])],
+				position: None,
+				spread,
+				checked: None,
+			})
+		};
+		// JS: `<li>item</li>` (tight) and `<li>\n<p>loose</p>\n</li>`.
+		assert_eq!(html_of(&item(false)), "<li>item</li>");
+		assert_eq!(html_of(&item(true)), "<li>\n<p>loose</p>\n</li>");
+	}
+
+	#[test]
+	fn non_element_results_at_the_root() {
+		// A bare break returns multiple nodes — the root wraps them:
+		// JS `<br>\n`.
+		let tree = mdast::Node::Break(mdast::Break { position: None });
+		assert_eq!(html_of(&tree), "<br>\n");
+
+		// A definition produces nothing: JS ``.
+		let tree = mdast::Node::Definition(mdast::Definition {
+			position: None,
+			url: "u".into(),
+			title: None,
+			identifier: "d".into(),
+			label: None,
+		});
+		assert_eq!(html_of(&tree), "");
+	}
+
+	#[test]
+	fn footnote_reference_without_definition_gets_no_footer() {
+		let tree = mdast::Node::Root(mdast::Root {
+			children: vec![paragraph_of(vec![mdast::Node::FootnoteReference(
+				mdast::FootnoteReference {
+					position: None,
+					identifier: "nope".into(),
+					label: None,
+				},
+			)])],
+			position: None,
+		});
+		// JS: the call renders, the footer section is skipped entirely.
+		assert_eq!(
+			html_of(&tree),
+			"<p><sup><a href=\"#user-content-fn-nope\" id=\"user-content-fnref-nope\" data-footnote-ref aria-describedby=\"footnote-label\">1</a></sup></p>"
+		);
+	}
+
+	#[test]
+	fn checked_item_without_head_paragraph_gets_one() {
+		// The parser only sets `checked` when same-line content follows (which
+		// always yields a head paragraph), so these shapes are construction-
+		// only. JS injects a fresh paragraph for the checkbox:
+		// `<li class="task-list-item"><input type="checkbox" checked disabled>\n<blockquote>\n<p>q</p>\n</blockquote>\n</li>`
+		// and `<li class="task-list-item"><input type="checkbox" disabled></li>`.
+		let item = mdast::Node::ListItem(mdast::ListItem {
+			children: vec![mdast::Node::Blockquote(mdast::Blockquote {
+				children: vec![paragraph_of(vec![text_node("q")])],
+				position: None,
+			})],
+			position: None,
+			spread: false,
+			checked: Some(true),
+		});
+		assert_eq!(
+			html_of(&item),
+			"<li class=\"task-list-item\"><input type=\"checkbox\" checked disabled>\n<blockquote>\n<p>q</p>\n</blockquote>\n</li>"
+		);
+
+		let empty = mdast::Node::ListItem(mdast::ListItem {
+			children: Vec::new(),
+			position: None,
+			spread: false,
+			checked: Some(false),
+		});
+		assert_eq!(
+			html_of(&empty),
+			"<li class=\"task-list-item\"><input type=\"checkbox\" disabled></li>"
+		);
+	}
+
+	#[test]
+	fn mdxjs_esm_falls_back_to_text() {
+		// The unknown-node handler turns value-carrying nodes into text
+		// (markdown-rs cannot currently emit `MdxjsEsm`, so this shape is
+		// reachable only by construction): JS `import a from 'b'`.
+		let tree = mdast::Node::Root(mdast::Root {
+			children: vec![mdast::Node::MdxjsEsm(mdast::MdxjsEsm {
+				value: "import a from 'b'".into(),
+				position: None,
+				stops: Vec::new(),
+			})],
+			position: None,
+		});
+		assert_eq!(html_of(&tree), "import a from 'b'");
 	}
 }

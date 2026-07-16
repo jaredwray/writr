@@ -60,10 +60,7 @@ mod tests {
 	fn highlights_json() {
 		let result = highlight("json", "{\"a\": true}\n").unwrap();
 		let rendered = spans(&result);
-		assert!(
-			rendered.contains("<hljs-attr>\"a\"</>"),
-			"got: {rendered}"
-		);
+		assert!(rendered.contains("<hljs-attr>\"a\"</>"), "got: {rendered}");
 		assert!(
 			rendered.contains("<hljs-literal>") && rendered.contains("true"),
 			"got: {rendered}"
@@ -85,4 +82,3 @@ mod tests {
 		assert!(highlight("nonexistlang", "x").is_none());
 	}
 }
-

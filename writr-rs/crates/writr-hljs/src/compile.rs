@@ -7,7 +7,8 @@
 use crate::raw::{Callback, Contained, ReSpec, ReValue, ScopeValue, WorkingArena, WorkingMode};
 use crate::regex_js::{count_capture_groups, JsRegex};
 use serde_json::Value;
-use std::collections::HashMap;
+// FxHashMap to match the engine (keyword lookups are per-token hot).
+use rustc_hash::FxHashMap as HashMap;
 use std::sync::OnceLock;
 
 /// Keywords that default to zero relevance.
@@ -46,42 +47,28 @@ pub struct MatcherRule {
 	pub kind: RuleKind,
 }
 
-/// A compiled `(a)|(b)|(c)` multi-regex for one resume offset.
-pub struct MultiMatcher {
-	pub regex: JsRegex,
-	/// Map from first-group index → (rule position within this matcher,
-	/// rule's own capture-group count).
-	pub match_at: Vec<(usize, usize, usize)>,
-}
-
-/// ResumableMultiRegex: rules plus lazily-built offset matchers.
+/// ResumableMultiRegex: rules with individually compiled regexes. The JS
+/// engine joins `rules[index..]` into one `(a)|(b)|…` union per resume
+/// offset; the engine here races the per-rule regexes instead (same
+/// leftmost-first semantics), so each rule pays only its own regex
+/// complexity.
 pub struct Matcher {
 	pub rules: Vec<MatcherRule>,
 	/// Count of `begin` rules (rotation wrap threshold).
 	pub begin_count: usize,
-	variants: Vec<OnceLock<MultiMatcher>>,
+	per_rule: Vec<OnceLock<JsRegex>>,
 	flags: String,
 }
 
 impl Matcher {
-	/// `getMatcher(index)`.
-	pub fn matcher_at(&self, index: usize) -> &MultiMatcher {
-		self.variants[index].get_or_init(|| {
-			let sources: Vec<&str> = self.rules[index..]
-				.iter()
-				.map(|rule| rule.source.as_str())
-				.collect();
-			let joined = rewrite_backreferences(&sources, "|");
-			let regex = JsRegex::new(&joined, &format!("{}g", self.flags))
-				.unwrap_or_else(|error| panic!("matcher compile failed: {error}"));
-			let mut match_at = Vec::new();
-			let mut group = 1;
-			for (position, source) in sources.iter().enumerate() {
-				let count = count_capture_groups(source);
-				match_at.push((group, position, count));
-				group += count + 1;
-			}
-			MultiMatcher { regex, match_at }
+	/// The compiled regex for one rule, wrapped like the JS union wraps
+	/// every alternative (`(rule)`), preserving group numbering.
+	pub fn rule_at(&self, index: usize) -> &JsRegex {
+		self.per_rule[index].get_or_init(|| {
+			let sources = [self.rules[index].source.as_str()];
+			let wrapped = rewrite_backreferences(&sources, "|");
+			JsRegex::new(&wrapped, &format!("{}g", self.flags))
+				.unwrap_or_else(|error| panic!("matcher compile failed: {error}"))
 		})
 	}
 }
@@ -89,11 +76,7 @@ impl Matcher {
 /// A fully compiled mode.
 pub struct CompiledMode {
 	pub scope: Option<String>,
-	pub begin_source: String,
-	pub begin_re: Option<JsRegex>,
 	pub end_re: Option<JsRegex>,
-	pub terminator_end: String,
-	pub illegal_source: Option<String>,
 	pub keywords: Option<HashMap<String, KeywordEntry>>,
 	pub keyword_pattern: JsRegex,
 	pub contains: Vec<usize>,
@@ -311,9 +294,9 @@ impl Compiler {
 
 		let mut compiler = Compiler {
 			compiled: Vec::new(),
-			cache: HashMap::new(),
-			begin_sources: HashMap::new(),
-			terminator_ends: HashMap::new(),
+			cache: HashMap::default(),
+			begin_sources: HashMap::default(),
+			terminator_ends: HashMap::default(),
 			case_insensitive,
 			unicode_regex,
 			arena: WorkingArena { modes: Vec::new() },
@@ -359,8 +342,7 @@ impl Compiler {
 				flags.push(flag);
 			}
 		}
-		JsRegex::new(source, &flags)
-			.unwrap_or_else(|error| panic!("grammar regex failed: {error}"))
+		JsRegex::new(source, &flags).unwrap_or_else(|error| panic!("grammar regex failed: {error}"))
 	}
 
 	/// `compileMode` — returns the compiled index.
@@ -404,14 +386,13 @@ impl Compiler {
 			}
 		}
 		let keywords = mode.keywords.as_ref().map(|raw| {
-			let mut out = HashMap::new();
+			let mut out = HashMap::default();
 			compile_keywords(raw, self.case_insensitive, "keyword", &mut out);
 			out
 		});
 
 		// begin/end regexes (only when there is a parent).
 		let mut begin_source = String::new();
-		let mut begin_re = None;
 		let mut end_re = None;
 		let mut terminator_end = String::new();
 		if parent.is_some() {
@@ -420,11 +401,6 @@ impl Compiler {
 				.clone()
 				.unwrap_or(ReValue::One(ReSpec::literal(r"\B|\b")));
 			begin_source = source_of(&begin);
-			let begin_flags = match &begin {
-				ReValue::One(re) => re.flags.clone(),
-				ReValue::Many(_) => String::new(),
-			};
-			begin_re = Some(self.lang_re(&begin_source, &begin_flags));
 
 			let mut end = mode.end.clone();
 			if end.is_none() && !mode.ends_with_parent {
@@ -439,8 +415,8 @@ impl Compiler {
 				end_re = Some(self.lang_re(&end_source, &end_flags));
 				terminator_end = end_source;
 			}
-			if mode.ends_with_parent {
-				let parent_compiled = self.cache[&parent.unwrap()];
+			if let (true, Some(parent_index)) = (mode.ends_with_parent, parent) {
+				let parent_compiled = self.cache[&parent_index];
 				let parent_terminator = self
 					.terminator_ends
 					.get(&parent_compiled)
@@ -503,7 +479,7 @@ impl Compiler {
 				kind: RuleKind::Illegal,
 			});
 		}
-		let variants = (0..rules.len().max(1)).map(|_| OnceLock::new()).collect();
+		let per_rule = (0..rules.len()).map(|_| OnceLock::new()).collect();
 
 		let mode = &self.arena.modes[working];
 		let sub_language = mode.sub_language.as_ref().and_then(|value| match value {
@@ -524,11 +500,7 @@ impl Compiler {
 				Some(ScopeValue::Name(name)) if !name.is_empty() => Some(name.clone()),
 				_ => None,
 			},
-			begin_source,
-			begin_re,
 			end_re,
-			terminator_end,
-			illegal_source,
 			keywords,
 			keyword_pattern: self.lang_re(&keyword_pattern, &format!("{keyword_flags}g")),
 			contains,
@@ -536,7 +508,7 @@ impl Compiler {
 			matcher: Matcher {
 				rules,
 				begin_count,
-				variants,
+				per_rule,
 				flags: self.lang_flags(false),
 			},
 			relevance: mode.relevance.unwrap_or(1.0),
@@ -641,11 +613,7 @@ impl Compiler {
 		original.is_compiled = false;
 		original.cached_variants = None;
 		original.ends_parent = true;
-		let original_begin = original
-			.begin
-			.as_ref()
-			.map(source_of)
-			.unwrap_or_default();
+		let original_begin = original.begin.as_ref().map(source_of).unwrap_or_default();
 		let inner = self.arena.push(original);
 
 		let starts_wrapper = self.arena.push(WorkingMode {
@@ -783,5 +751,187 @@ fn compile_scope(scope: &Option<ScopeValue>) -> Option<CompiledScope> {
 			}))
 		}
 		None => None,
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::engine;
+	use crate::tree::HlNode;
+
+	fn compile_json(json: &str) -> CompiledLanguage {
+		Compiler::compile(WorkingArena::from_json(json), "synthetic")
+	}
+
+	fn spans(nodes: &[HlNode]) -> String {
+		let mut out = String::new();
+		for node in nodes {
+			match node {
+				HlNode::Text(value) => out.push_str(value),
+				HlNode::Span {
+					class_names,
+					children,
+				} => {
+					out.push_str(&format!("<{}>", class_names.join(" ")));
+					out.push_str(&spans(children));
+					out.push_str("</>");
+				}
+			}
+		}
+		out
+	}
+
+	fn flat(nodes: &[HlNode]) -> String {
+		let mut out = String::new();
+		for node in nodes {
+			match node {
+				HlNode::Text(value) => out.push_str(value),
+				HlNode::Span { children, .. } => out.push_str(&flat(children)),
+			}
+		}
+		out
+	}
+
+	#[test]
+	fn lang_flags_appends_global() {
+		let compiler = Compiler {
+			arena: WorkingArena { modes: Vec::new() },
+			compiled: Vec::new(),
+			cache: HashMap::default(),
+			begin_sources: HashMap::default(),
+			terminator_ends: HashMap::default(),
+			case_insensitive: true,
+			unicode_regex: false,
+		};
+		assert_eq!(compiler.lang_flags(true), "mig");
+		assert_eq!(compiler.lang_flags(false), "mi");
+	}
+
+	#[test]
+	fn end_arrays_concatenate() {
+		let language = compile_json(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"scope":"strong","begin":"a","end":["b","(c)"]}]"#,
+		);
+		let result = engine::highlight(&language, "a xbc y", None);
+		assert_eq!(flat(&result.root), "a xbc y");
+		assert_eq!(spans(&result.root), "<hljs-strong>a xbc</> y");
+	}
+
+	#[test]
+	fn keyword_pattern_object_with_flags() {
+		let language = compile_json(
+			r#"[{"keywords":{"$pattern":{"$re":"[a-z]+","$flags":"s"},"keyword":"kw"}}]"#,
+		);
+		let result = engine::highlight(&language, "kw other", None);
+		assert_eq!(spans(&result.root), "<hljs-keyword>kw</> other");
+
+		// The same object form without $flags.
+		let language =
+			compile_json(r#"[{"keywords":{"$pattern":{"$re":"[a-z]+"},"keyword":"kw"}}]"#);
+		let result = engine::highlight(&language, "kw", None);
+		assert_eq!(spans(&result.root), "<hljs-keyword>kw</>");
+
+		// A $pattern of an unexpected type falls back to \w+.
+		let language = compile_json(r#"[{"keywords":{"$pattern":true,"keyword":"kw"}}]"#);
+		let result = engine::highlight(&language, "kw!", None);
+		assert_eq!(spans(&result.root), "<hljs-keyword>kw</>!");
+	}
+
+	#[test]
+	fn rewrite_backreferences_renumbers() {
+		assert_eq!(
+			rewrite_backreferences(&[r"(a)\1", r"(b)\1"], "|"),
+			r"((a)\2)|((b)\4)"
+		);
+	}
+
+	#[test]
+	fn keywords_of_unexpected_type_are_ignored() {
+		let language = compile_json(r#"[{"keywords":true}]"#);
+		let result = engine::highlight(&language, "x y", None);
+		assert_eq!(spans(&result.root), "x y");
+	}
+
+	#[test]
+	fn ends_with_parent_of_root_keeps_own_terminator() {
+		// The root has no terminator, so the child's endsWithParent merge
+		// finds an empty parent terminator and keeps its own end.
+		let language = compile_json(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"scope":"strong","begin":"a","end":"b","endsWithParent":true}]"#,
+		);
+		let result = engine::highlight(&language, "xab y", None);
+		assert_eq!(spans(&result.root), "x<hljs-strong>ab</> y");
+	}
+
+	#[test]
+	fn ends_with_parent_merges_parent_terminator() {
+		let language = compile_json(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"scope":"strong","begin":"a","end":"b","contains":[{"$ref":2}]},
+			    {"scope":"emphasis","begin":"c","end":"d","endsWithParent":true}]"#,
+		);
+		// The inner mode ends at its own `d`…
+		let result = engine::highlight(&language, "acdb", None);
+		assert_eq!(
+			spans(&result.root),
+			"<hljs-strong>a<hljs-emphasis>cd</>b</>"
+		);
+		// …or at the parent's `b`, which pops both modes.
+		let result = engine::highlight(&language, "ac b", None);
+		assert_eq!(
+			spans(&result.root),
+			"<hljs-strong>a<hljs-emphasis>c b</></>"
+		);
+	}
+
+	#[test]
+	fn sub_language_of_unexpected_type_is_none() {
+		let language = compile_json(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"begin":"a","end":"b","subLanguage":true}]"#,
+		);
+		let child = language.modes[language.root].contains[0];
+		assert!(language.modes[child].sub_language.is_none());
+		let result = engine::highlight(&language, "a x b", None);
+		assert_eq!(spans(&result.root), "a x b");
+	}
+
+	#[test]
+	fn end_multi_class_scopes() {
+		let language = compile_json(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"scope":"strong","begin":"q","end":["(x)","(y)"],
+			     "endScope":{"1":"title","2":"literal"}}]"#,
+		);
+		let result = engine::highlight(&language, "q xy.", None);
+		assert_eq!(flat(&result.root), "q xy.");
+		assert_eq!(
+			spans(&result.root),
+			"<hljs-strong>q <hljs-title>x</><hljs-literal>y</></>."
+		);
+	}
+
+	#[test]
+	fn before_match_wraps_the_inner_mode() {
+		let language = compile_json(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"scope":"strong","beforeMatch":"x","begin":"y"}]"#,
+		);
+		let result = engine::highlight(&language, "a xy b", None);
+		assert_eq!(flat(&result.root), "a xy b");
+		assert_eq!(spans(&result.root), "a x<hljs-strong>y</> b");
+	}
+
+	#[test]
+	fn begin_scope_null_is_cleared() {
+		let language = compile_json(
+			r#"[{"contains":[{"$ref":1}]},
+			    {"begin":"a","end":"b","beginScope":null}]"#,
+		);
+		let child = language.modes[language.root].contains[0];
+		assert!(language.modes[child].begin_scope.is_none());
 	}
 }

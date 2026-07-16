@@ -1,0 +1,144 @@
+name: writr-rs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'writr-rs/**'
+      - 'test/harness/**'
+      - '.github/workflows/writr-rs.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'writr-rs/**'
+      - 'test/harness/**'
+      - '.github/workflows/writr-rs.yml'
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: rustfmt, clippy, llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: writr-rs
+      - name: Format
+        run: cargo fmt --check
+        working-directory: writr-rs
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+        working-directory: writr-rs
+      - name: Tests
+        run: cargo test --workspace
+        working-directory: writr-rs
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      # 97.75% at gate introduction; every uncovered line is documented as
+      # unreachable-by-construction in writr-rs/COVERAGE.md.
+      - name: Coverage gate
+        run: cargo llvm-cov --workspace --ignore-filename-regex 'crates/writr-node/' --fail-under-lines 97
+        working-directory: writr-rs
+
+  codegen-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - name: Install Dependencies
+        run: pnpm install
+      - name: Regenerate committed codegen outputs
+        run: node writr-rs/tools/gen-all.mjs
+      - name: Verify no drift
+        run: git diff --exit-code -- writr-rs/crates
+
+  harness-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          targets: wasm32-wasip1
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: writr-rs
+      - name: Install wasi sysroot (QuickJS C sources)
+        run: sudo apt-get update && sudo apt-get install -y wasi-libc libclang-rt-18-dev-wasm32 llvm
+      - name: Install Dependencies
+        run: pnpm install
+      - name: Install binding dependencies
+        run: pnpm install --ignore-workspace
+        working-directory: writr-rs/crates/writr-node
+      - name: Build native addon
+        run: pnpm build:rs
+      - name: Harness (native)
+        run: HARNESS_ENGINE=writr-rust pnpm test:harness
+      - name: Build wasm addon
+        run: pnpm build:rs:wasm
+      - name: Harness (wasm)
+        run: HARNESS_ENGINE=writr-rust WRITR_RS_FORCE_WASM=1 pnpm test:harness
+      - name: Browser smoke (Chromium)
+        run: |
+          npx playwright-core install chromium --with-deps || npx playwright install chromium --with-deps
+          node writr-rs/tools/browser-smoke.mjs
+      - name: JS suite untouched
+        run: pnpm test:ci
+
+  native-matrix:
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - host: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+          - host: macos-latest
+            target: aarch64-apple-darwin
+          - host: macos-15-intel
+            target: x86_64-apple-darwin
+          - host: windows-latest
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.host }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: writr-rs
+      - name: Core tests on host
+        run: cargo test --workspace
+        working-directory: writr-rs
+      - name: Build addon
+        run: cargo build --release --target ${{ matrix.target }} -p writr-node
+        working-directory: writr-rs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: writr-node-${{ matrix.target }}
+          path: |
+            writr-rs/target/${{ matrix.target }}/release/*writr_node*
+          if-no-files-found: error

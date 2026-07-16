@@ -69,3 +69,27 @@ pub fn parse_to_mdast(
 ) -> Result<markdown::mdast::Node, RenderError> {
 	pipeline::parse_to_mdast(input, options)
 }
+
+/// Render many documents under the same options.
+///
+/// With the `parallel` feature (native builds) documents render across the
+/// rayon thread pool — the engine is stateless per call, so this is safe and
+/// scales with cores. Without it (e.g. single-threaded wasm), rendering is
+/// sequential. Order is preserved either way.
+pub fn render_batch(
+	inputs: &[String],
+	options: &RenderOptions,
+) -> Vec<Result<String, RenderError>> {
+	#[cfg(feature = "parallel")]
+	{
+		use rayon::prelude::*;
+		inputs
+			.par_iter()
+			.map(|input| render(input, options))
+			.collect()
+	}
+	#[cfg(not(feature = "parallel"))]
+	{
+		inputs.iter().map(|input| render(input, options)).collect()
+	}
+}

@@ -86,10 +86,7 @@ pub fn render(input: &str, options: &RenderOptions) -> Result<String, RenderErro
 }
 
 /// Parse and transform without serializing (used by `validate`).
-pub fn render_to_hast(
-	input: &str,
-	options: &RenderOptions,
-) -> Result<hast::Node, RenderError> {
+pub fn render_to_hast(input: &str, options: &RenderOptions) -> Result<hast::Node, RenderError> {
 	let mdast = parse_to_mdast(input, options)?;
 	Ok(transform(mdast, options))
 }
@@ -122,10 +119,8 @@ fn transform(mdast: markdown::mdast::Node, options: &RenderOptions) -> hast::Nod
 		crate::mdast_util::emoji::transform(&mut mdast);
 	}
 
-	let mut tree = from_mdast::from_mdast(
-		&mdast,
-		from_mdast::Options::from_render_options(options),
-	);
+	let mut tree =
+		from_mdast::from_mdast(&mdast, from_mdast::Options::from_render_options(options));
 
 	// hast stage: raw → slug → [highlight] (M4) → [math] (M5).
 	#[cfg(feature = "raw-html")]

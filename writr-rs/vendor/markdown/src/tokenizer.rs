@@ -277,6 +277,10 @@ pub struct Tokenizer<'a> {
     column_start: Vec<(usize, usize)>,
     // First line where this tokenizer starts.
     first_line: usize,
+    /// WRITR-RS PATCH (perf): exclusive end (index) of the current feed
+    /// range, kept up to date by `push_impl` so `consume_data_run` never
+    /// bulk-consumes past a chunk boundary.
+    feed_end_index: usize,
     /// Current point after the last line ending (excluding jump).
     line_start: Point,
     /// Track whether the current byte is already consumed (`true`) or expected
@@ -332,12 +336,14 @@ impl<'a> Tokenizer<'a> {
             // To do: reserve size when feeding?
             column_start: vec![],
             first_line: point.line,
+            feed_end_index: 0,
             line_start: point.clone(),
             consumed: true,
             attempts: vec![],
             point,
             stack: vec![],
-            events: vec![],
+            // WRITR-RS PATCH (perf): pre-size to skip growth reallocs.
+            events: Vec::with_capacity(parse_state.bytes.len() / 3 + 64),
             parse_state,
             tokenize_state: TokenizeState {
                 connect: false,
@@ -457,8 +463,63 @@ impl<'a> Tokenizer<'a> {
         self.consumed = true;
     }
 
+    /// WRITR-RS PATCH (perf): consume the current byte, then bulk-advance
+    /// through the following run of "plain" bytes — anything that is not a
+    /// data marker, `\n`, `\r`, or `\t`. Equivalent to calling `consume`
+    /// once per byte: within such a run every byte is `ByteAction::Normal`,
+    /// non-newline, so each step is `index += 1`, `column += 1`, `vs = 0`,
+    /// `previous = byte`. Used by the data construct's hot loop.
+    pub fn consume_data_run(&mut self) {
+        self.consume();
+        let bytes = self.parse_state.bytes;
+        let markers = self.tokenize_state.markers;
+        let start = self.point.index;
+        let end = self.feed_end_index.min(bytes.len());
+        let mut index = start;
+        while index < end {
+            let byte = bytes[index];
+            if byte == b'\n' || byte == b'\r' || byte == b'\t' || markers.contains(&byte) {
+                break;
+            }
+            index += 1;
+        }
+        if index > start {
+            self.point.column += index - start;
+            self.point.index = index;
+            self.point.vs = 0;
+            self.previous = Some(bytes[index - 1]);
+        }
+    }
+
     /// Move to the next (virtual) byte.
     fn move_one(&mut self) {
+        // WRITR-RS PATCH (perf): fast path — every byte except `\r` and
+        // `\t` is `ByteAction::Normal(byte)`; handle it without the
+        // `byte_action` call/enum round trip.
+        if self.point.index < self.parse_state.bytes.len() {
+            let byte = self.parse_state.bytes[self.point.index];
+            if byte != b'\r' && byte != b'\t' {
+                self.previous = Some(byte);
+                self.point.vs = 0;
+                self.point.index += 1;
+
+                if byte == b'\n' {
+                    self.point.line += 1;
+                    self.point.column = 1;
+
+                    if self.point.line - self.first_line + 1 > self.column_start.len() {
+                        self.column_start.push((self.point.index, self.point.vs));
+                    }
+
+                    self.line_start = self.point.clone();
+
+                    self.account_for_potential_skip();
+                } else {
+                    self.point.column += 1;
+                }
+                return;
+            }
+        }
         match byte_action(self.parse_state.bytes, &self.point) {
             ByteAction::Ignore => {
                 self.point.index += 1;
@@ -702,6 +763,11 @@ fn push_impl(
     );
 
     tokenizer.move_to(from);
+    // WRITR-RS PATCH (perf): see `feed_end_index`. Restored on return so
+    // nested/outer `push_impl` calls (attempts, container flows) keep their
+    // own clamp.
+    let feed_end_previous = tokenizer.feed_end_index;
+    tokenizer.feed_end_index = to.0;
 
     loop {
         match state {
@@ -768,6 +834,7 @@ fn push_impl(
     }
 
     tokenizer.consumed = true;
+    tokenizer.feed_end_index = feed_end_previous;
 
     if flush {
         debug_assert!(matches!(state, State::Ok | State::Error(_)), "must be ok");

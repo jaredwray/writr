@@ -98,22 +98,21 @@ impl EditMap {
 
         shift_links(events, &jumps);
 
+        // WRITR-RS PATCH (perf): single-pass rebuild instead of one
+        // `split_off` (allocation + tail copy) per edit. Events are flat
+        // (no heap fields), so `extend_from_slice` is a plain memcpy.
         let len_before = events.len();
-        let mut index = self.map.len();
-        let mut vecs = Vec::with_capacity(index * 2 + 1);
-        while index > 0 {
-            index -= 1;
-            vecs.push(events.split_off(self.map[index].0 + self.map[index].1));
-            vecs.push(self.map[index].2.split_off(0));
-            events.truncate(self.map[index].0);
+        let mut next_events: Vec<Event> = Vec::with_capacity(len_before + add_acc - remove_acc);
+        let mut start = 0;
+        for (at, remove, add) in &mut self.map {
+            if *at > start {
+                next_events.extend_from_slice(&events[start..*at]);
+            }
+            next_events.append(add);
+            start = *at + *remove;
         }
-        vecs.push(events.split_off(0));
-
-        events.reserve(len_before + add_acc - remove_acc);
-
-        while let Some(mut slice) = vecs.pop() {
-            events.append(&mut slice);
-        }
+        next_events.extend_from_slice(&events[start..]);
+        *events = next_events;
 
         self.map.truncate(0);
     }

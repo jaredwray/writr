@@ -167,9 +167,13 @@ pub struct AllowlistEntry {
 pub fn load_allowlist(harness: &Path) -> Allowlist {
 	let path = harness.join("allowlist.json");
 	let Ok(raw) = std::fs::read_to_string(path) else {
-		return Allowlist { entries: Vec::new() };
+		return Allowlist {
+			entries: Vec::new(),
+		};
 	};
-	serde_json::from_str(&raw).unwrap_or(Allowlist { entries: Vec::new() })
+	serde_json::from_str(&raw).unwrap_or(Allowlist {
+		entries: Vec::new(),
+	})
 }
 
 impl Allowlist {

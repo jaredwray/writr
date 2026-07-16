@@ -62,12 +62,53 @@ const MARKERS: [u8; 16] = [
 ///     ^
 /// ```
 pub fn start(tokenizer: &mut Tokenizer) -> State {
-    tokenizer.tokenize_state.markers = &MARKERS;
+    // WRITR-RS PATCH (perf): only stop data runs at marker bytes whose
+    // construct is actually enabled. The dispatch below rejects disabled
+    // constructs anyway (the byte just flows back into data), so dropping
+    // the marker entirely is semantics-preserving — it merely stops
+    // fragmenting plain-text runs at every `h`/`w` (GFM autolink), `$`
+    // (math), or `{` (MDX) when those features are off.
+    tokenizer.tokenize_state.markers = markers_for(
+        tokenizer.parse_state.options.constructs.gfm_autolink_literal,
+        tokenizer.parse_state.options.constructs.math_text,
+        tokenizer.parse_state.options.constructs.mdx_expression_text,
+    );
     tokenizer.attempt(
         State::Next(StateName::TextBefore),
         State::Next(StateName::TextBefore),
     );
     State::Retry(StateName::GfmTaskListItemCheckStart)
+}
+
+/// WRITR-RS PATCH (perf): marker sets per enabled optional construct
+/// (GFM autolink literal, math (text), MDX expression (text)). The core
+/// ten markers are always present.
+fn markers_for(autolink: bool, math: bool, mdx: bool) -> &'static [u8] {
+    #[rustfmt::skip]
+    const CORE: [u8; 10] = [b'!', b'&', b'*', b'<', b'[', b'\\', b']', b'_', b'`', b'~'];
+    #[rustfmt::skip]
+    const CORE_A: [u8; 14] = [b'!', b'&', b'*', b'<', b'H', b'W', b'[', b'\\', b']', b'_', b'h', b'w', b'`', b'~'];
+    #[rustfmt::skip]
+    const CORE_M: [u8; 11] = [b'!', b'$', b'&', b'*', b'<', b'[', b'\\', b']', b'_', b'`', b'~'];
+    #[rustfmt::skip]
+    const CORE_X: [u8; 11] = [b'!', b'&', b'*', b'<', b'[', b'\\', b']', b'_', b'`', b'{', b'~'];
+    #[rustfmt::skip]
+    const CORE_AM: [u8; 15] = [b'!', b'$', b'&', b'*', b'<', b'H', b'W', b'[', b'\\', b']', b'_', b'h', b'w', b'`', b'~'];
+    #[rustfmt::skip]
+    const CORE_AX: [u8; 15] = [b'!', b'&', b'*', b'<', b'H', b'W', b'[', b'\\', b']', b'_', b'h', b'w', b'`', b'{', b'~'];
+    #[rustfmt::skip]
+    const CORE_MX: [u8; 12] = [b'!', b'$', b'&', b'*', b'<', b'[', b'\\', b']', b'_', b'`', b'{', b'~'];
+
+    match (autolink, math, mdx) {
+        (false, false, false) => &CORE,
+        (true, false, false) => &CORE_A,
+        (false, true, false) => &CORE_M,
+        (false, false, true) => &CORE_X,
+        (true, true, false) => &CORE_AM,
+        (true, false, true) => &CORE_AX,
+        (false, true, true) => &CORE_MX,
+        (true, true, true) => &MARKERS,
+    }
 }
 
 /// Before text.

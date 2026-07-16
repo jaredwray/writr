@@ -27,8 +27,7 @@ use html5ever::interface::{
 };
 use html5ever::tendril::StrTendril;
 use html5ever::tokenizer::{
-	states, BufferQueue, Tag, TagKind, Token, TokenSink, TokenSinkResult, Tokenizer,
-	TokenizerOpts,
+	states, BufferQueue, Tag, TagKind, Token, TokenSink, TokenSinkResult, Tokenizer, TokenizerOpts,
 };
 use html5ever::tree_builder::{TreeBuilder, TreeBuilderOpts};
 use html5ever::{ns, Attribute, LocalName, QualName};
@@ -37,28 +36,68 @@ use std::rc::Rc;
 
 /// html-void-elements@3.0.0 (same list the serializer uses).
 const VOID_ELEMENTS: &[&str] = &[
-	"area", "base", "basefont", "bgsound", "br", "col", "command", "embed", "frame", "hr",
-	"image", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr",
+	"area", "base", "basefont", "bgsound", "br", "col", "command", "embed", "frame", "hr", "image",
+	"img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr",
 ];
 
 /// hastscript's case-sensitive SVG tag names.
 const SVG_CASE_SENSITIVE: &[&str] = &[
-	"altGlyph", "altGlyphDef", "altGlyphItem", "animateColor", "animateMotion",
-	"animateTransform", "clipPath", "feBlend", "feColorMatrix", "feComponentTransfer",
-	"feComposite", "feConvolveMatrix", "feDiffuseLighting", "feDisplacementMap",
-	"feDistantLight", "feDropShadow", "feFlood", "feFuncA", "feFuncB", "feFuncG", "feFuncR",
-	"feGaussianBlur", "feImage", "feMerge", "feMergeNode", "feMorphology", "feOffset",
-	"fePointLight", "feSpecularLighting", "feSpotLight", "feTile", "feTurbulence",
-	"foreignObject", "glyphRef", "linearGradient", "radialGradient", "solidColor",
-	"textArea", "textPath",
+	"altGlyph",
+	"altGlyphDef",
+	"altGlyphItem",
+	"animateColor",
+	"animateMotion",
+	"animateTransform",
+	"clipPath",
+	"feBlend",
+	"feColorMatrix",
+	"feComponentTransfer",
+	"feComposite",
+	"feConvolveMatrix",
+	"feDiffuseLighting",
+	"feDisplacementMap",
+	"feDistantLight",
+	"feDropShadow",
+	"feFlood",
+	"feFuncA",
+	"feFuncB",
+	"feFuncG",
+	"feFuncR",
+	"feGaussianBlur",
+	"feImage",
+	"feMerge",
+	"feMergeNode",
+	"feMorphology",
+	"feOffset",
+	"fePointLight",
+	"feSpecularLighting",
+	"feSpotLight",
+	"feTile",
+	"feTurbulence",
+	"foreignObject",
+	"glyphRef",
+	"linearGradient",
+	"radialGradient",
+	"solidColor",
+	"textArea",
+	"textPath",
 ];
 
 /// `Object.prototype` own property names — hast-util-from-parse5 drops
 /// attributes with these names (its prototype-pollution guard).
 const PROTO_PROPERTY_NAMES: &[&str] = &[
-	"__defineGetter__", "__defineSetter__", "__lookupGetter__", "__lookupSetter__",
-	"__proto__", "constructor", "hasOwnProperty", "isPrototypeOf", "propertyIsEnumerable",
-	"toLocaleString", "toString", "valueOf",
+	"__defineGetter__",
+	"__defineSetter__",
+	"__lookupGetter__",
+	"__lookupSetter__",
+	"__proto__",
+	"constructor",
+	"hasOwnProperty",
+	"isPrototypeOf",
+	"propertyIsEnumerable",
+	"toLocaleString",
+	"toString",
+	"valueOf",
 ];
 
 // ---------------------------------------------------------------------------
@@ -269,12 +308,7 @@ impl TreeSink for ArenaSink {
 		}
 	}
 
-	fn create_element(
-		&self,
-		name: QualName,
-		attrs: Vec<Attribute>,
-		flags: ElementFlags,
-	) -> usize {
+	fn create_element(&self, name: QualName, attrs: Vec<Attribute>, flags: ElementFlags) -> usize {
 		let mut arena = self.arena.borrow_mut();
 		let template_contents = if flags.template {
 			Some(arena.push(ArenaNode::Document {
@@ -437,7 +471,10 @@ impl TokenSink for TrackingSink<'_> {
 			&token,
 			Token::TagToken(tag) if tag.kind == TagKind::EndTag
 		);
-		let is_text = matches!(&token, Token::CharacterTokens(_) | Token::NullCharacterToken);
+		let is_text = matches!(
+			&token,
+			Token::CharacterTokens(_) | Token::NullCharacterToken
+		);
 		let result = self.builder.process_token(token, line_number);
 		if !is_text {
 			self.builder.sink.synthesized_text_pending.set(false);
@@ -507,7 +544,10 @@ impl Driver {
 			&token,
 			Token::TagToken(tag) if tag.kind == TagKind::EndTag
 		);
-		let is_text = matches!(&token, Token::CharacterTokens(_) | Token::NullCharacterToken);
+		let is_text = matches!(
+			&token,
+			Token::CharacterTokens(_) | Token::NullCharacterToken
+		);
 		if is_text {
 			self.builder.sink.synthesized_text_pending.set(true);
 		}
@@ -538,10 +578,7 @@ impl Driver {
 			Node::Element(element) => self.element(element),
 			Node::Text(value) => self.text(value),
 			Node::Comment(value) => {
-				self.process_synthesized(
-					Token::CommentToken(StrTendril::from_slice(value)),
-					false,
-				);
+				self.process_synthesized(Token::CommentToken(StrTendril::from_slice(value)), false);
 			}
 			Node::Doctype => {
 				self.process_synthesized(
@@ -598,9 +635,7 @@ impl Driver {
 		// End tag: skipped for void elements outside foreign content, and in
 		// plain text.
 		let in_foreign = self.foreign_depth.get() > 0;
-		if in_foreign
-			&& (tag_name == "svg" || tag_name == "math" || self.foreign_depth.get() > 1)
-		{
+		if in_foreign && (tag_name == "svg" || tag_name == "math" || self.foreign_depth.get() > 1) {
 			self.foreign_depth.set(self.foreign_depth.get() - 1);
 		}
 		if !in_foreign && VOID_ELEMENTS.contains(&tag_name.as_str()) {
@@ -624,10 +659,7 @@ impl Driver {
 	fn text(&self, value: &str) {
 		// (parse5 resets mid-tag tokenizer states here; the tracked state
 		// only ever holds content states, so no reset is needed.)
-		self.process_synthesized(
-			Token::CharacterTokens(StrTendril::from_slice(value)),
-			false,
-		);
+		self.process_synthesized(Token::CharacterTokens(StrTendril::from_slice(value)), false);
 	}
 
 	fn raw(&self, value: &str) {
@@ -647,11 +679,8 @@ impl Driver {
 		);
 		// Keep going past script completions (scripting is disabled; parse5's
 		// loop does not pause either).
-		loop {
-			match tokenizer.feed(&queue) {
-				TokenizerResult::Script(_) => continue,
-				_ => break,
-			}
+		while let TokenizerResult::Script(_) = tokenizer.feed(&queue) {
+			// Keep feeding; scripting is disabled, nothing to run.
 		}
 	}
 
@@ -669,9 +698,7 @@ impl Driver {
 				.iter()
 				.copied()
 				.find_map(|child| match &arena.nodes[child] {
-					ArenaNode::Element { name, children, .. }
-						if name.local.as_ref() == "html" =>
-					{
+					ArenaNode::Element { name, children, .. } if name.local.as_ref() == "html" => {
 						Some(children.clone())
 					}
 					_ => None,
@@ -686,10 +713,7 @@ impl Driver {
 // hast properties → token attributes (hast-util-to-parse5 subset)
 // ---------------------------------------------------------------------------
 
-fn properties_to_attrs(
-	properties: &[(String, PropertyValue)],
-	space: Space,
-) -> Vec<Attribute> {
+fn properties_to_attrs(properties: &[(String, PropertyValue)], space: Space) -> Vec<Attribute> {
 	let mut attrs = Vec::with_capacity(properties.len());
 	for (key, value) in properties {
 		let info = find(space, key);
@@ -770,9 +794,7 @@ fn convert(arena: &Arena, handle: usize) -> Node {
 				if PROTO_PROPERTY_NAMES.contains(&attr_name.as_str()) {
 					continue;
 				}
-				if let Some((property, value)) =
-					parse_attribute(space, &attr_name, &attr.value)
-				{
+				if let Some((property, value)) = parse_attribute(space, &attr_name, &attr.value) {
 					element.properties.push((property, value));
 				}
 			}
@@ -827,11 +849,7 @@ fn parse_attribute(space: Space, name: &str, value: &str) -> Option<(String, Pro
 	Some((property, result))
 }
 
-fn parse_list_item(
-	info: &super::property_info::Info<'_>,
-	property: &str,
-	item: String,
-) -> String {
+fn parse_list_item(info: &super::property_info::Info<'_>, property: &str, item: String) -> String {
 	match parse_primitive(info, property, &item) {
 		PropertyValue::Number(n) => js::number_to_string(n),
 		PropertyValue::Bool(true) => "true".to_string(),
@@ -862,7 +880,7 @@ fn parse_primitive(
 /// space-separated-tokens `parse`.
 fn parse_spaces(value: &str) -> Vec<String> {
 	js::trim(value)
-		.split(|c: char| matches!(c, ' ' | '\t' | '\n' | '\r' | '\u{000C}'))
+		.split([' ', '\t', '\n', '\r', '\u{000C}'])
 		.filter(|token| !token.is_empty())
 		.map(str::to_string)
 		.collect()
@@ -996,10 +1014,7 @@ mod tests {
 		// `[<x>]</x>` — a raw end tag closing an element that entered as a
 		// synthesized token.
 		let tree = Node::Root(vec![
-			Node::Element(Element::with_children(
-				"div",
-				vec![Node::text("a")],
-			)),
+			Node::Element(Element::with_children("div", vec![Node::text("a")])),
 			Node::Raw("</div>oops".into()),
 		]);
 		assert_eq!(render_raw(tree), "<div>a</div>oops");
@@ -1007,9 +1022,7 @@ mod tests {
 
 	#[test]
 	fn script_content_stays_raw() {
-		let tree = Node::Root(vec![Node::Raw(
-			"<script>if (a < b) {}</script>".into(),
-		)]);
+		let tree = Node::Root(vec![Node::Raw("<script>if (a < b) {}</script>".into())]);
 		assert_eq!(render_raw(tree), "<script>if (a < b) {}</script>");
 	}
 
@@ -1052,7 +1065,91 @@ mod tests {
 		let tree = Node::Root(vec![Node::Raw(
 			"<input type=\"checkbox\" checked disabled=\"\">".into(),
 		)]);
-		assert_eq!(render_raw(tree), "<input type=\"checkbox\" checked disabled>");
+		assert_eq!(
+			render_raw(tree),
+			"<input type=\"checkbox\" checked disabled>"
+		);
+	}
+
+	// Synthesized (non-raw) element shapes the markdown pipeline cannot
+	// produce, verified verbatim against hast-util-raw@9.1.0 +
+	// hast-util-to-html@9.0.5.
+
+	#[test]
+	fn synthesized_rawtext_elements_keep_their_text() {
+		// JS: `<script>a<b && c</script>` — the start tag switches the
+		// tree-builder into script data; the hast text child stays raw.
+		let script = Element::with_children("script", vec![Node::text("a<b && c")]);
+		assert_eq!(
+			render_raw(Node::Root(vec![Node::Element(script)])),
+			"<script>a<b && c</script>"
+		);
+
+		// JS: `<style>a>b{}</style>`.
+		let style = Element::with_children("style", vec![Node::text("a>b{}")]);
+		assert_eq!(
+			render_raw(Node::Root(vec![Node::Element(style)])),
+			"<style>a>b{}</style>"
+		);
+
+		// JS: `<textarea>a&#x3C;b</textarea>` (RCDATA; the serializer still
+		// escapes text outside script/style).
+		let textarea = Element::with_children("textarea", vec![Node::text("a<b")]);
+		assert_eq!(
+			render_raw(Node::Root(vec![Node::Element(textarea)])),
+			"<textarea>a&#x3C;b</textarea>"
+		);
+	}
+
+	#[test]
+	fn comment_nodes_replay_as_comment_tokens() {
+		// JS: `<!--hi -- there-->x`.
+		let tree = Node::Root(vec![
+			Node::Comment("hi -- there".into()),
+			Node::Text("x".into()),
+		]);
+		assert_eq!(render_raw(tree), "<!--hi -- there-->x");
+	}
+
+	#[test]
+	fn synthesized_plaintext_swallows_the_rest() {
+		// JS: `<plaintext>a&#x3C;b&#x3C;tag>after</plaintext>` — the start
+		// tag switches to PLAINTEXT; later element tags are skipped and all
+		// following text is literal.
+		let plaintext = Element::with_children("plaintext", vec![Node::text("a<b")]);
+		let tree = Node::Root(vec![
+			Node::Element(plaintext),
+			Node::Text("<tag>after".into()),
+		]);
+		assert_eq!(
+			render_raw(tree),
+			"<plaintext>a&#x3C;b&#x3C;tag>after</plaintext>"
+		);
+	}
+
+	#[test]
+	fn synthesized_comma_separated_lists_serialize() {
+		// JS: `<input accept="a, b">`.
+		let mut input = Element::new("input");
+		input.push_property("accept", vec!["a".to_string(), "b".to_string()]);
+		assert_eq!(
+			render_raw(Node::Root(vec![Node::Element(input)])),
+			"<input accept=\"a, b\">"
+		);
+	}
+
+	#[test]
+	fn synthesized_properties_skip_false_and_nan() {
+		// JS: `<input disabled width="5">` — `checked: false` and a NaN
+		// number are dropped, `true` serializes empty, numbers stringify.
+		let mut input = Element::new("input");
+		input.push_property("checked", false);
+		input.push_property("tabIndex", f64::NAN);
+		input.push_property("disabled", true);
+		input.push_property("width", 5.0);
+		assert_eq!(
+			render_raw(Node::Root(vec![Node::Element(input)])),
+			"<input disabled width=\"5\">"
+		);
 	}
 }
-

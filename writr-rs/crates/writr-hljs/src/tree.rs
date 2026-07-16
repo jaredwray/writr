@@ -131,6 +131,27 @@ mod tests {
 	}
 
 	#[test]
+	fn sublanguage_without_name_splices_inline() {
+		let mut emitter = Emitter::new("hljs-");
+		emitter.add_text("a");
+		emitter.add_sublanguage(vec![HlNode::Text("b".into())], None);
+		emitter.add_sublanguage(vec![HlNode::Text("c".into())], Some(""));
+		emitter.add_sublanguage(vec![HlNode::Text("d".into())], Some("css"));
+		assert_eq!(
+			emitter.finish(),
+			vec![
+				HlNode::Text("a".into()),
+				HlNode::Text("b".into()),
+				HlNode::Text("c".into()),
+				HlNode::Span {
+					class_names: vec!["css".into()],
+					children: vec![HlNode::Text("d".into())],
+				},
+			]
+		);
+	}
+
+	#[test]
 	fn text_merging() {
 		let mut emitter = Emitter::new("hljs-");
 		emitter.add_text("a");

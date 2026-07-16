@@ -793,6 +793,10 @@ fn peek_bytes_atext(bytes: &[u8], min: usize, end: usize) -> Option<usize> {
 ///              ^-- from
 ///       ^-- to
 /// ```
+// WRITR-RS PATCH: kept for reference; the email resolver now always uses
+// `Name::GfmAutolinkLiteralEmail` (mailto handling happens at the mdast
+// stage, matching micromark), so this helper is currently unused.
+#[allow(dead_code)]
 fn peek_protocol(bytes: &[u8], min: usize, end: usize) -> (usize, Name) {
     let mut index = end;
 
