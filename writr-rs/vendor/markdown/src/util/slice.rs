@@ -118,8 +118,18 @@ impl<'a> Slice<'a> {
     ///
     /// Supports virtual spaces.
     pub fn serialize(&self) -> String {
-        let prefix = String::from_utf8(vec![b' '; self.before]).unwrap();
-        let suffix = String::from_utf8(vec![b' '; self.after]).unwrap();
-        format!("{}{}{}", prefix, self.as_str(), suffix)
+        // WRITR-RS PATCH (perf): build the string directly instead of
+        // allocating prefix/suffix strings and running `format!` — this is
+        // called once per data event during tree compilation, and virtual
+        // spaces are rare.
+        let mut result = String::with_capacity(self.len());
+        for _ in 0..self.before {
+            result.push(' ');
+        }
+        result.push_str(self.as_str());
+        for _ in 0..self.after {
+            result.push(' ');
+        }
+        result
     }
 }
