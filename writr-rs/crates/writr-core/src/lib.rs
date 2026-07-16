@@ -77,8 +77,8 @@ pub fn parse_to_mdast(
 /// rayon thread pool — the engine is stateless per call, so this is safe and
 /// scales with cores. Without it (e.g. single-threaded wasm), rendering is
 /// sequential. Order is preserved either way.
-pub fn render_batch(
-	inputs: &[String],
+pub fn render_batch<S: AsRef<str> + Sync>(
+	inputs: &[S],
 	options: &RenderOptions,
 ) -> Vec<Result<String, RenderError>> {
 	#[cfg(feature = "parallel")]
@@ -86,11 +86,14 @@ pub fn render_batch(
 		use rayon::prelude::*;
 		inputs
 			.par_iter()
-			.map(|input| render(input, options))
+			.map(|input| render(input.as_ref(), options))
 			.collect()
 	}
 	#[cfg(not(feature = "parallel"))]
 	{
-		inputs.iter().map(|input| render(input, options)).collect()
+		inputs
+			.iter()
+			.map(|input| render(input.as_ref(), options))
+			.collect()
 	}
 }

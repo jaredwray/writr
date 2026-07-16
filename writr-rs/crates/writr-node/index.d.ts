@@ -32,6 +32,28 @@ export declare function renderBatch(inputs: Array<string>, options?: RenderOptio
 /** `renderBatch`, computed off the main thread. */
 export declare function renderBatchAsync(inputs: Array<string>, options?: RenderOptions | undefined | null): Promise<Array<string>>
 
+/**
+ * A batch result packed into one buffer: document `i` is
+ * `html[offsets[i]..offsets[i + 1]]` (UTF-8).
+ */
+export interface PackedBatch {
+  html: Buffer
+  offsets: Uint32Array
+}
+
+/**
+ * `renderBatch` over one packed UTF-8 buffer plus `n + 1` boundary offsets
+ * (document `i` is bytes `offsets[i]..offsets[i + 1]`), returning the
+ * rendered HTML in the same packed shape. One V8→native handoff each way
+ * and zero per-document string conversion on the main thread — the fastest
+ * path when documents already live in Buffers (e.g. read from disk) and
+ * the output goes back to bytes (e.g. written to disk).
+ */
+export declare function renderBatchBuffer(input: Buffer, offsets: Uint32Array, options?: RenderOptions | undefined | null): PackedBatch
+
+/** `renderBatchBuffer`, computed off the main thread. */
+export declare function renderBatchBufferAsync(input: Buffer, offsets: Uint32Array, options?: RenderOptions | undefined | null): Promise<PackedBatch>
+
 /** Parse markdown to mdast, returned as a JSON string. */
 export declare function renderToMdast(input: string, options?: RenderOptions | undefined | null): string
 

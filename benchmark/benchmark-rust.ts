@@ -19,6 +19,11 @@ const writrRs = require("../writr-rs/crates/writr-node/index.js") as {
 		inputs: string[],
 		options?: Record<string, boolean>,
 	): string[];
+	renderBatchBuffer(
+		input: Buffer,
+		offsets: Uint32Array,
+		options?: Record<string, boolean>,
+	): { html: Buffer; offsets: Uint32Array };
 	engineVersion(): string;
 };
 
@@ -112,6 +117,24 @@ const batch = new Bench({
 
 batch.add("writr-rs renderBatch (all cores)", () => {
 	writrRs.renderBatch(corpus, minimalOptions);
+});
+
+// Packed bytes-in/bytes-out path: one V8→native handoff each way, no
+// per-document JS strings. Packing happens outside the loop — this models
+// the disk pipeline (docs read as Buffers, HTML written as Buffers); a
+// caller starting from JS strings should use renderBatch instead.
+const packedBuffers = corpus.map((doc) => Buffer.from(doc, "utf8"));
+const packedOffsets = new Uint32Array(packedBuffers.length + 1);
+let packedAt = 0;
+packedBuffers.forEach((buffer, index) => {
+	packedOffsets[index] = packedAt;
+	packedAt += buffer.length;
+});
+packedOffsets[packedBuffers.length] = packedAt;
+const packedCorpus = Buffer.concat(packedBuffers, packedAt);
+
+batch.add("writr-rs renderBatchBuffer (bytes in/out, all cores)", () => {
+	writrRs.renderBatchBuffer(packedCorpus, packedOffsets, minimalOptions);
 });
 
 batch.add("writr-rs render loop (1 core)", () => {

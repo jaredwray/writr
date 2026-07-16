@@ -54,5 +54,8 @@ export const render = __napiModule.exports.render;
 export const renderAsync = __napiModule.exports.renderAsync;
 export const renderBatch = __napiModule.exports.renderBatch;
 export const renderBatchAsync = __napiModule.exports.renderBatchAsync;
+export const renderBatchBuffer = __napiModule.exports.renderBatchBuffer;
+export const renderBatchBufferAsync =
+	__napiModule.exports.renderBatchBufferAsync;
 export const renderToMdast = __napiModule.exports.renderToMdast;
 export const validate = __napiModule.exports.validate;
