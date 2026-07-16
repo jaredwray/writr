@@ -127,7 +127,7 @@ fn serialize_attribute_into(output: &mut String, key: &str, value: &PropertyValu
 	}
 
 	output.push(' ');
-	output.push_str(&stringify_entities(&info.attribute, NAME_SUBSET));
+	stringify_entities_into(output, &info.attribute, NAME_SUBSET);
 
 	if value == PropertyValue::Bool(true) {
 		return;
@@ -150,7 +150,7 @@ fn serialize_attribute_into(output: &mut String, key: &str, value: &PropertyValu
 	// `quoteSmart: false` — always double-quoted.
 	output.push('=');
 	output.push('"');
-	output.push_str(&stringify_entities(&string_value, DOUBLE_QUOTED_SUBSET));
+	stringify_entities_into(output, &string_value, DOUBLE_QUOTED_SUBSET);
 	output.push('"');
 }
 
@@ -205,7 +205,7 @@ fn text(output: &mut String, value: &str, parent: Option<&Element>) {
 	if raw {
 		output.push_str(value);
 	} else {
-		output.push_str(&stringify_entities(value, TEXT_SUBSET));
+		stringify_entities_into(output, value, TEXT_SUBSET);
 	}
 }
 
@@ -235,10 +235,7 @@ fn comment(output: &mut String, value: &str) {
 		};
 		if token_len > 0 {
 			output.push_str(&value[last_emit..index]);
-			output.push_str(&stringify_entities(
-				&value[index..index + token_len],
-				COMMENT_SUBSET,
-			));
+			stringify_entities_into(output, &value[index..index + token_len], COMMENT_SUBSET);
 			index += token_len;
 			last_emit = index;
 		} else {
@@ -257,16 +254,33 @@ fn comment(output: &mut String, value: &str) {
 /// references): each subset character becomes `&#x<HEX>;` (uppercase).
 pub fn stringify_entities(value: &str, subset: &[char]) -> String {
 	let mut result = String::with_capacity(value.len());
-	for c in value.chars() {
-		if subset.contains(&c) {
-			result.push_str("&#x");
-			result.push_str(&format!("{:X}", c as u32));
-			result.push(';');
-		} else {
-			result.push(c);
+	stringify_entities_into(&mut result, value, subset);
+	result
+}
+
+/// `stringify_entities` writing straight into the output buffer. Every
+/// subset is pure ASCII, so clean runs are found with a byte scan and
+/// copied over in bulk instead of char-by-char.
+fn stringify_entities_into(output: &mut String, value: &str, subset: &[char]) {
+	debug_assert!(subset.iter().all(char::is_ascii), "ASCII-only subsets");
+	const HEX: &[u8; 16] = b"0123456789ABCDEF";
+	let bytes = value.as_bytes();
+	let mut start = 0;
+	for (index, &byte) in bytes.iter().enumerate() {
+		if byte.is_ascii() && subset.contains(&(byte as char)) {
+			output.push_str(&value[start..index]);
+			output.push_str("&#x");
+			// `{:X}` of the code point: at most two digits for ASCII, no
+			// leading zero.
+			if byte >= 0x10 {
+				output.push(HEX[(byte >> 4) as usize] as char);
+			}
+			output.push(HEX[(byte & 0x0F) as usize] as char);
+			output.push(';');
+			start = index + 1;
 		}
 	}
-	result
+	output.push_str(&value[start..]);
 }
 
 #[cfg(test)]
