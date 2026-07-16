@@ -28,10 +28,5 @@
 		"emnapi": "1.11.2",
 		"playwright-core": "^1.61.1",
 		"esbuild": "0.28.1"
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"esbuild"
-		]
 	}
 }

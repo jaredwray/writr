@@ -99,8 +99,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y wasi-libc libclang-rt-18-dev-wasm32 llvm
       - name: Install Dependencies
         run: pnpm install
+      # crates/writr-node has its own pnpm-workspace.yaml (settings boundary
+      # + esbuild allowBuilds), so a plain install stays local to it.
       - name: Install binding dependencies
-        run: pnpm install --ignore-workspace
+        run: pnpm install
         working-directory: writr-rs/crates/writr-node
       - name: Build native addon
         run: pnpm build:rs
