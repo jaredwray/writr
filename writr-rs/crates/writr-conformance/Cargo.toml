@@ -1,0 +1,16 @@
+[package]
+name = "writr-conformance"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+description = "Golden-snapshot conformance tests for writr-core against test/harness"
+
+[dependencies]
+writr-core = { path = "../writr-core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[lib]
+path = "src/lib.rs"

@@ -1,0 +1,1 @@
+[{"name":"Shell Session","aliases":["console","shellsession"],"contains":[{"$ref":1}]},{"className":"meta.prompt","begin":{"$re":"^\\s{0,3}[/~\\w\\d[\\]()@-]*[>%$#][ ]?","$flags":""},"starts":{"$ref":2}},{"end":{"$re":"[^\\\\](?=\\s*$)","$flags":""},"subLanguage":"bash"}]
