@@ -77,11 +77,14 @@ fn parse_options(options: &RenderOptions) -> ParseOptions {
 
 /// Render markdown to HTML.
 pub fn render(input: &str, options: &RenderOptions) -> Result<String, RenderError> {
-	Ok(to_html::to_html(
+	// HTML output for typical markdown runs a bit larger than the source.
+	let capacity = input.len() + input.len() / 4 + 64;
+	Ok(to_html::to_html_with_capacity(
 		&render_to_hast(input, options)?,
 		to_html::Options {
 			allow_dangerous_html: options.raw_html,
 		},
+		capacity,
 	))
 }
 

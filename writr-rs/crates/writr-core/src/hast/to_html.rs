@@ -34,7 +34,13 @@ pub struct Options {
 
 /// Serialize a hast tree to HTML.
 pub fn to_html(node: &Node, options: Options) -> String {
-	let mut output = String::new();
+	to_html_with_capacity(node, options, 0)
+}
+
+/// `to_html` with a pre-sized output buffer (callers that know the source
+/// length pass a heuristic to skip growth reallocations).
+pub fn to_html_with_capacity(node: &Node, options: Options, capacity: usize) -> String {
+	let mut output = String::with_capacity(capacity);
 	one(&mut output, node, None, Space::Html, options);
 	output
 }
@@ -81,8 +87,6 @@ fn serialize_element(output: &mut String, node: &Element, space: Space, options:
 			.iter()
 			.any(|void| void.eq_ignore_ascii_case(&node.tag_name));
 
-	let attributes = serialize_attributes(&node.properties, child_space);
-
 	let children = if child_space == Space::Html && node.tag_name == "template" {
 		node.template_content.as_deref().unwrap_or(&node.children)
 	} else {
@@ -91,9 +95,10 @@ fn serialize_element(output: &mut String, node: &Element, space: Space, options:
 
 	output.push('<');
 	output.push_str(&node.tag_name);
-	if !attributes.is_empty() {
-		output.push(' ');
-		output.push_str(&attributes);
+	// Defaults: `tightAttributes: false` — one space before every emitted
+	// attribute (equivalent to the reference's ` ` + `join(" ")`).
+	for (key, value) in &node.properties {
+		serialize_attribute_into(output, key, value, child_space);
 	}
 	// With defaults (`closeSelfClosing: false`, SVG `closeEmptyElements:
 	// false`) no ` /` is ever emitted before `>`.
@@ -111,56 +116,42 @@ fn serialize_element(output: &mut String, node: &Element, space: Space, options:
 	}
 }
 
-fn serialize_attributes(properties: &[(String, PropertyValue)], space: Space) -> String {
-	let mut values = Vec::new();
-	for (key, value) in properties {
-		if let Some(serialized) = serialize_attribute(key, value, space) {
-			values.push(serialized);
-		}
-	}
-	// Defaults: `tightAttributes: false` — every attribute but the last gets
-	// a trailing space.
-	values.join(" ")
-}
-
-fn serialize_attribute(key: &str, value: &PropertyValue, space: Space) -> Option<String> {
+fn serialize_attribute_into(output: &mut String, key: &str, value: &PropertyValue, space: Space) {
 	let info = find(space, key);
 	let value = coerce_boolean(value, &info);
 
 	match &value {
-		PropertyValue::Bool(false) => return None,
-		PropertyValue::Number(n) if n.is_nan() => return None,
+		PropertyValue::Bool(false) => return,
+		PropertyValue::Number(n) if n.is_nan() => return,
 		_ => {}
 	}
 
-	let name = stringify_entities(&info.attribute, NAME_SUBSET);
+	output.push(' ');
+	output.push_str(&stringify_entities(&info.attribute, NAME_SUBSET));
 
 	if value == PropertyValue::Bool(true) {
-		return Some(name);
+		return;
 	}
 
-	let string_value = match &value {
+	let string_value: std::borrow::Cow<'_, str> = match &value {
 		PropertyValue::List(items) => {
 			if info.comma_separated() {
-				stringify_commas(items)
+				stringify_commas(items).into()
 			} else {
-				stringify_spaces(items)
+				stringify_spaces(items).into()
 			}
 		}
-		PropertyValue::Number(n) => js::number_to_string(*n),
-		PropertyValue::String(s) => s.clone(),
+		PropertyValue::Number(n) => js::number_to_string(*n).into(),
+		PropertyValue::String(s) => s.as_str().into(),
 		PropertyValue::Bool(_) => unreachable!("booleans handled above"),
 	};
 
 	// Defaults: `collapseEmptyAttributes: false`, `preferUnquoted: false`,
 	// `quoteSmart: false` — always double-quoted.
-	let mut result = String::with_capacity(name.len() + string_value.len() + 3);
-	result.push_str(&name);
-	result.push('=');
-	result.push('"');
-	result.push_str(&stringify_entities(&string_value, DOUBLE_QUOTED_SUBSET));
-	result.push('"');
-	Some(result)
+	output.push('=');
+	output.push('"');
+	output.push_str(&stringify_entities(&string_value, DOUBLE_QUOTED_SUBSET));
+	output.push('"');
 }
 
 /// The boolean/overloaded-boolean coercion at the top of `serializeAttribute`.
