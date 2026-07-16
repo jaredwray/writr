@@ -99,8 +99,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: writr-rs
-      - name: Install wasi sysroot (QuickJS C sources)
-        run: sudo apt-get update && sudo apt-get install -y wasi-libc libclang-rt-18-dev-wasm32 llvm
+      - name: Install wasi sysroot (QuickJS C sources) + binaryen
+        run: sudo apt-get update && sudo apt-get install -y wasi-libc libclang-rt-18-dev-wasm32 llvm binaryen
       - name: Install Dependencies
         run: pnpm install
       # crates/writr-node has its own pnpm-workspace.yaml (settings boundary
