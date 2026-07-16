@@ -65,6 +65,7 @@
     "test:harness": "vitest run --config vitest.harness.config.ts",
     "build:rs": "cargo build --release --manifest-path writr-rs/Cargo.toml -p writr-node && node writr-rs/tools/copy-node-artifact.mjs",
     "build:rs:wasm": "node writr-rs/tools/build-wasm.mjs",
+    "build:rs:pgo": "node writr-rs/tools/build-pgo.mjs",
     "corpus:fetch": "tsx test/harness/fetch/fetcher.ts",
     "corpus:fetch:offline": "tsx test/harness/fetch/fetcher.ts --offline",
     "golden:generate": "tsx test/harness/generate-goldens.ts",

@@ -1,4 +1,5 @@
 /target
+/target-pgo
 **/*.node
 npm/**/*.node
 npm/**/*.wasm
