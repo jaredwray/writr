@@ -24,7 +24,6 @@
 		]
 	},
 	"devDependencies": {
-		"@napi-rs/cli": "^3.7.3",
 		"@napi-rs/wasm-runtime": "^1.1.6",
 		"emnapi": "1.11.2",
 		"playwright-core": "^1.61.1"
