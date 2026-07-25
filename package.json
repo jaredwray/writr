@@ -22,7 +22,7 @@
   },
   "author": "Jared Wray <me@jaredwray.com>",
   "engines": {
-    "node": "^22.18.0"
+    "node": "^22.18.0 || >=24.0.0"
   },
   "license": "MIT",
   "keywords": [
