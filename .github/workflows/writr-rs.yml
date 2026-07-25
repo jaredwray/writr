@@ -118,7 +118,12 @@ jobs:
         run: HARNESS_ENGINE=writr-rust WRITR_RS_FORCE_WASM=1 pnpm test:harness
       - name: Browser smoke (Chromium)
         run: |
-          npx playwright-core install chromium --with-deps || npx playwright install chromium --with-deps
+          # Install browsers with the same playwright-core the smoke test loads.
+          # browser-smoke.mjs requires playwright-core from crates/writr-node, so
+          # running the installer from the repo root — where it is not a dependency —
+          # makes npx fetch the newest release instead and download a browser build
+          # the pinned copy cannot launch.
+          (cd writr-rs/crates/writr-node && pnpm exec playwright-core install chromium --with-deps)
           node writr-rs/tools/browser-smoke.mjs
       - name: JS suite untouched
         run: pnpm test:ci
