@@ -3,7 +3,7 @@
   "version": "6.1.5",
   "description": "Markdown Rendering Simplified",
   "type": "module",
-  "packageManager": "pnpm@11.6.0",
+  "packageManager": "pnpm@11.21.0",
   "main": "./dist/writr.mjs",
   "types": "./dist/writr.d.mts",
   "exports": {
