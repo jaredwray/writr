@@ -57,6 +57,8 @@ jobs:
         working-directory: writr-rs
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@3ee274a48739f9c49921feda61cb199dc7520e62 # cargo-llvm-cov
+        with:
+          tool: cargo-llvm-cov
       # 97.75% at gate introduction; every uncovered line is documented as
       # unreachable-by-construction in writr-rs/COVERAGE.md.
       - name: Coverage gate
