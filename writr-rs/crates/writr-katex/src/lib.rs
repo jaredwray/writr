@@ -1,7 +1,7 @@
 //! KaTeX rendering for writr-rs.
 //!
 //! Byte-exact parity with rehype-katex requires the exact KaTeX version the
-//! goldens were generated with (0.16.45 — markup carries version-sensitive
+//! goldens were generated with (0.18.2 — markup carries version-sensitive
 //! layout floats). Rather than porting a TeX layout engine, this crate runs
 //! the real `katex.min.js` (vendored from the npm package, MIT licensed) on
 //! an embedded QuickJS runtime.
@@ -23,7 +23,7 @@ use std::sync::Mutex;
 const KATEX_SOURCE: &str = include_str!("../vendor/katex.min.js");
 
 /// The KaTeX version this crate embeds.
-pub const KATEX_VERSION: &str = "0.16.45";
+pub const KATEX_VERSION: &str = "0.18.2";
 
 const BOOTSTRAP: &str = r#"
 function __writrKatex(value, displayMode) {
