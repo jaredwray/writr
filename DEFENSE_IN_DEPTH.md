@@ -11,16 +11,16 @@ Profile: npm library · public
 
 ## 2. Repository lockdown
 
-- [ ] Lockdown script run; `lockdown-repo.sh --check` passes clean
-- [ ] Pull requests required on the default branch; force pushes and deletion blocked
-- [ ] Merges blocked unless required status checks pass (`--required-checks "<repo's CI jobs>"`)
-- [ ] Tag ruleset "Tags only by admins" active
-- [ ] Workflow runs from all outside collaborators require approval
-- [ ] Default workflow token read-only; Actions cannot create or approve PRs
-- [ ] Actions allowlist: GitHub-owned + verified + explicit patterns only (`--allowed-actions`)
-- [ ] Secret scanning + push protection enabled *(plan-gated on private repos)*
+- [x] Lockdown script run; `lockdown-repo.sh --check` passes clean — verified 2026-08-15 (maintainer apply)
+- [x] Pull requests required on the default branch; force pushes and deletion blocked — verified 2026-08-15 (ruleset "Pull requests required")
+- [x] Merges blocked unless required status checks pass (`--required-checks "<repo's CI jobs>"`) — verified 2026-08-15 (`tests (22)`, `tests (24)`, `tests (26)`, `zizmor`)
+- [x] Tag ruleset "Tags only by admins" active — verified 2026-08-15
+- [x] Workflow runs from all outside collaborators require approval — verified 2026-08-15 (maintainer apply)
+- [x] Default workflow token read-only; Actions cannot create or approve PRs — verified 2026-08-15 (maintainer apply)
+- [x] Actions allowlist: GitHub-owned + verified + explicit patterns only (`--allowed-actions`) — verified 2026-08-15 (`zizmorcore/* pnpm/* codecov/* cloudflare/* dtolnay/* Swatinem/* taiki-e/*`)
+- [x] Secret scanning + push protection enabled *(plan-gated on private repos)* — verified 2026-08-15 (maintainer apply)
 - [x] Private vulnerability reporting enabled *(public repos only)* — verified 2026-08-15
-- [ ] Dependabot alerts enabled
+- [x] Dependabot alerts enabled — verified 2026-08-15 (maintainer apply)
 - [ ] Phishing-resistant 2FA (passkeys / hardware keys) on the GitHub and npm accounts (manual)
 - [ ] Recovery codes stored offline in a password manager (manual)
 - [ ] Dev/release VM network egress filtered by a firewall (e.g. PMG) (manual)
