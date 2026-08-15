@@ -1978,7 +1978,7 @@ last_updated: "2024-12-01"
 All API requests require a Bearer token:
 
 \`\`\`bash
-curl -H "Authorization: Bearer YOUR_TOKEN" \\
+curl -H "Authorization: Bearer $TOKEN" \\
      https://api.example.com/v2/users
 \`\`\`
 
@@ -2199,7 +2199,7 @@ title: "Environment Variables"
 | Variable | Description | Example |
 |----------|-------------|---------|
 | DATABASE_URL | Database connection | postgres://... |
-| API_KEY | API authentication | sk_live_... |
+| API_KEY | API authentication | $API_KEY |
 | NODE_ENV | Environment | production |
 
 ## Optional Variables
@@ -2213,8 +2213,8 @@ title: "Environment Variables"
 ## Example .env
 
 \`\`\`bash
-DATABASE_URL=postgres://user:pass@localhost:5432/db
-API_KEY=sk_live_abcd1234
+DATABASE_URL=postgres://localhost:5432/example
+API_KEY=$API_KEY
 NODE_ENV=development
 PORT=3000
 \`\`\`
