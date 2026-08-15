@@ -1,3 +1,27 @@
 # Security Policy
 
-We attempt to keep this project up to date with the latest modules on a regular basis. Please make sure to upgrade to the latest to avoid major issues. To report a vulnerability please create an issue and assign the owner 'Jared Wray' to it as it will notify him and he is actively maintaining this project.
+We take security seriously and work to keep this project up to date. If you discover a security vulnerability, please report it **privately** so we can investigate and ship a fix before the issue becomes public.
+
+## Reporting a vulnerability
+
+Please use one of the following private channels — **do not open a public issue, pull request, or discussion** for security concerns:
+
+1. **Preferred:** open a private report via GitHub's [Privately reporting a security vulnerability](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability) flow on this repository's **Security** tab.
+2. **Email:** send the details to me@jaredwray.com. If the issue is urgent, include `[SECURITY]` in the subject line and we will respond as soon as possible.
+
+When reporting, please include as much of the following as you can:
+
+- A description of the vulnerability and its impact.
+- Steps to reproduce, or a proof-of-concept.
+- The affected version(s) and platform.
+- Any suggested remediation, if you have one.
+
+We will acknowledge receipt, work with you on a coordinated disclosure timeline, and credit you in the advisory once a fix is published unless you ask to remain anonymous.
+
+## How this repository is secured
+
+This repository follows the [defense-in-depth](https://github.com/jaredwray/agentic/blob/main/skills/security/defense-in-depth-nodejs/SKILL.md) hardening checklist; progress is tracked in [DEFENSE_IN_DEPTH.md](./DEFENSE_IN_DEPTH.md). Measures currently in place:
+
+- CI runs with read-only permissions; every action is pinned to a full commit SHA and workflows are security-linted with zizmor on every PR.
+- Dependencies install through pnpm with a 7-day cooldown on new versions, and lifecycle scripts are blocked by default. CI installs with a frozen lockfile. Socket reviews every dependency change.
+- npm releases are published with provenance via GitHub Actions OIDC trusted publishing. The publish workflow does not use an npm token.

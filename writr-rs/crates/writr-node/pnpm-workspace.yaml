@@ -1,2 +1,10 @@
+minimumReleaseAge: 10080 # 7 days, in minutes
+minimumReleaseAgeStrict: true
+minimumReleaseAgeIgnoreMissingTime: false
+blockExoticSubdeps: true
+strictDepBuilds: true
+dangerouslyAllowAllBuilds: false
+
+# esbuild: wasm/browser bundling for the Node binding.
 allowBuilds:
   esbuild: true
