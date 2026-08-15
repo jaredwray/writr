@@ -65,5 +65,15 @@ jobs:
     - name: Testing
       run: pnpm test:ci
 
-    - name: Publish
-      run: pnpm publish --access public --no-git-checks --provenance
+    - name: Pack
+      run: |
+        mkdir -p packed
+        pnpm pack --pack-destination packed
+        ls -la packed
+
+    - name: Ensure npm CLI for staged publishing
+      # zizmor: ignore[adhoc-packages] pin npm 11.19.0 so `npm stage publish` is available
+      run: npm install --global npm@11.19.0
+
+    - name: Stage publish
+      run: npm stage publish packed/*.tgz --access public --provenance
