@@ -22,7 +22,7 @@ Profile: npm library · public
 - [x] Private vulnerability reporting enabled *(public repos only)* — verified 2026-08-15
 - [x] Dependabot alerts enabled — verified 2026-08-15 (maintainer `--check`)
 - [x] Phishing-resistant 2FA (passkeys / hardware keys) on the GitHub and npm accounts (manual) — verified 2026-08-15 (maintainer)
-- [ ] Recovery codes stored offline in a password manager (manual)
+- [x] Recovery codes stored offline in a password manager (manual) — verified 2026-08-15 (maintainer)
 
 ## 3. Dependencies (pnpm)
 
