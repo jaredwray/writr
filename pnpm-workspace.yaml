@@ -1,4 +1,13 @@
-minimumReleaseAge: 2880
+minimumReleaseAge: 10080 # 7 days, in minutes
+minimumReleaseAgeStrict: true # fail instead of falling back to a too-new version
+minimumReleaseAgeIgnoreMissingTime: false # missing publish-time metadata fails closed
+blockExoticSubdeps: true
+strictDepBuilds: true
+dangerouslyAllowAllBuilds: false
+
+# Lifecycle-script exceptions — each entry is a reviewed security exception.
+# esbuild: used by tsdown / the JS build.
+# unrs-resolver: native resolver pulled in by the toolchain.
 allowBuilds:
   esbuild: true
   unrs-resolver: true

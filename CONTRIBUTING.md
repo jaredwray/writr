@@ -5,6 +5,10 @@ Please note we have a [Code of Conduct](CODE_OF_CONDUCT.md), please follow it in
 
 We release new versions of this project (maintenance/features) on a monthly cadence so please be aware that some items will not get released right away.
 
+# Dependencies
+
+New direct dependencies need human review before they land — extra scrutiny for install scripts, native builds, binary downloads, or recent ownership changes. Prefer `~` ranges over `^` for runtime dependencies; keep peer ranges consumer-friendly. Do not auto-merge dependency-update PRs.
+
 # Pull Request Process
 You can contribute changes to this repo by opening a pull request:
 
