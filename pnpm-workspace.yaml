@@ -9,9 +9,12 @@ dangerouslyAllowAllBuilds: false
 # tables stay on the same audited version (7.1.0).
 # Pin katex to the AIKIDO-2026-293837 patch. rehype-katex@7.0.1 declares
 # ^0.16.0, which never reaches 0.18.2; keep the Rust vendor in lockstep.
+# Pin @ungap/structured-clone to the AIKIDO-2026-11068 patch. Parents declare
+# ^1.0.0, which still admits 1.3.0.
 overrides:
   property-information: 7.1.0
   katex: 0.18.2
+  "@ungap/structured-clone": 1.3.3
 
 # Lifecycle-script exceptions — each entry is a reviewed security exception.
 # esbuild: used by tsdown / the JS build.
