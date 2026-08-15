@@ -39,7 +39,10 @@ function assertNoSecretBait(source: string, file: string): void {
 
 describe("markdown fixtures", () => {
 	it("does not embed secret-scanner bait in example snippets", () => {
-		const benchmark = fs.readFileSync("./benchmark/benchmark-contents.ts", "utf8");
+		const benchmark = fs.readFileSync(
+			"./benchmark/benchmark-contents.ts",
+			"utf8",
+		);
 		assertNoSecretBait(benchmark, "./benchmark/benchmark-contents.ts");
 		expect(benchmark).not.toMatch(
 			/(?:postgres|mysql|mongodb|redis):\/\/[^/\s:]+:[^@\s]+@/i,
