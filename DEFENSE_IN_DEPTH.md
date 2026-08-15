@@ -56,4 +56,4 @@ Profile: npm library · public
 
 - [ ] Aikido runs on every build
 - [ ] Aikido release gate: the release workflow's stage-publish job `needs:` a passing `scan-release` (PR #506 pending)
-- [ ] Socket reviews every PR that changes dependencies
+- [x] Socket reviews every PR that changes dependencies — verified 2026-08-15 (GitHub checks "Socket Security: Pull Request Alerts" and "Project Report" on PR #506)

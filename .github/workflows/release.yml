@@ -18,8 +18,10 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
+          package-manager-cache: false
 
       - name: Install Aikido CI client
+        # zizmor: ignore[adhoc-packages] pinned Aikido CI client for the release gate
         run: npm install --global @aikidosec/ci-api-client@1.0.17
 
       # Fails on new SAST/IaC/secrets findings. The API key comes from Aikido's
@@ -52,6 +54,7 @@ jobs:
       with:
         node-version: 24
         registry-url: 'https://registry.npmjs.org'
+        package-manager-cache: false
 
     - name: Install Dependencies
       run: pnpm install --frozen-lockfile
