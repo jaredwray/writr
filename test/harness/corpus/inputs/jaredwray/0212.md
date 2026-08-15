@@ -46,7 +46,7 @@ header.
 ```bash
 # Store a value
 curl -X PUT http://localhost:8080/cache/greeting \
-  -H "Authorization: Bearer dev-token" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"value":"hello world","ttl":"5m"}'
 
@@ -56,7 +56,7 @@ curl http://localhost:8080/cache/greeting \
 
 # Invalidate it
 curl -X DELETE http://localhost:8080/cache/greeting \
-  -H "Authorization: Bearer dev-token"
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 ## Subscribe to live changes

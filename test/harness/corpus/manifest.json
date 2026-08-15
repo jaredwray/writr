@@ -8329,8 +8329,8 @@
       "originPath": "mockhttp/README.md",
       "license": "MIT",
       "attribution": "https://raw.githubusercontent.com/jaredwray/mockhttp/01cc1066054ca32c019e74b1efd71c7aff991f61/README.md",
-      "sha256": "33bd1112e869d3e0769ff9267f0ad19195560a0f2be6f38cadc473f38b86a617",
-      "bytes": 37553,
+      "sha256": "724edf90057ed30f24deb1b1ebaa5cdc1e578a4df718a3eb6d77ced670628836",
+      "bytes": 37551,
       "profiles": [
         "default"
       ]
@@ -10214,8 +10214,8 @@
       "originPath": "http-cache/website/site/docs/getting-started.md",
       "license": "MIT",
       "attribution": "https://raw.githubusercontent.com/jaredwray/http-cache/2fb538a03f4ce0fdc5606e5afcd8d8cf11c7eb2b/website/site/docs/getting-started.md",
-      "sha256": "a10e81667be418c56a054150cda9e998f66bd2e9e7c6efcc2094efaa18025f49",
-      "bytes": 2335,
+      "sha256": "66ab6343dcd2cd78d8726a11de3ceac9940ca8c1bbb07811e2c9866b69d64bd2",
+      "bytes": 2329,
       "profiles": [
         "default"
       ]
@@ -11488,7 +11488,7 @@
       "originPath": "docula/site/docs/github-token.md",
       "license": "MIT",
       "attribution": "https://raw.githubusercontent.com/jaredwray/docula/1d96c299116e56c35e3b9344eb5efb572c18357b/site/docs/github-token.md",
-      "sha256": "ece4152fc9dfe4fbea5cfac95f994fd862e5a1f3d67986fe8bb6ddd15bf5674c",
+      "sha256": "e2395ae1eae67d87803235d4eb738a5ba6d7837c04b99abc484442707a4b5728",
       "bytes": 1994,
       "profiles": [
         "default"

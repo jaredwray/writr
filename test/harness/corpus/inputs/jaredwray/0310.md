@@ -18,13 +18,13 @@ Docula reads the `GITHUB_TOKEN` environment variable. You can set it in several 
 ### Inline with the CLI
 
 ```bash
-GITHUB_TOKEN=ghp_yourtoken npx docula build
+GITHUB_TOKEN=$GITHUB_TOKEN npx docula build
 ```
 
 ### Export in your shell
 
 ```bash
-export GITHUB_TOKEN=ghp_yourtoken
+export GITHUB_TOKEN=$GITHUB_TOKEN
 npx docula build
 ```
 
@@ -33,7 +33,7 @@ npx docula build
 Add the token to a `.env` file in your project root and load it with a tool like `dotenv`:
 
 ```
-GITHUB_TOKEN=ghp_yourtoken
+GITHUB_TOKEN=$GITHUB_TOKEN
 ```
 
 Make sure `.env` is listed in your `.gitignore` so the token is never committed.
