@@ -11,8 +11,8 @@ description = "Node.js bindings (napi-rs) for the writr-rs markdown engine"
 crate-type = ["cdylib"]
 
 [dependencies]
-napi = { version = "3", default-features = false, features = ["napi8"] }
-napi-derive = "3"
+napi = { version = "3.12.1", default-features = false, features = ["napi8"] }
+napi-derive = "3.6.3"
 writr-core = { path = "../writr-core" }
 serde_json = { workspace = true }
 markdown = { workspace = true, features = ["serde"] }
@@ -23,4 +23,4 @@ markdown = { workspace = true, features = ["serde"] }
 writr-core = { path = "../writr-core", features = ["parallel"] }
 
 [build-dependencies]
-napi-build = "2"
+napi-build = "2.4.1"
