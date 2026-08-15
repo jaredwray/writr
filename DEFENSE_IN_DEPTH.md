@@ -6,8 +6,8 @@ Profile: npm library · public
 
 ## 1. Security docs
 
-- [ ] `SECURITY.md` present — contact info + "How this repository is secured" summary (PR pending)
-- [ ] `DEFENSE_IN_DEPTH.md` present (this file) (PR pending)
+- [ ] `SECURITY.md` present — contact info + "How this repository is secured" summary (PR #506 pending)
+- [ ] `DEFENSE_IN_DEPTH.md` present (this file) (PR #506 pending)
 
 ## 2. Repository lockdown
 
@@ -28,19 +28,19 @@ Profile: npm library · public
 ## 3. Dependencies (pnpm)
 
 - [x] `packageManager: pnpm@11.x` pinned in `package.json` — verified 2026-08-15 (`pnpm@11.21.0`)
-- [ ] 7-day cooldown: `minimumReleaseAge: 10080`, `minimumReleaseAgeStrict: true`, `minimumReleaseAgeIgnoreMissingTime: false` (PR pending)
-- [ ] Lifecycle scripts blocked: `strictDepBuilds: true`, `dangerouslyAllowAllBuilds: false`, `allowBuilds: {}` baseline (PR pending)
-- [ ] `blockExoticSubdeps: true` (PR pending)
-- [ ] Lockfile committed; CI installs with `pnpm install --frozen-lockfile` (PR pending)
+- [ ] 7-day cooldown: `minimumReleaseAge: 10080`, `minimumReleaseAgeStrict: true`, `minimumReleaseAgeIgnoreMissingTime: false` (PR #506 pending)
+- [ ] Lifecycle scripts blocked: `strictDepBuilds: true`, `dangerouslyAllowAllBuilds: false`, `allowBuilds: {}` baseline (PR #506 pending)
+- [ ] `blockExoticSubdeps: true` (PR #506 pending)
+- [ ] Lockfile committed; CI installs with `pnpm install --frozen-lockfile` (PR #506 pending)
 - [x] Dependency-update tooling opens PRs only — never auto-merge — verified 2026-08-15 (Dependabot Updates active; no auto-merge config in-repo)
-- [ ] New direct dependencies get human review; prefer `~` ranges over `^` (PR pending)
+- [ ] New direct dependencies get human review; prefer `~` ranges over `^` (PR #506 pending)
 
 ## 4. GitHub Actions
 
-- [ ] `permissions: contents: read` (or `{}` + per-job grants) on every workflow (PR pending)
+- [ ] `permissions: contents: read` (or `{}` + per-job grants) on every workflow (PR #506 pending)
 - [x] Every action pinned to a full commit SHA (`npx actions-up`) — verified 2026-08-15
-- [ ] `.github/workflows/check-workflows.yaml` lints workflows with zizmor on every PR (PR pending)
-- [ ] `persist-credentials: false` on checkouts that don't push (PR pending)
+- [ ] `.github/workflows/check-workflows.yaml` lints workflows with zizmor on every PR (PR #506 pending)
+- [ ] `persist-credentials: false` on checkouts that don't push (PR #506 pending)
 - [x] No `pull_request_target` on workflows that run untrusted PR code — verified 2026-08-15
 - [x] No npm tokens (or other registry credentials) in Actions secrets — verified 2026-08-15 (no workflow references `NPM_TOKEN` / `NODE_AUTH_TOKEN`; publish uses OIDC provenance)
 
@@ -55,5 +55,5 @@ Profile: npm library · public
 ## 6. Security tooling
 
 - [ ] Aikido runs on every build
-- [ ] Aikido release gate: the release workflow's stage-publish job `needs:` a passing `scan-release` (PR pending)
+- [ ] Aikido release gate: the release workflow's stage-publish job `needs:` a passing `scan-release` (PR #506 pending)
 - [ ] Socket reviews every PR that changes dependencies
