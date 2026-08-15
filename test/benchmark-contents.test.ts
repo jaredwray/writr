@@ -21,27 +21,32 @@ function collectFromDir(root: string, files: string[]): void {
 }
 
 function collectFixtureFiles(): string[] {
-	const files = ["./benchmark/benchmark-contents.ts"];
+	const files: string[] = [];
 	collectFromDir("./test/harness", files);
 	collectFromDir("./writr-rs/crates/writr-core/tests/fixtures", files);
 	return files;
 }
 
+function assertNoSecretBait(source: string, file: string): void {
+	// Aikido/gitleaks treat `Authorization: Bearer <word>` as a live token.
+	expect(source, file).not.toMatch(
+		/\bAuthorization:\s*Bearer\s+[A-Za-z0-9._-]{8,}/i,
+	);
+	expect(source, file).not.toMatch(/\bBearer\s+[A-Za-z0-9._-]{8,}/);
+	expect(source, file).not.toMatch(/\bsk_(?:live|test)_/);
+	expect(source, file).not.toMatch(/\bghp_[A-Za-z0-9]+/);
+}
+
 describe("markdown fixtures", () => {
 	it("does not embed secret-scanner bait in example snippets", () => {
-		for (const file of collectFixtureFiles()) {
-			const source = fs.readFileSync(file, "utf8");
+		const benchmark = fs.readFileSync("./benchmark/benchmark-contents.ts", "utf8");
+		assertNoSecretBait(benchmark, "./benchmark/benchmark-contents.ts");
+		expect(benchmark).not.toMatch(
+			/(?:postgres|mysql|mongodb|redis):\/\/[^/\s:]+:[^@\s]+@/i,
+		);
 
-			// Aikido/gitleaks treat `Authorization: Bearer <word>` as a live token.
-			expect(source, file).not.toMatch(
-				/\bAuthorization:\s*Bearer\s+[A-Za-z0-9._-]{8,}/i,
-			);
-			expect(source, file).not.toMatch(/\bBearer\s+[A-Za-z0-9._-]{8,}/);
-			expect(source, file).not.toMatch(/\bsk_(?:live|test)_/);
-			expect(source, file).not.toMatch(/\bghp_[A-Za-z0-9]+/);
-			expect(source, file).not.toMatch(
-				/(?:postgres|mysql|mongodb|redis):\/\/[^/\s:]+:[^@\s]+@/i,
-			);
+		for (const file of collectFixtureFiles()) {
+			assertNoSecretBait(fs.readFileSync(file, "utf8"), file);
 		}
 	});
 });
