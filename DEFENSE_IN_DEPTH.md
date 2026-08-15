@@ -23,7 +23,6 @@ Profile: npm library · public
 - [x] Dependabot alerts enabled — verified 2026-08-15 (maintainer `--check`)
 - [ ] Phishing-resistant 2FA (passkeys / hardware keys) on the GitHub and npm accounts (manual)
 - [ ] Recovery codes stored offline in a password manager (manual)
-- [ ] Dev/release VM network egress filtered by a firewall (e.g. PMG) (manual)
 
 ## 3. Dependencies (pnpm)
 
