@@ -13,7 +13,7 @@ Profile: npm library · public
 
 - [x] Lockdown script run; `lockdown-repo.sh --check` passes clean — verified 2026-08-15 (maintainer `--check`)
 - [x] Pull requests required on the default branch; force pushes and deletion blocked — verified 2026-08-15 (ruleset "Pull requests required")
-- [x] Merges blocked unless required status checks pass (`--required-checks "<repo's CI jobs>"`) — verified 2026-08-15 (`tests (22)`, `tests (24)`, `tests (26)`, `zizmor`; AI integration reports `ai-integration-tests`) — PR # pending
+- [x] Merges blocked unless required status checks pass (`--required-checks "<repo's CI jobs>"`) — verified 2026-08-15 (`tests (22)`, `tests (24)`, `tests (26)`, `zizmor`; AI integration reports `ai-integration-tests`) — PR #513
 - [x] Tag ruleset "Tags only by admins" active — verified 2026-08-15
 - [x] Workflow runs from all outside collaborators require approval — verified 2026-08-15 (maintainer `--check`)
 - [x] Default workflow token read-only; Actions cannot create or approve PRs — verified 2026-08-15 (maintainer `--check`)
