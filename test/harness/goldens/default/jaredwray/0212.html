@@ -24,7 +24,7 @@ image and point it at your own backend:</p>
 header.</p>
 <pre><code class="hljs language-bash"><span class="hljs-comment"># Store a value</span>
 curl -X PUT http://localhost:8080/cache/greeting \
-  -H <span class="hljs-string">"Authorization: Bearer dev-token"</span> \
+  -H <span class="hljs-string">"Authorization: Bearer <span class="hljs-variable">$TOKEN</span>"</span> \
   -H <span class="hljs-string">"Content-Type: application/json"</span> \
   -d <span class="hljs-string">'{"value":"hello world","ttl":"5m"}'</span>
 
@@ -34,7 +34,7 @@ curl http://localhost:8080/cache/greeting \
 
 <span class="hljs-comment"># Invalidate it</span>
 curl -X DELETE http://localhost:8080/cache/greeting \
-  -H <span class="hljs-string">"Authorization: Bearer dev-token"</span>
+  -H <span class="hljs-string">"Authorization: Bearer <span class="hljs-variable">$TOKEN</span>"</span>
 </code></pre>
 <h2 id="subscribe-to-live-changes">Subscribe to live changes</h2>
 <p>socket.io is enabled by default, so clients can react to cache changes instantly:</p>

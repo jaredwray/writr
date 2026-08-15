@@ -358,7 +358,7 @@ const tap = mock.taps.inject(
   {
     url: "/api/secure",
     headers: {
-      "authorization": "Bearer token123"
+      "authorization": "Bearer $TOKEN"
     }
   }
 );

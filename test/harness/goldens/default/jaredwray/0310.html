@@ -5,15 +5,15 @@
 <h2 id="setting-the-token">Setting the Token</h2>
 <p>Docula reads the <code>GITHUB_TOKEN</code> environment variable. You can set it in several ways:</p>
 <h3 id="inline-with-the-cli">Inline with the CLI</h3>
-<pre><code class="hljs language-bash">GITHUB_TOKEN=ghp_yourtoken npx docula build
+<pre><code class="hljs language-bash">GITHUB_TOKEN=<span class="hljs-variable">$GITHUB_TOKEN</span> npx docula build
 </code></pre>
 <h3 id="export-in-your-shell">Export in your shell</h3>
-<pre><code class="hljs language-bash"><span class="hljs-built_in">export</span> GITHUB_TOKEN=ghp_yourtoken
+<pre><code class="hljs language-bash"><span class="hljs-built_in">export</span> GITHUB_TOKEN=<span class="hljs-variable">$GITHUB_TOKEN</span>
 npx docula build
 </code></pre>
 <h3 id="using-a-env-file">Using a <code>.env</code> file</h3>
 <p>Add the token to a <code>.env</code> file in your project root and load it with a tool like <code>dotenv</code>:</p>
-<pre><code>GITHUB_TOKEN=ghp_yourtoken
+<pre><code>GITHUB_TOKEN=$GITHUB_TOKEN
 </code></pre>
 <p>Make sure <code>.env</code> is listed in your <code>.gitignore</code> so the token is never committed.</p>
 <h3 id="github-actions">GitHub Actions</h3>
