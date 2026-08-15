@@ -7,8 +7,11 @@ dangerouslyAllowAllBuilds: false
 
 # Force a single property-information so JS serialization and Rust codegen
 # tables stay on the same audited version (7.1.0).
+# Pin katex to the AIKIDO-2026-293837 patch. rehype-katex@7.0.1 declares
+# ^0.16.0, which never reaches 0.18.2; keep the Rust vendor in lockstep.
 overrides:
   property-information: 7.1.0
+  katex: 0.18.2
 
 # Lifecycle-script exceptions — each entry is a reviewed security exception.
 # esbuild: used by tsdown / the JS build.

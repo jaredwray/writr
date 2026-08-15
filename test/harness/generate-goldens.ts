@@ -17,6 +17,7 @@
  */
 
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -225,22 +226,42 @@ function writeVersions(): void {
 	];
 	const versions: Record<string, string> = {};
 	for (const pkg of packages) {
-		try {
-			const pkgJson = JSON.parse(
-				fs.readFileSync(
-					path.join(root, "node_modules", pkg, "package.json"),
-					"utf8",
-				),
-			) as { version: string };
-			versions[pkg] = pkgJson.version;
-		} catch {
-			versions[pkg] = "not-installed";
-		}
+		versions[pkg] = readInstalledVersion(root, pkg);
 	}
 	fs.writeFileSync(
 		VERSIONS_PATH,
 		`${JSON.stringify({ capturedAt: new Date().toISOString(), versions }, null, 2)}\n`,
 	);
+}
+
+/**
+ * Resolve a package version from the pnpm layout. Direct deps are hoisted to
+ * `node_modules/<pkg>`; transitives such as katex live under their parent.
+ */
+function readInstalledVersion(root: string, pkg: string): string {
+	const direct = path.join(root, "node_modules", pkg, "package.json");
+	if (fs.existsSync(direct)) {
+		return (JSON.parse(fs.readFileSync(direct, "utf8")) as { version: string })
+			.version;
+	}
+	const parents = [
+		"rehype-katex",
+		"rehype-highlight",
+		"remark-math",
+		"lowlight",
+	];
+	for (const parent of parents) {
+		const parentPkg = path.join(root, "node_modules", parent, "package.json");
+		if (!fs.existsSync(parentPkg)) {
+			continue;
+		}
+		try {
+			return createRequire(parentPkg)(`${pkg}/package.json`).version as string;
+		} catch {
+			// try the next parent
+		}
+	}
+	return "not-installed";
 }
 
 async function main(): Promise<void> {

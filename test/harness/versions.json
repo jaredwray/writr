@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-06-14T22:01:32.931Z",
+  "capturedAt": "2026-08-15T21:35:01.081Z",
   "versions": {
     "writr": "not-installed",
     "unified": "11.0.5",
@@ -16,8 +16,8 @@
     "rehype-highlight": "7.0.2",
     "rehype-katex": "7.0.1",
     "rehype-stringify": "10.0.1",
-    "katex": "not-installed",
-    "highlight.js": "not-installed",
+    "katex": "0.18.2",
+    "highlight.js": "11.11.1",
     "lowlight": "not-installed"
   }
 }

@@ -179,7 +179,7 @@ fn render_batch_preserves_order_and_matches_render() {
 fn katex_version_is_pinned() {
 	// The `math` feature is on by default; the constant carries the embedded
 	// KaTeX version for drift auditing.
-	assert_eq!(writr_core::KATEX_VERSION, "0.16.45");
+	assert_eq!(writr_core::KATEX_VERSION, "0.18.2");
 }
 
 #[test]

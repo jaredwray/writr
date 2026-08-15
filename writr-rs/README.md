@@ -28,7 +28,7 @@ writr-rs/
   crates/
     writr-core/         # the engine: parse → mdast transforms → hast → html
     writr-hljs/         # highlight.js 11.11.1 engine port + 36 grammars
-    writr-katex/        # katex.min.js 0.16.45 embedded in QuickJS (rquickjs)
+    writr-katex/        # katex.min.js 0.18.2 embedded in QuickJS (rquickjs)
     writr-conformance/  # renders ../test/harness goldens, byte-diffs them
     writr-node/         # napi-rs bindings: native .node, wasm32-wasip1, browser.js
   vendor/markdown/      # vendored markdown-rs 1.0.0 + parity patches (see VENDORED.md)
@@ -176,7 +176,7 @@ addon, ~96µs engine-side) — that trade is deliberate:
 
 ## Parity-critical pinned versions
 
-highlight.js **11.11.1** · katex **0.16.45** · node-emoji **2.2.0** /
+highlight.js **11.11.1** · katex **0.18.2** · node-emoji **2.2.0** /
 emojilib 2.4.0 · github-slugger **2.0.0** · lowlight 3.3.0 ·
 property-information 7.1.0 · mdast-util-to-hast 13.2.1 · hast-util-to-html
 9.0.5 · micromark 4.0.2 (via markdown-rs 1.0.0, vendored with patches
