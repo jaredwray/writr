@@ -5,6 +5,11 @@ blockExoticSubdeps: true
 strictDepBuilds: true
 dangerouslyAllowAllBuilds: false
 
+# Force a single property-information so JS serialization and Rust codegen
+# tables stay on the same audited version (7.1.0).
+overrides:
+  property-information: 7.1.0
+
 # Lifecycle-script exceptions — each entry is a reviewed security exception.
 # esbuild: used by tsdown / the JS build.
 # unrs-resolver: native resolver pulled in by the toolchain.
