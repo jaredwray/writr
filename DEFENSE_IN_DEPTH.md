@@ -46,10 +46,10 @@ Profile: npm library · public
 
 ## 5. npm publishing — npm libraries only
 
-- [ ] OIDC trusted publishing configured **stage-only** on npmjs.com for the publish workflow — it can stage, never publish live (manual)
-- [ ] Staged publishing: CI runs `npm stage publish`; a maintainer promotes with 2FA (PR #507 pending)
-- [ ] Drydock connected — staged releases reviewed before promotion (manual)
-- [ ] No direct publish rights: package requires 2FA and disallows tokens (manual)
+- [x] OIDC trusted publishing configured **stage-only** on npmjs.com for the publish workflow — it can stage, never publish live — verified 2026-08-15 (maintainer)
+- [x] Staged publishing: CI runs `npm stage publish`; a maintainer promotes with 2FA — PR #507
+- [x] Drydock connected — staged releases reviewed before promotion — verified 2026-08-15 (maintainer)
+- [x] No direct publish rights: package requires 2FA and disallows tokens — verified 2026-08-15 (maintainer)
 - [x] `package.json` `repository.url` accurate so provenance maps to this repo — verified 2026-08-15
 
 ## 6. Security tooling
