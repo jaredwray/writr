@@ -1,0 +1,4 @@
+# Keep the tree LF-only. GitHub-hosted windows-latest runners default to
+# core.autocrlf=true, and actions/checkout v7 no longer overrides that, which
+# made the writr-rs golden harness diverge on CRLF markdown.
+* text=auto eol=lf

@@ -110,6 +110,10 @@ fn check_reports_divergence_and_render_errors() {
 	std::fs::write(&golden, "<h1>Hello</h1>\n").unwrap();
 	assert!(check(&bad, &options).is_none());
 
+	// CRLF input (Windows checkout) must still match the LF golden.
+	std::fs::write(&input, "# Hello\r\n").unwrap();
+	assert!(check(&bad, &options).is_none());
+
 	// An input that fails to render (MDX syntax error) → render error path.
 	let mdx_input = dir.join("broken.mdx");
 	let mdx_golden = dir.join("broken.html");

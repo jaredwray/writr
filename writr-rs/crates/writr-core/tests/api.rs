@@ -176,6 +176,51 @@ fn render_batch_preserves_order_and_matches_render() {
 }
 
 #[test]
+fn crlf_and_cr_inputs_match_lf() {
+	// Windows checkouts (core.autocrlf=true) feed CRLF into the golden
+	// harness; markdown-rs would otherwise keep CR in mdast text.
+	let commonmark = RenderOptions::all_off();
+	let list_lf = "-\n  foo\n";
+	let list_html = render(list_lf, &commonmark).unwrap();
+	assert_eq!(list_html, "<ul>\n<li>foo</li>\n</ul>");
+	assert_eq!(
+		render(&list_lf.replace('\n', "\r\n"), &commonmark).unwrap(),
+		list_html
+	);
+	assert_eq!(render("-\r  foo\r", &commonmark).unwrap(), list_html);
+
+	let gfm = RenderOptions {
+		gfm: true,
+		..RenderOptions::all_off()
+	};
+	let alert_lf = "> [!CAUTION]\n> Negative potential consequences of an action.\n";
+	let alert_html = render(alert_lf, &gfm).unwrap();
+	assert!(
+		alert_html.contains("<p>Negative potential consequences of an action.</p>"),
+		"{alert_html}"
+	);
+	assert_eq!(
+		render(&alert_lf.replace('\n', "\r\n"), &gfm).unwrap(),
+		alert_html
+	);
+
+	let highlight = RenderOptions {
+		highlight: true,
+		..RenderOptions::all_off()
+	};
+	let fence_lf = "```js\n// fetch the stored flag from environment variables\n```\n";
+	let fence_html = render(fence_lf, &highlight).unwrap();
+	assert!(
+		fence_html.contains("hljs-comment") && fence_html.contains("</span>"),
+		"{fence_html}"
+	);
+	assert_eq!(
+		render(&fence_lf.replace('\n', "\r\n"), &highlight).unwrap(),
+		fence_html
+	);
+}
+
+#[test]
 fn katex_version_is_pinned() {
 	// The `math` feature is on by default; the constant carries the embedded
 	// KaTeX version for drift auditing.
