@@ -18,6 +18,7 @@ use crate::hast::{from_mdast, to_html};
 use crate::options::RenderOptions;
 use crate::{frontmatter, hast};
 use markdown::ParseOptions;
+use std::borrow::Cow;
 
 /// Check that every enabled runtime flag has its cargo feature compiled in.
 fn check_features(options: &RenderOptions) -> Result<(), RenderError> {
@@ -100,9 +101,21 @@ pub fn parse_to_mdast(
 	options: &RenderOptions,
 ) -> Result<markdown::mdast::Node, RenderError> {
 	check_features(options)?;
-	let body = frontmatter::body(input);
+	// Collapse CR/CRLF to LF before parsing. CommonMark treats all three as
+	// line endings, and micromark's sliceSerialize emits LF; markdown-rs
+	// copies CR into mdast text, which breaks GFM alerts, list continuations
+	// after a marker-only line, and highlight spans on Windows checkouts.
+	let normalized = unify_line_endings(input);
+	let body = frontmatter::body(&normalized);
 	markdown::to_mdast(body, &parse_options(options))
 		.map_err(|message| RenderError::Parse(message.to_string()))
+}
+
+fn unify_line_endings(input: &str) -> Cow<'_, str> {
+	if !input.as_bytes().contains(&b'\r') {
+		return Cow::Borrowed(input);
+	}
+	Cow::Owned(input.replace("\r\n", "\n").replace('\r', "\n"))
 }
 
 /// mdast transforms + conversion + hast transforms.
