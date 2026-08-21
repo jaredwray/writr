@@ -9,8 +9,8 @@ Profile: npm library · public
 - [x] `DEFENSE_IN_DEPTH.md` present (this file) — PR #506
 
 ## 2. CODEOWNERS and cloud bootstrap
-- [ ] `.github/CODEOWNERS` covers `/.github/`, `/.cursor/`, `/.devcontainer/`, `/scripts/` with owners the maintainer names (PR #517 pending)
-- [ ] Codespaces and Cursor Cloud Agents bootstrap Aikido Safe Chain via scripts/setup-cloud-environment.sh (--ci shims, frozen lockfile)
+- [x] `.github/CODEOWNERS` covers `/.github/`, `/.cursor/`, `/.devcontainer/`, `/scripts/` with owners the maintainer names — PR #517
+- [ ] Codespaces and Cursor Cloud Agents bootstrap Aikido Safe Chain via scripts/setup-cloud-environment.sh (--ci shims, frozen lockfile) (PR pending)
 
 ## 3. Dependencies (pnpm)
 - [x] `packageManager: pnpm@11.3+` pinned in `package.json` — verified 2026-08-21 (`pnpm@11.21.0`)
