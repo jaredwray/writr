@@ -22,7 +22,8 @@ if [[ ! -f pnpm-lock.yaml ]]; then
 fi
 
 if [[ -f package.json ]] && grep -q '"packageManager"' package.json && command -v corepack >/dev/null; then
-  corepack enable
+  # Best-effort: non-root environments often cannot symlink into /usr/local/bin.
+  corepack enable || true
 fi
 
 if ! command -v pnpm >/dev/null; then
