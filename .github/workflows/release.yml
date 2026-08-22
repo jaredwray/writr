@@ -83,9 +83,7 @@ jobs:
         pnpm pack --pack-destination packed
         ls -la packed
 
-    - name: Ensure npm CLI for staged publishing
-      # zizmor: ignore[adhoc-packages] pin npm 11.19.0 so `npm stage publish` is available
-      run: sfw npm install --global npm@11.19.0
-
     - name: Stage publish
-      run: npm stage publish packed/*.tgz --access public --provenance
+      # pnpm ≥ 11.3. --no-git-checks: git-checks run even for a tarball and
+      # fail on a detached release-tag checkout and on the untracked pack output.
+      run: pnpm stage publish ./packed/*.tgz --access public --provenance --no-git-checks
