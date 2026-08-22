@@ -61,7 +61,7 @@ jobs:
           done
         working-directory: writr-rs
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@b549cefc011fbb8c6ea6125469ebafdb8f24bd7d # cargo-llvm-cov
+        uses: taiki-e/install-action@ba47c86ac325773530516bb756137ac718732518 # v2.86.5
         with:
           tool: cargo-llvm-cov
       # 97.75% at gate introduction; every uncovered line is documented as
