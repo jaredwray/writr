@@ -46,6 +46,6 @@ Profile: npm library · public
 - [x] Socket reviews every PR that changes dependencies — verified 2026-08-21 (GitHub checks "Socket Security: Pull Request Alerts" and "Project Report" on PR #516)
 
 ## 7. Repository lockdown
-- [ ] `lockdown-repo.sh` applied; `--check` with `--required-checks` and `--allowed-actions` passes (PRs required on the default branch, merges blocked unless required status checks pass, tag ruleset, immutable releases, fork-PR approval, read-only workflow tokens, Actions allowlist, secret scanning, Dependabot disabled, private vulnerability reporting as applicable) (PR pending)
+- [ ] `lockdown-repo.sh` applied; `--check` with `--required-checks` and `--allowed-actions` passes (PRs required on the default branch, merges blocked unless required status checks pass, tag ruleset, immutable releases, fork-PR approval, read-only workflow tokens, Actions allowlist, secret scanning, Dependabot disabled, private vulnerability reporting as applicable) (PR #522 pending)
 - [x] Phishing-resistant 2FA (passkeys / hardware keys) on the GitHub and npm accounts (manual) — verified 2026-08-15 (maintainer)
 - [x] Recovery codes stored offline in a password manager (manual) — verified 2026-08-15 (maintainer)
