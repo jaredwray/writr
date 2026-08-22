@@ -22,7 +22,7 @@ We will acknowledge receipt, work with you on a coordinated disclosure timeline,
 
 This repository follows the [defense-in-depth](https://github.com/jaredwray/agentic/blob/main/skills/security/defense-in-depth-nodejs/SKILL.md) hardening checklist; progress is tracked in [DEFENSE_IN_DEPTH.md](./DEFENSE_IN_DEPTH.md). Measures currently in place:
 
-- All changes land through pull requests. Direct pushes to `main` are blocked; merging requires the `tests (22)`, `tests (24)`, `tests (26)`, and `zizmor` checks. Tags (releases) can only be created by repository admins.
+- All changes land through pull requests. Direct pushes to `main` are blocked; merging requires the `tests (22)`, `tests (24)`, `tests (26)`, and `zizmor` checks. Tags can only be created by repository admins; published GitHub Releases are immutable.
 - CI runs with a read-only default workflow token; Actions cannot create or approve PRs. Workflow runs from outside collaborators require owner approval. Only GitHub-owned, verified, and allowlisted third-party actions can run.
 - Every action is pinned to a full commit SHA; Socket Firewall (`sfw`) wraps `pnpm install` / `npm install`; workflows are security-linted with zizmor on every PR. Secret scanning with push protection is enabled.
 - Codespaces and Cursor Cloud Agents install through Aikido Safe Chain; package-manager shims must not be bypassed.
