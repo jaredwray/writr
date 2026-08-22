@@ -34,7 +34,7 @@ Profile: npm library · public
 
 ## 5. npm publishing — npm libraries only
 - [x] OIDC trusted publishing configured **stage-only** on npmjs.com for the publish workflow — it can stage, never publish live (manual) — verified 2026-08-15 (maintainer)
-- [ ] `.github/workflows/release.yaml` packs then stages with `pnpm stage publish ./packed/*.tgz --no-git-checks` (PR #521 pending)
+- [x] `.github/workflows/release.yaml` packs then stages with `pnpm stage publish ./packed/*.tgz --no-git-checks` — PR #521
 - [x] Maintainer promotes staged versions with 2FA (manual) — verified 2026-08-15 (maintainer)
 - [x] Drydock connected — staged releases reviewed before promotion (manual) — verified 2026-08-15 (maintainer)
 - [x] No direct publish rights: package requires 2FA and disallows tokens (manual) — verified 2026-08-15 (maintainer)
@@ -46,6 +46,6 @@ Profile: npm library · public
 - [x] Socket reviews every PR that changes dependencies — verified 2026-08-21 (GitHub checks "Socket Security: Pull Request Alerts" and "Project Report" on PR #516)
 
 ## 7. Repository lockdown
-- [ ] `lockdown-repo.sh` applied; `--check` with `--required-checks` and `--allowed-actions` passes (PRs required on the default branch, merges blocked unless required status checks pass, tag ruleset, immutable releases, fork-PR approval, read-only workflow tokens, Actions allowlist, secret scanning, Dependabot disabled, private vulnerability reporting as applicable)
+- [x] `lockdown-repo.sh` applied; `--check` with `--required-checks` and `--allowed-actions` passes (PRs required on the default branch, merges blocked unless required status checks pass, tag ruleset, immutable releases, fork-PR approval, read-only workflow tokens, Actions allowlist, secret scanning, Dependabot disabled, private vulnerability reporting as applicable) — verified 2026-08-22 (maintainer `--check`)
 - [x] Phishing-resistant 2FA (passkeys / hardware keys) on the GitHub and npm accounts (manual) — verified 2026-08-15 (maintainer)
 - [x] Recovery codes stored offline in a password manager (manual) — verified 2026-08-15 (maintainer)
