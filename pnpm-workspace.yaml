@@ -4,6 +4,7 @@ minimumReleaseAgeIgnoreMissingTime: false # missing publish-time metadata fails 
 blockExoticSubdeps: true
 strictDepBuilds: true
 dangerouslyAllowAllBuilds: false
+trustPolicy: no-downgrade # fail if a later version has weaker trust evidence
 
 # Force a single property-information so JS serialization and Rust codegen
 # tables stay on the same audited version (7.1.0).
@@ -11,10 +12,14 @@ dangerouslyAllowAllBuilds: false
 # ^0.16.0, which never reaches 0.18.2; keep the Rust vendor in lockstep.
 # Pin @ungap/structured-clone to the AIKIDO-2026-11068 patch. Parents declare
 # ^1.0.0, which still admits 1.3.0.
+# Pin undici@5 to 7.29.0: 5.29.0 has no trusted publisher and fails
+# trustPolicy: no-downgrade (possible package takeover). 7.29.0 is already
+# in the tree via the current AI SDK and was published with OIDC.
 overrides:
   property-information: 7.1.0
   katex: 0.18.2
   "@ungap/structured-clone": 1.3.3
+  undici@5: 7.29.0
 
 # Lifecycle-script exceptions — each entry is a reviewed security exception.
 # esbuild: used by tsdown / the JS build.

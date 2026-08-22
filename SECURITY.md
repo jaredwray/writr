@@ -26,5 +26,5 @@ This repository follows the [defense-in-depth](https://github.com/jaredwray/agen
 - CI runs with a read-only default workflow token; Actions cannot create or approve PRs. Workflow runs from outside collaborators require owner approval. Only GitHub-owned, verified, and allowlisted third-party actions can run.
 - Every action is pinned to a full commit SHA and workflows are security-linted with zizmor on every PR. Secret scanning with push protection is enabled.
 - Codespaces and Cursor Cloud Agents install through Aikido Safe Chain; package-manager shims must not be bypassed.
-- Dependencies install through pnpm with a 7-day cooldown on new versions, and lifecycle scripts are blocked by default. CI installs with a frozen lockfile. Socket reviews every dependency change; Aikido scans every build.
+- Dependencies install through pnpm with a 7-day cooldown on new versions, lifecycle scripts blocked by default, and `trustPolicy: no-downgrade`. CI installs with a frozen lockfile. Socket reviews every dependency change; Aikido scans every build.
 - npm releases are staged, never published directly: CI authenticates with **stage-only** OIDC trusted publishing (`npm stage publish` with provenance). Drydock reviews the staged artifact; a maintainer promotes with 2FA. The package requires 2FA and disallows tokens.
