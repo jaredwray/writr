@@ -101,11 +101,11 @@
     "@ai-sdk/anthropic": "^4.0.36",
     "@ai-sdk/google": "^4.0.39",
     "@ai-sdk/openai": "^4.0.36",
-    "@biomejs/biome": "^2.5.7",
+    "@biomejs/biome": "^2.5.12",
     "@monstermann/tinybench-pretty-printer": "^0.3.0",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^5.0.0",
     "docula": "^2.2.0",
     "dotenv": "^17.3.1",
     "markdown-it": "^15.0.0",
@@ -116,7 +116,7 @@
     "tsdown": "^0.22.14",
     "tsx": "^4.23.11",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.10"
+    "vitest": "^5.0.0"
   },
   "files": [
     "dist",
