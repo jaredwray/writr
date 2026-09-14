@@ -224,7 +224,7 @@ fn crlf_and_cr_inputs_match_lf() {
 fn katex_version_is_pinned() {
 	// The `math` feature is on by default; the constant carries the embedded
 	// KaTeX version for drift auditing.
-	assert_eq!(writr_core::KATEX_VERSION, "0.18.2");
+	assert_eq!(writr_core::KATEX_VERSION, "0.18.7");
 }
 
 #[test]
