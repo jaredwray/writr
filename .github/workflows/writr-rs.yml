@@ -177,10 +177,24 @@ jobs:
           node-version: '24'
           cache: pnpm
       - name: Install Dependencies
-        run: sfw pnpm install --frozen-lockfile
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            sfw pnpm.cmd install --frozen-lockfile
+          else
+            sfw pnpm install --frozen-lockfile
+          fi
       - name: Install binding dependencies
-        run: sfw pnpm install --frozen-lockfile
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            sfw pnpm.cmd install --frozen-lockfile
+          else
+            sfw pnpm install --frozen-lockfile
+          fi
         working-directory: writr-rs/crates/writr-node
+      - name: Verify dependencies were installed
+        run: |
+          node -e "require.resolve('vitest')"
+          node -e "require.resolve('@napi-rs/wasm-runtime', { paths: ['./writr-rs/crates/writr-node'] })"
       - name: Core tests on host
         run: cargo test --locked --workspace --no-fail-fast
         working-directory: writr-rs
