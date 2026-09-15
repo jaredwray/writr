@@ -107,7 +107,6 @@ settings:
 
 overrides:
   katex: 0.18.7
-  undici@5: 7.29.0
 
 importers:
 
