@@ -2,26 +2,33 @@
 
 A Rust implementation of [writr](https://writr.org)'s markdown engine, with
 native Node.js, WASM and browser entry points. The JavaScript engine remains the
-compatibility oracle and default. Exact compatibility is not yet complete.
+compatibility oracle and default. Compatibility is checked against the committed JS-derived regression inventory.
 
 ## Parity status
 
 The historical suite contains 1,000 unique corpus documents and 2,041 assigned
 input/profile cases (1,968 corpus plus 73 diagnostic goldens). Those goldens use
 lossy whitespace normalization. New checks separately compare untrimmed JS
-sync/async and Rust sync/async output and consume 91 JS-derived public exact
-outcomes plus 14 internal HAST outcomes. The allowlist remains empty.
+sync/async and Rust sync/async output and consume 113 JS-derived public exact
+outcomes plus 15 internal HAST outcomes. The allowlist remains empty.
 
-The stricter fixtures expose MDX validation/ESM/expression, line-ending,
-autolink and HTML tree-building differences. See [KNOWN-DIVERGENCES.md](KNOWN-DIVERGENCES.md)
-and the [harness guide](../test/harness/README.md). A passing historical snapshot
-suite does not establish universal parser or stage compatibility.
+The expanded fixtures now pass locally after MDX grammar, line-ending,
+autolink and HTML tree-building corrections. See [KNOWN-DIVERGENCES.md](KNOWN-DIVERGENCES.md)
+and the [harness guide](../test/harness/README.md) for the scope of that evidence.
 
 The dedicated binding suite exercises all nine exports under native and forced
-WASM. Chromium uses the same JS oracle fixtures without COOP/COEP; its packed
-Buffer exports currently fail without a Buffer polyfill. Local evidence is
-Linux x64, Node 24 and Chromium. CI additionally schedules Node 22/24/26 and
-Linux/macOS/Windows hosts; consult execution reports for actual results.
+WASM. `pnpm test:bindings:mdx` isolates MDX success/rejection cases across those
+APIs. Chromium uses the same JS oracle fixtures without COOP/COEP. Packed output
+is Uint8Array in browsers and Buffer in Node; a Buffer polyfill is unnecessary.
+Local execution used Linux x64/Node 24 and Chromium. CI also requires Node
+22/24/26 and Linux/macOS/Windows; consult its reports for the complete milestone.
+
+MDX syntax validation runs the oracle's Acorn/JSX parser in the already-used
+QuickJS library. Expressions and imports are never evaluated. Parser versions,
+licenses and code generation live in `crates/writr-core/vendor/mdx`; each thread
+lazily retains one parser context without caching parsed inputs. The patched
+html5ever 0.39 library preserves the select rules used by pinned parse5. These
+correctness changes have not been benchmarked; no performance claim is made.
 
 ## Layout
 
@@ -120,8 +127,8 @@ pnpm exec tsx benchmark/benchmark-rust.ts               # engine vs writr-JS vs 
 `writr-node` is excluded from Rust line coverage. Dedicated native/WASM binding
 and browser contract tests complement that metric; they do not measure binding
 crate line coverage. Run `pnpm test:bindings` from the repository root in each
-mode. Exact parity tests currently fail on documented blockers, so no new
-passing coverage percentage or complete compatibility claim is made.
+mode. The exact regression inventory passes locally; broader host coverage must be
+confirmed by CI before claiming the testing milestone is complete.
 
 Codegen freshness: every table under `crates/*/src/generated` and
 `crates/writr-hljs/grammars` is generated from the **pinned npm packages**

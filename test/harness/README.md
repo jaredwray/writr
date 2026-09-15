@@ -28,7 +28,7 @@ the same inventory and validates counts, canonical bytes and file coverage;
 SHA-256 validation runs in the JavaScript gate. `profiles.json` defines the
 seven profiles; a Rust regression test checks its option values against Rust.
 
-The new shared `exact/outcomes.json` contains 91 public cases and 14 HAST stage
+The new shared `exact/outcomes.json` contains 113 public cases and 15 HAST stage
 cases. These include original diagnostics, selected existing real documents for
 no-highlight/no-math, 12 representative browser corpus documents, and a pairwise
 option matrix on two feature-rich inputs. These counts are distinct from API
@@ -60,6 +60,7 @@ pnpm test:harness                  # JS paths plus disposable integrity tests
 pnpm build:rs
 HARNESS_ENGINE=writr-rust pnpm test:harness
 pnpm test:bindings
+pnpm test:bindings:mdx             # isolated MDX cases across all binding APIs
 pnpm build:rs:wasm
 HARNESS_ENGINE=writr-rust WRITR_RS_FORCE_WASM=1 pnpm test:harness
 WRITR_RS_FORCE_WASM=1 pnpm test:bindings
@@ -98,9 +99,9 @@ WASM run in separate processes and prove which artifact loaded. Missing forced
 WASM must fail even when a native artifact exists. Export inventory is checked. Node also exposes three internal N-API task
 classes; the contract verifies that they have no public methods or usable constructors.
 
-Chromium consumes the same JS fixtures without COOP/COEP. Packed-buffer exports
-currently fail in the browser because emnapi requires a global Buffer polyfill;
-async failures can time out. Those failures remain visible. Firefox/WebKit are
+Chromium consumes the same JS fixtures without COOP/COEP. Packed outputs are Uint8Array in browsers and remain Buffer in Node, including
+forced WASM; no Buffer polyfill is required. The same offset/UTF-8/output
+assertions apply to both. Firefox/WebKit are
 not covered. MDAST tests are structural/API checks, not JS HTML parity claims.
 
 CI schedules checks on every PR and main push: JS freshness, Rust conformance,
@@ -113,5 +114,7 @@ profile counts, oracle versions, engine/API executions, failures and divergence
 dispositions from reports. Missing required engine/host evidence fails the
 summary. Reports must come from the same revision; use a clean report directory
 for each run. See [known divergences](../../writr-rs/KNOWN-DIVERGENCES.md) for
-remaining blockers. The testing milestone and complete compatibility remain
-incomplete; these gates deliberately expose failures instead of masking them.
+remaining blockers. Local exact, binding and Chromium checks pass after the compatibility fixes.
+The complete testing milestone also requires every CI runtime/host job to pass;
+consult the generated report for that evidence. No universal stage compatibility
+or runtime/packaging readiness is implied.

@@ -1032,6 +1032,7 @@ pub fn tag_end(tokenizer: &mut Tokenizer) -> State {
 /// ```
 pub fn es_whitespace_start(tokenizer: &mut Tokenizer) -> State {
     match tokenizer.current {
+        None => State::Ok,
         Some(b'\n') => {
             tokenizer.enter(Name::LineEnding);
             tokenizer.consume();
@@ -1080,7 +1081,10 @@ pub fn es_whitespace_inside(tokenizer: &mut Tokenizer) -> State {
             State::Ok
         }
         // Handle EOF.
-        None => State::Nok,
+        None => {
+            tokenizer.exit(Name::MdxJsxEsWhitespace);
+            State::Ok
+        },
     }
 }
 

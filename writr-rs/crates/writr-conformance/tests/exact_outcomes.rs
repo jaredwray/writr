@@ -62,12 +62,22 @@ fn profiles_match_shared_js_definitions() {
 }
 #[test]
 fn exact_public_outcomes_match_current_js() {
+	check_public(false);
+}
+#[test]
+fn exact_mdx_outcomes_match_current_js() {
+	check_public(true);
+}
+fn check_public(mdx: bool) {
 	let data = fixture();
 	let cases = data["cases"].as_array().unwrap();
 	assert!(!cases.is_empty());
 	let mut failures = Vec::new();
 	let mut results = Vec::new();
-	for c in cases {
+	for c in cases
+		.iter()
+		.filter(|c| c["options"]["mdx"].as_bool() == Some(mdx))
+	{
 		let opts = options(&c["options"]);
 		let input = c["input"].as_str().unwrap();
 		let expected = &c["outcome"];
@@ -93,7 +103,12 @@ fn exact_public_outcomes_match_current_js() {
 			failures.push(format!("{}: validate outcome differs from JS", c["id"]));
 		}
 	}
-	report("rust-public", &data["versions"], &results);
+	report(
+		if mdx { "rust-mdx" } else { "rust-public" },
+		&data["versions"],
+		&results,
+	);
+	assert!(!results.is_empty(), "required exact suite is empty");
 	assert!(
 		failures.is_empty(),
 		"{} failures:\n{}",

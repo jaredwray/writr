@@ -343,5 +343,23 @@
     },
     "divergence": "D11",
     "provenance": "Original HAST regression authored for Writr (MIT)"
+  },
+  {
+    "id": "stage/document-doctype",
+    "stage": "raw",
+    "tree": {
+      "type": "root",
+      "children": [
+        {
+          "type": "doctype"
+        },
+        {
+          "type": "text",
+          "value": "body"
+        }
+      ]
+    },
+    "divergence": "D03",
+    "provenance": "Original Writr document parsing regression (MIT)"
   }
 ]

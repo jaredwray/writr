@@ -10,29 +10,35 @@ It retains D01–D14 with linked JS-generated cases, stage/public reachability,
 disposition and remaining blockers. All tests assert compatibility directly;
 there are no expected-failure exceptions and the allowlist remains empty.
 
-## Current evidence and follow-up work
+## Current evidence
 
-- D02, D04, D05, D09, D10, D11 and D12 match the selected regression fixtures
-  after existing behavior and localized raw-tokenizer, property, slug and NUL
-  corrections. This is evidence for those cases, not universal stage parity.
-- D01 and D03 selected probes match, but the originally described differences
-  still need distinguishing reproductions. These categories remain open.
-- D06: full-fragment MathML stage parsing matches; public paragraph integration
-  still differs. Preserve integration-point context through the replay pipeline.
-- D07: reconcile the pinned parse5 and html5ever select tree-building behavior.
-- D08: preserve synthesized document structure in the HAST replay path.
-- D13: preserve escaped-email spans before autolink repair.
-- D14: implement compatible MDX JavaScript grammar validation, ESM and expression
-  handling. Regex approximations cannot establish JavaScript syntax parity.
-- Additional exact fixtures expose CR/CRLF preservation in code output. Resolve
-  the parser's global line-ending normalization without weakening exact checks.
-- Chromium packed-buffer exports require a global Buffer polyfill; current
-  failures and async deadlines remain explicit browser contract blockers.
+All linked regression fixtures pass locally. Dispositions are scoped to those
+fixtures; neither passing cases nor an empty allowlist prove universal stage
+compatibility. The generated report also requires every intended CI host and
+runtime before marking the testing milestone complete.
 
-The testing milestone is **incomplete**, and compatibility issues remain.
-Broader parser/replay work is a follow-up requirement before these strict gates
-can pass. Runtime and packaging readiness require independent evidence; no
-engine switch or release is part of this work.
+- D01's malformed table tree without an open table matches current JS; no
+  remaining counterexample is established by that original claim.
+- D02/D04/D05/D09–D12 match after the rawtext, template/foreign-content,
+  serialization, slug and NUL corrections.
+- D03/D08 use the JS pipeline's document-versus-fragment detection, preserving
+  synthesized document structure and a leading doctype.
+- D06 restores annotation-xml as a scope boundary.
+- D07 restores upstream html5ever's earlier select insertion modes, matching
+  pinned parse5; the same html5ever version and dependencies are retained.
+- D13 rejoins escaped text with tokenizer-created autolink suffixes before
+  applying the existing GFM transformation.
+- D14 uses real Acorn/JSX grammar callbacks in QuickJS, validates import scope
+  after speculative tokenization, and rejects incomplete JSX at EOF. User
+  expressions and imported modules are never executed.
+- CR/CRLF are preserved in source text/code. A marker-only list prefix counts
+  logical columns rather than the ignored CR byte. The earlier assertion that
+  every CRLF render equals LF was incorrect for the actual JS oracle.
+- Browser packed output uses Uint8Array without a Buffer polyfill; Node output
+  remains Buffer in both native and forced-WASM mode.
+
+Runtime, packaging and performance readiness require independent evidence.
+No engine switch, dependency version upgrade or package release is included.
 
 ## Original category descriptions (historical, retain numbering)
 

@@ -5,7 +5,8 @@ export function writeReport(suite: string, data: Record<string, unknown>) {
 	const mode =
 		process.env.WRITR_RS_FORCE_WASM === "1"
 			? "wasm"
-			: process.env.HARNESS_ENGINE === "writr-rust" || suite === "bindings"
+			: process.env.HARNESS_ENGINE === "writr-rust" ||
+					suite.startsWith("bindings")
 				? "native"
 				: "js";
 	const report = {

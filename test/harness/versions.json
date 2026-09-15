@@ -22,6 +22,9 @@
     "hast-util-raw": "9.1.0",
     "mdast-util-to-hast": "13.2.1",
     "micromark": "4.0.2",
-    "parse5": "7.3.0"
+    "parse5": "7.3.0",
+    "acorn": "8.18.0",
+    "acorn-jsx": "5.3.2",
+    "micromark-util-events-to-acorn": "2.0.3"
   }
 }

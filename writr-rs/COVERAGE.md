@@ -14,15 +14,14 @@ contract tests exercise all nine exports, including batch and packed-buffer
 paths. Export discovery detects an untested new export.
 
 Native and forced-WASM tests run in separate Node processes and verify artifact
-selection. Chromium consumes shared JS-derived outcomes; its Buffer exports
-currently fail without a browser Buffer polyfill. Local execution used Linux
+selection. Chromium consumes shared JS-derived outcomes. Packed output uses Uint8Array in
+browsers and retains Buffer in Node, with the same offset and UTF-8 assertions. Local execution used Linux
 x64/Node 24 and Chromium. Other Node versions and hosts are CI targets, not a
 claim of completed local coverage. Consult generated JSON execution reports.
 
-The new exact conformance tests currently expose unresolved compatibility
-failures. A test failing on a real mismatch is not passing coverage evidence;
-no updated coverage percentage is claimed. Existing coverage thresholds and
-feature-compilation checks remain enabled in CI.
+The expanded exact conformance inventory passes after the compatibility fixes.
+Existing coverage thresholds and feature-compilation checks remain enabled;
+use the coverage job's measured result, independently of binding API counts.
 
 ## Documented unreachable lines
 

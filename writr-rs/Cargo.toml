@@ -26,4 +26,5 @@ codegen-units = 1
 
 # Vendored with a to_mdast virtual-space fix — see vendor/markdown/VENDORED.md.
 [patch.crates-io]
+html5ever = { path = "vendor/html5ever" }
 markdown = { path = "vendor/markdown" }

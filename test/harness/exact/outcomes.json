@@ -22,7 +22,10 @@
     "hast-util-raw": "9.1.0",
     "mdast-util-to-hast": "13.2.1",
     "micromark": "4.0.2",
-    "parse5": "7.3.0"
+    "parse5": "7.3.0",
+    "acorn": "8.18.0",
+    "acorn-jsx": "5.3.2",
+    "micromark-util-events-to-acorn": "2.0.3"
   },
   "cases": [
     {
@@ -1795,6 +1798,583 @@
       }
     },
     {
+      "id": "mdx/template-braces",
+      "input": "{`hello ${\"}\"}`}",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "success",
+        "html": "`hello ${\"}\"}`"
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
+      "id": "mdx/regex-braces",
+      "input": "{/}/.test(\"}\")}",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "success",
+        "html": "/}/.test(\"}\")"
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
+      "id": "mdx/comments",
+      "input": "{/* } */ ({ok: true})}",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "success",
+        "html": "/* } */ ({ok: true})"
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
+      "id": "mdx/empty-expression",
+      "input": "{}",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "success",
+        "html": ""
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
+      "id": "mdx/empty-attribute",
+      "input": "<A x={} />",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "reject": true,
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "error",
+        "category": "parse"
+      },
+      "validation": {
+        "kind": "error",
+        "category": "parse"
+      },
+      "oracleError": {
+        "name": "1:7",
+        "message": "Unexpected empty expression",
+        "source": "micromark-extension-mdx-expression",
+        "ruleId": "unexpected-empty-expression"
+      }
+    },
+    {
+      "id": "mdx/invalid-spread",
+      "input": "<A {x: 1} />",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "reject": true,
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "error",
+        "category": "parse"
+      },
+      "validation": {
+        "kind": "error",
+        "category": "parse"
+      },
+      "oracleError": {
+        "name": "1:5",
+        "message": "Unexpected `Property` in code: only spread elements are supported",
+        "source": "micromark-extension-mdx-expression",
+        "ruleId": "non-spread"
+      }
+    },
+    {
+      "id": "mdx/multiple-spread",
+      "input": "<A {...x, ...y} />",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "reject": true,
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "error",
+        "category": "parse"
+      },
+      "validation": {
+        "kind": "error",
+        "category": "parse"
+      },
+      "oracleError": {
+        "name": "1:11",
+        "message": "Unexpected extra content in spread: only a single spread is supported",
+        "source": "micromark-extension-mdx-expression",
+        "ruleId": "spread-extra"
+      }
+    },
+    {
+      "id": "mdx/jsx-expression",
+      "input": "{<A title={\"}\"} />}",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "success",
+        "html": "&#x3C;A title={\"}\"} />"
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
+      "id": "mdx/import-export-binding",
+      "input": "import Thing from \"pkg\"\n\nexport {Thing}",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "success",
+        "html": "import Thing from \"pkg\"\nexport {Thing}"
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
+      "id": "mdx/unknown-export",
+      "input": "export {Missing}",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "reject": true,
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "error",
+        "category": "parse"
+      },
+      "validation": {
+        "kind": "error",
+        "category": "parse"
+      },
+      "oracleError": {
+        "name": "1:9",
+        "message": "Could not parse import/exports with acorn",
+        "source": "micromark-extension-mdxjs-esm",
+        "ruleId": "acorn"
+      }
+    },
+    {
+      "id": "mdx/esm-statements",
+      "input": "export const x = 1;\nconsole.log(x)",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "reject": true,
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "error",
+        "category": "parse"
+      },
+      "validation": {
+        "kind": "error",
+        "category": "parse"
+      },
+      "oracleError": {
+        "name": "2:1-2:15",
+        "message": "Unexpected `ExpressionStatement` in code: only import/exports are supported",
+        "source": "micromark-extension-mdxjs-esm",
+        "ruleId": "non-esm"
+      }
+    },
+    {
+      "id": "mdx/inert-expression",
+      "input": "{(() => { throw new Error(\"must not execute\") })()}",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "success",
+        "html": "(() => { throw new Error(\"must not execute\") })()"
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
+      "id": "mdx/inert-module",
+      "input": "import x from \"module-that-must-not-be-loaded\"\n\nexport default x",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "success",
+        "html": "import x from \"module-that-must-not-be-loaded\"\nexport default x"
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
+      "id": "mdx/unclosed-tag-whitespace",
+      "input": "<A x=   ",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "reject": true,
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "error",
+        "category": "parse"
+      },
+      "validation": {
+        "kind": "error",
+        "category": "parse"
+      },
+      "oracleError": {
+        "name": "1:9",
+        "message": "Unexpected end of file before attribute value, expected a character that can start an attribute value, such as `\"`, `'`, or `{`",
+        "source": "micromark-extension-mdx-jsx",
+        "ruleId": "unexpected-eof"
+      }
+    },
+    {
+      "id": "mdx/unicode-syntax-error",
+      "input": "{\"😀\" + }",
+      "profile": "mdx",
+      "provenance": "Original Writr MDX grammar regression (MIT)",
+      "reject": true,
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": true,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "error",
+        "category": "parse"
+      },
+      "validation": {
+        "kind": "error",
+        "category": "parse"
+      },
+      "oracleError": {
+        "name": "1:9",
+        "message": "Could not parse expression with acorn",
+        "source": "micromark-extension-mdx-expression",
+        "ruleId": "acorn"
+      }
+    },
+    {
+      "id": "text/crlf-paragraph",
+      "input": "a\r\nb",
+      "profile": "default",
+      "provenance": "Original Writr parser compatibility regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": false,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "success",
+        "html": "<p>a\r\nb</p>"
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
+      "id": "text/crlf-alert",
+      "input": "> [!NOTE]\r\n> hi\r\n",
+      "profile": "default",
+      "provenance": "Original Writr parser compatibility regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": false,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "success",
+        "html": "<div class=\"markdown-alert markdown-alert-note\" dir=\"auto\">\n<p class=\"markdown-alert-title\" dir=\"auto\"><svg class=\"octicon\" viewBox=\"0 0 16 16\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z\"></path></svg>NOTE</p>\n<p>\r\nhi</p>\n</div>"
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
+      "id": "html/select-optgroup",
+      "input": "<select><optgroup label=\"a\"><option>x<option>y</optgroup><hr><option>z</select>",
+      "profile": "rawhtml",
+      "provenance": "Original Writr parser compatibility regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": false,
+        "rawHtml": true
+      },
+      "outcome": {
+        "kind": "success",
+        "html": "<p><select><optgroup label=\"a\"><option>x</option><option>y</option></optgroup><hr><option>z</option></select></p>"
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
+      "id": "html/select-table",
+      "input": "<table><tr><td><select><option>x</select></td></tr></table>",
+      "profile": "rawhtml",
+      "provenance": "Original Writr parser compatibility regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": false,
+        "rawHtml": true
+      },
+      "outcome": {
+        "kind": "success",
+        "html": "<table><tbody><tr><td><select><option>x</option></select></td></tr></tbody></table>"
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
+      "id": "html/select-input",
+      "input": "<select><option>x<input value=\"y\">z",
+      "profile": "rawhtml",
+      "provenance": "Original Writr parser compatibility regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": false,
+        "rawHtml": true
+      },
+      "outcome": {
+        "kind": "success",
+        "html": "<p><select><option>x</option></select><input value=\"y\">z</p>"
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
+      "id": "html/select-nested",
+      "input": "<select><option>x<select><option>y</select>",
+      "profile": "rawhtml",
+      "provenance": "Original Writr parser compatibility regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": false,
+        "rawHtml": true
+      },
+      "outcome": {
+        "kind": "success",
+        "html": "<p><select><option>x</option></select><option>y</option></p>"
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
+      "id": "gfm/escaped-angle",
+      "input": "<foo\\+bar@example.com>",
+      "profile": "default",
+      "provenance": "Original Writr parser compatibility regression (MIT)",
+      "options": {
+        "emoji": true,
+        "toc": true,
+        "slug": true,
+        "highlight": true,
+        "gfm": true,
+        "math": true,
+        "mdx": false,
+        "rawHtml": false
+      },
+      "outcome": {
+        "kind": "success",
+        "html": "<p>&#x3C;<a href=\"mailto:foo+bar@example.com\">foo+bar@example.com</a>></p>"
+      },
+      "validation": {
+        "kind": "success",
+        "html": ""
+      }
+    },
+    {
       "id": "matrix/0/0",
       "input": "# Contents\n\n## Same :rocket:\n\n## Same :rocket:\n\n- [x] done\n\n```js\nconst x = 1;\n```\n\n$x^2$",
       "options": {
@@ -2701,6 +3281,28 @@
       "outcome": {
         "kind": "success",
         "html": "<h1 id=\"title\">Title</h1>"
+      }
+    },
+    {
+      "id": "stage/document-doctype",
+      "stage": "raw",
+      "tree": {
+        "type": "root",
+        "children": [
+          {
+            "type": "doctype"
+          },
+          {
+            "type": "text",
+            "value": "body"
+          }
+        ]
+      },
+      "divergence": "D03",
+      "provenance": "Original Writr document parsing regression (MIT)",
+      "outcome": {
+        "kind": "success",
+        "html": "<!doctype html><html><head></head><body>body</body></html>"
       }
     }
   ]

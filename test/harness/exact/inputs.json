@@ -459,5 +459,144 @@
     "profile": "rawhtml",
     "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
     "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "mdx/template-braces",
+    "input": "{`hello ${\"}\"}`}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/regex-braces",
+    "input": "{/}/.test(\"}\")}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/comments",
+    "input": "{/* } */ ({ok: true})}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/empty-expression",
+    "input": "{}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/empty-attribute",
+    "input": "<A x={} />",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/invalid-spread",
+    "input": "<A {x: 1} />",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/multiple-spread",
+    "input": "<A {...x, ...y} />",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/jsx-expression",
+    "input": "{<A title={\"}\"} />}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/import-export-binding",
+    "input": "import Thing from \"pkg\"\n\nexport {Thing}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/unknown-export",
+    "input": "export {Missing}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/esm-statements",
+    "input": "export const x = 1;\nconsole.log(x)",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/inert-expression",
+    "input": "{(() => { throw new Error(\"must not execute\") })()}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/inert-module",
+    "input": "import x from \"module-that-must-not-be-loaded\"\n\nexport default x",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/unclosed-tag-whitespace",
+    "input": "<A x=   ",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/unicode-syntax-error",
+    "input": "{\"😀\" + }",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)",
+    "reject": true
+  },
+  {
+    "id": "text/crlf-paragraph",
+    "input": "a\r\nb",
+    "profile": "default",
+    "provenance": "Original Writr parser compatibility regression (MIT)"
+  },
+  {
+    "id": "text/crlf-alert",
+    "input": "> [!NOTE]\r\n> hi\r\n",
+    "profile": "default",
+    "provenance": "Original Writr parser compatibility regression (MIT)"
+  },
+  {
+    "id": "html/select-optgroup",
+    "input": "<select><optgroup label=\"a\"><option>x<option>y</optgroup><hr><option>z</select>",
+    "profile": "rawhtml",
+    "provenance": "Original Writr parser compatibility regression (MIT)"
+  },
+  {
+    "id": "html/select-table",
+    "input": "<table><tr><td><select><option>x</select></td></tr></table>",
+    "profile": "rawhtml",
+    "provenance": "Original Writr parser compatibility regression (MIT)"
+  },
+  {
+    "id": "html/select-input",
+    "input": "<select><option>x<input value=\"y\">z",
+    "profile": "rawhtml",
+    "provenance": "Original Writr parser compatibility regression (MIT)"
+  },
+  {
+    "id": "html/select-nested",
+    "input": "<select><option>x<select><option>y</select>",
+    "profile": "rawhtml",
+    "provenance": "Original Writr parser compatibility regression (MIT)"
+  },
+  {
+    "id": "gfm/escaped-angle",
+    "input": "<foo\\+bar@example.com>",
+    "profile": "default",
+    "provenance": "Original Writr parser compatibility regression (MIT)"
   }
 ]

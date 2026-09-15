@@ -74,7 +74,8 @@
     "website:serve": "rimraf ./site/README.md ./site/dist && pnpm docula dev",
     "test:bindings": "vitest run --config vitest.bindings.config.ts",
     "golden:exact:generate": "tsx test/harness/generate-exact.ts",
-    "golden:exact:check": "tsx test/harness/generate-exact.ts --check"
+    "golden:exact:check": "tsx test/harness/generate-exact.ts --check",
+    "test:bindings:mdx": "vitest run --config vitest.bindings.config.ts test/bindings/mdx.test.ts"
   },
   "dependencies": {
     "ai": "^7.0.93",

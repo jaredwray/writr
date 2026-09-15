@@ -383,6 +383,52 @@ fn walk(node: &mut mdast::Node, pass: &dyn Fn(&str) -> Option<Vec<Found>>) {
 	}
 }
 
+/// Restore the text run when the tokenizer recognizes only the suffix after
+/// an escape. Explicit Markdown links and angle autolinks retain their nodes.
+pub fn restore_escaped_runs(node: &mut mdast::Node, source: &str) {
+	let Some(children) = node.children_mut() else {
+		return;
+	};
+	let mut i = 1;
+	while i < children.len() {
+		let merge = match (&children[i - 1], &children[i]) {
+			(mdast::Node::Text(text), mdast::Node::Link(link)) => {
+				match (&text.position, &link.position) {
+					(Some(a), Some(b)) if a.end.offset == b.start.offset => {
+						let prefix = source.get(a.start.offset..a.end.offset).unwrap_or("");
+						let raw = source.get(b.start.offset..b.end.offset).unwrap_or("");
+						prefix.contains('\\')
+							&& !raw.starts_with(['[', '<'])
+							&& link.children.len() == 1
+							&& matches!(&link.children[0], mdast::Node::Text(label) if label.value == raw)
+					}
+					_ => false,
+				}
+			}
+			_ => false,
+		};
+		if merge {
+			let mdast::Node::Link(link) = children.remove(i) else {
+				unreachable!()
+			};
+			let mdast::Node::Text(text) = &mut children[i - 1] else {
+				unreachable!()
+			};
+			if let mdast::Node::Text(label) = &link.children[0] {
+				text.value.push_str(&label.value);
+			}
+			if let (Some(a), Some(b)) = (&mut text.position, link.position) {
+				a.end = b.end;
+			}
+		} else {
+			i += 1;
+		}
+	}
+	for child in children {
+		restore_escaped_runs(child, source);
+	}
+}
+
 /// Apply the transform (remark-gfm runs this right after parsing).
 pub fn transform(tree: &mut mdast::Node) {
 	walk(tree, &url_pass);

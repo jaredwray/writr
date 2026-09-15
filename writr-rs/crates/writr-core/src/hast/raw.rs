@@ -530,6 +530,7 @@ impl TokenSink for TrackingSink<'_> {
 }
 
 struct Driver {
+	document: bool,
 	builder: Builder,
 	state: Cell<TrackedState>,
 	last_start_tag: RefCell<Option<String>>,
@@ -539,6 +540,9 @@ struct Driver {
 
 impl Driver {
 	fn new() -> Self {
+		Self::with_document(false)
+	}
+	fn with_document(document: bool) -> Self {
 		let sink = ArenaSink::new();
 		// parse5's default fragment context is a `<template>` element.
 		let context = create_element(
@@ -546,16 +550,27 @@ impl Driver {
 			QualName::new(None, ns!(html), LocalName::from("template")),
 			Vec::new(),
 		);
-		let builder = TreeBuilder::new_for_fragment(
-			sink,
-			context,
-			None,
-			TreeBuilderOpts {
-				scripting_enabled: false,
-				..TreeBuilderOpts::default()
-			},
-		);
+		let builder = if document {
+			TreeBuilder::new(
+				sink,
+				TreeBuilderOpts {
+					scripting_enabled: false,
+					..TreeBuilderOpts::default()
+				},
+			)
+		} else {
+			TreeBuilder::new_for_fragment(
+				sink,
+				context,
+				None,
+				TreeBuilderOpts {
+					scripting_enabled: false,
+					..TreeBuilderOpts::default()
+				},
+			)
+		};
 		Self {
+			document,
 			builder,
 			state: Cell::new(TrackedState::Data),
 			last_start_tag: RefCell::new(None),
@@ -722,16 +737,22 @@ impl Driver {
 			let ArenaNode::Document { children } = &arena.nodes[sink.document] else {
 				unreachable!("document handle is a document");
 			};
-			children
-				.iter()
-				.copied()
-				.find_map(|child| match &arena.nodes[child] {
-					ArenaNode::Element { name, children, .. } if name.local.as_ref() == "html" => {
-						Some(children.clone())
-					}
-					_ => None,
-				})
-				.unwrap_or_default()
+			if self.document {
+				children.clone()
+			} else {
+				children
+					.iter()
+					.copied()
+					.find_map(|child| match &arena.nodes[child] {
+						ArenaNode::Element { name, children, .. }
+							if name.local.as_ref() == "html" =>
+						{
+							Some(children.clone())
+						}
+						_ => None,
+					})
+					.unwrap_or_default()
+			}
 		};
 		(sink, children)
 	}
@@ -999,7 +1020,13 @@ pub fn parse_fragment(html: &str) -> Vec<Node> {
 
 /// Apply raw-HTML processing to a hast tree (the rehype-raw stage).
 pub fn process(tree: &Node) -> Node {
-	let driver = Driver::new();
+	let head = match tree {
+		Node::Root(children) => children.first(),
+		_ => Some(tree),
+	};
+	let document = matches!(head, Some(Node::Doctype))
+		|| matches!(head, Some(Node::Element(el)) if el.tag_name.eq_ignore_ascii_case("html"));
+	let driver = Driver::with_document(document);
 	driver.handle(tree);
 	let (sink, children) = driver.into_fragment();
 	let arena = sink.arena.borrow();

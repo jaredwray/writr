@@ -27,10 +27,23 @@ const packages = [
 	"mdast-util-to-hast",
 	"micromark",
 	"parse5",
+	"acorn",
+	"acorn-jsx",
+	"micromark-util-events-to-acorn",
 ];
+const mdx = createRequire(require.resolve("remark-mdx"));
+const extension = createRequire(mdx.resolve("micromark-extension-mdxjs"));
+const expression = createRequire(
+	extension.resolve("micromark-extension-mdx-expression"),
+);
+const factory = createRequire(
+	expression.resolve("micromark-factory-mdx-expression"),
+);
 function version(name: string) {
 	const parents = [
 		require,
+		extension,
+		factory,
 		...[
 			"rehype-katex",
 			"rehype-highlight",

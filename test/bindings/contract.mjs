@@ -54,6 +54,37 @@ function unpack(p, count) {
 	}
 	return out;
 }
+/** Report each differing document after count/offset validation has succeeded. */
+export function assertBatchOutput(actual, expected, caseIds) {
+	assert(Array.isArray(actual), "batch output must be an array");
+	assert(
+		actual.length === expected.length,
+		`batch output count: expected ${expected.length}, received ${actual.length}`,
+	);
+	const differences = [];
+	for (let i = 0; i < expected.length; i++) {
+		if (actual[i] === expected[i]) continue;
+		const received = actual[i];
+		let offset = 0;
+		if (typeof received === "string") {
+			while (
+				offset < expected[i].length &&
+				offset < received.length &&
+				expected[i][offset] === received[offset]
+			)
+				offset++;
+		}
+		const start = Math.max(0, offset - 24);
+		differences.push(
+			`${caseIds[i]} (index ${i}, UTF-16 offset ${offset}): expected ${JSON.stringify(expected[i].slice(start, offset + 80))}, received ${JSON.stringify(typeof received === "string" ? received.slice(start, offset + 80) : received)}`,
+		);
+	}
+	assert(
+		differences.length === 0,
+		`HTML differs from JS:\n${differences.join("\n")}`,
+	);
+}
+
 export async function runContract(
 	api,
 	fixture,
@@ -244,12 +275,14 @@ export async function runContract(
 	}
 	const batchGroups = [...groups.entries()].map(([options, cases]) => ({
 		id: cases.map((c) => c.id).join(","),
+		caseIds: cases.map((c) => c.id),
 		options: JSON.parse(options),
 		inputs: cases.map((c) => c.input),
 		expected: cases.map((c) => c.outcome.html),
 	}));
 	batchGroups.push({
 		id: "empty-batch",
+		caseIds: [],
 		options: {},
 		inputs: [],
 		expected: [],
@@ -257,6 +290,7 @@ export async function runContract(
 	const unicode = defaults;
 	batchGroups.push({
 		id: "empty-duplicates-unicode",
+		caseIds: ["empty/0", unicode.id, `${unicode.id}/duplicate`, "empty/3"],
 		options: unicode.options,
 		inputs: ["", unicode.input, unicode.input, ""],
 		expected: ["", unicode.outcome.html, unicode.outcome.html, ""],
@@ -264,18 +298,20 @@ export async function runContract(
 	for (const g of batchGroups) {
 		for (const method of ["renderBatch", "renderBatchAsync"])
 			await record(method, g.id, async () =>
-				assert(
-					same(await api[method](g.inputs, g.options), g.expected),
-					"batch count/order/output differs from JS",
+				assertBatchOutput(
+					await api[method](g.inputs, g.options),
+					g.expected,
+					g.caseIds,
 				),
 			);
 		for (const method of ["renderBatchBuffer", "renderBatchBufferAsync"])
 			await record(method, g.id, async () => {
 				const p = pack(g.inputs, makeBuffer);
 				const actual = await api[method](p.input, p.offsets, g.options);
-				assert(
-					same(unpack(actual, g.inputs.length), g.expected),
-					"packed count/order/output differs from JS",
+				assertBatchOutput(
+					unpack(actual, g.inputs.length),
+					g.expected,
+					g.caseIds,
 				);
 			});
 	}

@@ -103,6 +103,8 @@ for (const host of ["linux", "darwin", "win32"])
 		)
 	)
 		summary.missingEvidence.push(`${host} native binding execution`);
+if (!reports.some((r) => r.suite === "rust-mdx" && r.results.length))
+	summary.missingEvidence.push("Rust MDX fixtures");
 if (!reports.some((r) => r.mode === "chromium"))
 	summary.missingEvidence.push("Chromium");
 if (!reports.some((r) => r.suite === "rust-stages"))

@@ -178,9 +178,9 @@ fn render_batch_preserves_order_and_matches_render() {
 }
 
 #[test]
-fn crlf_and_cr_inputs_match_lf() {
-	// Windows checkouts (core.autocrlf=true) feed CRLF into the golden
-	// harness; markdown-rs would otherwise keep CR in mdast text.
+fn line_endings_preserve_the_js_oracle_contract() {
+	// Match observed JS behavior: list indentation ignores CR, while
+	// the alert transform preserves the original CRLF after its marker.
 	let commonmark = RenderOptions::all_off();
 	let list_lf = "-\n  foo\n";
 	let list_html = render(list_lf, &commonmark).unwrap();
@@ -203,7 +203,7 @@ fn crlf_and_cr_inputs_match_lf() {
 	);
 	assert_eq!(
 		render(&alert_lf.replace('\n', "\r\n"), &gfm).unwrap(),
-		alert_html
+		alert_html.replace("<p>Negative", "<p>\r\nNegative")
 	);
 
 	let highlight = RenderOptions {

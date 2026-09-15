@@ -77,3 +77,17 @@ Combined ~39% faster than upstream 1.0.0 on writr's benchmark corpus:
 
 Upstream issue-worthy: yes — this is a general `to_mdast` fidelity bug, not a
 writr-specific behavior.
+
+## MDX EOF compatibility
+
+`partial_mdx_jsx.rs` ends optional whitespace at EOF without backtracking the
+whole tag into plain text. The enclosing tag parser reports incomplete tags
+as parse errors, matching remark-mdx. Grammar-aware expression and ESM
+callbacks are provided by writr-core's embedded Acorn/JSX syntax parser.
+
+## CRLF list prefix compatibility
+
+`construct/list_item.rs` measures marker-only list prefixes in logical columns,
+so the ignored CR in a CRLF line ending does not count as indentation. This
+keeps subsequent list content aligned while preserving meaningful CRLF bytes
+in text, matching the JavaScript oracle.

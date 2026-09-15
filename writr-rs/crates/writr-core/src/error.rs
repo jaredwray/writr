@@ -12,6 +12,8 @@ use core::fmt;
 /// Rendering failure.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RenderError {
+	/// An embedded syntax parser failed internally (not an input parse error).
+	JavaScript(String),
 	/// The parser rejected the input. Only reachable with `mdx: true`
 	/// (MDX has actual syntax errors; CommonMark does not).
 	Parse(String),
@@ -28,6 +30,7 @@ pub enum RenderError {
 impl fmt::Display for RenderError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
+			Self::JavaScript(message) => write!(f, "embedded JavaScript error: {message}"),
 			Self::Parse(message) => write!(f, "markdown parse error: {message}"),
 			Self::FeatureDisabled(feature) => write!(
 				f,

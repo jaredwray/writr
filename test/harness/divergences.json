@@ -7,8 +7,9 @@
     ],
     "reachability": "stage-only",
     "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
-    "disposition": "needs-reproduction",
-    "blocker": "The selected malformed-table fixture matches; the originally claimed fostering difference has not been reproduced. Retain category pending a minimal distinguishing tree."
+    "disposition": "fixed-or-matches-fixtures",
+    "blocker": null,
+    "evidenceScope": "The original malformed table tree without an open table matches current JS. No remaining difference is reproduced by the linked fixture; universal stage compatibility is not claimed."
   },
   {
     "id": "D02",
@@ -22,19 +23,22 @@
     "reachability": "public-and-stage",
     "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
     "disposition": "fixed-or-matches-fixtures",
-    "blocker": null
+    "blocker": null,
+    "evidenceScope": "The linked public/stage fixtures match the pinned JS oracle; this is not a proof for every possible input."
   },
   {
     "id": "D03",
     "category": "Mid-stream doctype",
     "caseIds": [
       "html/doctype",
-      "stage/doctype"
+      "stage/doctype",
+      "stage/document-doctype"
     ],
     "reachability": "public-and-stage",
     "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
-    "disposition": "needs-reproduction",
-    "blocker": "Selected doctype fixtures match. Original broad document/fragment claim remains unproven outside these fixtures."
+    "disposition": "fixed-or-matches-fixtures",
+    "blocker": null,
+    "evidenceScope": "The linked public/stage fixtures match the pinned JS oracle; this is not a proof for every possible input."
   },
   {
     "id": "D04",
@@ -46,7 +50,8 @@
     "reachability": "public-and-stage",
     "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
     "disposition": "fixed-or-matches-fixtures",
-    "blocker": null
+    "blocker": null,
+    "evidenceScope": "The linked public/stage fixtures match the pinned JS oracle; this is not a proof for every possible input."
   },
   {
     "id": "D05",
@@ -58,7 +63,8 @@
     "reachability": "public-and-stage",
     "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
     "disposition": "fixed-or-matches-fixtures",
-    "blocker": null
+    "blocker": null,
+    "evidenceScope": "The linked public/stage fixtures match the pinned JS oracle; this is not a proof for every possible input."
   },
   {
     "id": "D06",
@@ -69,8 +75,9 @@
     ],
     "reachability": "public-and-stage",
     "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
-    "disposition": "unresolved",
-    "blocker": "A full-fragment stage fixture now matches, but paragraph integration through the public Markdown pipeline still differs."
+    "disposition": "fixed-or-matches-fixtures",
+    "blocker": null,
+    "evidenceScope": "The linked public/stage fixtures match the pinned JS oracle; this is not a proof for every possible input."
   },
   {
     "id": "D07",
@@ -81,8 +88,9 @@
     ],
     "reachability": "public-and-stage",
     "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
-    "disposition": "unresolved",
-    "blocker": "html5ever and the pinned parse5 implement different select tree-building behavior. A scoped compatibility strategy is needed."
+    "disposition": "fixed-or-matches-fixtures",
+    "blocker": null,
+    "evidenceScope": "The linked public/stage fixtures match the pinned JS oracle; this is not a proof for every possible input."
   },
   {
     "id": "D08",
@@ -93,8 +101,9 @@
     ],
     "reachability": "public-and-stage",
     "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
-    "disposition": "unresolved",
-    "blocker": "Synthesized document structure loses html/head/body wrappers; choosing document mode in HAST replay needs separate work."
+    "disposition": "fixed-or-matches-fixtures",
+    "blocker": null,
+    "evidenceScope": "The linked public/stage fixtures match the pinned JS oracle; this is not a proof for every possible input."
   },
   {
     "id": "D09",
@@ -106,7 +115,8 @@
     "reachability": "public-and-stage",
     "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
     "disposition": "fixed-or-matches-fixtures",
-    "blocker": null
+    "blocker": null,
+    "evidenceScope": "The linked public/stage fixtures match the pinned JS oracle; this is not a proof for every possible input."
   },
   {
     "id": "D10",
@@ -118,7 +128,8 @@
     "reachability": "public-and-stage",
     "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
     "disposition": "fixed-or-matches-fixtures",
-    "blocker": null
+    "blocker": null,
+    "evidenceScope": "The linked public/stage fixtures match the pinned JS oracle; this is not a proof for every possible input."
   },
   {
     "id": "D11",
@@ -132,7 +143,8 @@
     "reachability": "public-and-stage",
     "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
     "disposition": "fixed-or-matches-fixtures",
-    "blocker": null
+    "blocker": null,
+    "evidenceScope": "The linked public/stage fixtures match the pinned JS oracle; this is not a proof for every possible input."
   },
   {
     "id": "D12",
@@ -144,7 +156,8 @@
     "reachability": "public",
     "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
     "disposition": "fixed-or-matches-fixtures",
-    "blocker": null
+    "blocker": null,
+    "evidenceScope": "The linked public/stage fixtures match the pinned JS oracle; this is not a proof for every possible input."
   },
   {
     "id": "D13",
@@ -155,8 +168,9 @@
     ],
     "reachability": "public",
     "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
-    "disposition": "unresolved",
-    "blocker": "Escaped email text is split before autolink repair; preserving correct span boundaries requires parser/transform changes."
+    "disposition": "fixed-or-matches-fixtures",
+    "blocker": null,
+    "evidenceScope": "The linked public/stage fixtures match the pinned JS oracle; this is not a proof for every possible input."
   },
   {
     "id": "D14",
@@ -171,7 +185,8 @@
     ],
     "reachability": "public",
     "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
-    "disposition": "unresolved",
-    "blocker": "The Rust MDX parser lacks the JS grammar validation and ESM/expression behavior required by remark-mdx. Do not approximate JavaScript syntax with a regex."
+    "disposition": "fixed-or-matches-fixtures",
+    "blocker": null,
+    "evidenceScope": "The linked public/stage fixtures match the pinned JS oracle; this is not a proof for every possible input."
   }
 ]

@@ -137,6 +137,9 @@ jobs:
           path: test-output/parity/
           if-no-files-found: error
   native-matrix:
+    defaults:
+      run:
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
@@ -194,6 +197,9 @@ jobs:
       - name: Execute binding APIs in host Node
         if: always() && steps.host_build.outcome == 'success'
         run: pnpm test:bindings
+      - name: Require host binding execution report
+        if: always() && steps.host_build.outcome == 'success'
+        run: node test/bindings/verify-report.mjs
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:

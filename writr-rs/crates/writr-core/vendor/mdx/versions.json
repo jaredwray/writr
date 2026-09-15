@@ -1,0 +1,8 @@
+{
+  "acorn": "8.18.0",
+  "acorn-jsx": "5.3.2",
+  "estree-util-visit": "2.0.0",
+  "micromark-util-events-to-acorn": "2.0.3",
+  "unist-util-stringify-position": "4.0.0",
+  "vfile-message": "4.0.3"
+}
