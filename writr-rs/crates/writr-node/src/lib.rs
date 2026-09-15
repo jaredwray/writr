@@ -202,7 +202,7 @@ pub fn render_batch_buffer(
 }
 
 pub struct RenderBatchBufferTask {
-	input: Buffer,
+	input: Vec<u8>,
 	offsets: Vec<u32>,
 	options: writr_core::RenderOptions,
 }
@@ -222,7 +222,9 @@ impl Task for RenderBatchBufferTask {
 	}
 }
 
-/// `renderBatchBuffer`, computed off the main thread.
+/// `renderBatchBuffer`, computed off the main thread. The input is copied
+/// before dispatch so JavaScript cannot mutate bytes while the worker reads
+/// them.
 #[napi]
 pub fn render_batch_buffer_async(
 	input: Buffer,
@@ -230,7 +232,7 @@ pub fn render_batch_buffer_async(
 	options: Option<RenderOptions>,
 ) -> AsyncTask<RenderBatchBufferTask> {
 	AsyncTask::new(RenderBatchBufferTask {
-		input,
+		input: input.to_vec(),
 		offsets: offsets.to_vec(),
 		options: to_core(options),
 	})
