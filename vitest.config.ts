@@ -18,6 +18,7 @@ export default defineConfig({
 				'dist/**',
 				'site/**',
 				'test/**',
+				'writr-rs/**',
 			],
 		},
 	},

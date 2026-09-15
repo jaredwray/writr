@@ -172,11 +172,17 @@ describe("Node WASI loader", () => {
 		() => {
 			const require = createRequire(import.meta.url);
 			const { render } = require(loaderPath) as {
-				render: (input: string) => string;
+				render: (input: string, options?: Record<string, boolean>) => string;
 			};
 			expect(render("# Hello WASI")).toBe(
 				'<h1 id="hello-wasi">Hello WASI</h1>',
 			);
+			const html = render("$a^2$\n\n```js\nconst x = 1;\n```", {
+				math: true,
+				highlight: true,
+			});
+			expect(html).toContain("katex");
+			expect(html).toMatch(/hljs|language-js/);
 		},
 	);
 });
