@@ -87,6 +87,7 @@ fn benches(c: &mut Criterion) {
 	c.bench_function("render/math-memoized", |b| {
 		let options = RenderOptions {
 			math: true,
+			caching: true,
 			..minimal()
 		};
 		b.iter(|| writr_core::render(std::hint::black_box(DOC), &options).unwrap())
