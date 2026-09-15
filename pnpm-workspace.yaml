@@ -8,12 +8,8 @@ trustPolicy: no-downgrade # fail if a later version has weaker trust evidence
 
 # Pin katex to 0.18.7 (AIKIDO-2026-293837 lineage). rehype-katex@7.0.1 declares
 # ^0.16.0, which never reaches 0.18.x; keep the Rust vendor in lockstep.
-# Pin undici@5 to 7.29.0: 5.29.0 has no trusted publisher and fails
-# trustPolicy: no-downgrade (possible package takeover). 7.29.0 is already
-# in the tree via the current AI SDK and was published with OIDC.
 overrides:
   katex: 0.18.7
-  undici@5: 7.29.0
 
 # Lifecycle-script exceptions — each entry is a reviewed security exception.
 # esbuild: used by tsdown / the JS build.
