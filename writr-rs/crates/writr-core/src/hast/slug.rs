@@ -58,17 +58,10 @@ fn visit(node: &mut Node, slugger: &mut Slugger) {
 					out
 				};
 				let slug = slugger.slug(&value);
-				element
-					.properties
-					.push(("id".into(), PropertyValue::String(slug)));
+				element.set_property("id", slug);
 			}
 			for child in &mut element.children {
 				visit(child, slugger);
-			}
-			if let Some(content) = &mut element.template_content {
-				for child in content {
-					visit(child, slugger);
-				}
 			}
 		}
 		Node::Root(children) => {

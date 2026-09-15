@@ -15,6 +15,8 @@
 mod error;
 mod frontmatter;
 mod js;
+#[cfg(feature = "mdx")]
+mod mdx;
 mod options;
 mod pipeline;
 #[cfg(any(feature = "slug", feature = "toc"))]

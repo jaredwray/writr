@@ -1,0 +1,602 @@
+[
+  {
+    "id": "text/empty",
+    "input": "",
+    "profile": "default",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "text/fence-whitespace",
+    "input": "```text\nalpha  \n\t\nβ\t \n```",
+    "profile": "default",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "text/indented-whitespace",
+    "input": "    alpha  \n    β\t\n\n    end",
+    "profile": "default",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "text/blank-lines",
+    "input": "a\n\n\nb\n",
+    "profile": "default",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "text/unicode",
+    "input": "😀 café 日本語 é",
+    "profile": "default",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "text/nul",
+    "input": "a\u0000b",
+    "profile": "default",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D12"
+  },
+  {
+    "id": "text/frontmatter",
+    "input": "---\r\ntitle: x\r\n---\r\n# Body",
+    "profile": "default",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "text/lf",
+    "input": "# Hi\n\n```text\na  \nb\t\n```",
+    "profile": "default",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "text/crlf",
+    "input": "# Hi\r\n\r\n```text\r\na  \r\nb\t\r\n```",
+    "profile": "default",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "text/cr",
+    "input": "# Hi\r\r```text\ra  \rb\t\r```",
+    "profile": "default",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "mdx/inline",
+    "input": "Hello <Badge>world 😀</Badge>.",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "mdx/block",
+    "input": "<Box>\n\n# Title\n\n- one\n- two\n\n</Box>",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "mdx/nested",
+    "input": "<A><B>text</B></A>",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "mdx/fragment",
+    "input": "<>hello <B />world</>",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "mdx/self-closing",
+    "input": "<Thing />",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "mdx/attributes",
+    "input": "<Thing title=\"hello\" disabled count={1 + 2} {...props} />",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "mdx/attribute-string",
+    "input": "<A x='héllo' />",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "mdx/expression",
+    "input": "text {\"a\" + \"b\"} tail",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "mdx/expression-nested",
+    "input": "{({x: {y: \"}\"}})}",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "mdx/expression-block",
+    "input": "{1 + 2}\n\n# Text",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "mdx/import",
+    "input": "import Thing from \"pkg\"\n\n# Text",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D14"
+  },
+  {
+    "id": "mdx/export",
+    "input": "export const value = 42\n\n# Text",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D14"
+  },
+  {
+    "id": "mdx/default-export",
+    "input": "export default function Demo() { return null }\n\nText",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D14"
+  },
+  {
+    "id": "mdx/unclosed-tag",
+    "input": "<Tag",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "reject": true,
+    "divergence": "D14"
+  },
+  {
+    "id": "mdx/mismatched-tag",
+    "input": "<A></B>",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/incomplete-attribute",
+    "input": "<A x=",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/malformed-attribute",
+    "input": "<A x==\"a\" />",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/unclosed-expression",
+    "input": "{unclosed",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/malformed-expression",
+    "input": "{1 +}",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "reject": true,
+    "divergence": "D14"
+  },
+  {
+    "id": "mdx/malformed-esm",
+    "input": "export const = 1",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "reject": true,
+    "divergence": "D14"
+  },
+  {
+    "id": "mdx/unterminated-string",
+    "input": "{\"unterminated}",
+    "profile": "mdx",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "reject": true
+  },
+  {
+    "id": "html/pre",
+    "input": "<pre>alpha  \nβ\t\n</pre>",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "html/inline",
+    "input": "a <b>bold</b> c",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "html/block",
+    "input": "<div>\n\nmarkdown **bold**\n\n</div>",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "html/rawtext",
+    "input": "<script>one\n\ntwo</script>\n\n<style>a { color: red }</style>\n<textarea>a\n\nb</textarea>",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D02"
+  },
+  {
+    "id": "html/doctype",
+    "input": "a\n\n<!doctype html>\n\n<div>b</div>",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D03"
+  },
+  {
+    "id": "html/template",
+    "input": "<template><h2>Title</h2></template>",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D04"
+  },
+  {
+    "id": "html/svg-cdata",
+    "input": "<svg><![CDATA[x]]></svg>",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D05"
+  },
+  {
+    "id": "html/mathml",
+    "input": "<math><annotation-xml encoding=\"text/html\"><p>x</p></annotation-xml></math>",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D06"
+  },
+  {
+    "id": "html/select",
+    "input": "<select><div>x</div><option>y</option></select>",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D07"
+  },
+  {
+    "id": "html/document",
+    "input": "<html><head><title>x</title></head><body>text<p>y</p></body></html>",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D08"
+  },
+  {
+    "id": "html/comma-list",
+    "input": "<input accept=\",\">",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D09"
+  },
+  {
+    "id": "html/number-whitespace",
+    "input": "<ol start=\" \"><li>x</li></ol>",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D10"
+  },
+  {
+    "id": "html/nul",
+    "input": "<pre>a\u0000b</pre>",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D12"
+  },
+  {
+    "id": "slug/duplicate",
+    "input": "# Same\n\n# Same\n\n# 日本語\n\n# :rocket:",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "slug/empty-id",
+    "input": "<h1 id=\"\">Title</h1>",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D11"
+  },
+  {
+    "id": "slug/template-headings",
+    "input": "<template><h1>Title</h1></template>\n\n# Title",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D11"
+  },
+  {
+    "id": "slug/toc",
+    "input": "# Contents\n\n## One :rocket:\n\n## One :rocket:\n\n[^1]: footnote\n\nref[^1]",
+    "profile": "rawhtml",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "gfm/email",
+    "input": "foo\\+bar@example.com",
+    "profile": "default",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D13"
+  },
+  {
+    "id": "gfm/url",
+    "input": "foo\\+https://example.com",
+    "profile": "default",
+    "provenance": "Original regression authored for Writr parity testing (MIT)",
+    "divergence": "D13"
+  },
+  {
+    "id": "gfm/footnote",
+    "input": "[^a]: **Note**\n\nref[^a] https://example.com",
+    "profile": "default",
+    "provenance": "Original regression authored for Writr parity testing (MIT)"
+  },
+  {
+    "id": "corpus-extra/no-highlight/commonmark/0028",
+    "inputRef": "corpus/inputs/commonmark/0028.md",
+    "profile": "no-highlight",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-extra/no-highlight/commonmark/0039",
+    "inputRef": "corpus/inputs/commonmark/0039.md",
+    "profile": "no-highlight",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-extra/no-highlight/commonmark/0044",
+    "inputRef": "corpus/inputs/commonmark/0044.md",
+    "profile": "no-highlight",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-extra/no-math/commonmark/0081",
+    "inputRef": "corpus/inputs/commonmark/0081.md",
+    "profile": "no-math",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-extra/no-math/commonmark/0113",
+    "inputRef": "corpus/inputs/commonmark/0113.md",
+    "profile": "no-math",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-extra/no-math/commonmark/0179",
+    "inputRef": "corpus/inputs/commonmark/0179.md",
+    "profile": "no-math",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-browser/default/commonmark/0000",
+    "inputRef": "corpus/inputs/commonmark/0000.md",
+    "profile": "default",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-browser/default/commonmark/0001",
+    "inputRef": "corpus/inputs/commonmark/0001.md",
+    "profile": "default",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-browser/default/commonmark/0002",
+    "inputRef": "corpus/inputs/commonmark/0002.md",
+    "profile": "default",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-browser/commonmark/commonmark/0000",
+    "inputRef": "corpus/inputs/commonmark/0000.md",
+    "profile": "commonmark",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-browser/commonmark/commonmark/0001",
+    "inputRef": "corpus/inputs/commonmark/0001.md",
+    "profile": "commonmark",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-browser/commonmark/commonmark/0002",
+    "inputRef": "corpus/inputs/commonmark/0002.md",
+    "profile": "commonmark",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-browser/gfm-only/gfm/0000",
+    "inputRef": "corpus/inputs/gfm/0000.md",
+    "profile": "gfm-only",
+    "provenance": "https://raw.githubusercontent.com/github/cmark-gfm/master/test/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-browser/gfm-only/gfm/0001",
+    "inputRef": "corpus/inputs/gfm/0001.md",
+    "profile": "gfm-only",
+    "provenance": "https://raw.githubusercontent.com/github/cmark-gfm/master/test/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-browser/gfm-only/gfm/0002",
+    "inputRef": "corpus/inputs/gfm/0002.md",
+    "profile": "gfm-only",
+    "provenance": "https://raw.githubusercontent.com/github/cmark-gfm/master/test/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-browser/rawhtml/commonmark/0000",
+    "inputRef": "corpus/inputs/commonmark/0000.md",
+    "profile": "rawhtml",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-browser/rawhtml/commonmark/0001",
+    "inputRef": "corpus/inputs/commonmark/0001.md",
+    "profile": "rawhtml",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "corpus-browser/rawhtml/commonmark/0002",
+    "inputRef": "corpus/inputs/commonmark/0002.md",
+    "profile": "rawhtml",
+    "provenance": "https://raw.githubusercontent.com/commonmark/commonmark-spec/0.31.2/spec.txt",
+    "license": "CC-BY-SA-4.0"
+  },
+  {
+    "id": "mdx/template-braces",
+    "input": "{`hello ${\"}\"}`}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/regex-braces",
+    "input": "{/}/.test(\"}\")}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/comments",
+    "input": "{/* } */ ({ok: true})}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/empty-expression",
+    "input": "{}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/empty-attribute",
+    "input": "<A x={} />",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/invalid-spread",
+    "input": "<A {x: 1} />",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/multiple-spread",
+    "input": "<A {...x, ...y} />",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/jsx-expression",
+    "input": "{<A title={\"}\"} />}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/import-export-binding",
+    "input": "import Thing from \"pkg\"\n\nexport {Thing}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/unknown-export",
+    "input": "export {Missing}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/esm-statements",
+    "input": "export const x = 1;\nconsole.log(x)",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/inert-expression",
+    "input": "{(() => { throw new Error(\"must not execute\") })()}",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/inert-module",
+    "input": "import x from \"module-that-must-not-be-loaded\"\n\nexport default x",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)"
+  },
+  {
+    "id": "mdx/unclosed-tag-whitespace",
+    "input": "<A x=   ",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)",
+    "reject": true
+  },
+  {
+    "id": "mdx/unicode-syntax-error",
+    "input": "{\"😀\" + }",
+    "profile": "mdx",
+    "provenance": "Original Writr MDX grammar regression (MIT)",
+    "reject": true
+  },
+  {
+    "id": "text/crlf-paragraph",
+    "input": "a\r\nb",
+    "profile": "default",
+    "provenance": "Original Writr parser compatibility regression (MIT)"
+  },
+  {
+    "id": "text/crlf-alert",
+    "input": "> [!NOTE]\r\n> hi\r\n",
+    "profile": "default",
+    "provenance": "Original Writr parser compatibility regression (MIT)"
+  },
+  {
+    "id": "html/select-optgroup",
+    "input": "<select><optgroup label=\"a\"><option>x<option>y</optgroup><hr><option>z</select>",
+    "profile": "rawhtml",
+    "provenance": "Original Writr parser compatibility regression (MIT)"
+  },
+  {
+    "id": "html/select-table",
+    "input": "<table><tr><td><select><option>x</select></td></tr></table>",
+    "profile": "rawhtml",
+    "provenance": "Original Writr parser compatibility regression (MIT)"
+  },
+  {
+    "id": "html/select-input",
+    "input": "<select><option>x<input value=\"y\">z",
+    "profile": "rawhtml",
+    "provenance": "Original Writr parser compatibility regression (MIT)"
+  },
+  {
+    "id": "html/select-nested",
+    "input": "<select><option>x<select><option>y</select>",
+    "profile": "rawhtml",
+    "provenance": "Original Writr parser compatibility regression (MIT)"
+  },
+  {
+    "id": "gfm/escaped-angle",
+    "input": "<foo\\+bar@example.com>",
+    "profile": "default",
+    "provenance": "Original Writr parser compatibility regression (MIT)"
+  }
+]

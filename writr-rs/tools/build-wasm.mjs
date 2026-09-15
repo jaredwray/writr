@@ -40,14 +40,28 @@ if (sdk && existsSync(sdk)) {
 	env.AR_wasm32_wasip1 ??= "llvm-ar";
 }
 
-execSync("cargo build --release --target wasm32-wasip1 -p writr-node", {
-	cwd: root,
-	env,
-	stdio: "inherit",
-});
+execSync(
+	"cargo build --locked --release --target wasm32-wasip1 -p writr-node",
+	{
+		cwd: root,
+		env,
+		stdio: "inherit",
+	},
+);
 
-const source = join(root, "target", "wasm32-wasip1", "release", "writr_node.wasm");
-const target = join(root, "crates", "writr-node", "writr-node.wasm32-wasi.wasm");
+const source = join(
+	root,
+	"target",
+	"wasm32-wasip1",
+	"release",
+	"writr_node.wasm",
+);
+const target = join(
+	root,
+	"crates",
+	"writr-node",
+	"writr-node.wasm32-wasi.wasm",
+);
 
 // Post-optimize with binaryen when available (apt/brew: `binaryen`). The
 // feature flags mirror what rustc emits for wasm32-wasip1 on stable; -O3

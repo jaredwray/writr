@@ -1,7 +1,5 @@
 {
-  "capturedAt": "2026-08-15T21:35:01.081Z",
   "versions": {
-    "writr": "not-installed",
     "unified": "11.0.5",
     "remark-parse": "11.0.0",
     "remark-rehype": "11.1.2",
@@ -18,6 +16,15 @@
     "rehype-stringify": "10.0.1",
     "katex": "0.18.7",
     "highlight.js": "11.11.1",
-    "lowlight": "not-installed"
+    "lowlight": "3.3.0",
+    "property-information": "7.2.0",
+    "hast-util-to-html": "9.0.5",
+    "hast-util-raw": "9.1.0",
+    "mdast-util-to-hast": "13.2.1",
+    "micromark": "4.0.2",
+    "parse5": "7.3.0",
+    "acorn": "8.18.0",
+    "acorn-jsx": "5.3.2",
+    "micromark-util-events-to-acorn": "2.0.3"
   }
 }

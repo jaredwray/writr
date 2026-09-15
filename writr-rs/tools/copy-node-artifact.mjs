@@ -17,7 +17,9 @@ if (!artifact) {
 	throw new Error(`Unsupported platform: ${process.platform}`);
 }
 const targetDir = process.env.WRITR_RS_TARGET_DIR ?? join(root, "target");
-const source = join(targetDir, "release", artifact);
+const source = process.env.WRITR_RS_TARGET
+	? join(targetDir, process.env.WRITR_RS_TARGET, "release", artifact)
+	: join(targetDir, "release", artifact);
 if (!existsSync(source)) {
 	throw new Error(`Missing cargo artifact ${source} — did the build fail?`);
 }

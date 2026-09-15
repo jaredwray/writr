@@ -101,21 +101,30 @@ pub fn parse_to_mdast(
 	options: &RenderOptions,
 ) -> Result<markdown::mdast::Node, RenderError> {
 	check_features(options)?;
-	// Collapse CR/CRLF to LF before parsing. CommonMark treats all three as
-	// line endings, and micromark's sliceSerialize emits LF; markdown-rs
-	// copies CR into mdast text, which breaks GFM alerts, list continuations
-	// after a marker-only line, and highlight spans on Windows checkouts.
-	let normalized = unify_line_endings(input);
+	// Preserve source line endings, including significant code/text whitespace.
+	let normalized = if input.contains('\0') {
+		Cow::Owned(input.replace('\0', "\u{FFFD}"))
+	} else {
+		Cow::Borrowed(input)
+	};
 	let body = frontmatter::body(&normalized);
-	markdown::to_mdast(body, &parse_options(options))
-		.map_err(|message| RenderError::Parse(message.to_string()))
-}
-
-fn unify_line_endings(input: &str) -> Cow<'_, str> {
-	if !input.as_bytes().contains(&b'\r') {
-		return Cow::Borrowed(input);
+	let parse_options = parse_options(options);
+	#[cfg(feature = "mdx")]
+	let result = if options.mdx {
+		crate::mdx::parse(body, parse_options)
+	} else {
+		markdown::to_mdast(body, &parse_options).map_err(|e| RenderError::Parse(e.to_string()))
+	};
+	#[cfg(not(feature = "mdx"))]
+	let result =
+		markdown::to_mdast(body, &parse_options).map_err(|e| RenderError::Parse(e.to_string()));
+	#[allow(unused_mut)]
+	let mut tree = result?;
+	#[cfg(feature = "gfm")]
+	if options.gfm {
+		crate::mdast_util::gfm_autolink::restore_escaped_runs(&mut tree, body);
 	}
-	Cow::Owned(input.replace("\r\n", "\n").replace('\r', "\n"))
+	Ok(tree)
 }
 
 /// mdast transforms + conversion + hast transforms.

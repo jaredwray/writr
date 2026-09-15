@@ -1,13 +1,8 @@
 /**
- * Normalize rendered HTML for byte-stable golden comparison.
- *
- * Only genuinely non-semantic, stable differences are smoothed out:
- *  - CRLF / lone CR are converted to LF,
- *  - trailing whitespace is stripped from each line,
- *  - the output ends with exactly one trailing newline.
- *
- * The HTML is intentionally NOT pretty-printed or reformatted — byte fidelity
- * to the current engine's output is the whole point of the golden snapshots.
+ * Historical, lossy normalization retained for existing snapshots.
+ * Converts line endings, strips trailing spaces/tabs and adds one newline.
+ * This can hide significant whitespace in preformatted HTML; exact outcome
+ * comparisons must use the original untrimmed output alongside these goldens.
  */
 export function normalize(html: string): string {
 	const lines = html

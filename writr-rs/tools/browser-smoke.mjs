@@ -1,179 +1,156 @@
-// Browser-compatibility smoke test for the writr-rs wasm build.
-//
-// 1. Bundles crates/writr-node/browser.mjs with esbuild (as a user's bundler
-//    would), leaving the .wasm to be fetched at runtime.
-// 2. Serves the bundle + wasm over HTTP with NO cross-origin-isolation
-//    headers — the single-threaded build must not need SharedArrayBuffer.
-// 3. Drives headless Chromium via playwright-core, renders a feature-heavy
-//    document set in-page, and byte-compares every result against the native
-//    binding's output for the same (input, options).
-//
-// Prerequisites: `pnpm build:rs`, `pnpm build:rs:wasm`, and `pnpm install`
-// in crates/writr-node. Chromium is resolved from $CHROMIUM_BIN, the
-// Playwright browser store, or the preinstalled /opt/pw-browsers/chromium.
-import { execSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+// Chromium executes the same JS-derived fixtures and API contract as Node.
+import { execFileSync } from "node:child_process";
+import {
+	existsSync,
+	readFileSync,
+	writeFileSync,
+	mkdirSync,
+	appendFileSync,
+} from "node:fs";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
-import { dirname, extname, join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const nodeDir = join(root, "crates", "writr-node");
+const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
+const nodeDir = join(root, "writr-rs/crates/writr-node");
 const require = createRequire(join(nodeDir, "package.json"));
 const { chromium } = require("playwright-core");
-const native = require(join(nodeDir, "index.js"));
-
-// --- 1. bundle ---------------------------------------------------------------
-// esbuild is a devDependency of crates/writr-node (a fresh root install does
-// not expose transitive bins); fall back to a repo-root or PATH install.
-const esbuild = [
-	join(nodeDir, "node_modules", ".bin", "esbuild"),
-	join(root, "..", "node_modules", ".bin", "esbuild"),
-].find((path) => existsSync(path)) ?? "esbuild";
-const bundle = join(nodeDir, "node_modules", ".writr-browser-smoke.mjs");
-execSync(
-	`${esbuild} ${join(nodeDir, "browser.mjs")} --bundle --format=esm ` +
-		`--platform=browser --external:./writr-node.wasm32-wasi.wasm ` +
-		`--outfile=${bundle}`,
-	{ stdio: "inherit" },
+const bundle = join(nodeDir, "node_modules/.writr-browser-smoke.mjs");
+require("esbuild").buildSync({
+	entryPoints: [join(root, "test/bindings/browser-entry.mjs")],
+	bundle: true,
+	format: "esm",
+	platform: "browser",
+	external: ["./writr-node.wasm32-wasi.wasm"],
+	outfile: bundle,
+});
+const fixture = JSON.parse(
+	readFileSync(join(root, "test/harness/exact/outcomes.json"), "utf8"),
 );
-
-// --- 2. serve (deliberately WITHOUT COOP/COEP headers) -------------------------
-const types = {
-	".html": "text/html",
-	".js": "text/javascript",
-	".mjs": "text/javascript",
-	".wasm": "application/wasm",
-};
 const routes = {
-	"/": null,
-	"/writr.js": bundle,
-	"/writr-node.wasm32-wasi.wasm": join(nodeDir, "writr-node.wasm32-wasi.wasm"),
+	"/contract.mjs": { file: bundle, type: "text/javascript" },
+	"/writr-node.wasm32-wasi.wasm": {
+		file: join(nodeDir, "writr-node.wasm32-wasi.wasm"),
+		type: "application/wasm",
+	},
 };
 const server = createServer((req, res) => {
-	const path = req.url.split("?")[0];
-	if (!(path in routes)) {
-		res.writeHead(404).end("not found");
-		return;
-	}
-	if (path === "/") {
+	if (req.url === "/") {
 		res.writeHead(200, { "content-type": "text/html" });
-		res.end('<!doctype html><meta charset="utf-8"><title>writr-rs</title>');
+		res.end('<!doctype html><meta charset="utf-8"><title>Writr parity</title>');
 		return;
 	}
-	const file = routes[path];
-	res.writeHead(200, { "content-type": types[extname(file)] ?? "text/plain" });
-	res.end(readFileSync(file));
+	const route = routes[req.url];
+	if (!route) {
+		res.writeHead(404).end();
+		return;
+	}
+	res.writeHead(200, { "content-type": route.type });
+	res.end(readFileSync(route.file));
 });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
-const origin = `http://127.0.0.1:${server.address().port}`;
-
-// --- 3. drive Chromium ---------------------------------------------------------
-const cases = [
-	{ id: "heading+slug", input: "# Hello World", options: {} },
-	{
-		id: "gfm",
-		input:
-			"| a | b |\n| :- | -: |\n| 1 | 2 |\n\n~~gone~~ visit https://example.com\n\n- [x] done\n",
-		options: {},
-	},
-	{
-		id: "emoji+toc",
-		input: "# Contents\n\n## One :rocket:\n\ntext",
-		options: { toc: true },
-	},
-	{ id: "highlight", input: "```ts\nconst x: number = 1;\n```", options: {} },
-	{ id: "math", input: "Euler: $e^{i\\pi}+1=0$", options: {} },
-	{ id: "math-display", input: "$$\\frac{a}{b}$$", options: {} },
-	{
-		id: "raw-html",
-		input: "a <b>bold</b> <div>block</div>",
-		options: { rawHtml: true },
-	},
-	{
-		id: "commonmark-ish",
-		input: "~~x~~ :tada:",
-		options: { gfm: false, emoji: false, slug: false },
-	},
-	{ id: "alerts", input: "> [!NOTE]\n> Useful information.", options: {} },
-	{
-		id: "footnotes",
-		input: "Here is a footnote reference,[^1]\n\n[^1]: Here is the footnote.",
-		options: {},
-	},
-];
-
-async function launchChromium() {
+let browser;
+let timer;
+const progress = [];
+try {
 	const explicit = process.env.CHROMIUM_BIN;
-	const candidates = [explicit, "/opt/pw-browsers/chromium"].filter(
-		(path) => path && existsSync(path),
+	browser = await chromium.launch(
+		explicit && existsSync(explicit) ? { executablePath: explicit } : {},
 	);
-	for (const executablePath of candidates) {
-		try {
-			return await chromium.launch({ executablePath });
-		} catch {
-			// fall through to the Playwright browser store
+	const page = await browser.newPage();
+	page.on("console", (message) => {
+		if (message.text().startsWith("WRITR_PROGRESS ")) {
+			const event = JSON.parse(message.text().slice(15));
+			progress.push(event);
 		}
-	}
-	return chromium.launch();
-}
-
-const browser = await launchChromium();
-const page = await browser.newPage();
-const pageErrors = [];
-page.on("pageerror", (error) => pageErrors.push(String(error)));
-await page.goto(`${origin}/`);
-const results = await page.evaluate(async (cases) => {
-	const writr = await import("/writr.js");
-	const out = {
-		engineVersion: writr.engineVersion(),
-		crossOriginIsolated: globalThis.crossOriginIsolated,
-		rendered: {},
-	};
-	for (const c of cases) {
-		out.rendered[c.id] = writr.render(c.input, c.options);
-	}
-	out.async = await writr.renderAsync("**async works**", {});
-	return out;
-}, cases);
-
-let failures = 0;
-for (const c of cases) {
-	const expected = native.render(c.input, c.options);
-	const actual = results.rendered[c.id];
-	if (actual === expected) {
-		console.log(`  ok ${c.id}`);
-	} else {
-		failures += 1;
-		console.log(
-			`FAIL ${c.id}\n  expected: ${JSON.stringify(expected)}\n  actual:   ${JSON.stringify(actual)}`,
-		);
-	}
-}
-const expectedAsync = native.render("**async works**", {});
-if (results.async === expectedAsync) {
-	console.log("  ok renderAsync");
-} else {
-	failures += 1;
-	console.log(`FAIL renderAsync: ${JSON.stringify(results.async)}`);
-}
-console.log(`engineVersion (browser): ${results.engineVersion}`);
-if (results.crossOriginIsolated) {
-	failures += 1;
-	console.log(
-		"FAIL page ended up cross-origin isolated — the no-COOP/COEP claim went untested",
+	});
+	const errors = [];
+	page.on("pageerror", (e) => errors.push(String(e)));
+	await page.goto(`http://127.0.0.1:${server.address().port}/`);
+	const report = await Promise.race([
+		page.evaluate(async (fixture) => {
+			const contract = await import("/contract.mjs");
+			const report = await contract.check(fixture);
+			return { ...report, crossOriginIsolated: globalThis.crossOriginIsolated };
+		}, fixture),
+		new Promise((_, reject) => {
+			timer = setTimeout(
+				() => reject(new Error("Browser external deadline exceeded")),
+				180_000,
+			);
+		}),
+	]);
+	report.suite = "bindings";
+	report.mode = "chromium";
+	report.browser = browser.version();
+	report.commit = execFileSync("git", ["rev-parse", "HEAD"], {
+		cwd: root,
+		encoding: "utf8",
+	}).trim();
+	report.versions = fixture.versions;
+	report.results.push({
+		api: "environment",
+		id: "no-COOP-COEP",
+		passed: !report.crossOriginIsolated,
+	});
+	for (const error of errors)
+		report.results.push({
+			api: "environment",
+			id: "pageerror",
+			passed: false,
+			error,
+		});
+	const dir = process.env.WRITR_REPORT_DIR ?? join(root, "test-output/parity");
+	mkdirSync(dir, { recursive: true });
+	writeFileSync(
+		join(dir, "bindings-chromium.json"),
+		JSON.stringify(report, null, 2) + "\n",
 	);
+	const failures = report.results.filter((r) => !r.passed);
+	const summary = `Chromium ${report.browser}: ${report.results.length - failures.length}/${report.results.length} API executions passed against shared JS fixtures; crossOriginIsolated=${report.crossOriginIsolated}`;
+	console.log(summary);
+	if (process.env.GITHUB_STEP_SUMMARY)
+		appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary + "\n\n");
+	if (failures.length) {
+		console.error(JSON.stringify(failures, null, 2));
+		process.exitCode = 1;
+	}
+} catch (error) {
+	const dir = process.env.WRITR_REPORT_DIR ?? join(root, "test-output/parity");
+	mkdirSync(dir, { recursive: true });
+	const completed = progress.filter((p) => p.phase === "complete");
+	const last = progress.at(-1);
+	writeFileSync(
+		join(dir, "bindings-chromium.json"),
+		JSON.stringify(
+			{
+				suite: "bindings",
+				mode: "chromium",
+				browser: browser?.version(),
+				commit: execFileSync("git", ["rev-parse", "HEAD"], {
+					cwd: root,
+					encoding: "utf8",
+				}).trim(),
+				versions: fixture.versions,
+				results: [
+					...completed,
+					{
+						api: last?.api ?? "environment",
+						id: last?.id ?? "startup",
+						passed: false,
+						error: String(error),
+					},
+				],
+			},
+			null,
+			2,
+		) + "\n",
+	);
+	console.error(error);
+	console.error("Last progress:", last);
+	process.exitCode = 1;
+} finally {
+	clearTimeout(timer);
+	if (browser) await browser.close();
+	server.close();
 }
-if (pageErrors.length > 0) {
-	failures += 1;
-	console.log(`page errors: ${pageErrors.join("\n")}`);
-}
-
-await browser.close();
-server.close();
-if (failures > 0) {
-	console.log(`\n${failures} FAILURES`);
-	process.exit(1);
-}
-console.log("\nAll browser checks passed (no cross-origin isolation needed).");

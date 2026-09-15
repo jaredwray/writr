@@ -13,7 +13,7 @@ gfm = []
 toc = []
 emoji = []
 math = ["dep:writr-katex", "dep:html5ever"]
-mdx = []
+mdx = ["dep:rquickjs"]
 raw-html = ["dep:html5ever"]
 slug = []
 highlight = ["dep:writr-hljs"]
@@ -21,6 +21,8 @@ highlight = ["dep:writr-hljs"]
 parallel = ["dep:rayon"]
 
 [dependencies]
+# Reuse the already-locked QuickJS dependency used by writr-katex.
+rquickjs = { version = "0.12.2", features = ["classes"], optional = true }
 html5ever = { version = "0.39.0", optional = true }
 rayon = { version = "1", optional = true }
 markdown = { workspace = true }

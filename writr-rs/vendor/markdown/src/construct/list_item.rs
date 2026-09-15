@@ -67,7 +67,6 @@ use crate::tokenizer::Tokenizer;
 use crate::util::{
     constant::{LIST_ITEM_VALUE_SIZE_MAX, TAB_SIZE},
     skip,
-    slice::{Position, Slice},
 };
 use alloc::{vec, vec::Vec};
 
@@ -285,14 +284,9 @@ pub fn after(tokenizer: &mut Tokenizer) -> State {
             tokenizer.events.len() - 1,
             &[Name::ListItem],
         );
-        let mut prefix = Slice::from_position(
-            tokenizer.parse_state.bytes,
-            &Position {
-                start: &tokenizer.events[start].point,
-                end: &tokenizer.point,
-            },
-        )
-        .len();
+        // Measure logical columns: a CR skipped before LF occupies a source
+        // byte but contributes no indentation to a marker-only list line.
+        let mut prefix = (tokenizer.point.column - tokenizer.events[start].point.column) as usize;
 
         if blank {
             prefix += 1;

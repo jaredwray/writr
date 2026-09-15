@@ -1,152 +1,145 @@
 name: writr-rs
-
-on:
-  workflow_dispatch:
+'on':
+  workflow_dispatch: null
   push:
-    branches: [ main ]
-    paths:
-      - 'writr-rs/**'
-      - 'test/harness/**'
-      - '.github/workflows/writr-rs.yml'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
-    paths:
-      - 'writr-rs/**'
-      - 'test/harness/**'
-      - '.github/workflows/writr-rs.yml'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-
+    branches:
+      - main
 permissions:
   contents: read
-
 env:
   CARGO_TERM_COLOR: always
-
 jobs:
   rust-checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
       - name: Install Socket Firewall
-        uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f # v1.3.2
+        uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
         with:
           mode: firewall-free
-          firewall-version: "1.15.1"
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
+          firewall-version: 1.15.1
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
         with:
-          toolchain: '1.94.1'
+          toolchain: 1.94.1
           components: rustfmt, clippy, llvm-tools-preview
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
         with:
           workspaces: writr-rs
       - name: Format
         run: cargo fmt --check
         working-directory: writr-rs
       - name: Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy --locked --workspace --all-targets -- -D warnings
         working-directory: writr-rs
       - name: Tests
-        run: cargo test --workspace
+        run: cargo test --locked --workspace --no-fail-fast
         working-directory: writr-rs
       - name: Feature matrix compiles
         run: |
-          cargo check -p writr-core --no-default-features
+          cargo check --locked -p writr-core --no-default-features
           for f in gfm toc slug emoji math raw-html highlight mdx parallel; do
-            cargo check -p writr-core --no-default-features --features "$f"
+            cargo check --locked -p writr-core --no-default-features --features "$f"
           done
         working-directory: writr-rs
+        if: always()
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@3f74d7c16a4242f1c95561e98edc25d36adb4375 # v2.87.12
+        uses: taiki-e/install-action@3f74d7c16a4242f1c95561e98edc25d36adb4375
         with:
           tool: cargo-llvm-cov
-      # 97.75% at gate introduction; every uncovered line is documented as
-      # unreachable-by-construction in writr-rs/COVERAGE.md.
+        if: always()
       - name: Coverage gate
-        run: cargo llvm-cov --workspace --ignore-filename-regex 'crates/writr-node/' --fail-under-lines 97
+        run: >-
+          cargo llvm-cov --locked --workspace --ignore-filename-regex 'crates/writr-node/' --fail-under-lines
+          97
         working-directory: writr-rs
-
+        if: always()
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: parity-rust
+          path: test-output/parity/
+          if-no-files-found: warn
   codegen-freshness:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
       - name: Install Socket Firewall
-        uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f # v1.3.2
+        uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
         with:
           mode: firewall-free
-          firewall-version: "1.15.1"
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+          firewall-version: 1.15.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: '22'
-          cache: 'pnpm'
+          cache: pnpm
       - name: Install Dependencies
         run: sfw pnpm install --frozen-lockfile
       - name: Regenerate committed codegen outputs
         run: node writr-rs/tools/gen-all.mjs
       - name: Verify no drift
         run: git diff --exit-code -- writr-rs/crates
-
   harness-parity:
+    needs: build-bindings
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - '22'
+          - '24'
+          - '26'
+        engine:
+          - native
+          - wasm
+    env:
+      HARNESS_ENGINE: writr-rust
+      WRITR_RS_FORCE_WASM: ${{ matrix.engine == 'wasm' && '1' || '0' }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
       - name: Install Socket Firewall
-        uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f # v1.3.2
+        uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
         with:
           mode: firewall-free
-          firewall-version: "1.15.1"
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+          firewall-version: 1.15.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
-          node-version: '22'
-          cache: 'pnpm'
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
-        with:
-          toolchain: '1.94.1'
-          targets: wasm32-wasip1
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
-        with:
-          workspaces: writr-rs
-      - name: Install wasi sysroot (QuickJS C sources) + binaryen
-        run: sudo apt-get update && sudo apt-get install -y wasi-libc libclang-rt-18-dev-wasm32 llvm binaryen
+          node-version: ${{ matrix.node }}
+          cache: pnpm
       - name: Install Dependencies
         run: sfw pnpm install --frozen-lockfile
-      # crates/writr-node has its own pnpm-workspace.yaml (settings boundary
-      # + esbuild allowBuilds), so a plain install stays local to it.
       - name: Install binding dependencies
         run: sfw pnpm install --frozen-lockfile
         working-directory: writr-rs/crates/writr-node
-      - name: Build native addon
-        run: pnpm build:rs
-      - name: Harness (native)
-        run: HARNESS_ENGINE=writr-rust pnpm test:harness
-      - name: Build wasm addon
-        run: pnpm build:rs:wasm
-      - name: Harness (wasm)
-        run: HARNESS_ENGINE=writr-rust WRITR_RS_FORCE_WASM=1 pnpm test:harness
-      - name: Browser smoke (Chromium)
-        run: |
-          # Install browsers with the same playwright-core the smoke test loads.
-          # browser-smoke.mjs requires playwright-core from crates/writr-node, so
-          # running the installer from the repo root — where it is not a dependency —
-          # makes npx fetch the newest release instead and download a browser build
-          # the pinned copy cannot launch.
-          (cd writr-rs/crates/writr-node && pnpm exec playwright-core install chromium --with-deps)
-          node writr-rs/tools/browser-smoke.mjs
-      - name: JS suite untouched
-        run: pnpm test:ci
-
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: parity-linux-bindings
+          path: writr-rs/crates/writr-node
+      - name: Exact and normalized harness
+        run: pnpm test:harness
+      - name: Every exported binding API
+        if: always()
+        run: pnpm test:bindings
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: parity-${{ matrix.engine }}-${{ matrix.node }}
+          path: test-output/parity/
+          if-no-files-found: error
   native-matrix:
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    defaults:
+      run:
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
@@ -163,30 +156,213 @@ jobs:
             target: x86_64-pc-windows-msvc
     runs-on: ${{ matrix.host }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
       - name: Install Socket Firewall
-        uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f # v1.3.2
+        uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
         with:
           mode: firewall-free
-          firewall-version: "1.15.1"
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
+          firewall-version: 1.15.1
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
         with:
-          toolchain: '1.94.1'
+          toolchain: 1.94.1
           targets: ${{ matrix.target }}
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
         with:
           workspaces: writr-rs
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          cache: pnpm
+      - name: Install Dependencies
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            sfw pnpm.cmd install --frozen-lockfile
+          else
+            sfw pnpm install --frozen-lockfile
+          fi
+      - name: Install binding dependencies
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            sfw pnpm.cmd install --frozen-lockfile
+          else
+            sfw pnpm install --frozen-lockfile
+          fi
+        working-directory: writr-rs/crates/writr-node
+      - name: Verify dependencies were installed
+        run: |
+          node -e "require.resolve('vitest')"
+          node -e "require.resolve('@napi-rs/wasm-runtime', { paths: ['./writr-rs/crates/writr-node'] })"
       - name: Core tests on host
-        run: cargo test --workspace
+        run: cargo test --locked --workspace --no-fail-fast
         working-directory: writr-rs
       - name: Build addon
-        run: cargo build --release --target ${{ matrix.target }} -p writr-node
+        run: cargo build --locked --release --target ${{ matrix.target }} -p writr-node
         working-directory: writr-rs
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        id: host_build
+      - name: Copy target-specific host addon
+        if: always() && steps.host_build.outcome == 'success'
+        run: node writr-rs/tools/copy-node-artifact.mjs
+        env:
+          WRITR_RS_TARGET: ${{ matrix.target }}
+      - name: Execute binding APIs in host Node
+        if: always() && steps.host_build.outcome == 'success'
+        run: pnpm test:bindings
+      - name: Require host binding execution report
+        if: always() && steps.host_build.outcome == 'success'
+        run: node test/bindings/verify-report.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: parity-host-${{ matrix.target }}
+          path: test-output/parity/
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: writr-node-${{ matrix.target }}
           path: |
             writr-rs/target/${{ matrix.target }}/release/*writr_node*
+          if-no-files-found: error
+  oracle-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install Socket Firewall
+        uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
+        with:
+          mode: firewall-free
+          firewall-version: 1.15.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          cache: pnpm
+      - name: Install Dependencies
+        run: sfw pnpm install --frozen-lockfile
+      - run: pnpm golden:check
+      - run: pnpm test:harness
+      - run: git diff --exit-code
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: parity-js
+          path: test-output/parity/
+          if-no-files-found: error
+  build-bindings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install Socket Firewall
+        uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
+        with:
+          mode: firewall-free
+          firewall-version: 1.15.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
+        with:
+          toolchain: 1.94.1
+          targets: wasm32-wasip1
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        with:
+          workspaces: writr-rs
+      - name: Install wasi sysroot (QuickJS C sources) + binaryen
+        run: sudo apt-get update && sudo apt-get install -y wasi-libc libclang-rt-18-dev-wasm32 llvm binaryen
+      - name: Install Dependencies
+        run: sfw pnpm install --frozen-lockfile
+      - name: Install binding dependencies
+        run: sfw pnpm install --frozen-lockfile
+        working-directory: writr-rs/crates/writr-node
+      - name: Build native addon
+        run: pnpm build:rs
+      - name: Build wasm addon
+        run: pnpm build:rs:wasm
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: parity-linux-bindings
+          path: |-
+            writr-rs/crates/writr-node/writr-node.node
+            writr-rs/crates/writr-node/writr-node.wasm32-wasi.wasm
+          if-no-files-found: error
+  browser-parity:
+    needs: build-bindings
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install Socket Firewall
+        uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
+        with:
+          mode: firewall-free
+          firewall-version: 1.15.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          cache: pnpm
+      - name: Install Dependencies
+        run: sfw pnpm install --frozen-lockfile
+      - name: Install binding dependencies
+        run: sfw pnpm install --frozen-lockfile
+        working-directory: writr-rs/crates/writr-node
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: parity-linux-bindings
+          path: writr-rs/crates/writr-node
+      - run: pnpm exec playwright-core install chromium --with-deps
+        working-directory: writr-rs/crates/writr-node
+      - run: node writr-rs/tools/browser-smoke.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: parity-chromium
+          path: test-output/parity/
+          if-no-files-found: error
+  parity-summary:
+    needs:
+      - oracle-freshness
+      - rust-checks
+      - harness-parity
+      - browser-parity
+      - native-matrix
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install Socket Firewall
+        uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
+        with:
+          mode: firewall-free
+          firewall-version: 1.15.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          cache: pnpm
+      - name: Install Dependencies
+        run: sfw pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: parity-*
+          merge-multiple: true
+          path: test-output/parity
+      - run: node test/harness/summarize.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: parity-summary
+          path: test-output/parity/
           if-no-files-found: error

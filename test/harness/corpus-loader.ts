@@ -9,11 +9,8 @@ import {
 import { PROFILE_NAMES } from "./profiles.js";
 import type { DiagnosticEntry, Manifest, ManifestEntry } from "./types.js";
 
-/** Load and parse the corpus manifest, or return an empty manifest. */
+/** Load the required corpus manifest; missing inventory is an error. */
 export function loadManifest(): Manifest {
-	if (!fs.existsSync(MANIFEST_PATH)) {
-		return { generatedAt: "", count: 0, bySource: {}, entries: [] };
-	}
 	return JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8")) as Manifest;
 }
 

@@ -32,6 +32,14 @@ pub fn trim_start(value: &str) -> &str {
 /// The general fallthrough uses Rust's shortest round-trip formatting, which
 /// matches JS for the values reachable from markdown rendering.
 pub fn number_to_string(value: f64) -> String {
+	if value.is_infinite() {
+		return if value.is_sign_negative() {
+			"-Infinity"
+		} else {
+			"Infinity"
+		}
+		.into();
+	}
 	if value == 0.0 {
 		// JS prints both 0 and -0 as "0".
 		return "0".into();

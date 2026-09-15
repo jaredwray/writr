@@ -7,7 +7,7 @@
 //! Errors are thrown as JS `Error`s with a `writr-rs:` prefix — behaviorally
 //! matching the harness adapter's `throwIfEmitted` for the JS engine.
 
-use napi::bindgen_prelude::{AsyncTask, Buffer, Uint32Array};
+use napi::bindgen_prelude::{AsyncTask, Buffer, Either, JsObjectValue, Uint32Array, Uint8Array};
 use napi::{Env, Error, Result, Task};
 use napi_derive::napi;
 
@@ -161,11 +161,12 @@ pub fn render_batch_async(
 /// `html[offsets[i]..offsets[i + 1]]` (UTF-8).
 #[napi(object)]
 pub struct PackedBatch {
-	pub html: Buffer,
+	#[napi(ts_type = "Buffer")]
+	pub html: Either<Buffer, Uint8Array>,
 	pub offsets: Uint32Array,
 }
 
-fn pack(rendered: Vec<String>) -> Result<PackedBatch> {
+fn pack(env: Env, rendered: Vec<String>) -> Result<PackedBatch> {
 	let total: usize = rendered.iter().map(String::len).sum();
 	if u32::try_from(total).is_err() {
 		return Err(Error::from_reason(
@@ -180,7 +181,11 @@ fn pack(rendered: Vec<String>) -> Result<PackedBatch> {
 		offsets.push(html.len() as u32);
 	}
 	Ok(PackedBatch {
-		html: html.into(),
+		html: if env.get_global()?.has_named_property("Buffer")? {
+			Either::A(html.into())
+		} else {
+			Either::B(html.into())
+		},
 		offsets: offsets.into(),
 	})
 }
@@ -193,12 +198,13 @@ fn pack(rendered: Vec<String>) -> Result<PackedBatch> {
 /// the output goes back to bytes (e.g. written to disk).
 #[napi]
 pub fn render_batch_buffer(
+	env: Env,
 	input: Buffer,
 	offsets: Uint32Array,
 	options: Option<RenderOptions>,
 ) -> Result<PackedBatch> {
 	let documents = buffer_documents(&input, &offsets)?;
-	pack(batch(&documents, &to_core(options))?)
+	pack(env, batch(&documents, &to_core(options))?)
 }
 
 pub struct RenderBatchBufferTask {
@@ -217,8 +223,8 @@ impl Task for RenderBatchBufferTask {
 		batch(&documents, &self.options)
 	}
 
-	fn resolve(&mut self, _env: Env, output: Vec<String>) -> Result<PackedBatch> {
-		pack(output)
+	fn resolve(&mut self, env: Env, output: Vec<String>) -> Result<PackedBatch> {
+		pack(env, output)
 	}
 }
 

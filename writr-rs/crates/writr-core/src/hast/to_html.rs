@@ -189,7 +189,7 @@ fn stringify_commas(values: &[String]) -> String {
 	if input.last() == Some(&"") {
 		input.push("");
 	}
-	input.join(", ")
+	js::trim(&input.join(", ")).to_string()
 }
 
 /// space-separated-tokens@2.0.2 `stringify`.

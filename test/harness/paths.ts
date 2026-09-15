@@ -2,7 +2,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 /** Absolute path to the `test/harness` directory. */
-export const HARNESS_DIR = path.dirname(fileURLToPath(import.meta.url));
+export const HARNESS_DIR =
+	process.env.WRITR_HARNESS_DIR ?? path.dirname(fileURLToPath(import.meta.url));
 
 /** Raw downloaded payloads, committed so generation/tests run offline. */
 export const FETCH_CACHE_DIR = path.join(HARNESS_DIR, "fetch", "cache");

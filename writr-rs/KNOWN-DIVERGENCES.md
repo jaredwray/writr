@@ -1,12 +1,49 @@
 # Known divergences from the JS engine
 
-The golden harness (2,041 documents × 7 profiles, byte-exact, empty
-allowlist) is the compatibility contract, and writr-rs meets it fully.
-While driving `writr-core` to full line coverage, oracle testing against
-the real JS engine surfaced a small set of divergences on inputs *outside*
-that corpus. They are documented here rather than silently shipped; none
-affects any golden. Each is a candidate for a follow-up fix + a new
-diagnostic golden.
+The historical 2,041 **assigned input/profile cases**, from 1,000 unique corpus
+documents plus diagnostics, use normalized HTML snapshots. They are not 2,041
+documents multiplied by seven profiles. New exact tests expose differences
+that normalization or the original fixture selection did not cover.
+
+The authoritative registry is [`test/harness/divergences.json`](../test/harness/divergences.json).
+It retains D01–D14 with linked JS-generated cases, stage/public reachability,
+disposition and remaining blockers. All tests assert compatibility directly;
+there are no expected-failure exceptions and the allowlist remains empty.
+
+## Current evidence
+
+All linked regression fixtures pass locally. Dispositions are scoped to those
+fixtures; neither passing cases nor an empty allowlist prove universal stage
+compatibility. The generated report also requires every intended CI host and
+runtime before marking the testing milestone complete.
+
+- D01's malformed table tree without an open table matches current JS; no
+  remaining counterexample is established by that original claim.
+- D02/D04/D05/D09–D12 match after the rawtext, template/foreign-content,
+  serialization, slug and NUL corrections.
+- D03/D08 use the JS pipeline's document-versus-fragment detection, preserving
+  synthesized document structure and a leading doctype.
+- D06 restores annotation-xml as a scope boundary.
+- D07 restores upstream html5ever's earlier select insertion modes, matching
+  pinned parse5; the same html5ever version and dependencies are retained.
+- D13 rejoins escaped text with tokenizer-created autolink suffixes before
+  applying the existing GFM transformation.
+- D14 uses real Acorn/JSX grammar callbacks in QuickJS, validates import scope
+  after speculative tokenization, and rejects incomplete JSX at EOF. User
+  expressions and imported modules are never executed.
+- CR/CRLF are preserved in source text/code. A marker-only list prefix counts
+  logical columns rather than the ignored CR byte. The earlier assertion that
+  every CRLF render equals LF was incorrect for the actual JS oracle.
+- Browser packed output uses Uint8Array without a Buffer polyfill; Node output
+  remains Buffer in both native and forced-WASM mode.
+
+Runtime, packaging and performance readiness require independent evidence.
+No engine switch, dependency version upgrade or package release is included.
+
+## Original category descriptions (historical, retain numbering)
+
+The descriptions below record the original review and must be read alongside
+the current registry dispositions above; several selected cases are now fixed.
 
 ## Raw HTML (`rehype-raw` / parse5 vs html5ever replay)
 
