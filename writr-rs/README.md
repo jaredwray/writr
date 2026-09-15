@@ -178,7 +178,7 @@ addon, ~96µs engine-side) — that trade is deliberate:
 
 highlight.js **11.11.1** · katex **0.18.7** · node-emoji **2.2.0** /
 emojilib 2.4.0 · github-slugger **2.0.0** · lowlight 3.3.0 ·
-property-information 7.1.0 · mdast-util-to-hast 13.2.1 · hast-util-to-html
+property-information 7.2.0 · mdast-util-to-hast 13.2.1 · hast-util-to-html
 9.0.5 · micromark 4.0.2 (via markdown-rs 1.0.0, vendored with patches
 documented in `vendor/markdown/VENDORED.md`).
 

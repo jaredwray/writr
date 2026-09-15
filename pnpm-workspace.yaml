@@ -8,8 +8,11 @@ trustPolicy: no-downgrade # fail if a later version has weaker trust evidence
 
 # Pin katex to 0.18.7 (AIKIDO-2026-293837 lineage). rehype-katex@7.0.1 declares
 # ^0.16.0, which never reaches 0.18.x; keep the Rust vendor in lockstep.
+# Pin property-information to 7.2.0 so rehype/hast and writr-rs codegen share
+# one version (hast-* still resolve 7.1.0 without a workspace pin).
 overrides:
   katex: 0.18.7
+  property-information: 7.2.0
 
 # Lifecycle-script exceptions — each entry is a reviewed security exception.
 # esbuild: used by tsdown / the JS build.

@@ -1,4 +1,4 @@
-//! Port of property-information@7.1.0 `find()` over code-generated schema
+//! Port of property-information@7.2.0 `find()` over code-generated schema
 //! tables (see `tools/gen-property-info.mjs`).
 
 use crate::generated::property_info_data::{
@@ -268,6 +268,7 @@ mod tests {
 		// numbers and comma lists.
 		assert!(find(Space::Html, "rows").number());
 		assert!(find(Space::Html, "tabIndex").number());
+		assert!(find(Space::Html, "colSpan").number());
 		assert!(find(Space::Html, "accept").comma_separated());
 		assert!(!find(Space::Html, "accept").space_separated());
 		let charset = find(Space::Html, "acceptCharset");
