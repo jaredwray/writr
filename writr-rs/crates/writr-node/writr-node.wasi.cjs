@@ -7,6 +7,11 @@
 // assume `wasm32-wasip1-threads`: no worker pool, no SharedArrayBuffer — the
 // module owns (exports) its linear memory and async work runs on the main
 // thread via emnapi's single-thread emulation.
+//
+// WASI is instantiated without host environment variables and without
+// filesystem preopens. napi-rs's generated Node loader grants both
+// (`process.env` and a preopen of the filesystem root); this engine is
+// markdown-in / HTML-out and does not need either.
 
 const __nodeFs = require("node:fs");
 const __nodePath = require("node:path");
@@ -17,14 +22,8 @@ const {
 	instantiateNapiModuleSync: __emnapiInstantiateNapiModuleSync,
 } = require("@napi-rs/wasm-runtime");
 
-const __rootDir = __nodePath.parse(process.cwd()).root;
-
 const __wasi = new __nodeWASI({
 	version: "preview1",
-	env: process.env,
-	preopens: {
-		[__rootDir]: __rootDir,
-	},
 });
 
 const __emnapiContext = __emnapiGetDefaultContext();
