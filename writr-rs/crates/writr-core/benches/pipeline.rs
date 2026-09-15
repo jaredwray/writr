@@ -55,6 +55,7 @@ fn minimal() -> RenderOptions {
 		math: false,
 		mdx: false,
 		raw_html: false,
+		caching: false,
 	}
 }
 

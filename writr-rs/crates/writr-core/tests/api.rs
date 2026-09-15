@@ -15,6 +15,7 @@ fn default_options_match_the_js_engine_defaults() {
 	assert!(options.highlight);
 	assert!(options.gfm);
 	assert!(options.math);
+	assert!(options.caching);
 	assert!(!options.mdx);
 	assert!(!options.raw_html);
 }
@@ -33,6 +34,7 @@ fn all_off_disables_everything() {
 			math: false,
 			mdx: false,
 			raw_html: false,
+			caching: false,
 		}
 	);
 }
@@ -240,6 +242,7 @@ fn mdx_duplicate_attributes_use_js_object_semantics() {
 		math: false,
 		gfm: true,
 		raw_html: false,
+		caching: false,
 	};
 	assert_eq!(
 		writr_core::render("<div id=\"a\" id=\"b\">x</div>", &options).unwrap(),

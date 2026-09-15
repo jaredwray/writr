@@ -47,8 +47,19 @@ frontmatter strip → markdown-rs (constructs per options)
 
 ## Options
 
+Math memoization defaults to enabled. `caching: false` bypasses reads and writes
+in both internal math caches (including async and batch calls); it does not
+clear entries shared with other callers. The HTML cache is process-wide and
+the parsed-output cache is per thread. Each uses FIFO eviction at **256 entries
+or 4 MiB of retained payload**, whichever comes first. Oversized entries render
+normally without being cached. Payload accounting includes formula keys and
+owned string/vector capacities; fixed container and allocator overhead is extra
+but bounded by the entry limit. Each active rendering thread also retains its
+QuickJS context, even with caching disabled. These are cache retention limits,
+not a cap on total process memory or temporary rendering allocations.
+
 Runtime flags mirror writr's JS `RenderOptions` 1:1 (`emoji`, `toc`, `slug`,
-`highlight`, `gfm`, `math`, `mdx`, `rawHtml` — same defaults). Each plugin is
+`highlight`, `gfm`, `math`, `mdx`, `rawHtml`, `caching` — same defaults). Each plugin is
 also a cargo feature (all on by default) so embedders can compile out the
 heavyweight pieces (hljs grammars, the ~1 MB KaTeX bundle, the emoji table).
 A runtime flag whose feature was compiled out fails loudly with

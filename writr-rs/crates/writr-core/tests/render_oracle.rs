@@ -37,6 +37,7 @@ impl From<&Options> for RenderOptions {
 			math: options.math,
 			mdx: options.mdx,
 			raw_html: options.raw_html,
+			caching: false,
 		}
 	}
 }

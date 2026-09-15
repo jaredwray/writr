@@ -157,7 +157,7 @@ fn transform(mdast: markdown::mdast::Node, options: &RenderOptions) -> hast::Nod
 	}
 	#[cfg(feature = "math")]
 	if options.math {
-		hast::katex::transform(&mut tree);
+		hast::katex::transform_with_cache(&mut tree, options.caching);
 	}
 	tree
 }

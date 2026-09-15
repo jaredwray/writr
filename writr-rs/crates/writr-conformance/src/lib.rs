@@ -27,6 +27,7 @@ pub const PROFILES: &[Profile] = &[
 			math: true,
 			mdx: false,
 			raw_html: false,
+			caching: false,
 		},
 	},
 	Profile {
@@ -40,6 +41,7 @@ pub const PROFILES: &[Profile] = &[
 			math: false,
 			mdx: false,
 			raw_html: false,
+			caching: false,
 		},
 	},
 	Profile {
@@ -53,6 +55,7 @@ pub const PROFILES: &[Profile] = &[
 			math: false,
 			mdx: false,
 			raw_html: false,
+			caching: false,
 		},
 	},
 	Profile {
@@ -66,6 +69,7 @@ pub const PROFILES: &[Profile] = &[
 			math: true,
 			mdx: false,
 			raw_html: false,
+			caching: false,
 		},
 	},
 	Profile {
@@ -79,6 +83,7 @@ pub const PROFILES: &[Profile] = &[
 			math: false,
 			mdx: false,
 			raw_html: false,
+			caching: false,
 		},
 	},
 	Profile {
@@ -92,6 +97,7 @@ pub const PROFILES: &[Profile] = &[
 			math: true,
 			mdx: false,
 			raw_html: true,
+			caching: false,
 		},
 	},
 	Profile {
@@ -105,6 +111,7 @@ pub const PROFILES: &[Profile] = &[
 			math: true,
 			mdx: true,
 			raw_html: false,
+			caching: false,
 		},
 	},
 ];
