@@ -108,7 +108,7 @@
     "@vitest/coverage-v8": "^5.0.0",
     "docula": "^3.0.0",
     "dotenv": "^17.3.1",
-    "markdown-it": "^15.0.0",
+    "markdown-it": "^15.0.1",
     "marked": "^18.0.9",
     "property-information": "7.1.0",
     "rimraf": "^6.1.3",
