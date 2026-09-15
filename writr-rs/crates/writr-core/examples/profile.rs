@@ -33,6 +33,7 @@ fn main() {
 		math: false,
 		mdx: false,
 		raw_html: false,
+		caching: false,
 	};
 	let default = RenderOptions::default();
 

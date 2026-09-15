@@ -1,11 +1,11 @@
 //! Render options mirroring writr's JS `RenderOptions` (src/types.ts) 1:1.
-//!
-//! `caching` is intentionally absent: the engine is deterministic and
-//! stateless per call, and caching stays a concern of the JS wrapper.
 
 /// Feature flags for a render, matching the JS engine's defaults.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RenderOptions {
+	/// Reuse bounded internal math caches. Default: `true`.
+	/// `false` bypasses reads and writes without clearing other callers' entries.
+	pub caching: bool,
 	/// Emoji shortcode replacement (remark-emoji). Default: `true`.
 	pub emoji: bool,
 	/// Table-of-contents generation (remark-toc). Default: `true`.
@@ -29,6 +29,7 @@ pub struct RenderOptions {
 impl Default for RenderOptions {
 	fn default() -> Self {
 		Self {
+			caching: true,
 			emoji: true,
 			toc: true,
 			slug: true,
@@ -46,6 +47,7 @@ impl RenderOptions {
 	/// (the harness `commonmark` profile).
 	pub fn all_off() -> Self {
 		Self {
+			caching: false,
 			emoji: false,
 			toc: false,
 			slug: false,

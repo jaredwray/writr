@@ -2,8 +2,7 @@
 //!
 //! The option object mirrors writr's JS `RenderOptions` (src/types.ts) —
 //! camelCase fields, all optional, falling back to the JS defaults.
-//! `caching` is accepted and ignored (the engine is deterministic and
-//! stateless; caching remains a concern of the JS wrapper).
+//! `caching` controls the bounded internal math caches.
 //!
 //! Errors are thrown as JS `Error`s with a `writr-rs:` prefix — behaviorally
 //! matching the harness adapter's `throwIfEmitted` for the JS engine.
@@ -23,7 +22,7 @@ pub struct RenderOptions {
 	pub math: Option<bool>,
 	pub mdx: Option<bool>,
 	pub raw_html: Option<bool>,
-	/// Accepted for API compatibility; the engine has no cache.
+	/// Reuse bounded internal math caches. Default: true.
 	pub caching: Option<bool>,
 }
 
@@ -31,6 +30,7 @@ fn to_core(options: Option<RenderOptions>) -> writr_core::RenderOptions {
 	let defaults = writr_core::RenderOptions::default();
 	let options = options.unwrap_or_default();
 	writr_core::RenderOptions {
+		caching: options.caching.unwrap_or(defaults.caching),
 		emoji: options.emoji.unwrap_or(defaults.emoji),
 		toc: options.toc.unwrap_or(defaults.toc),
 		slug: options.slug.unwrap_or(defaults.slug),
@@ -253,4 +253,25 @@ pub fn engine_version() -> String {
 		env!("CARGO_PKG_VERSION"),
 		writr_core::KATEX_VERSION,
 	)
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn caching_option_reaches_core() {
+		assert!(to_core(None).caching);
+		assert!(to_core(Some(RenderOptions::default())).caching);
+		for caching in [false, true] {
+			assert_eq!(
+				to_core(Some(RenderOptions {
+					caching: Some(caching),
+					..Default::default()
+				}))
+				.caching,
+				caching
+			);
+		}
+	}
 }

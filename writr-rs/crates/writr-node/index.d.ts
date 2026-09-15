@@ -18,7 +18,7 @@ export interface RenderOptions {
   math?: boolean
   mdx?: boolean
   rawHtml?: boolean
-  /** Accepted for API compatibility; the engine has no cache. */
+  /** Reuse bounded internal math caches. Default: true. */
   caching?: boolean
 }
 
