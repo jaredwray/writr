@@ -204,73 +204,27 @@ pub struct Golden {
 	pub golden_path: PathBuf,
 }
 
-fn walk(dir: &Path, out: &mut Vec<PathBuf>) {
-	let Ok(entries) = std::fs::read_dir(dir) else {
-		return;
-	};
-	let mut entries: Vec<_> = entries.flatten().collect();
-	entries.sort_by_key(std::fs::DirEntry::path);
-	for entry in entries {
-		let path = entry.path();
-		if path.is_dir() {
-			walk(&path, out);
-		} else if path.extension().is_some_and(|ext| ext == "html") {
-			out.push(path);
-		}
-	}
-}
+mod inventory;
+pub use inventory::discover;
 
-/// Every corpus golden for a profile.
+/// Expected corpus cases, derived from the shared manifest, not golden files.
 pub fn corpus_goldens(harness: &Path, profile_name: &str) -> Vec<Golden> {
-	let root = harness.join("goldens").join(profile_name);
-	let mut files = Vec::new();
-	walk(&root, &mut files);
-	files
+	discover(harness)
+		.unwrap_or_else(|e| panic!("{e}"))
 		.into_iter()
-		.map(|golden_path| {
-			let id = golden_path
-				.strip_prefix(&root)
-				.expect("under root")
-				.with_extension("")
-				.to_string_lossy()
-				.replace('\\', "/");
-			let input_path = harness.join("corpus/inputs").join(format!("{id}.md"));
-			Golden {
-				profile: profile_name.to_string(),
-				id,
-				input_path,
-				golden_path,
-			}
+		.filter(|g| {
+			g.profile == profile_name && g.input_path.starts_with(harness.join("corpus/inputs"))
 		})
 		.collect()
 }
 
-/// Every diagnostic golden for a profile (inputs may be `.md` or `.mdx`).
+/// Expected diagnostics, derived from input files and the shared profile map.
 pub fn diagnostic_goldens(harness: &Path, profile_name: &str) -> Vec<Golden> {
-	let root = harness.join("diagnostics-goldens").join(profile_name);
-	let mut files = Vec::new();
-	walk(&root, &mut files);
-	files
+	discover(harness)
+		.unwrap_or_else(|e| panic!("{e}"))
 		.into_iter()
-		.map(|golden_path| {
-			let id = golden_path
-				.strip_prefix(&root)
-				.expect("under root")
-				.with_extension("")
-				.to_string_lossy()
-				.replace('\\', "/");
-			let md = harness.join("diagnostics").join(format!("{id}.md"));
-			let input_path = if md.exists() {
-				md
-			} else {
-				harness.join("diagnostics").join(format!("{id}.mdx"))
-			};
-			Golden {
-				profile: profile_name.to_string(),
-				id,
-				input_path,
-				golden_path,
-			}
+		.filter(|g| {
+			g.profile == profile_name && g.input_path.starts_with(harness.join("diagnostics"))
 		})
 		.collect()
 }
@@ -312,7 +266,7 @@ pub fn check(golden: &Golden, options: &RenderOptions) -> Option<String> {
 		.unwrap_or_else(|error| panic!("read {}: {error}", golden.input_path.display()));
 	let expected_raw = std::fs::read_to_string(&golden.golden_path)
 		.unwrap_or_else(|error| panic!("read {}: {error}", golden.golden_path.display()));
-	let expected = normalize(&expected_raw);
+	let expected = expected_raw;
 	match writr_core::render(&input, options) {
 		Ok(html) => {
 			let actual = normalize(&html);

@@ -6,16 +6,28 @@ threshold). Two categories of code are intentionally outside the gate:
 
 ## Excluded crate: `writr-node`
 
-The napi bindings only execute inside a Node.js host, which
-`cargo llvm-cov` cannot provide. Every exported function is exercised
-end-to-end by the harness runs (`HARNESS_ENGINE=writr-rust pnpm test:harness`,
-natively and with `WRITR_RS_FORCE_WASM=1`) and the browser smoke test.
+The napi bindings execute inside a Node.js or browser host. Rust line coverage
+excludes this crate and does not measure its exported API paths. The historical
+harness previously exercised only synchronous `render`; the expanded harness
+now compares both `render` and `renderAsync`. Dedicated `pnpm test:bindings`
+contract tests exercise all nine exports, including batch and packed-buffer
+paths. Export discovery detects an untested new export.
+
+Native and forced-WASM tests run in separate Node processes and verify artifact
+selection. Chromium consumes shared JS-derived outcomes; its Buffer exports
+currently fail without a browser Buffer polyfill. Local execution used Linux
+x64/Node 24 and Chromium. Other Node versions and hosts are CI targets, not a
+claim of completed local coverage. Consult generated JSON execution reports.
+
+The new exact conformance tests currently expose unresolved compatibility
+failures. A test failing on a real mismatch is not passing coverage evidence;
+no updated coverage percentage is claimed. Existing coverage thresholds and
+feature-compilation checks remain enabled in CI.
 
 ## Documented unreachable lines
 
-The remaining uncovered lines are defensive code that is unreachable by
-construction. They are asserted as such in the test modules of the files
-that contain them; the inventory:
+The following is the historical inventory of defensive or difficult-to-reach
+branches. It is not a claim that all newly added code is covered:
 
 - **`writr-core`** — `unreachable!()` arms guarded by prior matches
   (`from_mdast.rs`, `raw.rs`, `slug.rs`, `emoji.rs`, `to_html.rs`);
@@ -27,8 +39,8 @@ that contain them; the inventory:
 - **`writr-core`, known-divergence branches** — a handful of `raw.rs`
   branches are reachable only through inputs on the documented divergence
   list (see `KNOWN-DIVERGENCES.md`), e.g. fostering without an open table
-  and cross-chunk rawtext resumption. They are left untested rather than
-  enshrining behavior that intentionally differs from parse5 until fixed.
+  and cross-chunk rawtext resumption. Shared JS-derived stage fixtures now probe these categories. Remaining
+  reproduction gaps and failures are tracked in the divergence registry.
 - **`writr-hljs`** — `unreachable!()`/fall-through arms proven by the
   surrounding control flow: multi-class re-match arms
   (`compile.rs`), the probe-memo monotonicity fall-through and

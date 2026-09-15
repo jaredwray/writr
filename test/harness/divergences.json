@@ -1,0 +1,177 @@
+[
+  {
+    "id": "D01",
+    "category": "Foster-parenting without an open table",
+    "caseIds": [
+      "stage/fostering"
+    ],
+    "reachability": "stage-only",
+    "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
+    "disposition": "needs-reproduction",
+    "blocker": "The selected malformed-table fixture matches; the originally claimed fostering difference has not been reproduced. Retain category pending a minimal distinguishing tree."
+  },
+  {
+    "id": "D02",
+    "category": "Rawtext elements spanning chunks",
+    "caseIds": [
+      "html/rawtext",
+      "stage/rawtext-script",
+      "stage/rawtext-style",
+      "stage/rawtext-textarea"
+    ],
+    "reachability": "public-and-stage",
+    "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
+    "disposition": "fixed-or-matches-fixtures",
+    "blocker": null
+  },
+  {
+    "id": "D03",
+    "category": "Mid-stream doctype",
+    "caseIds": [
+      "html/doctype",
+      "stage/doctype"
+    ],
+    "reachability": "public-and-stage",
+    "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
+    "disposition": "needs-reproduction",
+    "blocker": "Selected doctype fixtures match. Original broad document/fragment claim remains unproven outside these fixtures."
+  },
+  {
+    "id": "D04",
+    "category": "Synthesized template contents",
+    "caseIds": [
+      "html/template",
+      "stage/template"
+    ],
+    "reachability": "public-and-stage",
+    "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
+    "disposition": "fixed-or-matches-fixtures",
+    "blocker": null
+  },
+  {
+    "id": "D05",
+    "category": "SVG CDATA",
+    "caseIds": [
+      "html/svg-cdata",
+      "stage/cdata"
+    ],
+    "reachability": "public-and-stage",
+    "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
+    "disposition": "fixed-or-matches-fixtures",
+    "blocker": null
+  },
+  {
+    "id": "D06",
+    "category": "MathML annotation-xml integration",
+    "caseIds": [
+      "html/mathml",
+      "stage/integration"
+    ],
+    "reachability": "public-and-stage",
+    "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
+    "disposition": "unresolved",
+    "blocker": "A full-fragment stage fixture now matches, but paragraph integration through the public Markdown pipeline still differs."
+  },
+  {
+    "id": "D07",
+    "category": "Select child parsing",
+    "caseIds": [
+      "html/select",
+      "stage/select"
+    ],
+    "reachability": "public-and-stage",
+    "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
+    "disposition": "unresolved",
+    "blocker": "html5ever and the pinned parse5 implement different select tree-building behavior. A scoped compatibility strategy is needed."
+  },
+  {
+    "id": "D08",
+    "category": "Explicit html/head/body structure",
+    "caseIds": [
+      "html/document",
+      "stage/document"
+    ],
+    "reachability": "public-and-stage",
+    "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
+    "disposition": "unresolved",
+    "blocker": "Synthesized document structure loses html/head/body wrappers; choosing document mode in HAST replay needs separate work."
+  },
+  {
+    "id": "D09",
+    "category": "Trailing-empty comma lists",
+    "caseIds": [
+      "html/comma-list",
+      "stage/comma-list"
+    ],
+    "reachability": "public-and-stage",
+    "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
+    "disposition": "fixed-or-matches-fixtures",
+    "blocker": null
+  },
+  {
+    "id": "D10",
+    "category": "Infinity and whitespace number attributes",
+    "caseIds": [
+      "html/number-whitespace",
+      "stage/infinity"
+    ],
+    "reachability": "public-and-stage",
+    "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
+    "disposition": "fixed-or-matches-fixtures",
+    "blocker": null
+  },
+  {
+    "id": "D11",
+    "category": "Template heading slugs and empty IDs",
+    "caseIds": [
+      "slug/empty-id",
+      "slug/template-headings",
+      "stage/template-slug",
+      "stage/empty-id"
+    ],
+    "reachability": "public-and-stage",
+    "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
+    "disposition": "fixed-or-matches-fixtures",
+    "blocker": null
+  },
+  {
+    "id": "D12",
+    "category": "NUL replacement",
+    "caseIds": [
+      "text/nul",
+      "html/nul"
+    ],
+    "reachability": "public",
+    "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
+    "disposition": "fixed-or-matches-fixtures",
+    "blocker": null
+  },
+  {
+    "id": "D13",
+    "category": "Escaped autolink literals",
+    "caseIds": [
+      "gfm/email",
+      "gfm/url"
+    ],
+    "reachability": "public",
+    "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
+    "disposition": "unresolved",
+    "blocker": "Escaped email text is split before autolink repair; preserving correct span boundaries requires parser/transform changes."
+  },
+  {
+    "id": "D14",
+    "category": "MDX ESM and unclosed tags",
+    "caseIds": [
+      "mdx/import",
+      "mdx/export",
+      "mdx/default-export",
+      "mdx/unclosed-tag",
+      "mdx/malformed-expression",
+      "mdx/malformed-esm"
+    ],
+    "reachability": "public",
+    "expectedJsBehavior": "Exact successful HTML or parse rejection recorded for each linked case in exact/outcomes.json.",
+    "disposition": "unresolved",
+    "blocker": "The Rust MDX parser lacks the JS grammar validation and ESM/expression behavior required by remark-mdx. Do not approximate JavaScript syntax with a regex."
+  }
+]

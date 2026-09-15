@@ -1,25 +1,27 @@
 # writr-rs
 
-A Rust implementation of [writr](https://writr.org)'s markdown engine that
-reproduces the JavaScript unified/remark/rehype pipeline **byte-for-byte** —
-parser, GFM, alerts, table of contents, emoji, slugs, syntax highlighting,
-KaTeX math, raw HTML, and MDX — shipped as a native Node.js addon, a
-WebAssembly module, and a browser ESM entry point.
+A Rust implementation of [writr](https://writr.org)'s markdown engine, with
+native Node.js, WASM and browser entry points. The JavaScript engine remains the
+compatibility oracle and default. Exact compatibility is not yet complete.
 
 ## Parity status
 
-| Suite | Scale | Status |
-| ----- | ----- | ------ |
-| Golden harness (`test/harness`), all 7 profiles | 2,041 goldens | byte-exact, **empty allowlist** |
-| …the same suite through the napi addon | 2,041 goldens | byte-exact (`HARNESS_ENGINE=writr-rust`) |
-| …the same suite through the wasm build | 2,041 goldens | byte-exact (`WRITR_RS_FORCE_WASM=1`) |
-| highlight.js oracle fixtures (real hljs 11.11.1 output) | 2,111 fixtures | byte-exact |
-| Browser (headless Chromium, `browser.js`, no COOP/COEP) | 11 feature documents | byte-identical to native |
+The historical suite contains 1,000 unique corpus documents and 2,041 assigned
+input/profile cases (1,968 corpus plus 73 diagnostic goldens). Those goldens use
+lossy whitespace normalization. New checks separately compare untrimmed JS
+sync/async and Rust sync/async output and consume 91 JS-derived public exact
+outcomes plus 14 internal HAST outcomes. The allowlist remains empty.
 
-The compatibility contract is the repository's golden-snapshot harness: every
-document is compared byte-exactly after trivial normalization (CRLF → LF,
-trailing whitespace, one trailing newline). `test/harness/allowlist.json`
-records approved divergences per engine — for `writr-rust` it is empty.
+The stricter fixtures expose MDX validation/ESM/expression, line-ending,
+autolink and HTML tree-building differences. See [KNOWN-DIVERGENCES.md](KNOWN-DIVERGENCES.md)
+and the [harness guide](../test/harness/README.md). A passing historical snapshot
+suite does not establish universal parser or stage compatibility.
+
+The dedicated binding suite exercises all nine exports under native and forced
+WASM. Chromium uses the same JS oracle fixtures without COOP/COEP; its packed
+Buffer exports currently fail without a Buffer polyfill. Local evidence is
+Linux x64, Node 24 and Chromium. CI additionally schedules Node 22/24/26 and
+Linux/macOS/Windows hosts; consult execution reports for actual results.
 
 ## Layout
 
@@ -106,21 +108,20 @@ native builds use the real libuv thread pool.
 ## Testing
 
 ```sh
-cargo test --workspace                            # unit + fixtures + 2,041 goldens
+cargo test --locked --workspace --no-fail-fast     # unit, historical and exact fixtures
 HARNESS_ENGINE=writr-rust pnpm test:harness       # same goldens through the addon
 HARNESS_ENGINE=writr-rust WRITR_RS_FORCE_WASM=1 pnpm test:harness
-node tools/browser-smoke.mjs                      # Chromium, byte-compares vs native
+node tools/browser-smoke.mjs                      # Chromium against shared JS outcomes
 cargo llvm-cov --workspace --ignore-filename-regex 'crates/writr-node/' --fail-under-lines 97
 cargo bench -p writr-core --bench pipeline        # stage-level criterion benches
-npx tsx benchmark/benchmark-rust.ts               # engine vs writr-JS vs marked/markdown-it
+pnpm exec tsx benchmark/benchmark-rust.ts               # engine vs writr-JS vs marked/markdown-it
 ```
 
-`writr-node` is excluded from the coverage gate: its code paths require a
-Node.js host and are exercised end-to-end by the harness runs above. The
-workspace sits at ~98% lines; every uncovered line is a documented
-unreachable-by-construction branch (see `COVERAGE.md`). Edge-case behavior
-differences vs the JS engine found during oracle testing — none reachable
-from the golden corpus — are tracked in `KNOWN-DIVERGENCES.md`.
+`writr-node` is excluded from Rust line coverage. Dedicated native/WASM binding
+and browser contract tests complement that metric; they do not measure binding
+crate line coverage. Run `pnpm test:bindings` from the repository root in each
+mode. Exact parity tests currently fail on documented blockers, so no new
+passing coverage percentage or complete compatibility claim is made.
 
 Codegen freshness: every table under `crates/*/src/generated` and
 `crates/writr-hljs/grammars` is generated from the **pinned npm packages**
@@ -165,7 +166,7 @@ faster than our micromark-faithful parser (51µs vs ~109µs through the
 addon, ~96µs engine-side) — that trade is deliberate:
 
 - The parser is the vendored markdown-rs (a faithful micromark port) —
-  that architecture is *why* 2,041 goldens match byte-exactly. The perf
+  that architecture is *why* 2,041 historical goldens match after normalization. The perf
   patches in `vendor/markdown` (documented in `VENDORED.md`) make it
   **~1.6× the speed of upstream markdown-rs 1.0.0** on this corpus
   (single-pass `EditMap::consume`, bulk data-run consumption,

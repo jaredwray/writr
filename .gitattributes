@@ -2,3 +2,7 @@
 # core.autocrlf=true, and actions/checkout v7 no longer overrides that, which
 # made the writr-rs golden harness diverge on CRLF markdown.
 * text=auto eol=lf
+
+# Oracle fixtures are byte contracts on every host.
+test/harness/** text eol=lf
+writr-rs/crates/*/tests/fixtures/** text eol=lf

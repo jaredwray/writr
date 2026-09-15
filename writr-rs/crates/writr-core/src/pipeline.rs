@@ -106,6 +106,11 @@ pub fn parse_to_mdast(
 	// copies CR into mdast text, which breaks GFM alerts, list continuations
 	// after a marker-only line, and highlight spans on Windows checkouts.
 	let normalized = unify_line_endings(input);
+	let normalized = if normalized.contains('\0') {
+		Cow::Owned(normalized.replace('\0', "\u{FFFD}"))
+	} else {
+		normalized
+	};
 	let body = frontmatter::body(&normalized);
 	markdown::to_mdast(body, &parse_options(options))
 		.map_err(|message| RenderError::Parse(message.to_string()))

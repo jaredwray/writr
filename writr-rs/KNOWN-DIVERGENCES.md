@@ -1,12 +1,43 @@
 # Known divergences from the JS engine
 
-The golden harness (2,041 documents × 7 profiles, byte-exact, empty
-allowlist) is the compatibility contract, and writr-rs meets it fully.
-While driving `writr-core` to full line coverage, oracle testing against
-the real JS engine surfaced a small set of divergences on inputs *outside*
-that corpus. They are documented here rather than silently shipped; none
-affects any golden. Each is a candidate for a follow-up fix + a new
-diagnostic golden.
+The historical 2,041 **assigned input/profile cases**, from 1,000 unique corpus
+documents plus diagnostics, use normalized HTML snapshots. They are not 2,041
+documents multiplied by seven profiles. New exact tests expose differences
+that normalization or the original fixture selection did not cover.
+
+The authoritative registry is [`test/harness/divergences.json`](../test/harness/divergences.json).
+It retains D01–D14 with linked JS-generated cases, stage/public reachability,
+disposition and remaining blockers. All tests assert compatibility directly;
+there are no expected-failure exceptions and the allowlist remains empty.
+
+## Current evidence and follow-up work
+
+- D02, D04, D05, D09, D10, D11 and D12 match the selected regression fixtures
+  after existing behavior and localized raw-tokenizer, property, slug and NUL
+  corrections. This is evidence for those cases, not universal stage parity.
+- D01 and D03 selected probes match, but the originally described differences
+  still need distinguishing reproductions. These categories remain open.
+- D06: full-fragment MathML stage parsing matches; public paragraph integration
+  still differs. Preserve integration-point context through the replay pipeline.
+- D07: reconcile the pinned parse5 and html5ever select tree-building behavior.
+- D08: preserve synthesized document structure in the HAST replay path.
+- D13: preserve escaped-email spans before autolink repair.
+- D14: implement compatible MDX JavaScript grammar validation, ESM and expression
+  handling. Regex approximations cannot establish JavaScript syntax parity.
+- Additional exact fixtures expose CR/CRLF preservation in code output. Resolve
+  the parser's global line-ending normalization without weakening exact checks.
+- Chromium packed-buffer exports require a global Buffer polyfill; current
+  failures and async deadlines remain explicit browser contract blockers.
+
+The testing milestone is **incomplete**, and compatibility issues remain.
+Broader parser/replay work is a follow-up requirement before these strict gates
+can pass. Runtime and packaging readiness require independent evidence; no
+engine switch or release is part of this work.
+
+## Original category descriptions (historical, retain numbering)
+
+The descriptions below record the original review and must be read alongside
+the current registry dispositions above; several selected cases are now fixed.
 
 ## Raw HTML (`rehype-raw` / parse5 vs html5ever replay)
 

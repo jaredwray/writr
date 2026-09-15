@@ -1,0 +1,100 @@
+[
+  {
+    "name": "default",
+    "description": "Shipped defaults",
+    "options": {
+      "emoji": true,
+      "toc": true,
+      "slug": true,
+      "highlight": true,
+      "gfm": true,
+      "math": true,
+      "mdx": false,
+      "rawHtml": false
+    }
+  },
+  {
+    "name": "commonmark",
+    "description": "Bare CommonMark",
+    "options": {
+      "emoji": false,
+      "toc": false,
+      "slug": false,
+      "highlight": false,
+      "gfm": false,
+      "math": false,
+      "mdx": false,
+      "rawHtml": false
+    }
+  },
+  {
+    "name": "gfm-only",
+    "description": "GFM only",
+    "options": {
+      "emoji": false,
+      "toc": false,
+      "slug": false,
+      "highlight": false,
+      "gfm": true,
+      "math": false,
+      "mdx": false,
+      "rawHtml": false
+    }
+  },
+  {
+    "name": "no-highlight",
+    "description": "Defaults without highlighting",
+    "options": {
+      "emoji": true,
+      "toc": true,
+      "slug": true,
+      "highlight": false,
+      "gfm": true,
+      "math": true,
+      "mdx": false,
+      "rawHtml": false
+    }
+  },
+  {
+    "name": "no-math",
+    "description": "Defaults without math",
+    "options": {
+      "emoji": true,
+      "toc": true,
+      "slug": true,
+      "highlight": true,
+      "gfm": true,
+      "math": false,
+      "mdx": false,
+      "rawHtml": false
+    }
+  },
+  {
+    "name": "rawhtml",
+    "description": "Raw HTML",
+    "options": {
+      "emoji": true,
+      "toc": true,
+      "slug": true,
+      "highlight": true,
+      "gfm": true,
+      "math": true,
+      "mdx": false,
+      "rawHtml": true
+    }
+  },
+  {
+    "name": "mdx",
+    "description": "MDX",
+    "options": {
+      "emoji": true,
+      "toc": true,
+      "slug": true,
+      "highlight": true,
+      "gfm": true,
+      "math": true,
+      "mdx": true,
+      "rawHtml": false
+    }
+  }
+]

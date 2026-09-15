@@ -17,6 +17,8 @@ export type RenderAdapter = {
 	 * Implementations must be deterministic and side-effect free.
 	 */
 	render(input: string, profile: Profile): Promise<string>;
+	renderRaw(input: string, profile: Profile): Promise<string>;
+	renderRawSync(input: string, profile: Profile): string;
 };
 
 /**
@@ -30,6 +32,9 @@ export class WritrJsAdapter implements RenderAdapter {
 	public readonly name = "writr-js";
 
 	public async render(input: string, profile: Profile): Promise<string> {
+		return normalize(await this.renderRaw(input, profile));
+	}
+	public async renderRaw(input: string, profile: Profile): Promise<string> {
 		const writr = new Writr(input);
 		// Writr catches render exceptions and emits them via "error" while
 		// returning "". Capture that signal so genuine failures surface as
@@ -41,11 +46,14 @@ export class WritrJsAdapter implements RenderAdapter {
 		});
 		const html = await writr.render({ ...profile.options, caching: false });
 		throwIfEmitted(emitted);
-		return normalize(html);
+		return html;
 	}
 
 	/** Synchronous render, used to assert sync/async parity during generation. */
 	public renderSync(input: string, profile: Profile): string {
+		return normalize(this.renderRawSync(input, profile));
+	}
+	public renderRawSync(input: string, profile: Profile): string {
 		const writr = new Writr(input);
 		let emitted: unknown;
 		writr.on("error", (error) => {
@@ -53,7 +61,7 @@ export class WritrJsAdapter implements RenderAdapter {
 		});
 		const html = writr.renderSync({ ...profile.options, caching: false });
 		throwIfEmitted(emitted);
-		return normalize(html);
+		return html;
 	}
 }
 

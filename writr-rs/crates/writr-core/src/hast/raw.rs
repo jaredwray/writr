@@ -325,6 +325,21 @@ impl TreeSink for ArenaSink {
 		})
 	}
 
+	fn is_mathml_annotation_xml_integration_point(&self, target: &usize) -> bool {
+		match &self.arena.borrow().nodes[*target] {
+			ArenaNode::Element { name, attrs, .. } => {
+				name.ns == ns!(mathml)
+					&& name.local.as_ref() == "annotation-xml"
+					&& attrs.iter().any(|a| {
+						a.name.local.as_ref() == "encoding"
+							&& (a.value.eq_ignore_ascii_case("text/html")
+								|| a.value.eq_ignore_ascii_case("application/xhtml+xml"))
+					})
+			}
+			_ => false,
+		}
+	}
+
 	fn create_comment(&self, text: StrTendril) -> usize {
 		self.arena.borrow_mut().push(ArenaNode::Comment {
 			value: text.to_string(),
@@ -440,6 +455,7 @@ type Builder = TreeBuilder<usize, ArenaSink>;
 /// Delegating token sink that records tree-builder responses so the driver
 /// can mirror parse5's tokenizer-state bookkeeping.
 struct TrackingSink<'a> {
+	last_start_tag: &'a RefCell<Option<String>>,
 	builder: &'a Builder,
 	state: &'a Cell<TrackedState>,
 	/// Set while feeding raw text (tokenizer-driven transitions).
@@ -466,7 +482,17 @@ impl TrackedState {
 impl TokenSink for TrackingSink<'_> {
 	type Handle = usize;
 
+	fn adjusted_current_node_present_but_not_in_html_namespace(&self) -> bool {
+		self.builder
+			.adjusted_current_node_present_but_not_in_html_namespace()
+	}
+
 	fn process_token(&self, token: Token, line_number: u64) -> TokenSinkResult<usize> {
+		if let Token::TagToken(tag) = &token {
+			if tag.kind == TagKind::StartTag {
+				*self.last_start_tag.borrow_mut() = Some(tag.name.to_string());
+			}
+		}
 		let is_end_tag = matches!(
 			&token,
 			Token::TagToken(tag) if tag.kind == TagKind::EndTag
@@ -665,15 +691,17 @@ impl Driver {
 	fn raw(&self, value: &str) {
 		let queue = BufferQueue::default();
 		queue.push_back(StrTendril::from_slice(value));
+		let last_start_tag_name = self.last_start_tag.borrow().clone();
 		let tokenizer = Tokenizer::new(
 			TrackingSink {
+				last_start_tag: &self.last_start_tag,
 				builder: &self.builder,
 				state: &self.state,
 				from_tokenizer: true,
 			},
 			TokenizerOpts {
 				initial_state: Some(self.state.get().to_tokenizer_state()),
-				last_start_tag_name: self.last_start_tag.borrow().clone(),
+				last_start_tag_name,
 				..TokenizerOpts::default()
 			},
 		);
@@ -729,7 +757,7 @@ fn properties_to_attrs(properties: &[(String, PropertyValue)], space: Space) -> 
 					if list.last() == Some(&"") {
 						list.push("");
 					}
-					list.join(", ")
+					js::trim(&list.join(", ")).to_string()
 				} else {
 					js::trim(&items.join(" ")).to_string()
 				}
@@ -912,9 +940,8 @@ fn parse_commas(value: &str) -> Vec<String> {
 fn js_number_from_string(value: &str) -> Option<f64> {
 	let trimmed = js::trim(value);
 	if trimmed.is_empty() {
-		// `Number("")` is 0, but hastscript guards `value &&` before parsing,
-		// so empty stays a string upstream; treat as non-numeric here.
-		return None;
+		// The caller guards truly empty strings; whitespace is truthy in JS.
+		return Some(0.0);
 	}
 	// Hex/octal/binary literals (no sign allowed).
 	if let Some(rest) = trimmed
