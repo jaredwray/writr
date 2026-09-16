@@ -58,6 +58,7 @@
     "build": "tsdown src/writr.ts --format esm --dts",
     "prepublishOnly": "pnpm build",
     "lint": "biome check --write --error-on-warnings",
+    "benchmark:native": "tsx benchmark/benchmark-native-comparison.ts",
     "benchmark": "tsx benchmark/benchmark-minimal.ts && tsx benchmark/benchmark-standard.ts",
     "test": "pnpm lint && vitest run --coverage",
     "test:ci": "biome check --error-on-warnings && vitest run --coverage",

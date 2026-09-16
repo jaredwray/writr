@@ -27,8 +27,9 @@ MDX syntax validation runs the oracle's Acorn/JSX parser in the already-used
 QuickJS library. Expressions and imports are never evaluated. Parser versions,
 licenses and code generation live in `crates/writr-core/vendor/mdx`; each thread
 lazily retains one parser context without caching parsed inputs. The patched
-html5ever 0.39 library preserves the select rules used by pinned parse5. These
-correctness changes have not been benchmarked; no performance claim is made.
+html5ever 0.39 library preserves the select rules used by pinned parse5. The
+[recorded benchmark](../benchmark/results/2026-09-16-native-vs-js/README.md)
+measures these correctness changes, including MDX and uncached math.
 
 ## Layout
 
@@ -137,61 +138,44 @@ on drift.
 
 ## Performance
 
-Uncached, on this repo's `benchmark-contents.ts` documents (~660 bytes each,
-Node 22, x86_64 Linux, **4 shared vCPUs** — gaps widen with real cores):
+The [September 16, 2026 benchmark](../benchmark/results/2026-09-16-native-vs-js/README.md)
+compares the current JS implementation with the native Rust addon at revision
+`abd1e42` (merged in PR #547). It uses Node 24.19, a release Rust build, and a
+Linux VM exposing two logical CPUs. Caching is disabled in both engines;
+initialization is warmed before timing. Every measured API path must produce
+exactly matching HTML before benchmarking.
 
-**Whole-corpus throughput** (101 documents per call — the static-site /
-docs-pipeline workload):
+Median of five fresh-process runs; times are average microseconds per document:
 
-| Engine | minimal profile | default profile (gfm+emoji+toc+slug+highlight+math) |
-| ------ | --------------- | ---------------------------------------------------- |
-| **writr-rs `renderBatchBuffer` (bytes in/out, all cores)** | **~34,000 docs/s** | — |
-| **writr-rs `renderBatch` (all cores)** | **~33,000 docs/s** | **~9,700 docs/s** |
-| markdown-it (single-threaded loop) | ~22,000 docs/s | *(not comparable — no highlight/math/slugs)* |
-| marked (single-threaded loop) | ~15,000 docs/s | *(not comparable)* |
-| writr JS | ~1,700 docs/s | ~690 docs/s |
+| Workload | JS sync | Native Rust sync | Rust / JS throughput |
+| --- | ---: | ---: | ---: |
+| Minimal Markdown, 101 documents | 565.3 µs | 104.5 µs | 5.41× |
+| Default Markdown, same 101 documents | 1,597.2 µs | 323.0 µs | 4.94× |
+| MDX, 21 small regression inputs | 267.6 µs | 403.9 µs | 0.66× |
+| Math, 8 synthetic documents | 2,503.8 µs | 3,994.5 µs | 0.63× |
 
-`renderBatch` renders across all cores in one native call — a mode no
-JS markdown library can express in-process. Even on 4 shared vCPUs it beats
-markdown-it by ~50% and marked by ~120%; on an 8-core machine the multiple
-roughly doubles. `renderBatchBuffer` additionally moves documents in and
-HTML out as one packed Buffer each way (zero per-document JS strings), so
-the main-thread marshalling cost stops growing with the batch. With writr's
-render cache on top, repeat renders measure in the millions of ops/s.
+Rust is faster for the measured Markdown corpus; MDX and uncached math take
+about 51% and 60% more time, respectively. For default Markdown, `renderBatch`
+with two Rayon threads reaches 3,967 documents/s versus 626 documents/s for
+the JS sync loop (6.34× throughput). This batch comparison measures parallel
+Rust against sequential JS. The report also includes sequential async and
+packed-buffer results, run-to-run ranges, options, inputs and artifact hashes.
 
-**Single-document latency** (one doc per call, single core):
+The MDX and math cases are diagnostic workloads, not a production traffic mix.
+These results do not measure cold start, memory, output-cache hits or latency
+under concurrent service load. Packed-buffer timings exclude packing input
+strings and decoding output bytes. Shared VM results can vary.
 
-| Engine | minimal profile | default profile |
-| ------ | --------------- | ---------------- |
-| writr-rs (sync, napi) | ~11,000 ops/s | **~4,000 ops/s** |
-| writr JS (sync) | ~1,700 ops/s | ~565 ops/s |
-| marked / markdown-it | ~20–24K ops/s | *(not comparable)* |
+Reproduce from the repository root:
 
-writr-rs is ~5–6.5× writr-JS per call with no cache warm-up. For bare
-CommonMark single-doc latency markdown-it's hand-tuned JS is still ~2×
-faster than our micromark-faithful parser (51µs vs ~109µs through the
-addon, ~96µs engine-side) — that trade is deliberate:
+```sh
+pnpm build
+pnpm build:rs
+pnpm benchmark:native
+```
 
-- The parser is the vendored markdown-rs (a faithful micromark port) —
-  that architecture is *why* 2,041 historical goldens match after normalization. The perf
-  patches in `vendor/markdown` (documented in `VENDORED.md`) make it
-  **~1.6× the speed of upstream markdown-rs 1.0.0** on this corpus
-  (single-pass `EditMap::consume`, bulk data-run consumption,
-  construct-aware data markers, ASCII classification table, inlined
-  byte-advance fast path, 40-byte `u32` events); a position-exact state
-  machine simply does more work per byte than a loose line scanner, and
-  fusing out the intermediate mdast stage (~10% more) is the documented
-  next step if that niche ever matters more than parity.
-- The hljs engine races per-rule automata (`regex` crate) with non-fancy
-  prefilters in front of the backtracking fallback, memoizes probes, and
-  keeps the hot loop copy-free (borrowed lexemes, span-based keyword
-  segmentation) — byte-identical on all 2,111 fixtures.
-- The serializer streams attributes and entity-escaped text straight into
-  a capacity-seeded output buffer (no per-node/per-attribute strings).
-- KaTeX renders are memoized at two levels (HTML string in QuickJS glue,
-  parsed hast fragment in the pipeline), so repeated formulas cost a clone.
-- Native release builds can squeeze out another ~2–5% with profile-guided
-  optimization: `pnpm build:rs:pgo`.
+The runner writes fresh JSON and Markdown reports to
+`test-output/benchmarks/native-vs-js/`; it never rewrites the committed snapshot.
 
 ## Parity-critical pinned versions
 
