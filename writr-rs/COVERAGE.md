@@ -35,11 +35,11 @@ branches. It is not a claim that all newly added code is covered:
   html5ever `TreeSink` plumbing the HTML tokenizer never invokes
   (`create_pi`, `finish`, doctype insertion in fragment mode, Debug
   impls); generated-table consistency guards (`property_info.rs`).
-- **`writr-core`, known-divergence branches** — a handful of `raw.rs`
-  branches are reachable only through inputs on the documented divergence
-  list (see `KNOWN-DIVERGENCES.md`), e.g. fostering without an open table
-  and cross-chunk rawtext resumption. Shared JS-derived stage fixtures now probe these categories. Remaining
-  reproduction gaps and failures are tracked in the divergence registry.
+- **`writr-core`, raw HTML edge cases** — shared JS-derived stage fixtures
+  now probe categories such as fostering without an open table and cross-chunk
+  rawtext resumption. The [divergence registry](../test/harness/divergences.json)
+  links the regression fixtures and records their current dispositions; measured
+  coverage determines which branches remain untested.
 - **`writr-hljs`** — `unreachable!()`/fall-through arms proven by the
   surrounding control flow: multi-class re-match arms
   (`compile.rs`), the probe-memo monotonicity fall-through and

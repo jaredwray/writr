@@ -113,8 +113,9 @@ JSON execution reports are written to `test-output/parity/`. The summary derives
 profile counts, oracle versions, engine/API executions, failures and divergence
 dispositions from reports. Missing required engine/host evidence fails the
 summary. Reports must come from the same revision; use a clean report directory
-for each run. See [known divergences](../../writr-rs/KNOWN-DIVERGENCES.md) for
-remaining blockers. Local exact, binding and Chromium checks pass after the compatibility fixes.
+for each run. See the [divergence registry](divergences.json) for linked regression
+fixtures and current dispositions. Local exact, binding and Chromium checks pass
+after the compatibility fixes.
 The complete testing milestone also requires every CI runtime/host job to pass;
 consult the generated report for that evidence. No universal stage compatibility
 or runtime/packaging readiness is implied.

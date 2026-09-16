@@ -13,8 +13,9 @@ sync/async and Rust sync/async output and consume 113 JS-derived public exact
 outcomes plus 15 internal HAST outcomes. The allowlist remains empty.
 
 The expanded fixtures now pass locally after MDX grammar, line-ending,
-autolink and HTML tree-building corrections. See [KNOWN-DIVERGENCES.md](KNOWN-DIVERGENCES.md)
-and the [harness guide](../test/harness/README.md) for the scope of that evidence.
+autolink and HTML tree-building corrections. The [divergence registry](../test/harness/divergences.json)
+retains D01–D14 with linked regression fixtures and current dispositions.
+See the [harness guide](../test/harness/README.md) for the scope of that evidence.
 
 The dedicated binding suite exercises all nine exports under native and forced
 WASM. `pnpm test:bindings:mdx` isolates MDX success/rejection cases across those
