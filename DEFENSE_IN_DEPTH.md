@@ -16,7 +16,7 @@ Profile: npm library · public
 - [x] `packageManager: pnpm@12.3.4` pinned in `package.json` — verified 2026-09-14 (`pnpm@12.3.4`)
 - [x] 7-day cooldown: `minimumReleaseAge: 10080`, `minimumReleaseAgeStrict: true`, `minimumReleaseAgeIgnoreMissingTime: false`; no first-party `minimumReleaseAgeExclude` — PR #506
 - [x] `trustPolicy: no-downgrade`; no first-party `trustPolicyExclude` — PR #519
-- [x] Lifecycle scripts blocked: `strictDepBuilds: true`, `dangerouslyAllowAllBuilds: false`, `allowBuilds: {}` baseline — PR #506 (reviewed exceptions for `esbuild` and `unrs-resolver`)
+- [x] Lifecycle scripts blocked: `strictDepBuilds: true`, `dangerouslyAllowAllBuilds: false`, `allowBuilds: {}` baseline — PR #506 (reviewed exceptions for `esbuild`, `unrs-resolver`, `sharp`, and `workerd`)
 - [x] `blockExoticSubdeps: true` — PR #506
 - [x] Lockfile committed; CI installs with `pnpm install --frozen-lockfile` — PR #506
 - [x] No `.github/dependabot.yml`; other dependency-update tools (if any) open PRs only — never auto-merge — verified 2026-08-21

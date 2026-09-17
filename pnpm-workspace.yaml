@@ -17,6 +17,10 @@ overrides:
 # Lifecycle-script exceptions — each entry is a reviewed security exception.
 # esbuild: used by tsdown / the JS build.
 # unrs-resolver: native resolver pulled in by the toolchain.
+# workerd: Cloudflare Workers runtime pulled in by wrangler (site deploy).
+# sharp: native image pipeline pulled in by wrangler.
 allowBuilds:
   esbuild: true
+  sharp: true
   unrs-resolver: true
+  workerd: true
