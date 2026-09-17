@@ -1,6 +1,6 @@
 {
   "name": "writr",
-  "version": "6.1.5",
+  "version": "6.1.6",
   "description": "Markdown Rendering Simplified",
   "type": "module",
   "packageManager": "pnpm@12.3.4",
