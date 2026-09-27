@@ -1102,27 +1102,65 @@ plugins and working with the processor directly.
 
 # Benchmarks
 
-This is a comparison with minimal configuration where we have disabled all rendering pipeline and just did straight caching + rendering to compare it against the fastest:
+[writr-rs](writr-rs/README.md) is the native engine. It takes the same render options as this package, and every path below was checked for identical HTML before timing. Caching is off on both engines. The JavaScript package is still the default.
 
-|           name            |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
-|---------------------------|:---------:|----------:|----------:|:--------:|----------:|
-|  Writr (Sync) (Caching)   |    🥇     |      83K  |     14µs  |  ±0.27%  |      74K  |
-|  Writr (Async) (Caching)  |    -3%    |      80K  |     14µs  |  ±0.27%  |      71K  |
-|  markdown-it              |   -30%    |      58K  |     20µs  |  ±0.37%  |      50K  |
-|  marked                   |   -33%    |      56K  |     25µs  |  ±0.50%  |      40K  |
-|  Writr (Sync)             |   -94%    |       5K  |    225µs  |  ±0.88%  |      10K  |
-|  Writr (Async)            |   -94%    |       5K  |    229µs  |  ±0.89%  |      10K  |
+Measured on September 27, 2026 against commit `22092ea`, Node.js v22.22.2, and Rust 1.94.1 (release build, thin LTO). The host is a Linux x64 VM with an Intel Xeon and 4 logical CPUs. Each figure is the median of five fresh processes. `renderBatch` is pinned to two threads. The Writr column is one sync loop over the same documents, in order, after warmup.
 
-As you can see this module is performant with `caching` enabled but was built to be performant enough but with all the features added in. If you are just wanting performance and not features then `markdown-it` or `marked` is the solution unless you use `Writr` with caching. 
+Speedup is Writr microseconds per document divided by writr-rs microseconds per document. The batch multiple is writr-rs `renderBatch` documents per second divided by the Writr sync loop.
 
-|           name            |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
-|---------------------------|:---------:|----------:|----------:|:--------:|----------:|
-|  Writr (Async) (Caching)  |    🥇     |      26K  |     39µs  |  ±0.12%  |      25K  |
-|  Writr (Sync) (Caching)   |  -0.92%   |      26K  |     40µs  |  ±0.15%  |      25K  |
-|  Writr (Sync)             |   -93%    |       2K  |    630µs  |  ±0.97%  |      10K  |
-|  Writr (Async)            |   -93%    |       2K  |    649µs  |  ±0.96%  |      10K  |
+| Workload | Documents | Writr sync | writr-rs sync | writr-rs speedup | writr-rs `renderBatch` |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Markdown, plugins off | 101 | 3,497 docs/s (286.0 µs) | 15,021 docs/s (66.6 µs) | 4.30× | 27,985 docs/s (8.00×) |
+| Markdown, default features | 101 | 1,116 docs/s (895.9 µs) | 4,780 docs/s (209.2 µs) | 4.28× | 8,343 docs/s (7.47×) |
+| MDX fixtures | 21 | 6,607 docs/s (151.3 µs) | 3,929 docs/s (254.5 µs) | 0.59× | 6,813 docs/s (1.03×) |
+| Math | 8 | 687 docs/s (1,454.8 µs) | 421 docs/s (2,375.8 µs) | 0.61× | 787 docs/s (1.15×) |
 
-The benchmark shows rendering performance via Sync and Async methods with caching enabled and disabled and all features.
+The markdown rows are the 101 documents in `benchmark/benchmark-contents.ts` (66,976 bytes). Plugins off disables emoji, table of contents, slugs, highlighting, GitHub Flavored Markdown, math, MDX, and raw HTML. Default features enables emoji, table of contents, slugs, highlighting, GitHub Flavored Markdown, and math (MDX and raw HTML stay off). The MDX row is the 21 successful MDX exact fixtures (583 bytes). The math row is 8 synthetic documents with three formulas each (1,864 bytes).
+
+writr-rs sync runs at 4.30× the JavaScript engine with plugins off and 4.28× with default features. On default markdown, two-thread `renderBatch` reaches 8,343 documents per second (7.47× the Writr loop). On the MDX fixtures, writr-rs sync takes 254.5 µs per document where Writr takes 151.3 µs. On the math documents, writr-rs sync takes 2,375.8 µs where Writr takes 1,454.8 µs.
+
+## All measured paths
+
+Times are average microseconds per document. The run range is the min and max of the five per-process means.
+
+| Workload | API | Median | Run range | Docs/s |
+| --- | --- | ---: | ---: | ---: |
+| Markdown, plugins off | Writr sync | 286.0 µs | 271.0–289.5 µs | 3,497 |
+| Markdown, plugins off | writr-rs sync | 66.6 µs | 66.4–69.8 µs | 15,021 |
+| Markdown, plugins off | Writr async | 288.4 µs | 272.3–291.6 µs | 3,467 |
+| Markdown, plugins off | writr-rs async | 83.2 µs | 82.1–88.5 µs | 12,020 |
+| Markdown, plugins off | writr-rs `renderBatch` | 35.7 µs | 35.4–36.3 µs | 27,985 |
+| Markdown, plugins off | writr-rs `renderBatchBuffer` | 34.5 µs | 33.3–35.1 µs | 29,019 |
+| Markdown, default features | Writr sync | 895.9 µs | 891.1–916.1 µs | 1,116 |
+| Markdown, default features | writr-rs sync | 209.2 µs | 207.0–215.8 µs | 4,780 |
+| Markdown, default features | Writr async | 891.4 µs | 882.3–911.0 µs | 1,122 |
+| Markdown, default features | writr-rs async | 300.4 µs | 273.0–314.5 µs | 3,328 |
+| Markdown, default features | writr-rs `renderBatch` | 119.9 µs | 117.9–123.1 µs | 8,343 |
+| Markdown, default features | writr-rs `renderBatchBuffer` | 119.3 µs | 118.1–120.5 µs | 8,379 |
+| MDX fixtures | Writr sync | 151.3 µs | 139.8–154.2 µs | 6,607 |
+| MDX fixtures | writr-rs sync | 254.5 µs | 252.5–259.8 µs | 3,929 |
+| MDX fixtures | Writr async | 142.7 µs | 140.9–156.6 µs | 7,009 |
+| MDX fixtures | writr-rs async | 331.2 µs | 309.6–336.2 µs | 3,020 |
+| MDX fixtures | writr-rs `renderBatch` | 146.8 µs | 145.8–147.6 µs | 6,813 |
+| MDX fixtures | writr-rs `renderBatchBuffer` | 146.6 µs | 144.1–148.3 µs | 6,821 |
+| Math | Writr sync | 1,454.8 µs | 1,431.4–1,717.8 µs | 687 |
+| Math | writr-rs sync | 2,375.8 µs | 2,358.4–2,486.9 µs | 421 |
+| Math | Writr async | 1,457.1 µs | 1,377.4–1,485.8 µs | 686 |
+| Math | writr-rs async | 2,853.9 µs | 2,795.6–2,950.6 µs | 350 |
+| Math | writr-rs `renderBatch` | 1,270.1 µs | 1,243.0–1,281.3 µs | 787 |
+| Math | writr-rs `renderBatchBuffer` | 1,265.0 µs | 1,216.1–1,310.7 µs | 790 |
+
+Writr sync and async stay close on every workload. writr-rs async pays for awaiting one native call per document, so it trails writr-rs sync. `renderBatchBuffer` is the bytes-in, bytes-out batch path. Packing the input and decoding the output sit outside that timer, and on these inputs it lands next to `renderBatch` (29,019 docs/s with plugins off, 8,379 docs/s with default features).
+
+The MDX and math rows are diagnostic inputs, smaller than a production mix. These runs record warmed throughput: average render cost after initialization, one process at a time. Cold start, memory, output-cache hits, and latency under concurrent load are outside this table. Shared VM results move between machines.
+
+```sh
+pnpm build
+pnpm build:rs
+pnpm benchmark:native
+```
+
+`pnpm benchmark` prints the JavaScript engine with caching enabled and disabled. An earlier September 16, 2026 snapshot lives in [benchmark/results/2026-09-16-native-vs-js](benchmark/results/2026-09-16-native-vs-js/README.md).
 
 # ESM and Node Version Support
 

@@ -139,12 +139,14 @@ on drift.
 
 ## Performance
 
+The current head-to-head is in the repository [Benchmarks](../README.md#benchmarks)
+section, measured September 27, 2026 against commit `22092ea`.
+
 The [September 16, 2026 benchmark](../benchmark/results/2026-09-16-native-vs-js/README.md)
-compares the current JS implementation with the native Rust addon at revision
-`abd1e42` (merged in PR #547). It uses Node 24.19, a release Rust build, and a
-Linux VM exposing two logical CPUs. Caching is disabled in both engines;
-initialization is warmed before timing. Every measured API path must produce
-exactly matching HTML before benchmarking.
+is a retained snapshot from revision `abd1e42` (merged in PR #547). It uses
+Node 24.19, a release Rust build, and a Linux VM exposing two logical CPUs.
+Caching is disabled in both engines; initialization is warmed before timing.
+Every measured API path must produce exactly matching HTML before benchmarking.
 
 Median of five fresh-process runs; times are average microseconds per document:
 
