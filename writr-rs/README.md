@@ -24,10 +24,16 @@ is Uint8Array in browsers and Buffer in Node; a Buffer polyfill is unnecessary.
 Local execution used Linux x64/Node 24 and Chromium. CI also requires Node
 22/24/26 and Linux/macOS/Windows; consult its reports for the complete milestone.
 
-MDX syntax validation runs the oracle's Acorn/JSX parser in the already-used
-QuickJS library. Expressions and imports are never evaluated. Parser versions,
-licenses and code generation live in `crates/writr-core/vendor/mdx`; each thread
-lazily retains one parser context without caching parsed inputs. The patched
+MDX syntax validation uses `writr-acorn`, a native port of the oracle's acorn
+8.18.0 + acorn-jsx 5.3.2 parser and its micromark-util-events-to-acorn adapter.
+Expressions and imports are only parsed, never evaluated.
+`tools/gen-acorn-fixtures.mjs` records the JS stack's outcome (signal, message,
+UTF-16 position, imported names) for ~30k inputs — hand-written cases for each
+acorn branch, expressions and ESM from the real-world MDX corpus, and every
+prefix of each — and `cargo test -p writr-acorn` must reproduce all of them.
+Only pathological nesting differs: past a 1 MiB stack budget (hundreds of
+levels) the port reports acorn's "Not enough stack space to parse input" at a
+depth that is close to, but not the same as, V8's. The patched
 html5ever 0.39 library preserves the select rules used by pinned parse5. The
 [recorded benchmark](../benchmark/results/2026-09-16-native-vs-js/README.md)
 measures these correctness changes, including MDX and uncached math.
@@ -39,6 +45,7 @@ writr-rs/
   crates/
     writr-core/         # the engine: parse → mdast transforms → hast → html
     writr-hljs/         # highlight.js 11.11.1 engine port + 36 grammars
+    writr-acorn/        # acorn 8.18.0 + acorn-jsx 5.3.2 port (MDX expressions and ESM)
     writr-katex/        # katex.min.js 0.18.7 embedded in QuickJS (rquickjs)
     writr-conformance/  # renders ../test/harness goldens, byte-diffs them
     writr-node/         # napi-rs bindings: native .node, wasm32-wasip1, browser.js

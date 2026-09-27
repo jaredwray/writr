@@ -977,6 +977,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "writr-acorn"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "writr-conformance"
 version = "0.1.0"
 dependencies = [
@@ -993,9 +1001,9 @@ dependencies = [
  "html5ever",
  "markdown",
  "rayon",
- "rquickjs",
  "serde",
  "serde_json",
+ "writr-acorn",
  "writr-hljs",
  "writr-katex",
 ]

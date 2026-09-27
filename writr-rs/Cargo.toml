@@ -4,6 +4,7 @@ members = [
 	"crates/writr-core",
 	"crates/writr-conformance",
 	"crates/writr-hljs",
+	"crates/writr-acorn",
 	"crates/writr-katex",
 	"crates/writr-node",
 ]
@@ -19,6 +20,11 @@ rust-version = "1.85"
 markdown = "1.0.0"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
+
+# writr-acorn bounds recursion by stack bytes (like V8); optimized frames
+# keep test builds' nesting limits close to release builds'.
+[profile.dev.package.writr-acorn]
+opt-level = 3
 
 [profile.release]
 lto = "thin"

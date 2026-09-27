@@ -7,7 +7,8 @@ import { fileURLToPath } from "node:url";
 
 const tools = dirname(fileURLToPath(import.meta.url));
 const scripts = [
-	"gen-mdx-parser.mjs",
+	"gen-acorn-tables.mjs",
+	"gen-acorn-fixtures.mjs",
 	"gen-property-info.mjs",
 	"gen-emoji-table.mjs",
 	"gen-slugger-data.mjs",

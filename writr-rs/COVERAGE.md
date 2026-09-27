@@ -45,6 +45,15 @@ branches. It is not a claim that all newly added code is covered:
   (`compile.rs`), the probe-memo monotonicity fall-through and
   sub-language re-check (`engine.rs`), the class-terminator member case
   (`regex_js.rs`), and the emitter stack invariant (`tree.rs`).
+- **`writr-acorn`** — acorn branches this configuration cannot reach, kept
+  so the port stays line-for-line comparable with acorn: sloppy-mode paths
+  (module code is always strict: `BIND_FUNCTION`, hanging function
+  statements, `awaitIdentPos`, duplicate-parameter allowance), lone-surrogate
+  handling (Rust `&str` input is always well-formed UTF-16), acorn's own dead
+  guards (`potentialArrowInForAwait`, which for-await initializers never set),
+  and the tokenizer's empty-context `TypeError`, which acorn always preempts
+  with a syntax error. The differential corpus and fuzzing found no input
+  reaching them in JavaScript either.
 - **`writr-katex`** — the QuickJS engine-fault guard (`unwrap_or_else` on
   the embedded call): the KaTeX bootstrap wraps both render attempts in
   JS-level try/catch and always returns a string; even 20K-deep nesting
