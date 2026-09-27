@@ -24,9 +24,11 @@
 		]
 	},
 	"devDependencies": {
+		"@emnapi/core": "1.11.3",
+		"@emnapi/runtime": "1.11.3",
 		"@napi-rs/wasm-runtime": "^1.1.6",
-		"emnapi": "1.11.2",
-		"playwright-core": "^1.61.1",
-		"esbuild": "0.28.1"
+		"emnapi": "1.11.3",
+		"esbuild": "0.28.1",
+		"playwright-core": "^1.61.1"
 	}
 }
