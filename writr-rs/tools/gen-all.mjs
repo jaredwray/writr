@@ -15,6 +15,7 @@ const scripts = [
 	"gen-unicode-data.mjs",
 	"gen-hljs-grammars.mjs",
 	"gen-hljs-fixtures.mjs",
+	"gen-katex-fixtures.mjs",
 ];
 
 for (const script of scripts) {
