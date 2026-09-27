@@ -33,7 +33,19 @@ acorn branch, expressions and ESM from the real-world MDX corpus, and every
 prefix of each — and `cargo test -p writr-acorn` must reproduce all of them.
 Only pathological nesting differs: past a 1 MiB stack budget (hundreds of
 levels) the port reports acorn's "Not enough stack space to parse input" at a
-depth that is close to, but not the same as, V8's. The patched
+depth that is close to, but not the same as, V8's.
+
+Math renders with katex-rs, a native Rust implementation of KaTeX, vendored
+with patches that make its output match katex@0.18.7 byte for byte (see
+`vendor/katex-rs/VENDORED.md`). `tools/gen-katex-fixtures.mjs` records the
+real KaTeX's output, through rehype-katex's call sequence, for ~40k renders —
+formulas from KaTeX's own test suite and documentation, systematic cases that
+execute every line and branch of KaTeX reachable with writr's settings
+(`tools/katex/coverage.mjs` measures this), and formulas that differential
+fuzzing once found diverging — and `cargo test -p writr-katex` must
+reproduce each one exactly. Only pathological
+nesting differs: katex-rs gives up with V8's `RangeError` after 1 MiB of
+stack (about 120–235 levels, where V8 manages roughly 660–2,245). The patched
 html5ever 0.39 library preserves the select rules used by pinned parse5. The
 [recorded benchmark](../benchmark/results/2026-09-16-native-vs-js/README.md)
 measures these correctness changes, including MDX and uncached math.
@@ -46,10 +58,11 @@ writr-rs/
     writr-core/         # the engine: parse → mdast transforms → hast → html
     writr-hljs/         # highlight.js 11.11.1 engine port + 36 grammars
     writr-acorn/        # acorn 8.18.0 + acorn-jsx 5.3.2 port (MDX expressions and ESM)
-    writr-katex/        # katex.min.js 0.18.7 embedded in QuickJS (rquickjs)
+    writr-katex/        # KaTeX 0.18.7 via the vendored native katex-rs
     writr-conformance/  # renders ../test/harness goldens, byte-diffs them
     writr-node/         # napi-rs bindings: native .node, wasm32-wasip1, browser.js
   vendor/markdown/      # vendored markdown-rs 1.0.0 + parity patches (see VENDORED.md)
+  vendor/katex-rs/      # vendored katex-rs 0.3.0 + katex@0.18.7 parity patches (see VENDORED.md)
   tools/                # codegen from the real npm packages + build/smoke scripts
 ```
 
@@ -72,8 +85,7 @@ the parsed-output cache is per thread. Each uses FIFO eviction at **256 entries
 or 4 MiB of retained payload**, whichever comes first. Oversized entries render
 normally without being cached. Payload accounting includes formula keys and
 owned string/vector capacities; fixed container and allocator overhead is extra
-but bounded by the entry limit. Each active rendering thread also retains its
-QuickJS context, even with caching disabled. These are cache retention limits,
+but bounded by the entry limit. These are cache retention limits,
 not a cap on total process memory or temporary rendering allocations.
 
 Runtime flags mirror writr's JS `RenderOptions` 1:1 (`emoji`, `toc`, `slug`,
@@ -112,12 +124,11 @@ pnpm build:rs        # native addon → crates/writr-node/writr-node.node
 pnpm build:rs:wasm   # wasm32-wasip1 → crates/writr-node/writr-node.wasm32-wasi.wasm
 ```
 
-Native needs stable Rust (pinned in `rust-toolchain.toml`). The wasm build
-additionally needs `rustup target add wasm32-wasip1`, a clang able to target
-wasm32 with a WASI sysroot for QuickJS's C sources (Ubuntu:
-`apt-get install wasi-libc libclang-rt-<N>-dev-wasm32 llvm`, or set
-`WASI_SDK_PATH`), and `pnpm install` inside `crates/writr-node` (provides the
-emnapi link archive). The addon links single-threaded emnapi
+Native needs stable Rust (pinned in `rust-toolchain.toml`). The workspace is
+pure Rust, so the wasm build only additionally needs
+`rustup target add wasm32-wasip1` and `pnpm install` inside
+`crates/writr-node` (provides the emnapi link archive); binaryen's `wasm-opt`
+post-optimizes the module when it is installed. The addon links single-threaded emnapi
 (`crates/writr-node/build.rs`) — async work runs on the main thread in wasm;
 native builds use the real libuv thread pool.
 

@@ -276,8 +276,8 @@ jobs:
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
         with:
           workspaces: writr-rs
-      - name: Install wasi sysroot (QuickJS C sources) + binaryen
-        run: sudo apt-get update && sudo apt-get install -y wasi-libc libclang-rt-18-dev-wasm32 llvm binaryen
+      - name: Install binaryen (wasm-opt)
+        run: sudo apt-get update && sudo apt-get install -y binaryen
       - name: Install Dependencies
         run: sfw pnpm install --frozen-lockfile
       - name: Install binding dependencies
