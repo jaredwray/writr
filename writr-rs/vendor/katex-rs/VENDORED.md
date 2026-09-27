@@ -4,7 +4,9 @@ Vendored copy of the [`katex-rs`](https://crates.io/crates/katex-rs) crate
 (a native Rust implementation of KaTeX by the katex-rs authors, MIT licensed —
 see `LICENSE`, fetched from the upstream repository at the published commit
 `f9d93892c39424ba24cef0be18105a1629b66357`), applied to the workspace via
-`[patch.crates-io]`.
+`[patch.crates-io]`. katex-rs and the patches below port KaTeX's code and
+data, so KaTeX's own MIT notice (katex@0.18.7's `LICENSE`) ships alongside as
+`KATEX-LICENSE`.
 
 ## Why
 
