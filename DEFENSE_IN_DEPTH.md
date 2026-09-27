@@ -11,6 +11,7 @@ Profile: npm library · public
 ## 2. CODEOWNERS and cloud bootstrap
 - [x] `.github/CODEOWNERS` covers `/.github/`, `/.cursor/`, `/.devcontainer/`, `/scripts/` with owners the maintainer names — PR #517
 - [x] Codespaces and Cursor Cloud Agents bootstrap Aikido Safe Chain via scripts/setup-cloud-environment.sh (--ci shims, frozen lockfile) — PR #518
+- [x] Claude Code on the web runs the same bootstrap from a SessionStart hook (`.claude/hooks/session-start.sh`, web sessions only) and keeps the shims first on `PATH`; `/.claude/` is in CODEOWNERS
 
 ## 3. Dependencies (pnpm)
 - [x] `packageManager: pnpm@12.3.4` pinned in `package.json` — verified 2026-09-14 (`pnpm@12.3.4`)
