@@ -1104,20 +1104,20 @@ plugins and working with the processor directly.
 
 [writr-rs](writr-rs/README.md) is the native engine. It takes the same render options as this package, and every path below was checked for identical HTML before timing. Caching is off on both engines. The JavaScript package is still the default.
 
-Measured on September 27, 2026 against commit `22092ea`, Node.js v22.22.2, and Rust 1.94.1 (release build, thin LTO). The host is a Linux x64 VM with an Intel Xeon and 4 logical CPUs. Each figure is the median of five fresh processes. `renderBatch` is pinned to two threads. The Writr column is one sync loop over the same documents, in order, after warmup.
+Measured on September 28, 2026 against commit `3d585ed` (main `b4f1b13`), Node.js v22.22.2, and Rust 1.94.1 (release build, thin LTO). That main revision replaces the QuickJS KaTeX embed with native katex-rs and the QuickJS MDX parser with writr-acorn. The host is a Linux x64 VM with an Intel Xeon and 4 logical CPUs. Each figure is the median of five fresh processes. `renderBatch` is pinned to two threads. The Writr column is one sync loop over the same documents, in order, after warmup.
 
 Speedup is Writr microseconds per document divided by writr-rs microseconds per document. The batch multiple is writr-rs `renderBatch` documents per second divided by the Writr sync loop.
 
 | Workload | Documents | Writr sync | writr-rs sync | writr-rs speedup | writr-rs `renderBatch` |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Markdown, plugins off | 101 | 3,497 docs/s (286.0 µs) | 15,021 docs/s (66.6 µs) | 4.30× | 27,985 docs/s (8.00×) |
-| Markdown, default features | 101 | 1,116 docs/s (895.9 µs) | 4,780 docs/s (209.2 µs) | 4.28× | 8,343 docs/s (7.47×) |
-| MDX fixtures | 21 | 6,607 docs/s (151.3 µs) | 3,929 docs/s (254.5 µs) | 0.59× | 6,813 docs/s (1.03×) |
-| Math | 8 | 687 docs/s (1,454.8 µs) | 421 docs/s (2,375.8 µs) | 0.61× | 787 docs/s (1.15×) |
+| Markdown, plugins off | 101 | 3,387 docs/s (295.2 µs) | 15,033 docs/s (66.5 µs) | 4.44× | 27,199 docs/s (8.03×) |
+| Markdown, default features | 101 | 1,098 docs/s (910.7 µs) | 4,894 docs/s (204.3 µs) | 4.46× | 8,436 docs/s (7.68×) |
+| MDX fixtures | 21 | 6,378 docs/s (156.8 µs) | 103,864 docs/s (9.6 µs) | 16.29× | 189,540 docs/s (29.72×) |
+| Math | 8 | 681 docs/s (1,468.2 µs) | 2,206 docs/s (453.3 µs) | 3.24× | 3,521 docs/s (5.17×) |
 
 The markdown rows are the 101 documents in `benchmark/benchmark-contents.ts` (66,976 bytes). Plugins off disables emoji, table of contents, slugs, highlighting, GitHub Flavored Markdown, math, MDX, and raw HTML. Default features enables emoji, table of contents, slugs, highlighting, GitHub Flavored Markdown, and math (MDX and raw HTML stay off). The MDX row is the 21 successful MDX exact fixtures (583 bytes). The math row is 8 synthetic documents with three formulas each (1,864 bytes).
 
-writr-rs sync runs at 4.30× the JavaScript engine with plugins off and 4.28× with default features. On default markdown, two-thread `renderBatch` reaches 8,343 documents per second (7.47× the Writr loop). On the MDX fixtures, writr-rs sync takes 254.5 µs per document where Writr takes 151.3 µs. On the math documents, writr-rs sync takes 2,375.8 µs where Writr takes 1,454.8 µs.
+writr-rs sync runs at 4.44× the JavaScript engine with plugins off and 4.46× with default features. On default markdown, two-thread `renderBatch` reaches 8,436 documents per second (7.68× the Writr loop). On the MDX fixtures, writr-rs sync takes 9.6 µs per document where Writr takes 156.8 µs (16.29×). On the math documents, writr-rs sync takes 453.3 µs where Writr takes 1,468.2 µs (3.24×).
 
 ## All measured paths
 
@@ -1125,32 +1125,32 @@ Times are average microseconds per document. The run range is the min and max of
 
 | Workload | API | Median | Run range | Docs/s |
 | --- | --- | ---: | ---: | ---: |
-| Markdown, plugins off | Writr sync | 286.0 µs | 271.0–289.5 µs | 3,497 |
-| Markdown, plugins off | writr-rs sync | 66.6 µs | 66.4–69.8 µs | 15,021 |
-| Markdown, plugins off | Writr async | 288.4 µs | 272.3–291.6 µs | 3,467 |
-| Markdown, plugins off | writr-rs async | 83.2 µs | 82.1–88.5 µs | 12,020 |
-| Markdown, plugins off | writr-rs `renderBatch` | 35.7 µs | 35.4–36.3 µs | 27,985 |
-| Markdown, plugins off | writr-rs `renderBatchBuffer` | 34.5 µs | 33.3–35.1 µs | 29,019 |
-| Markdown, default features | Writr sync | 895.9 µs | 891.1–916.1 µs | 1,116 |
-| Markdown, default features | writr-rs sync | 209.2 µs | 207.0–215.8 µs | 4,780 |
-| Markdown, default features | Writr async | 891.4 µs | 882.3–911.0 µs | 1,122 |
-| Markdown, default features | writr-rs async | 300.4 µs | 273.0–314.5 µs | 3,328 |
-| Markdown, default features | writr-rs `renderBatch` | 119.9 µs | 117.9–123.1 µs | 8,343 |
-| Markdown, default features | writr-rs `renderBatchBuffer` | 119.3 µs | 118.1–120.5 µs | 8,379 |
-| MDX fixtures | Writr sync | 151.3 µs | 139.8–154.2 µs | 6,607 |
-| MDX fixtures | writr-rs sync | 254.5 µs | 252.5–259.8 µs | 3,929 |
-| MDX fixtures | Writr async | 142.7 µs | 140.9–156.6 µs | 7,009 |
-| MDX fixtures | writr-rs async | 331.2 µs | 309.6–336.2 µs | 3,020 |
-| MDX fixtures | writr-rs `renderBatch` | 146.8 µs | 145.8–147.6 µs | 6,813 |
-| MDX fixtures | writr-rs `renderBatchBuffer` | 146.6 µs | 144.1–148.3 µs | 6,821 |
-| Math | Writr sync | 1,454.8 µs | 1,431.4–1,717.8 µs | 687 |
-| Math | writr-rs sync | 2,375.8 µs | 2,358.4–2,486.9 µs | 421 |
-| Math | Writr async | 1,457.1 µs | 1,377.4–1,485.8 µs | 686 |
-| Math | writr-rs async | 2,853.9 µs | 2,795.6–2,950.6 µs | 350 |
-| Math | writr-rs `renderBatch` | 1,270.1 µs | 1,243.0–1,281.3 µs | 787 |
-| Math | writr-rs `renderBatchBuffer` | 1,265.0 µs | 1,216.1–1,310.7 µs | 790 |
+| Markdown, plugins off | Writr sync | 295.2 µs | 269.5–372.9 µs | 3,387 |
+| Markdown, plugins off | writr-rs sync | 66.5 µs | 65.8–67.9 µs | 15,033 |
+| Markdown, plugins off | Writr async | 289.7 µs | 275.5–301.6 µs | 3,452 |
+| Markdown, plugins off | writr-rs async | 87.3 µs | 82.8–92.9 µs | 11,455 |
+| Markdown, plugins off | writr-rs `renderBatch` | 36.8 µs | 35.9–38.0 µs | 27,199 |
+| Markdown, plugins off | writr-rs `renderBatchBuffer` | 35.8 µs | 34.9–35.9 µs | 27,946 |
+| Markdown, default features | Writr sync | 910.7 µs | 884.0–947.9 µs | 1,098 |
+| Markdown, default features | writr-rs sync | 204.3 µs | 198.8–220.4 µs | 4,894 |
+| Markdown, default features | Writr async | 913.4 µs | 904.1–965.0 µs | 1,095 |
+| Markdown, default features | writr-rs async | 289.7 µs | 265.4–312.1 µs | 3,452 |
+| Markdown, default features | writr-rs `renderBatch` | 118.5 µs | 114.9–119.1 µs | 8,436 |
+| Markdown, default features | writr-rs `renderBatchBuffer` | 118.6 µs | 118.1–123.6 µs | 8,433 |
+| MDX fixtures | Writr sync | 156.8 µs | 142.5–157.8 µs | 6,378 |
+| MDX fixtures | writr-rs sync | 9.6 µs | 9.4–10.5 µs | 103,864 |
+| MDX fixtures | Writr async | 155.9 µs | 145.0–162.6 µs | 6,415 |
+| MDX fixtures | writr-rs async | 23.3 µs | 22.4–24.2 µs | 42,960 |
+| MDX fixtures | writr-rs `renderBatch` | 5.3 µs | 5.3–5.3 µs | 189,540 |
+| MDX fixtures | writr-rs `renderBatchBuffer` | 5.1 µs | 5.1–5.3 µs | 194,294 |
+| Math | Writr sync | 1,468.2 µs | 1,400.7–1,557.7 µs | 681 |
+| Math | writr-rs sync | 453.3 µs | 445.9–459.9 µs | 2,206 |
+| Math | Writr async | 1,448.3 µs | 1,390.0–1,585.8 µs | 690 |
+| Math | writr-rs async | 639.2 µs | 569.1–780.0 µs | 1,564 |
+| Math | writr-rs `renderBatch` | 284.0 µs | 269.8–289.8 µs | 3,521 |
+| Math | writr-rs `renderBatchBuffer` | 265.6 µs | 257.1–279.7 µs | 3,765 |
 
-Writr sync and async stay close on every workload. writr-rs async pays for awaiting one native call per document, so it trails writr-rs sync. `renderBatchBuffer` is the bytes-in, bytes-out batch path. Packing the input and decoding the output sit outside that timer, and on these inputs it lands next to `renderBatch` (29,019 docs/s with plugins off, 8,379 docs/s with default features).
+Writr sync and async stay close on every workload. writr-rs async pays for awaiting one native call per document, so it trails writr-rs sync. `renderBatchBuffer` is the bytes-in, bytes-out batch path. Packing the input and decoding the output sit outside that timer, and on these inputs it lands next to `renderBatch` (27,946 docs/s with plugins off, 8,433 docs/s with default features, 194,294 docs/s on the MDX fixtures, and 3,765 docs/s on math).
 
 The MDX and math rows are diagnostic inputs, smaller than a production mix. These runs record warmed throughput: average render cost after initialization, one process at a time. Cold start, memory, output-cache hits, and latency under concurrent load are outside this table. Shared VM results move between machines.
 

@@ -158,7 +158,8 @@ on drift.
 ## Performance
 
 The current head-to-head is in the repository [Benchmarks](../README.md#benchmarks)
-section, measured September 27, 2026 against commit `22092ea`.
+section, measured September 28, 2026 against commit `3d585ed` (main `b4f1b13`,
+native katex-rs and writr-acorn).
 
 The [September 16, 2026 benchmark](../benchmark/results/2026-09-16-native-vs-js/README.md)
 is a retained snapshot from revision `abd1e42` (merged in PR #547). It uses
