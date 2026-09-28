@@ -4,6 +4,7 @@ members = [
 	"crates/writr-core",
 	"crates/writr-conformance",
 	"crates/writr-hljs",
+	"crates/writr-acorn",
 	"crates/writr-katex",
 	"crates/writr-node",
 ]
@@ -20,11 +21,20 @@ markdown = "1.0.0"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 
+# writr-acorn and katex-rs bound recursion by stack bytes (like V8);
+# optimized frames keep test builds' nesting limits close to release builds'.
+[profile.dev.package.writr-acorn]
+opt-level = 3
+
+[profile.dev.package.katex-rs]
+opt-level = 3
+
 [profile.release]
 lto = "thin"
 codegen-units = 1
 
-# Vendored with a to_mdast virtual-space fix — see vendor/markdown/VENDORED.md.
+# Vendored with parity patches — see vendor/*/VENDORED.md.
 [patch.crates-io]
 html5ever = { path = "vendor/html5ever" }
+katex-rs = { path = "vendor/katex-rs" }
 markdown = { path = "vendor/markdown" }

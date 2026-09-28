@@ -2,9 +2,10 @@
 //!
 //! Byte-exact parity with rehype-katex requires the exact KaTeX version the
 //! goldens were generated with (0.18.7 — markup carries version-sensitive
-//! layout floats). Rather than porting a TeX layout engine, this crate runs
-//! the real `katex.min.js` (vendored from the npm package, MIT licensed) on
-//! an embedded QuickJS runtime.
+//! layout floats). Rendering uses katex-rs, a native Rust implementation of
+//! KaTeX, vendored under `vendor/katex-rs` with the patches that make its
+//! output match katex@0.18.7 byte for byte (see `VENDORED.md` there);
+//! `tests/corpus.rs` checks it against the real KaTeX.
 //!
 //! The call sequence mirrors rehype-katex@7.0.1: `renderToString` with
 //! `throwOnError: true`; on error retry with `strict: 'ignore'` and
@@ -12,74 +13,49 @@
 //! `katex-error` span from the *first* error's message.
 //!
 //! Results are memoized in a bounded FIFO cache per `(formula, display_mode)`
-//! process-wide (256 entries / 4 MiB of payload); each
-//! thread lazily initializes its own QuickJS context (QuickJS is
-//! single-threaded by design).
+//! process-wide (256 entries / 4 MiB of payload).
 
-use rquickjs::{Context, Function, Object, Runtime};
-use std::cell::OnceCell;
-use std::sync::Mutex;
+use katex::{KatexContext, Settings, StrictMode, StrictSetting};
+use std::sync::{Mutex, OnceLock};
 
 #[doc(hidden)]
 pub mod cache;
 
 use cache::MathCache;
 
-const KATEX_SOURCE: &str = include_str!("../vendor/katex.min.js");
-
-/// The KaTeX version this crate embeds.
+/// The KaTeX version this crate reproduces.
 pub const KATEX_VERSION: &str = "0.18.7";
-
-const BOOTSTRAP: &str = r#"
-function __writrKatex(value, displayMode) {
-	try {
-		return "H" + katex.renderToString(value, {
-			displayMode: displayMode,
-			throwOnError: true
-		});
-	} catch (error) {
-		try {
-			return "H" + katex.renderToString(value, {
-				displayMode: displayMode,
-				strict: "ignore",
-				throwOnError: false
-			});
-		} catch (unused) {
-			return "E" + String(error);
-		}
-	}
-}
-"#;
 
 /// Rendered math, or the stringified first error (for `katex-error` markup).
 pub type RenderOutcome = Result<String, String>;
 
 fn memo() -> &'static Mutex<MathCache<RenderOutcome>> {
-	static MEMO: std::sync::OnceLock<Mutex<MathCache<RenderOutcome>>> = std::sync::OnceLock::new();
+	static MEMO: OnceLock<Mutex<MathCache<RenderOutcome>>> = OnceLock::new();
 	MEMO.get_or_init(|| Mutex::new(MathCache::default()))
 }
 
-thread_local! {
-	static ENGINE: OnceCell<Context> = const { OnceCell::new() };
+/// The function, symbol and environment tables, built once per process.
+fn context() -> &'static KatexContext {
+	static CONTEXT: OnceLock<KatexContext> = OnceLock::new();
+	CONTEXT.get_or_init(KatexContext::default)
 }
 
-fn with_engine<T>(f: impl FnOnce(&Context) -> T) -> T {
-	ENGINE.with(|cell| {
-		let context = cell.get_or_init(|| {
-			let runtime = Runtime::new().expect("QuickJS runtime");
-			// KaTeX's parser recurses; the QuickJS default stack is too
-			// small for deeply nested formulas.
-			runtime.set_max_stack_size(4 * 1024 * 1024);
-			let context = Context::full(&runtime).expect("QuickJS context");
-			context.with(|ctx| {
-				ctx.eval::<(), _>(KATEX_SOURCE)
-					.expect("katex.min.js evaluates");
-				ctx.eval::<(), _>(BOOTSTRAP).expect("bootstrap evaluates");
-			});
-			context
-		});
-		f(context)
-	})
+/// rehype-katex's two `renderToString` attempts.
+fn render_uncached(formula: &str, display_mode: bool) -> RenderOutcome {
+	let first = Settings::builder()
+		.display_mode(display_mode)
+		.throw_on_error(true)
+		.build();
+	let error = match katex::render_to_string(context(), formula, &first) {
+		Ok(html) => return Ok(html),
+		Err(error) => error,
+	};
+	let retry = Settings::builder()
+		.display_mode(display_mode)
+		.strict(StrictSetting::Mode(StrictMode::Ignore))
+		.throw_on_error(false)
+		.build();
+	katex::render_to_string(context(), formula, &retry).map_err(|_| error.to_js_string())
 }
 
 /// Render a TeX formula to KaTeX HTML (rehype-katex's exact call sequence).
@@ -87,33 +63,14 @@ pub fn render_math(formula: &str, display_mode: bool) -> RenderOutcome {
 	render_math_with_cache(formula, display_mode, true)
 }
 
-/// Render with optional memoization. `false` bypasses both cache reads and writes;
-/// the thread's QuickJS context is still reused.
+/// Render with optional memoization. `false` bypasses both cache reads and writes.
 pub fn render_math_with_cache(formula: &str, display_mode: bool, caching: bool) -> RenderOutcome {
 	if caching {
 		if let Some(hit) = memo().lock().expect("memo lock").get(formula, display_mode) {
 			return hit.clone();
 		}
 	}
-	let outcome = with_engine(|context| {
-		context.with(|ctx| {
-			let globals = ctx.globals();
-			let render: Function = globals.get("__writrKatex").expect("bootstrap function");
-			let result: String = render
-				.call((formula, display_mode))
-				.unwrap_or_else(|error| {
-					// Engine-level failure (out of memory/stack) — surface as
-					// an error string; the pipeline renders katex-error markup.
-					let _ = &error;
-					format!("E{error}")
-				});
-			let _ = Object::new(ctx.clone());
-			match result.split_at(1) {
-				("H", html) => Ok(html.to_string()),
-				(_, error) => Err(error.to_string()),
-			}
-		})
-	});
+	let outcome = render_uncached(formula, display_mode);
 	if caching {
 		let retained = outcome.clone();
 		let bytes = match &retained {
