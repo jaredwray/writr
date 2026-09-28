@@ -79,8 +79,10 @@ bun.lockb
 site/dist
 site/README.md
 
-# AI
-.claude
+# AI (keep the shared Claude Code settings and hooks; ignore local state)
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
 
 
 test/fixtures/output.html

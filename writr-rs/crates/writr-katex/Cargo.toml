@@ -5,7 +5,11 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "KaTeX 0.18.7 for writr-rs — the real katex.min.js on an embedded QuickJS"
+description = "KaTeX 0.18.7 for writr-rs — the vendored native katex-rs, patched for byte-exact parity"
 
 [dependencies]
-rquickjs = { version = "0.12.2", features = ["classes"] }
+katex-rs = "0.3.0"
+
+[dev-dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }

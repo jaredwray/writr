@@ -35,8 +35,9 @@ fn setup_wasi_single_thread() {
 	println!("cargo:rustc-link-arg=--export-if-defined=node_api_module_get_api_version_v1");
 	println!("cargo:rustc-link-arg=--export-table");
 	println!("cargo:rustc-link-arg=--import-undefined");
-	// QuickJS recursion (KaTeX parsing) needs far more than lld's 1MiB
-	// default shadow stack; match napi-build's 64MiB.
+	// The parsers' recursion budgets (1 MiB each for KaTeX and acorn) plus the
+	// pipeline's own frames need more than lld's 1MiB default shadow stack;
+	// match napi-build's 64MiB.
 	println!("cargo:rustc-link-arg=-zstack-size=64000000");
 	println!("cargo:rustc-link-arg=--no-check-features");
 	// Link as a WASI reactor (library) rather than a command, so the module

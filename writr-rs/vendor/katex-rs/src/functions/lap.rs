@@ -1,0 +1,152 @@
+//! Lap function implementations for KaTeX Rust
+//!
+//! This module handles horizontal overlap functions (\mathllap, \mathrlap,
+//! \mathclap) migrated from KaTeX's lap.js.
+
+use crate::build_common::make_span;
+use crate::define_function::{FunctionDefSpec, FunctionPropSpec};
+use crate::dom_tree::HtmlDomNode;
+use crate::mathml_tree::{MathDomNode, MathNode, MathNodeType};
+use crate::options::Options;
+use crate::parser::parse_node::{LapAlignment, NodeType, ParseNode, ParseNodeLap};
+use crate::types::{CssProperty, ParseError, ParseErrorKind};
+use crate::units::make_em;
+use crate::{ClassList, KatexContext, build_html, build_mathml};
+
+/// Registers lap functions in the KaTeX context
+pub fn define_lap(ctx: &mut KatexContext) {
+    ctx.define_function(FunctionDefSpec {
+        node_type: Some(NodeType::Lap),
+        names: &["\\mathllap", "\\mathrlap", "\\mathclap"],
+        props: FunctionPropSpec {
+            num_args: 1,
+            allowed_in_text: true,
+            ..Default::default()
+        },
+        handler: Some(|context, args, _opt_args| {
+            if args.len() != 1 {
+                return Err(ParseError::new(ParseErrorKind::LapRequiresSingleArgument));
+            }
+
+            let body = args[0].clone();
+            let alignment = match context.func_name {
+                "\\mathllap" => LapAlignment::Left,
+                "\\mathrlap" => LapAlignment::Right,
+                "\\mathclap" => LapAlignment::Center,
+                _ => unreachable!(),
+            };
+
+            Ok(ParseNode::Lap(ParseNodeLap {
+                mode: context.parser.mode,
+                loc: context.loc(),
+                alignment,
+                body: Box::new(body),
+            }))
+        }),
+        html_builder: Some(html_builder),
+        mathml_builder: Some(mathml_builder),
+    });
+}
+
+/// HTML builder for lap nodes
+fn html_builder(
+    node: &ParseNode,
+    options: &Options,
+    ctx: &KatexContext,
+) -> Result<HtmlDomNode, ParseError> {
+    let ParseNode::Lap(lap_node) = node else {
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Lap,
+        }));
+    };
+
+    // WRITR-RS PATCH: lap.ts builds the body with `options` alone; for clap
+    // the body goes in an option-less span inside `katex-inner` (with
+    // options), for llap/rlap straight into an option-less `katex-inner`;
+    // and the strut's vertical-align is set for any nonzero depth.
+    // Build the base group
+    let body = build_html::build_group(ctx, &lap_node.body, options, None)?;
+
+    // Create inner span
+    let inner = if lap_node.alignment == LapAlignment::Center {
+        // For clap, wrap the body in an intermediate span so CSS centering
+        // works
+        let base = make_span(vec![], vec![body], None, None);
+        make_span("katex-inner", vec![base.into()], Some(options), None)
+    } else {
+        make_span("katex-inner", vec![body], None, None)
+    };
+
+    // Create fix span
+    let fix = make_span("katex-fix", vec![], None, None);
+
+    // Create main lap span
+    let mut lap_span = make_span(
+        lap_node.alignment.as_str(),
+        vec![inner.into(), fix.into()],
+        Some(options),
+        None,
+    );
+
+    // Set height for strut
+    let mut strut = make_span("katex-strut", vec![], None, None);
+    let strut_height = lap_span.height + lap_span.depth;
+    strut
+        .style
+        .insert(CssProperty::Height, make_em(strut_height));
+    // WRITR-RS PATCH: `if (node.depth)`: NaN is falsy.
+    if crate::units::js_truthy(lap_span.depth) {
+        strut
+            .style
+            .insert(CssProperty::VerticalAlign, make_em(-lap_span.depth));
+    }
+
+    // Add strut to children
+    lap_span.children.insert(0, strut.into());
+
+    // Wrap in thinbox and vbox
+    let thinbox = make_span("katex-thinbox", vec![lap_span.into()], Some(options), None);
+    let result = make_span(
+        ClassList::Const(&["mord", "katex-vbox"]),
+        vec![thinbox.into()],
+        Some(options),
+        None,
+    );
+
+    Ok(result.into())
+}
+
+/// MathML builder for lap nodes
+fn mathml_builder(
+    node: &ParseNode,
+    options: &Options,
+    ctx: &KatexContext,
+) -> Result<MathDomNode, ParseError> {
+    let ParseNode::Lap(lap_node) = node else {
+        return Err(ParseError::new(ParseErrorKind::ExpectedNode {
+            node: NodeType::Lap,
+        }));
+    };
+
+    // Build the base group
+    let base_group = build_mathml::build_group(ctx, &lap_node.body, options)?;
+
+    // Create mpadded element
+    let mut mpadded = MathNode::builder()
+        .node_type(MathNodeType::Mpadded)
+        .children(vec![base_group])
+        .build();
+
+    // Set attributes based on alignment
+    if lap_node.alignment != LapAlignment::Right {
+        let offset = if lap_node.alignment == LapAlignment::Left {
+            "-1"
+        } else {
+            "-0.5"
+        };
+        mpadded.set_attribute("lspace", format!("{offset}width"));
+    }
+    mpadded.set_attribute("width", "0px");
+
+    Ok(MathDomNode::Math(mpadded))
+}
