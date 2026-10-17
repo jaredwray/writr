@@ -15,7 +15,7 @@ Profile: npm library · public
 
 ## 3. Dependencies (pnpm)
 - [x] `packageManager: pnpm@12.3.4` pinned in `package.json` — verified 2026-09-14 (`pnpm@12.3.4`)
-- [x] 7-day cooldown: `minimumReleaseAge: 10080`, `minimumReleaseAgeStrict: true`, `minimumReleaseAgeIgnoreMissingTime: false`; no first-party `minimumReleaseAgeExclude` — PR #506
+- [x] 7-day cooldown: `minimumReleaseAge: 10080`, `minimumReleaseAgeStrict: true`, `minimumReleaseAgeIgnoreMissingTime: false` — PR #506. Exact-version `minimumReleaseAgeExclude` for `zod@4.6.6` and `zod@4.6.7` only, so the AIKIDO-2026-143019 fix can install before the cooldown elapses (published 2026-10-11 and 2026-10-12).
 - [x] `trustPolicy: no-downgrade`; no first-party `trustPolicyExclude` — PR #519
 - [x] Lifecycle scripts blocked: `strictDepBuilds: true`, `dangerouslyAllowAllBuilds: false`, `allowBuilds: {}` baseline — PR #506 (reviewed exceptions for `esbuild`, `unrs-resolver`, `sharp`, and `workerd`)
 - [x] `blockExoticSubdeps: true` — PR #506

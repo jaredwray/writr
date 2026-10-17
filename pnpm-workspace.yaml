@@ -1,6 +1,11 @@
 minimumReleaseAge: 10080 # 7 days, in minutes
 minimumReleaseAgeStrict: true # fail instead of falling back to a too-new version
 minimumReleaseAgeIgnoreMissingTime: false # missing publish-time metadata fails closed
+# zod 4.6.6 (2026-10-11) and 4.6.7 (2026-10-12) fix AIKIDO-2026-143019 and are
+# still inside the 7-day cooldown. Exact-version exception only; drop after 2026-10-19.
+minimumReleaseAgeExclude:
+  - zod@4.6.6
+  - zod@4.6.7
 blockExoticSubdeps: true
 strictDepBuilds: true
 dangerouslyAllowAllBuilds: false
@@ -13,6 +18,11 @@ trustPolicy: no-downgrade # fail if a later version has weaker trust evidence
 overrides:
   katex: 0.18.7
   property-information: 7.2.0
+  # undici 7.29.0 (CVE-2026-84961 and related highs). @ai-sdk/provider-utils
+  # and @cacheable/net accept ^7.29.0 / ^7.24.5, and miniflare pins 7.29.0.
+  # Force the 7.x line onto the patched release. Leave undici 8.x (docula,
+  # already at 8.10.2) untouched.
+  "undici@7": "7.29.1"
 
 # Lifecycle-script exceptions — each entry is a reviewed security exception.
 # esbuild: used by tsdown / the JS build.
