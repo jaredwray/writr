@@ -99,7 +99,7 @@
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
     "remark-toc": "^9.0.0",
-    "undici": "^7.29.1",
+    "undici": "^7.30.1",
     "unified": "^11.0.5",
     "zod": "^4.6.6"
   },

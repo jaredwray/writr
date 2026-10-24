@@ -18,11 +18,13 @@ trustPolicy: no-downgrade # fail if a later version has weaker trust evidence
 overrides:
   katex: 0.18.7
   property-information: 7.2.0
-  # undici 7.29.0 (CVE-2026-84961 and related highs). @ai-sdk/provider-utils
-  # and @cacheable/net accept ^7.29.0 / ^7.24.5, and miniflare pins 7.29.0.
-  # Force the 7.x line onto the patched release. Leave undici 8.x (docula,
-  # already at 8.10.2) untouched.
-  "undici@7": "7.29.1"
+  # undici 7.29.1 (GHSA-qrxm-fqhp-jwvm / CVE-2026-87018 and the
+  # Oct 2026 high set). @ai-sdk/provider-utils and @cacheable/net accept
+  # ^7.29.0 / ^7.24.5. miniflare@5.20261006.1-alpha pins undici@7.29.1
+  # exactly, so the 7.x line is forced to 7.30.1. undici 8.x is not
+  # overridden: docula accepts ^8.10.0, and the lockfile resolves 8.12.2
+  # (newest patched 8.x outside the 7-day cooldown; 8.12.3 is 2026-10-19).
+  "undici@7": "7.30.1"
 
 # Lifecycle-script exceptions — each entry is a reviewed security exception.
 # esbuild: used by tsdown / the JS build.
