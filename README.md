@@ -1162,6 +1162,34 @@ pnpm benchmark:native
 
 `pnpm benchmark` prints the JavaScript engine with caching enabled and disabled. An earlier September 16, 2026 snapshot lives in [benchmark/results/2026-09-16-native-vs-js](benchmark/results/2026-09-16-native-vs-js/README.md).
 
+## JavaScript engines
+
+These two tables are one `pnpm benchmark` run on October 26, 2026, Node.js v22.22.2, on a Linux x64 VM with an Intel Xeon and 4 logical CPUs. Each row is a tinybench sample of about one second.
+
+The first table is `benchmark/benchmark-minimal.ts`. Uncached Writr has emoji, table of contents, slugs, highlighting, GitHub Flavored Markdown, math, and MDX off. The cached Writr rows turn caching and GitHub Flavored Markdown on. marked 18.0.12 runs with GitHub Flavored Markdown. markdown-it 15.0.3 uses its default options.
+
+|           name            |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
+|---------------------------|:---------:|----------:|----------:|:--------:|----------:|
+|  Writr (Sync) (Caching)   |    🥇     |      99K  |     12µs  |  ±0.26%  |      85K  |
+|  Writr (Async) (Caching)  |   -2.9%   |      96K  |     12µs  |  ±0.26%  |      83K  |
+|  marked                   |   -60%    |      40K  |     33µs  |  ±0.55%  |      30K  |
+|  markdown-it              |   -72%    |      28K  |     45µs  |  ±0.62%  |      22K  |
+|  Writr (Sync)             |   -96%    |       4K  |    280µs  |  ±0.86%  |      10K  |
+|  Writr (Async)            |   -96%    |       4K  |    287µs  |  ±0.86%  |      10K  |
+
+With caching on, Writr sync leads that minimal profile at 99K ops/sec (12 µs). marked is 40K ops/sec (33 µs) and markdown-it 15.0.3 is 28K ops/sec (45 µs). With caching off, Writr is about 4K ops/sec (280–287 µs).
+
+The second table is `benchmark/benchmark-standard.ts`: Writr's default features, with caching on and off.
+
+|           name            |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
+|---------------------------|:---------:|----------:|----------:|:--------:|----------:|
+|  Writr (Sync) (Caching)   |    🥇     |      22K  |     49µs  |  ±0.16%  |      21K  |
+|  Writr (Async) (Caching)  |   -0.3%   |      22K  |     49µs  |  ±0.16%  |      21K  |
+|  Writr (Sync)             |   -94%    |       1K  |    869µs  |  ±0.85%  |      10K  |
+|  Writr (Async)            |   -94%    |       1K  |    892µs  |  ±0.86%  |      10K  |
+
+On the default feature set, cached Writr is 22K ops/sec (49 µs) and uncached Writr is about 1K ops/sec (869–892 µs).
+
 # ESM and Node Version Support
 
 This package is ESM only and tested on the current lts version and its previous. Please don't open issues for questions regarding CommonJS / ESM or previous Nodejs versions.
