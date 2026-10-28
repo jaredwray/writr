@@ -3,9 +3,13 @@ minimumReleaseAgeStrict: true # fail instead of falling back to a too-new versio
 minimumReleaseAgeIgnoreMissingTime: false # missing publish-time metadata fails closed
 # zod 4.6.6 (2026-10-11) and 4.6.7 (2026-10-12) fix AIKIDO-2026-143019 and are
 # still inside the 7-day cooldown. Exact-version exception only; drop after 2026-10-19.
+# @jaredwray/fumanchu 4.7.5 (published 2026-10-26) depends on markdown-it ^15.0.3,
+# which fixes CVE-2026-111758. It is still inside the 7-day cooldown.
+# Exact-version exception only; drop after 2026-11-02.
 minimumReleaseAgeExclude:
   - zod@4.6.6
   - zod@4.6.7
+  - "@jaredwray/fumanchu@4.7.5"
 blockExoticSubdeps: true
 strictDepBuilds: true
 dangerouslyAllowAllBuilds: false
