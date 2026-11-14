@@ -41,7 +41,7 @@ describe("writr-cache", () => {
 		expect(cache.get(markdown, options)).toEqual(value);
 	});
 
-	it("should be able to set markdown with options", async () => {
+	it("should be able to set markdown with toc and emoji options", async () => {
 		const cache = new WritrCache();
 		const markdown = "# Hello World";
 		const value = '<h1 id="hello-world">Hello World</h1>';
