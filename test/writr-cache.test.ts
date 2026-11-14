@@ -67,6 +67,27 @@ describe("writr-cache", () => {
 		expect(cache.hashStore.size).toEqual(2);
 	});
 
+	it("should include rawHtml in the cache key", () => {
+		const cache = new WritrCache();
+		const markdown = "# Hello World\n\n<script>alert(1)</script>";
+
+		const withRawHtml = cache.hash(markdown, { rawHtml: true });
+		const withoutRawHtml = cache.hash(markdown, { rawHtml: false });
+
+		expect(withRawHtml).not.toEqual(withoutRawHtml);
+	});
+
+	it("should include rawHtml in the stored hash key", () => {
+		const cache = new WritrCache();
+		cache.hash("# Hello World", { rawHtml: true });
+
+		expect(
+			cache.hashStore.has(
+				'{"markdown":"# Hello World","options":{"rawHtml":true}}',
+			),
+		).toEqual(true);
+	});
+
 	it("Get and Set the Cache", async () => {
 		const cache = new WritrCache();
 		expect(cache.store).toBeDefined();

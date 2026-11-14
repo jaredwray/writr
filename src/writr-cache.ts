@@ -88,6 +88,13 @@ export class WritrCache {
 			sanitized.mdx = options.mdx;
 		}
 
+		// rawHtml changes the emitted HTML (it gates allowDangerousHtml and the
+		// rehype-raw stage), so it must be part of the key. Omitting it let a
+		// rawHtml:false render be answered with a rawHtml:true render's output.
+		if (options.rawHtml !== undefined) {
+			sanitized.rawHtml = options.rawHtml;
+		}
+
 		if (options.caching !== undefined) {
 			sanitized.caching = options.caching;
 		}
