@@ -286,10 +286,14 @@ export class Writr extends Hookified {
 		// source as well as the body, so a plugin that reads front matter (which
 		// the body omits) cannot replay one document's output for another.
 		const body = renderData.body;
+		// A hook may opt a request out of caching through its public
+		// `data.options`, so the decision is made from the post-hook options
+		// while the identity keeps the pre-hook engine snapshot.
+		const cacheEnabled = this.isCacheEnabled(renderData.options);
 		const resultData = {
 			result: "",
 		};
-		if (this.isCacheEnabled(cacheOptions)) {
+		if (cacheEnabled) {
 			const cached = this._cache.get(body, cacheOptions, renderData.content);
 			if (cached) {
 				return cached;
@@ -298,7 +302,7 @@ export class Writr extends Hookified {
 
 		const file = await engine.process(body);
 		resultData.result = String(file);
-		if (this.isCacheEnabled(cacheOptions)) {
+		if (cacheEnabled) {
 			this._cache.set(
 				body,
 				resultData.result,
@@ -353,11 +357,14 @@ export class Writr extends Hookified {
 		this.hook(WritrHooks.beforeRender, renderData);
 
 		const body = renderData.body;
+		// Same split as the async path: the hook may opt the request out of
+		// caching, but the identity keeps the pre-hook engine snapshot.
+		const cacheEnabled = this.isCacheEnabled(renderData.options);
 		const resultData = {
 			result: "",
 		};
 		/* v8 ignore next -- @preserve */
-		if (this.isCacheEnabled(cacheOptions)) {
+		if (cacheEnabled) {
 			const cached = this._cache.get(body, cacheOptions, renderData.content);
 			if (cached) {
 				return cached;
@@ -366,7 +373,7 @@ export class Writr extends Hookified {
 
 		const file = engine.processSync(body);
 		resultData.result = String(file);
-		if (this.isCacheEnabled(cacheOptions)) {
+		if (cacheEnabled) {
 			this._cache.set(
 				body,
 				resultData.result,

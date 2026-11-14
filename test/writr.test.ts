@@ -407,6 +407,63 @@ describe("writr", () => {
 		expect(writr.cache.store.size).toEqual(1);
 	});
 
+	it("should honour a beforeRender hook that opts a request out of caching", async () => {
+		const writr = new Writr("# Dashboard for {{user}}\n", {
+			renderOptions: { caching: true },
+		});
+
+		// A hook may disable caching for a request through its public
+		// `data.options`, the documented per-request opt-out.
+		const request = { user: "admin" };
+		writr.onHook(WritrHooks.beforeRender, (data) => {
+			data.options.caching = false;
+			data.body = data.body.replace("{{user}}", request.user);
+		});
+
+		const first = await writr.render({});
+		expect(first).toContain("admin");
+		expect(writr.cache.store.size).toEqual(0);
+
+		request.user = "eve";
+		const second = await writr.render({});
+		expect(second).toContain("eve");
+		expect(second).not.toContain("admin");
+		expect(writr.cache.store.size).toEqual(0);
+	});
+
+	it("should honour a beforeRender cache opt-out on the synchronous path", () => {
+		const writr = new Writr("# Dashboard for {{user}}\n", {
+			renderOptions: { caching: true },
+		});
+		const request = { user: "admin" };
+
+		writr.onHook(WritrHooks.beforeRender, (data) => {
+			data.options.caching = false;
+			data.body = data.body.replace("{{user}}", request.user);
+		});
+
+		const first = writr.renderSync({});
+		expect(first).toContain("admin");
+		expect(writr.cache.store.size).toEqual(0);
+
+		request.user = "eve";
+		expect(writr.renderSync({})).toContain("eve");
+		expect(writr.cache.store.size).toEqual(0);
+	});
+
+	it("should still cache when the hook leaves caching enabled", async () => {
+		const writr = new Writr("# Hello World", {
+			renderOptions: { caching: true },
+		});
+
+		writr.onHook(WritrHooks.beforeRender, () => {
+			/* observe only, caching untouched */
+		});
+		await writr.render({});
+
+		expect(writr.cache.store.size).toEqual(1);
+	});
+
 	it("should not replay a plugin's output across a front matter change", async () => {
 		const markdown = (layout: string) =>
 			`---\nlayout: ${layout}\n---\n\n# Same body\n`;
