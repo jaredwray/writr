@@ -407,6 +407,37 @@ describe("writr", () => {
 		expect(writr.cache.store.size).toEqual(1);
 	});
 
+	it("should not replay a plugin's output across a front matter change", async () => {
+		const markdown = (layout: string) =>
+			`---\nlayout: ${layout}\n---\n\n# Same body\n`;
+		const writr = new Writr(markdown("admin"), {
+			renderOptions: { caching: true },
+		});
+
+		// A plugin on the documented engine extension point can read front
+		// matter, which the body omits, so the cache key must cover the source
+		// as well as the body.
+		writr.engine.use(() => (tree: { children: unknown[] }) => {
+			tree.children.unshift({
+				type: "element",
+				tagName: "p",
+				properties: {},
+				children: [
+					{ type: "text", value: `layout=${writr.frontMatter.layout}` },
+				],
+			});
+		});
+
+		const first = await writr.render();
+		expect(first).toContain("layout=admin");
+
+		writr.content = markdown("attacker");
+		const second = await writr.render();
+
+		expect(second).toContain("layout=attacker");
+		expect(second).not.toContain("layout=admin");
+	});
+
 	it("should strip out the front matter on render", async () => {
 		const writr = new Writr(blogPostWithMarkdown);
 		const result = await writr.render();

@@ -282,13 +282,15 @@ export class Writr extends Hookified {
 		await this.hook(WritrHooks.beforeRender, renderData);
 
 		// Snapshot the body once: the pipeline consumes exactly this string, and a
-		// cached value must be a pure function of its key.
+		// cached value must be a pure function of its key. The key covers the
+		// source as well as the body, so a plugin that reads front matter (which
+		// the body omits) cannot replay one document's output for another.
 		const body = renderData.body;
 		const resultData = {
 			result: "",
 		};
 		if (this.isCacheEnabled(cacheOptions)) {
-			const cached = this._cache.get(body, cacheOptions);
+			const cached = this._cache.get(body, cacheOptions, renderData.content);
 			if (cached) {
 				return cached;
 			}
@@ -297,7 +299,12 @@ export class Writr extends Hookified {
 		const file = await engine.process(body);
 		resultData.result = String(file);
 		if (this.isCacheEnabled(cacheOptions)) {
-			this._cache.set(body, resultData.result, cacheOptions);
+			this._cache.set(
+				body,
+				resultData.result,
+				cacheOptions,
+				renderData.content,
+			);
 		}
 
 		await this.hook(WritrHooks.afterRender, resultData);
@@ -351,7 +358,7 @@ export class Writr extends Hookified {
 		};
 		/* v8 ignore next -- @preserve */
 		if (this.isCacheEnabled(cacheOptions)) {
-			const cached = this._cache.get(body, cacheOptions);
+			const cached = this._cache.get(body, cacheOptions, renderData.content);
 			if (cached) {
 				return cached;
 			}
@@ -360,7 +367,12 @@ export class Writr extends Hookified {
 		const file = engine.processSync(body);
 		resultData.result = String(file);
 		if (this.isCacheEnabled(cacheOptions)) {
-			this._cache.set(body, resultData.result, cacheOptions);
+			this._cache.set(
+				body,
+				resultData.result,
+				cacheOptions,
+				renderData.content,
+			);
 		}
 
 		this.hook(WritrHooks.afterRender, resultData);
