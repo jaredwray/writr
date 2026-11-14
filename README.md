@@ -655,8 +655,8 @@ All methods use an emit-only error pattern — they call `this.emit('error', err
 - `validateSync()` - Emits error and returns `{ valid: false, error }` on failure
 
 **File Operations** — emit error, return void:
-- `renderToFile()` - Emits error when rendering or file writing fails
-- `renderToFileSync()` - Emits error when rendering or file writing fails
+- `renderToFile()` - Emits error when rendering or file writing fails. A failed render leaves the target file untouched rather than truncating it
+- `renderToFileSync()` - Emits error when rendering or file writing fails. A failed render leaves the target file untouched rather than truncating it
 - `loadFromFile()` - Emits error when file reading fails
 - `loadFromFileSync()` - Emits error when file reading fails
 - `saveToFile()` - Emits error when file writing fails

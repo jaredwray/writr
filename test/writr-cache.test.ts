@@ -67,6 +67,66 @@ describe("writr-cache", () => {
 		expect(cache.hashStore.size).toEqual(2);
 	});
 
+	it("should include rawHtml in the cache key", () => {
+		const cache = new WritrCache();
+		const markdown = "# Hello World\n\n<script>alert(1)</script>";
+
+		const withRawHtml = cache.hash(markdown, { rawHtml: true });
+		const withoutRawHtml = cache.hash(markdown, { rawHtml: false });
+
+		expect(withRawHtml).not.toEqual(withoutRawHtml);
+	});
+
+	it("should include rawHtml in the stored hash key", () => {
+		const cache = new WritrCache();
+		cache.hash("# Hello World", { rawHtml: true });
+
+		expect(
+			cache.hashStore.has(
+				'{"markdown":"# Hello World","options":{"rawHtml":true}}',
+			),
+		).toEqual(true);
+	});
+
+	it("should include every RenderOptions field in the cache key", () => {
+		const cache = new WritrCache();
+		const markdown = "# Hello World";
+		const baseline = cache.hash(markdown, {});
+
+		// Guards the hand-maintained list in sanitizeOptions: a field that
+		// changes output but is omitted from the key lets one option set answer
+		// for another. Every RenderOptions key must move the hash.
+		const fields = [
+			"emoji",
+			"toc",
+			"slug",
+			"highlight",
+			"gfm",
+			"math",
+			"mdx",
+			"rawHtml",
+			"caching",
+		] as const;
+
+		for (const field of fields) {
+			const key = cache.hash(markdown, { [field]: true });
+			expect(key, `${field} is missing from the cache key`).not.toEqual(
+				baseline,
+			);
+		}
+	});
+
+	it("should not collide on two different documents", () => {
+		const cache = new WritrCache();
+		const options = { gfm: true, caching: true };
+
+		// A wide digest makes a chosen collision impractical; this pins the
+		// property for two ordinary distinct documents.
+		expect(cache.hash("# Document A", options)).not.toEqual(
+			cache.hash("# Document B", options),
+		);
+	});
+
 	it("Get and Set the Cache", async () => {
 		const cache = new WritrCache();
 		expect(cache.store).toBeDefined();

@@ -244,48 +244,76 @@ export class Writr extends Hookified {
 	 */
 	public async render(options?: RenderOptions): Promise<string> {
 		try {
-			let { engine } = this;
-			if (options) {
-				options = { ...this._options.renderOptions, ...options };
-				engine = this.createProcessor(options);
-			}
-
-			const renderData = {
-				content: this._content,
-				body: this.body,
-				options,
-			};
-
-			await this.hook(WritrHooks.beforeRender, renderData);
-
-			const resultData = {
-				result: "",
-			};
-			if (this.isCacheEnabled(renderData.options)) {
-				const cached = this._cache.get(renderData.content, renderData.options);
-				if (cached) {
-					return cached;
-				}
-			}
-
-			const file = await engine.process(renderData.body);
-			resultData.result = String(file);
-			if (this.isCacheEnabled(renderData.options)) {
-				this._cache.set(
-					renderData.content,
-					resultData.result,
-					renderData.options,
-				);
-			}
-
-			await this.hook(WritrHooks.afterRender, resultData);
-
-			return resultData.result;
+			return await this.renderContent(options);
 		} catch (error) {
 			this.emit("error", error);
 		}
 
 		return "";
+	}
+
+	/**
+	 * Render the markdown content, throwing on failure instead of returning the
+	 * empty-string fallback. Internal callers that must distinguish a failed
+	 * render from a successful empty one use this.
+	 * @param {RenderOptions} [options] The render options.
+	 * @returns {Promise<string>} The rendered HTML content.
+	 */
+	private async renderContent(options?: RenderOptions): Promise<string> {
+		// The engine is built from these options *before* the hook runs, so they
+		// are the ones that shape this render. A hook that rewrites
+		// renderData.options cannot reach the engine, so keying the cache on the
+		// post-hook object would file the output under options that never
+		// produced it. `cacheOptions` is the pre-hook snapshot the key uses.
+		const engineOptions = options
+			? { ...this._options.renderOptions, ...options }
+			: undefined;
+		const cacheOptions = engineOptions ? { ...engineOptions } : undefined;
+		const engine = engineOptions
+			? this.createProcessor(engineOptions)
+			: this.engine;
+
+		const renderData = {
+			content: this._content,
+			body: this.body,
+			options: engineOptions,
+		};
+
+		await this.hook(WritrHooks.beforeRender, renderData);
+
+		// Snapshot the body once: the pipeline consumes exactly this string, and a
+		// cached value must be a pure function of its key. The key covers the
+		// source as well as the body, so a plugin that reads front matter (which
+		// the body omits) cannot replay one document's output for another.
+		const body = renderData.body;
+		// A hook may opt a request out of caching through its public
+		// `data.options`, so the decision is made from the post-hook options
+		// while the identity keeps the pre-hook engine snapshot.
+		const cacheEnabled = this.isCacheEnabled(renderData.options);
+		const resultData = {
+			result: "",
+		};
+		if (cacheEnabled) {
+			const cached = this._cache.get(body, cacheOptions, renderData.content);
+			if (cached) {
+				return cached;
+			}
+		}
+
+		const file = await engine.process(body);
+		resultData.result = String(file);
+		if (cacheEnabled) {
+			this._cache.set(
+				body,
+				resultData.result,
+				cacheOptions,
+				renderData.content,
+			);
+		}
+
+		await this.hook(WritrHooks.afterRender, resultData);
+
+		return resultData.result;
 	}
 
 	/**
@@ -295,49 +323,68 @@ export class Writr extends Hookified {
 	 */
 	public renderSync(options?: RenderOptions): string {
 		try {
-			let { engine } = this;
-			if (options) {
-				options = { ...this._options.renderOptions, ...options };
-				engine = this.createProcessor(options);
-			}
-
-			const renderData = {
-				content: this._content,
-				body: this.body,
-				options,
-			};
-
-			this.hook(WritrHooks.beforeRender, renderData);
-
-			const resultData = {
-				result: "",
-			};
-			/* v8 ignore next -- @preserve */
-			if (this.isCacheEnabled(renderData.options)) {
-				const cached = this._cache.get(renderData.content, renderData.options);
-				if (cached) {
-					return cached;
-				}
-			}
-
-			const file = engine.processSync(renderData.body);
-			resultData.result = String(file);
-			if (this.isCacheEnabled(renderData.options)) {
-				this._cache.set(
-					renderData.content,
-					resultData.result,
-					renderData.options,
-				);
-			}
-
-			this.hook(WritrHooks.afterRender, resultData);
-
-			return resultData.result;
+			return this.renderContentSync(options);
 		} catch (error) {
 			this.emit("error", error);
 		}
 
 		return "";
+	}
+
+	/**
+	 * Render the markdown content synchronously, throwing on failure instead of
+	 * returning the empty-string fallback.
+	 * @param {RenderOptions} [options] The render options.
+	 * @returns {string} The rendered HTML content.
+	 */
+	private renderContentSync(options?: RenderOptions): string {
+		// Same engine-truth snapshot as the async path: the processor is built
+		// from these options before the hook, so they key the cached value.
+		const engineOptions = options
+			? { ...this._options.renderOptions, ...options }
+			: undefined;
+		const cacheOptions = engineOptions ? { ...engineOptions } : undefined;
+		const engine = engineOptions
+			? this.createProcessor(engineOptions)
+			: this.engine;
+
+		const renderData = {
+			content: this._content,
+			body: this.body,
+			options: engineOptions,
+		};
+
+		this.hook(WritrHooks.beforeRender, renderData);
+
+		const body = renderData.body;
+		// Same split as the async path: the hook may opt the request out of
+		// caching, but the identity keeps the pre-hook engine snapshot.
+		const cacheEnabled = this.isCacheEnabled(renderData.options);
+		const resultData = {
+			result: "",
+		};
+		/* v8 ignore next -- @preserve */
+		if (cacheEnabled) {
+			const cached = this._cache.get(body, cacheOptions, renderData.content);
+			if (cached) {
+				return cached;
+			}
+		}
+
+		const file = engine.processSync(body);
+		resultData.result = String(file);
+		if (cacheEnabled) {
+			this._cache.set(
+				body,
+				resultData.result,
+				cacheOptions,
+				renderData.content,
+			);
+		}
+
+		this.hook(WritrHooks.afterRender, resultData);
+
+		return resultData.result;
 	}
 
 	/**
@@ -435,7 +482,9 @@ export class Writr extends Hookified {
 		try {
 			const { writeFile, mkdir } = fs.promises;
 			const directoryPath = dirname(filePath);
-			const content = await this.render(options);
+			// Render via the throwing core: a failed render must not be written.
+			// A legitimately empty document still renders "" and is still written.
+			const content = await this.renderContent(options);
 			await mkdir(directoryPath, { recursive: true });
 			const data = {
 				filePath,
@@ -456,7 +505,8 @@ export class Writr extends Hookified {
 	public renderToFileSync(filePath: string, options?: RenderOptions): void {
 		try {
 			const directoryPath = dirname(filePath);
-			const content = this.renderSync(options);
+			// Render via the throwing core: a failed render must not be written.
+			const content = this.renderContentSync(options);
 			fs.mkdirSync(directoryPath, { recursive: true });
 			const data = {
 				filePath,

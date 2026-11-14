@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { describe, expect, it, test } from "vitest";
-import { Writr, type WritrValidateResult } from "../src/writr.js";
+import { Writr, WritrHooks, type WritrValidateResult } from "../src/writr.js";
 import {
 	blogPostWithMarkdown,
 	markdownWithBadFrontMatter,
@@ -308,6 +308,191 @@ describe("writr", () => {
 		expect(result).toEqual('<h1 id="hello-world">Hello World</h1>');
 		const result2 = await writr.render({ caching: false });
 		expect(result2).toEqual('<h1 id="hello-world">Hello World</h1>');
+	});
+
+	it("should not serve rawHtml output to a render that disabled raw HTML", async () => {
+		const content =
+			"# Title\n\n<script>alert(1)</script>\n\n<img src=x onerror=alert(2)>\n";
+		const writr = new Writr(content);
+		const sanitized = await new Writr(content).render({ rawHtml: false });
+
+		const permissive = await writr.render({ rawHtml: true });
+		const hardened = await writr.render({ rawHtml: false });
+
+		expect(permissive).toContain("<script>");
+		expect(hardened).toEqual(sanitized);
+		expect(hardened).not.toContain("<script>");
+		expect(hardened).not.toContain("onerror");
+	});
+
+	it("should not serve rawHtml output to a renderSync that disabled raw HTML", () => {
+		const content = "# Title\n\n<script>alert(1)</script>\n";
+		const writr = new Writr(content);
+		const sanitized = new Writr(content).renderSync({ rawHtml: false });
+
+		writr.renderSync({ rawHtml: true });
+		const hardened = writr.renderSync({ rawHtml: false });
+
+		expect(hardened).toEqual(sanitized);
+		expect(hardened).not.toContain("<script>");
+	});
+
+	it("should key the cache on the beforeRender-mutated body", async () => {
+		const writr = new Writr("# Dashboard for {{user}}\n", {
+			renderOptions: { caching: true },
+		});
+		const current = { user: "admin" };
+
+		writr.onHook(WritrHooks.beforeRender, (data) => {
+			data.body = data.body.replace("{{user}}", current.user);
+		});
+
+		const first = await writr.render();
+		current.user = "viewer";
+		const second = await writr.render();
+
+		expect(first).toContain("admin");
+		expect(second).toContain("viewer");
+		expect(second).not.toContain("admin");
+	});
+
+	it("should key the cache on the beforeRender-mutated body synchronously", () => {
+		const writr = new Writr("# Page for {{user}}\n", {
+			renderOptions: { caching: true },
+		});
+		const current = { user: "admin" };
+
+		writr.onHook(WritrHooks.beforeRender, (data) => {
+			data.body = data.body.replace("{{user}}", current.user);
+		});
+
+		const first = writr.renderSync();
+		current.user = "viewer";
+		const second = writr.renderSync();
+
+		expect(first).toContain("admin");
+		expect(second).toContain("viewer");
+		expect(second).not.toContain("admin");
+	});
+
+	it("should not let a beforeRender options mutation file output under another options key", async () => {
+		const content = "# Title\n\n<script>alert(1)</script>\n";
+		const writr = new Writr(content);
+
+		// A hook disabling rawHtml cannot reach the engine, which was built from
+		// the pre-hook options. The permissive output must therefore not be
+		// stored under the hardened key.
+		writr.onHook(WritrHooks.beforeRender, (data) => {
+			data.options.rawHtml = false;
+		});
+
+		await writr.render({ rawHtml: true });
+
+		const hardened = await writr.render({ rawHtml: false });
+		const control = await new Writr(content).render({ rawHtml: false });
+
+		expect(hardened).toEqual(control);
+		expect(hardened).not.toContain("<script>");
+	});
+
+	it("should still cache an identical body", async () => {
+		const writr = new Writr("# Hello World", {
+			renderOptions: { caching: true },
+		});
+
+		const first = await writr.render();
+		const second = await writr.render();
+
+		expect(second).toEqual(first);
+		expect(writr.cache.store.size).toEqual(1);
+	});
+
+	it("should honour a beforeRender hook that opts a request out of caching", async () => {
+		const writr = new Writr("# Dashboard for {{user}}\n", {
+			renderOptions: { caching: true },
+		});
+
+		// A hook may disable caching for a request through its public
+		// `data.options`, the documented per-request opt-out.
+		const request = { user: "admin" };
+		writr.onHook(WritrHooks.beforeRender, (data) => {
+			data.options.caching = false;
+			data.body = data.body.replace("{{user}}", request.user);
+		});
+
+		const first = await writr.render({});
+		expect(first).toContain("admin");
+		expect(writr.cache.store.size).toEqual(0);
+
+		request.user = "eve";
+		const second = await writr.render({});
+		expect(second).toContain("eve");
+		expect(second).not.toContain("admin");
+		expect(writr.cache.store.size).toEqual(0);
+	});
+
+	it("should honour a beforeRender cache opt-out on the synchronous path", () => {
+		const writr = new Writr("# Dashboard for {{user}}\n", {
+			renderOptions: { caching: true },
+		});
+		const request = { user: "admin" };
+
+		writr.onHook(WritrHooks.beforeRender, (data) => {
+			data.options.caching = false;
+			data.body = data.body.replace("{{user}}", request.user);
+		});
+
+		const first = writr.renderSync({});
+		expect(first).toContain("admin");
+		expect(writr.cache.store.size).toEqual(0);
+
+		request.user = "eve";
+		expect(writr.renderSync({})).toContain("eve");
+		expect(writr.cache.store.size).toEqual(0);
+	});
+
+	it("should still cache when the hook leaves caching enabled", async () => {
+		const writr = new Writr("# Hello World", {
+			renderOptions: { caching: true },
+		});
+
+		writr.onHook(WritrHooks.beforeRender, () => {
+			/* observe only, caching untouched */
+		});
+		await writr.render({});
+
+		expect(writr.cache.store.size).toEqual(1);
+	});
+
+	it("should not replay a plugin's output across a front matter change", async () => {
+		const markdown = (layout: string) =>
+			`---\nlayout: ${layout}\n---\n\n# Same body\n`;
+		const writr = new Writr(markdown("admin"), {
+			renderOptions: { caching: true },
+		});
+
+		// A plugin on the documented engine extension point can read front
+		// matter, which the body omits, so the cache key must cover the source
+		// as well as the body.
+		writr.engine.use(() => (tree: { children: unknown[] }) => {
+			tree.children.unshift({
+				type: "element",
+				tagName: "p",
+				properties: {},
+				children: [
+					{ type: "text", value: `layout=${writr.frontMatter.layout}` },
+				],
+			});
+		});
+
+		const first = await writr.render();
+		expect(first).toContain("layout=admin");
+
+		writr.content = markdown("attacker");
+		const second = await writr.render();
+
+		expect(second).toContain("layout=attacker");
+		expect(second).not.toContain("layout=admin");
 	});
 
 	it("should strip out the front matter on render", async () => {
@@ -988,6 +1173,81 @@ describe("Writr Error Emission", () => {
 			},
 		});
 		expect(result).toBe("");
+	});
+
+	test("should not overwrite an existing file when rendering fails", async () => {
+		const writr = new Writr("# Hello World", { throwOnEmptyListeners: false });
+		const filePath = "./test/fixtures/temp-render/published.html";
+
+		writr.on("error", () => {
+			/* consume the emitted failure */
+		});
+		await writr.renderToFile(filePath);
+		const published = fs.readFileSync(filePath, "utf8");
+		expect(published).toEqual('<h1 id="hello-world">Hello World</h1>');
+
+		const failingErrors: Error[] = [];
+		const failing = new Writr("# Different content", {
+			throwOnEmptyListeners: false,
+		});
+		failing.engine.use(() => {
+			throw new Error("RenderToFile failure");
+		});
+		failing.on("error", (error: Error) => {
+			failingErrors.push(error);
+		});
+
+		await failing.renderToFile(filePath);
+
+		// Prove the render actually failed, so the assertion below cannot pass
+		// just because a successful render wrote identical bytes.
+		expect(failingErrors.map((error) => error.message)).toEqual([
+			"RenderToFile failure",
+		]);
+		expect(fs.readFileSync(filePath, "utf8")).toEqual(published);
+	});
+
+	test("should not overwrite an existing file when renderToFileSync fails", () => {
+		const writr = new Writr("# Hello World", { throwOnEmptyListeners: false });
+		const filePath = "./test/fixtures/temp-render/published-sync.html";
+
+		writr.on("error", () => {
+			/* consume the emitted failure */
+		});
+		writr.renderToFileSync(filePath);
+		const published = fs.readFileSync(filePath, "utf8");
+		expect(published).toEqual('<h1 id="hello-world">Hello World</h1>');
+
+		const failingErrors: Error[] = [];
+		const failing = new Writr("# Different content", {
+			throwOnEmptyListeners: false,
+		});
+		failing.engine.use(() => {
+			throw new Error("RenderToFileSync failure");
+		});
+		failing.on("error", (error: Error) => {
+			failingErrors.push(error);
+		});
+
+		failing.renderToFileSync(filePath);
+
+		expect(failingErrors.map((error) => error.message)).toEqual([
+			"RenderToFileSync failure",
+		]);
+		expect(fs.readFileSync(filePath, "utf8")).toEqual(published);
+	});
+
+	test("should still write an empty file for a legitimately empty document", async () => {
+		const writr = new Writr("", { throwOnEmptyListeners: false });
+		const filePath = "./test/fixtures/temp-render/empty.html";
+
+		writr.on("error", () => {
+			/* no failure expected */
+		});
+		await writr.renderToFile(filePath);
+
+		expect(fs.existsSync(filePath)).toEqual(true);
+		expect(fs.readFileSync(filePath, "utf8")).toEqual("");
 	});
 
 	test("should emit error when renderToFile fails", async () => {
