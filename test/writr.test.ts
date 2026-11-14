@@ -375,6 +375,38 @@ describe("writr", () => {
 		expect(second).not.toContain("admin");
 	});
 
+	it("should not let a beforeRender options mutation file output under another options key", async () => {
+		const content = "# Title\n\n<script>alert(1)</script>\n";
+		const writr = new Writr(content);
+
+		// A hook disabling rawHtml cannot reach the engine, which was built from
+		// the pre-hook options. The permissive output must therefore not be
+		// stored under the hardened key.
+		writr.onHook(WritrHooks.beforeRender, (data) => {
+			data.options.rawHtml = false;
+		});
+
+		await writr.render({ rawHtml: true });
+
+		const hardened = await writr.render({ rawHtml: false });
+		const control = await new Writr(content).render({ rawHtml: false });
+
+		expect(hardened).toEqual(control);
+		expect(hardened).not.toContain("<script>");
+	});
+
+	it("should still cache an identical body", async () => {
+		const writr = new Writr("# Hello World", {
+			renderOptions: { caching: true },
+		});
+
+		const first = await writr.render();
+		const second = await writr.render();
+
+		expect(second).toEqual(first);
+		expect(writr.cache.store.size).toEqual(1);
+	});
+
 	it("should strip out the front matter on render", async () => {
 		const writr = new Writr(blogPostWithMarkdown);
 		const result = await writr.render();
@@ -1066,18 +1098,24 @@ describe("Writr Error Emission", () => {
 		const published = fs.readFileSync(filePath, "utf8");
 		expect(published).toEqual('<h1 id="hello-world">Hello World</h1>');
 
-		const failing = new Writr("# Hello World", {
+		const failingErrors: Error[] = [];
+		const failing = new Writr("# Different content", {
 			throwOnEmptyListeners: false,
 		});
 		failing.engine.use(() => {
 			throw new Error("RenderToFile failure");
 		});
-		failing.on("error", () => {
-			/* consume the emitted failure */
+		failing.on("error", (error: Error) => {
+			failingErrors.push(error);
 		});
 
 		await failing.renderToFile(filePath);
 
+		// Prove the render actually failed, so the assertion below cannot pass
+		// just because a successful render wrote identical bytes.
+		expect(failingErrors.map((error) => error.message)).toEqual([
+			"RenderToFile failure",
+		]);
 		expect(fs.readFileSync(filePath, "utf8")).toEqual(published);
 	});
 
@@ -1092,18 +1130,22 @@ describe("Writr Error Emission", () => {
 		const published = fs.readFileSync(filePath, "utf8");
 		expect(published).toEqual('<h1 id="hello-world">Hello World</h1>');
 
-		const failing = new Writr("# Hello World", {
+		const failingErrors: Error[] = [];
+		const failing = new Writr("# Different content", {
 			throwOnEmptyListeners: false,
 		});
 		failing.engine.use(() => {
 			throw new Error("RenderToFileSync failure");
 		});
-		failing.on("error", () => {
-			/* consume the emitted failure */
+		failing.on("error", (error: Error) => {
+			failingErrors.push(error);
 		});
 
 		failing.renderToFileSync(filePath);
 
+		expect(failingErrors.map((error) => error.message)).toEqual([
+			"RenderToFileSync failure",
+		]);
 		expect(fs.readFileSync(filePath, "utf8")).toEqual(published);
 	});
 

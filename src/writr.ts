@@ -260,37 +260,44 @@ export class Writr extends Hookified {
 	 * @returns {Promise<string>} The rendered HTML content.
 	 */
 	private async renderContent(options?: RenderOptions): Promise<string> {
-		let { engine } = this;
-		if (options) {
-			options = { ...this._options.renderOptions, ...options };
-			engine = this.createProcessor(options);
-		}
+		// The engine is built from these options *before* the hook runs, so they
+		// are the ones that shape this render. A hook that rewrites
+		// renderData.options cannot reach the engine, so keying the cache on the
+		// post-hook object would file the output under options that never
+		// produced it. `cacheOptions` is the pre-hook snapshot the key uses.
+		const engineOptions = options
+			? { ...this._options.renderOptions, ...options }
+			: undefined;
+		const cacheOptions = engineOptions ? { ...engineOptions } : undefined;
+		const engine = engineOptions
+			? this.createProcessor(engineOptions)
+			: this.engine;
 
 		const renderData = {
 			content: this._content,
 			body: this.body,
-			options,
+			options: engineOptions,
 		};
 
 		await this.hook(WritrHooks.beforeRender, renderData);
 
+		// Snapshot the body once: the pipeline consumes exactly this string, and a
+		// cached value must be a pure function of its key.
+		const body = renderData.body;
 		const resultData = {
 			result: "",
 		};
-		// Key on the body the pipeline consumes, not the pristine source: the
-		// beforeRender hook may rewrite it, and a cached value must be a pure
-		// function of its key or one request's output is replayed for another.
-		if (this.isCacheEnabled(renderData.options)) {
-			const cached = this._cache.get(renderData.body, renderData.options);
+		if (this.isCacheEnabled(cacheOptions)) {
+			const cached = this._cache.get(body, cacheOptions);
 			if (cached) {
 				return cached;
 			}
 		}
 
-		const file = await engine.process(renderData.body);
+		const file = await engine.process(body);
 		resultData.result = String(file);
-		if (this.isCacheEnabled(renderData.options)) {
-			this._cache.set(renderData.body, resultData.result, renderData.options);
+		if (this.isCacheEnabled(cacheOptions)) {
+			this._cache.set(body, resultData.result, cacheOptions);
 		}
 
 		await this.hook(WritrHooks.afterRender, resultData);
@@ -320,35 +327,40 @@ export class Writr extends Hookified {
 	 * @returns {string} The rendered HTML content.
 	 */
 	private renderContentSync(options?: RenderOptions): string {
-		let { engine } = this;
-		if (options) {
-			options = { ...this._options.renderOptions, ...options };
-			engine = this.createProcessor(options);
-		}
+		// Same engine-truth snapshot as the async path: the processor is built
+		// from these options before the hook, so they key the cached value.
+		const engineOptions = options
+			? { ...this._options.renderOptions, ...options }
+			: undefined;
+		const cacheOptions = engineOptions ? { ...engineOptions } : undefined;
+		const engine = engineOptions
+			? this.createProcessor(engineOptions)
+			: this.engine;
 
 		const renderData = {
 			content: this._content,
 			body: this.body,
-			options,
+			options: engineOptions,
 		};
 
 		this.hook(WritrHooks.beforeRender, renderData);
 
+		const body = renderData.body;
 		const resultData = {
 			result: "",
 		};
 		/* v8 ignore next -- @preserve */
-		if (this.isCacheEnabled(renderData.options)) {
-			const cached = this._cache.get(renderData.body, renderData.options);
+		if (this.isCacheEnabled(cacheOptions)) {
+			const cached = this._cache.get(body, cacheOptions);
 			if (cached) {
 				return cached;
 			}
 		}
 
-		const file = engine.processSync(renderData.body);
+		const file = engine.processSync(body);
 		resultData.result = String(file);
-		if (this.isCacheEnabled(renderData.options)) {
-			this._cache.set(renderData.body, resultData.result, renderData.options);
+		if (this.isCacheEnabled(cacheOptions)) {
+			this._cache.set(body, resultData.result, cacheOptions);
 		}
 
 		this.hook(WritrHooks.afterRender, resultData);

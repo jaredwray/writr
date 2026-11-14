@@ -1,11 +1,10 @@
+import { createHash } from "node:crypto";
 import { CacheableMemory } from "cacheable";
-import { Hashery } from "hashery";
 import type { RenderOptions } from "./types.js";
 
 export class WritrCache {
 	private readonly _store: CacheableMemory = new CacheableMemory();
 	private readonly _hashStore: CacheableMemory = new CacheableMemory();
-	private readonly _hash: Hashery = new Hashery();
 
 	public get store(): CacheableMemory {
 		return this._store;
@@ -39,7 +38,10 @@ export class WritrCache {
 			return result;
 		}
 
-		const hash = this._hash.toHashSync(content);
+		// A full-width digest: hashery's default synchronous provider is 32-bit
+		// djb2, which is forgeable by a chosen document, so two different
+		// documents (or two different bodies of one) could share an entry.
+		const hash = createHash("sha256").update(key).digest("hex");
 		this._hashStore.set(key, hash);
 
 		return hash;
