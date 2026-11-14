@@ -41,13 +41,13 @@ describe("writr-cache", () => {
 		expect(cache.get(markdown, options)).toEqual(value);
 	});
 
-	it("should be able to set markdown with options", async () => {
+	it("should be able to set markdown with toc and emoji options", async () => {
 		const cache = new WritrCache();
 		const markdown = "# Hello World";
 		const value = '<h1 id="hello-world">Hello World</h1>';
 		const options = { toc: true, emoji: true };
 		cache.set(markdown, value, options);
-		cache.get(markdown, options);
+		expect(cache.get(markdown, options)).toEqual(value);
 	});
 
 	it("should be able to do hash caching", () => {
