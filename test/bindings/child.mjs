@@ -48,4 +48,6 @@ fs.writeFileSync(
 		2,
 	) + "\n",
 );
-// Exit success means the probe completed without crashing; the parent asserts every result.
+// napi async tasks close libuv handles during graceful shutdown. On Windows
+// that close can abort with UV_HANDLE_CLOSING after this report is on disk.
+process.exit(0);
