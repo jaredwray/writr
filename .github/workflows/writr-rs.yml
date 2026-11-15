@@ -22,12 +22,12 @@ jobs:
         uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
         with:
           mode: firewall-free
-          firewall-version: 1.15.1
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
+          firewall-version: 1.16.0
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
         with:
           toolchain: 1.94.1
           components: rustfmt, clippy, llvm-tools-preview
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: writr-rs
       - name: Format
@@ -48,7 +48,7 @@ jobs:
         working-directory: writr-rs
         if: always()
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@3f74d7c16a4242f1c95561e98edc25d36adb4375
+        uses: taiki-e/install-action@3a3daafd3b7f23b8f65d9f5ba2db203fb59b79e2 # v2.90.2
         with:
           tool: cargo-llvm-cov
         if: always()
@@ -58,7 +58,7 @@ jobs:
           97
         working-directory: writr-rs
         if: always()
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: parity-rust
@@ -74,9 +74,9 @@ jobs:
         uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
         with:
           mode: firewall-free
-          firewall-version: 1.15.1
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+          firewall-version: 1.16.0
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
           cache: pnpm
@@ -110,9 +110,9 @@ jobs:
         uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
         with:
           mode: firewall-free
-          firewall-version: 1.15.1
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+          firewall-version: 1.16.0
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -121,7 +121,7 @@ jobs:
       - name: Install binding dependencies
         run: sfw pnpm install --frozen-lockfile
         working-directory: writr-rs/crates/writr-node
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: parity-linux-bindings
           path: writr-rs/crates/writr-node
@@ -130,7 +130,7 @@ jobs:
       - name: Every exported binding API
         if: always()
         run: pnpm test:bindings
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: parity-${{ matrix.engine }}-${{ matrix.node }}
@@ -163,16 +163,16 @@ jobs:
         uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
         with:
           mode: firewall-free
-          firewall-version: 1.15.1
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
+          firewall-version: 1.16.0
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
         with:
           toolchain: 1.94.1
           targets: ${{ matrix.target }}
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: writr-rs
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
           cache: pnpm
@@ -214,13 +214,13 @@ jobs:
       - name: Require host binding execution report
         if: always() && steps.host_build.outcome == 'success'
         run: node test/bindings/verify-report.mjs
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: parity-host-${{ matrix.target }}
           path: test-output/parity/
           if-no-files-found: warn
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: writr-node-${{ matrix.target }}
           path: |
@@ -236,9 +236,9 @@ jobs:
         uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
         with:
           mode: firewall-free
-          firewall-version: 1.15.1
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+          firewall-version: 1.16.0
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
           cache: pnpm
@@ -247,7 +247,7 @@ jobs:
       - run: pnpm golden:check
       - run: pnpm test:harness
       - run: git diff --exit-code
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: parity-js
@@ -263,17 +263,17 @@ jobs:
         uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
         with:
           mode: firewall-free
-          firewall-version: 1.15.1
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+          firewall-version: 1.16.0
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
           cache: pnpm
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
         with:
           toolchain: 1.94.1
           targets: wasm32-wasip1
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: writr-rs
       - name: Install binaryen (wasm-opt)
@@ -287,7 +287,7 @@ jobs:
         run: pnpm build:rs
       - name: Build wasm addon
         run: pnpm build:rs:wasm
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: parity-linux-bindings
           path: |-
@@ -305,9 +305,9 @@ jobs:
         uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
         with:
           mode: firewall-free
-          firewall-version: 1.15.1
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+          firewall-version: 1.16.0
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
           cache: pnpm
@@ -316,14 +316,14 @@ jobs:
       - name: Install binding dependencies
         run: sfw pnpm install --frozen-lockfile
         working-directory: writr-rs/crates/writr-node
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: parity-linux-bindings
           path: writr-rs/crates/writr-node
       - run: pnpm exec playwright-core install chromium --with-deps
         working-directory: writr-rs/crates/writr-node
       - run: node writr-rs/tools/browser-smoke.mjs
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: parity-chromium
@@ -346,21 +346,21 @@ jobs:
         uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f
         with:
           mode: firewall-free
-          firewall-version: 1.15.1
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+          firewall-version: 1.16.0
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
           cache: pnpm
       - name: Install Dependencies
         run: sfw pnpm install --frozen-lockfile
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: parity-*
           merge-multiple: true
           path: test-output/parity
       - run: node test/harness/summarize.mjs
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: parity-summary
