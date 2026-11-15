@@ -20,7 +20,7 @@ const providers = [
 	},
 	{
 		name: "Google Gemini",
-		model: () => google("gemini-2.5-flash"),
+		model: () => google("gemini-3.5-flash-lite"),
 		enabled: Boolean(process.env.GOOGLE_GENERATIVE_AI_API_KEY),
 	},
 	{

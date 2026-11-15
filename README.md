@@ -823,7 +823,7 @@ const writr = new Writr('# Hello', { ai: { model: anthropic('claude-sonnet-5-5')
 
 // Google
 const google = createGoogleGenerativeAI({ apiKey: 'your-google-key' });
-const writr = new Writr('# Hello', { ai: { model: google('gemini-2.0-flash') } });
+const writr = new Writr('# Hello', { ai: { model: google('gemini-3.6-flash') } });
 ```
 
 ## Metadata
