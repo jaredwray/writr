@@ -5,16 +5,16 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test, expect } from "vitest";
 import { writeReport } from "../harness/report.js";
+import { runBindingChild } from "./spawn.js";
 
 test("every binding export against shared JS outcomes (external deadline)", () => {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "writr-bindings-"));
 	try {
 		const file = path.join(dir, "result.json");
-		execFileSync(
-			process.execPath,
-			[fileURLToPath(new URL("./child.mjs", import.meta.url)), file],
-			{ timeout: 180_000, stdio: "pipe", env: process.env },
-		);
+		runBindingChild([
+			fileURLToPath(new URL("./child.mjs", import.meta.url)),
+			file,
+		]);
 		const report = JSON.parse(fs.readFileSync(file, "utf8"));
 		const declarations = fs.readFileSync(
 			new URL("../../writr-rs/crates/writr-node/index.d.ts", import.meta.url),
