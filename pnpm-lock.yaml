@@ -231,8 +231,8 @@ importers:
         specifier: ^9.0.0
         version: 9.0.0
       undici:
-        specifier: 8.12.2
-        version: 8.12.2
+        specifier: ^8.12.4
+        version: 8.12.4
       unified:
         specifier: ^11.0.5
         version: 11.0.5
@@ -2732,6 +2732,10 @@ packages:
     resolution: {integrity: sha512-XtuDWVdqTLr3NAxm2ly9/hU6kUsJOgGh1RASzMBbsw6aWCOaQzHdW+QQDfdERjfJ2V5vL5pRPa4RetO9UfivDg==}
     engines: {node: '>=22.19.0'}
 
+  undici@8.12.4:
+    resolution: {integrity: sha512-8Mx+uNKKER2bA4AdtedkqRbwUCIJFr2nJckXRe5yrDqzePqwLP7VNcctN8/XdmDSbF7mS+jJKIszlL+vbam1VA==}
+    engines: {node: '>=22.19.0'}
+
   unenv@2.0.0-rc.24:
     resolution: {integrity: sha512-i7qRCmY42zmCwnYlh9H2SvLEypEFGye5iRmEMKjcGi7zk9UquigRjFtTLz0TYqr0ZGLZhaMHl/foy1bZR+Cwlw==}
 
@@ -3869,7 +3873,7 @@ snapshots:
       ipaddr.js: 2.5.0
       jiti: 2.7.0
       serve-handler: 6.1.7
-      undici: 8.12.2
+      undici: 8.12.4
       update-notifier: 7.3.1
       writr: 6.1.6(@types/react@19.3.0)(supports-color@10.2.2)
     transitivePeerDependencies:
@@ -5472,6 +5476,8 @@ snapshots:
   undici-types@7.24.6: {}
 
   undici@8.12.2: {}
+
+  undici@8.12.4: {}
 
   unenv@2.0.0-rc.24:
     dependencies:
