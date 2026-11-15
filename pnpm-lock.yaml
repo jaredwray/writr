@@ -268,8 +268,8 @@ importers:
         specifier: ^3.0.2
         version: 3.0.2(@types/react@19.3.0)(supports-color@10.2.2)(zod@4.6.7)
       dotenv:
-        specifier: ^17.3.1
-        version: 17.4.2
+        specifier: ^18.0.9
+        version: 18.0.9
       markdown-it:
         specifier: ^15.0.3
         version: 15.0.3
@@ -1586,9 +1586,10 @@ packages:
     resolution: {integrity: sha512-1gxPBJpI/pcjQhKgIU91II6Wkay+dLcN3M6rf2uwP8hRur3HtQXjVrdAK3sjC0piaEuxzMwjXChcETiJl47lAQ==}
     engines: {node: '>=18'}
 
-  dotenv@17.4.2:
-    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
+  dotenv@18.0.9:
+    resolution: {integrity: sha512-3fVOW4cB02R066PUSwn8O4TJyz9NckQl7F81blIbaq9jKBm2tSmOKky7ZHIXzGvkVPXCSn6jkpziBPZdGFs8Tw==}
     engines: {node: '>=12'}
+    hasBin: true
 
   dts-resolver@3.0.0:
     resolution: {integrity: sha512-1T1f+z+4tl9XD+m+0HBgWoL/nm0bOIffyWaUuUSBlFg/86IWvfx+wjNaO/ybU0AJzG9/Mi5hBUgGV6zCmWEN7Q==}
@@ -3845,7 +3846,7 @@ snapshots:
     dependencies:
       type-fest: 4.41.0
 
-  dotenv@17.4.2: {}
+  dotenv@18.0.9: {}
 
   dts-resolver@3.0.0: {}
 
