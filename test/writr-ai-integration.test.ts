@@ -15,7 +15,7 @@ dotenv.config({ quiet: true });
 const providers = [
 	{
 		name: "OpenAI",
-		model: () => openai("gpt-5-mini"),
+		model: () => openai("gpt-6.1-terra"),
 		enabled: Boolean(process.env.OPENAI_API_KEY),
 	},
 	{
