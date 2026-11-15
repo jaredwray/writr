@@ -819,7 +819,7 @@ const writr = new Writr('# Hello', { ai: { model: openai('gpt-6-luna') } });
 
 // Anthropic
 const anthropic = createAnthropic({ apiKey: 'your-anthropic-key' });
-const writr = new Writr('# Hello', { ai: { model: anthropic('claude-sonnet-4-20250514') } });
+const writr = new Writr('# Hello', { ai: { model: anthropic('claude-sonnet-5-5') } });
 
 // Google
 const google = createGoogleGenerativeAI({ apiKey: 'your-google-key' });
