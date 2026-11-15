@@ -177,8 +177,8 @@ importers:
         specifier: ^2.5.0
         version: 2.5.0
       hashery:
-        specifier: ^3.0.1
-        version: 3.0.1
+        specifier: ^3.0.5
+        version: 3.0.5
       hookified:
         specifier: ^3.0.3
         version: 3.0.3
@@ -1786,8 +1786,8 @@ packages:
     resolution: {integrity: sha512-iZyKG96/JwPz1N55vj2Ie2vXbhu440zfUfJvSwEqEbeLluk7NnapfGqa7LH0mOsnDxTF85Mx8/dyR6HfqcbmbQ==}
     engines: {node: '>=20'}
 
-  hashery@3.0.1:
-    resolution: {integrity: sha512-jfLVt3/SEkJzW/OCSK7Bxdl+FpXYDpEE84QOU4wzKRpO7rNoafNK718Z71GPQR/ozfQmKxXS++MhbrL/eKaTow==}
+  hashery@3.0.5:
+    resolution: {integrity: sha512-JqXNwGkTWXpPcz6I1nQVPcVUt8fFOQpl4mRlAjJttrv2J3Sh+c1ZvA/PmglZyf6BHYoL9C0q3w7Q47lXOigfOA==}
     engines: {node: '>=22.18'}
 
   hasown@2.0.4:
@@ -1851,6 +1851,10 @@ packages:
 
   hookified@3.0.3:
     resolution: {integrity: sha512-ZcbRytYgERoKtosiaXolUIPIWMgUCrSiWQEzFZ0kc8etD/LPgpy4/KOrtssFdK7ZXlTTyb4cob2veqj7osv8yA==}
+    engines: {node: '>=22.18.0'}
+
+  hookified@3.1.0:
+    resolution: {integrity: sha512-G2jPVpzwIiV7pcYcg62ngNvY+y0iCkKmuJIaQpomFdvtY89UiSvWuPiNo1AalSr1t2op1cdz21ZThZc3DSbmvA==}
     engines: {node: '>=22.18.0'}
 
   html-dom-parser@8.0.2:
@@ -3874,7 +3878,7 @@ snapshots:
       ai: 7.0.165(zod@4.6.7)
       colorette: 2.0.20
       ecto: 5.1.1(@types/react@19.3.0)(supports-color@10.2.2)
-      hashery: 3.0.1
+      hashery: 3.0.5
       ipaddr.js: 2.5.0
       jiti: 2.7.0
       serve-handler: 6.1.7
@@ -4088,9 +4092,9 @@ snapshots:
     dependencies:
       hookified: 1.15.1
 
-  hashery@3.0.1:
+  hashery@3.0.5:
     dependencies:
-      hookified: 3.0.3
+      hookified: 3.1.0
 
   hasown@2.0.4:
     dependencies:
@@ -4213,6 +4217,8 @@ snapshots:
   hookified@2.2.0: {}
 
   hookified@3.0.3: {}
+
+  hookified@3.1.0: {}
 
   html-dom-parser@8.0.2:
     dependencies:
@@ -5660,7 +5666,7 @@ snapshots:
     dependencies:
       ai: 7.0.165(zod@4.6.7)
       cacheable: 2.5.0
-      hashery: 3.0.1
+      hashery: 3.0.5
       hookified: 3.0.3
       html-react-parser: 6.1.7(@types/react@19.3.0)(react@19.3.1)
       js-yaml: 5.4.1
