@@ -82,7 +82,7 @@
     "ai": "^7.0.165",
     "cacheable": "^2.5.0",
     "hashery": "^3.0.5",
-    "hookified": "^3.0.3",
+    "hookified": "^3.1.0",
     "html-react-parser": "^6.1.9",
     "js-yaml": "^5.4.1",
     "react": "^19.3.1",
