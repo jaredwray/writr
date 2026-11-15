@@ -25,7 +25,7 @@ const providers = [
 	},
 	{
 		name: "Anthropic",
-		model: () => anthropic("claude-haiku-4-5-20251001"),
+		model: () => anthropic("claude-haiku-5-5"),
 		enabled: Boolean(process.env.ANTHROPIC_API_KEY),
 	},
 ];
