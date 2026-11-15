@@ -747,7 +747,7 @@ import { Writr } from 'writr';
 import { openai } from '@ai-sdk/openai';
 
 const writr = new Writr('# My Document\n\nSome markdown content here.', {
-  ai: { model: openai('gpt-4.1-mini') },
+  ai: { model: openai('gpt-6-luna') },
 });
 
 // Generate metadata
@@ -775,14 +775,14 @@ Pass `ai` in the `WritrOptions` to enable AI features:
 
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
-| `model` | `LanguageModel` | Yes | The AI SDK model instance (e.g. `openai("gpt-4.1-mini")`). |
+| `model` | `LanguageModel` | Yes | The AI SDK model instance (e.g. `openai("gpt-6-luna")`). |
 | `cache` | `boolean` | No | Enables in-memory caching of AI results. |
 | `prompts` | `WritrAIPrompts` | No | Custom prompt overrides for metadata, SEO, and translation. |
 
 ```typescript
 const writr = new Writr('# My Document', {
   ai: {
-    model: openai('gpt-4.1-mini'),
+    model: openai('gpt-6-luna'),
     cache: true,
   },
 });
@@ -802,7 +802,7 @@ By default, the provider imports read API keys from environment variables:
 // Uses OPENAI_API_KEY from environment
 import { openai } from '@ai-sdk/openai';
 
-const writr = new Writr('# Hello', { ai: { model: openai('gpt-4.1-mini') } });
+const writr = new Writr('# Hello', { ai: { model: openai('gpt-6-luna') } });
 ```
 
 To set API keys programmatically, use the provider factory functions instead:
@@ -815,7 +815,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
 // OpenAI
 const openai = createOpenAI({ apiKey: 'your-openai-key' });
-const writr = new Writr('# Hello', { ai: { model: openai('gpt-4.1-mini') } });
+const writr = new Writr('# Hello', { ai: { model: openai('gpt-6-luna') } });
 
 // Anthropic
 const anthropic = createAnthropic({ apiKey: 'your-anthropic-key' });
@@ -1019,7 +1019,7 @@ import { openai } from '@ai-sdk/openai';
 
 const writr = new Writr('# My Document\n\nSome markdown content here.');
 const ai = new WritrAI(writr, {
-  model: openai('gpt-4.1-mini'),
+  model: openai('gpt-6-luna'),
   cache: true,
 });
 

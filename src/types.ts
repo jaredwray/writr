@@ -182,7 +182,7 @@ export type WritrAIPrompts = {
 export type WritrAIOptions = {
 	/**
 	 * The AI SDK model instance used for generation.
-	 * Example: `openai("gpt-4.1-mini")`.
+	 * Example: `openai("gpt-6-luna")`.
 	 */
 	model: LanguageModel;
 
