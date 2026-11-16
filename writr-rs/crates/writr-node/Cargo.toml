@@ -12,7 +12,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 napi = { version = "3.16.1", default-features = false, features = ["napi8"] }
-napi-derive = "3.6.3"
+napi-derive = "3.7.0"
 writr-core = { path = "../writr-core" }
 serde_json = { workspace = true }
 markdown = { workspace = true, features = ["serde"] }
