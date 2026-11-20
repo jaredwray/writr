@@ -16,6 +16,9 @@ overrides:
   # exactly. >=7.30.1 resolves to 8.12.2 under the 7-day gate, so the
   # 7.x line is forced to 8.12.2. The 8.x line is not overridden.
   "undici@7": "8.12.2"
+  # GHSA-p4f5-76q4-ffq7. Vitest accepts vite 6, 7, or 8.
+  # The lockfile resolved vite 8.3.4. This pin uses the patched 8.3.8 release.
+  vite: 8.3.8
 
 # Lifecycle-script exceptions — each entry is a reviewed security exception.
 # esbuild: used by tsdown / the JS build.
