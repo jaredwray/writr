@@ -518,7 +518,8 @@ impl TokenSink for TrackingSink<'_> {
 				// exiting it (appropriate end tag) — the tokenizer is back in
 				// Data.
 				if self.from_tokenizer
-					&& is_end_tag && matches!(self.state.get(), TrackedState::RawData(_))
+					&& is_end_tag
+					&& matches!(self.state.get(), TrackedState::RawData(_))
 				{
 					self.state.set(TrackedState::Data);
 				}

@@ -832,10 +832,8 @@ impl<'a> Parser<'a> {
 					self.finish_token(T::InvalidTemplate, None);
 					return Ok(());
 				}
-				13 => {
-					if self.cu(self.pos + 1) == Some(10) {
-						self.pos += 1;
-					}
+				13 if self.cu(self.pos + 1) == Some(10) => {
+					self.pos += 1;
 				}
 				_ => {}
 			}

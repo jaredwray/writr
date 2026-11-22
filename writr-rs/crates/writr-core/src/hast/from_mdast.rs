@@ -555,19 +555,18 @@ impl<'a> State<'a> {
 		let id = reference.identifier.to_uppercase();
 		let safe_id = normalize_uri(&id.to_lowercase());
 		let index = self.footnote_order.iter().position(|entry| *entry == id);
-		let counter;
 		let mut reuse_counter = self.footnote_counts.get(&id).copied();
-		match reuse_counter {
+		let counter = match reuse_counter {
 			None => {
 				reuse_counter = Some(0);
 				self.footnote_order.push(id.clone());
-				counter = self.footnote_order.len();
+				self.footnote_order.len()
 			}
 			Some(_) => {
 				// `index` is present whenever the id was counted before.
-				counter = index.map_or(0, |i| i + 1);
+				index.map_or(0, |i| i + 1)
 			}
-		}
+		};
 		let reuse = reuse_counter.unwrap_or(0) + 1;
 		self.footnote_counts.insert(id, reuse);
 

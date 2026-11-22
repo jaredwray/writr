@@ -643,10 +643,9 @@ impl<'a> Parser<'a> {
 				},
 				None,
 			)?;
-			let has_init;
-			if self.eat(T::Eq)? {
+			let has_init = if self.eat(T::Eq)? {
 				self.parse_maybe_assign(if is_for { ForInit::Yes } else { ForInit::No }, None)?;
-				has_init = true;
+				true
 			} else if !allow_missing_initializer
 				&& kind == VarKind::Const
 				&& !(self.ty == T::In || self.is_contextual("of"))
@@ -661,8 +660,8 @@ impl<'a> Parser<'a> {
 					"Complex binding patterns require an initialization value",
 				);
 			} else {
-				has_init = false;
-			}
+				false
+			};
 			decls.push((id, has_init));
 			if !self.eat(T::Comma)? {
 				break;

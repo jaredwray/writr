@@ -149,7 +149,8 @@ fn transform(mdast: markdown::mdast::Node, options: &RenderOptions) -> hast::Nod
 	}
 
 	#[allow(unused_mut)]
-	let mut tree = from_mdast::from_mdast(&mdast, from_mdast::Options::from_render_options(options));
+	let mut tree =
+		from_mdast::from_mdast(&mdast, from_mdast::Options::from_render_options(options));
 
 	// hast stage: raw → slug → [highlight] (M4) → [math] (M5).
 	#[cfg(feature = "raw-html")]

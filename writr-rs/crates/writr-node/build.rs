@@ -42,21 +42,46 @@ fn setup_wasi_single_thread() {
 	println!("cargo:rustc-link-arg=--no-check-features");
 	// Link as a WASI reactor (library) rather than a command, so the module
 	// exports `_initialize` instead of expecting `_start`.
-	let rustc_path = env::var("RUSTC").expect("cargo sets RUSTC");
-	let target = env::var("TARGET").expect("cargo sets TARGET");
-	let crt_reactor = Path::new(&rustc_path)
-		.parent()
-		.and_then(Path::parent)
-		.map(|sysroot| {
-			sysroot
-				.join("lib/rustlib")
-				.join(&target)
-				.join("lib/self-contained/crt1-reactor.o")
-		})
-		.filter(|path| path.exists())
-		.expect("crt1-reactor.o not found in the Rust sysroot for this target");
-	println!("cargo:rustc-link-arg={}", crt_reactor.display());
+	// Rust 1.100 links crt1-reactor.o for a WASI cdylib.
+	// A second copy fails the link on a duplicate `_initialize`.
+	// Rust before 1.100 omits the object, so this script still supplies it.
+	// https://github.com/rust-lang/rust/pull/161421
+	if !rustc_links_wasi_reactor_crt() {
+		let rustc_path = env::var("RUSTC").expect("cargo sets RUSTC");
+		let target = env::var("TARGET").expect("cargo sets TARGET");
+		let crt_reactor = Path::new(&rustc_path)
+			.parent()
+			.and_then(Path::parent)
+			.map(|sysroot| {
+				sysroot
+					.join("lib/rustlib")
+					.join(&target)
+					.join("lib/self-contained/crt1-reactor.o")
+			})
+			.filter(|path| path.exists())
+			.expect("crt1-reactor.o not found in the Rust sysroot for this target");
+		println!("cargo:rustc-link-arg={}", crt_reactor.display());
+	}
 	println!("cargo:rustc-link-arg=--export=_initialize");
+}
+
+/// True when this rustc already links `crt1-reactor.o` for a WASI cdylib.
+fn rustc_links_wasi_reactor_crt() -> bool {
+	let rustc = env::var("RUSTC").unwrap_or_default();
+	let Ok(output) = std::process::Command::new(rustc).arg("-V").output() else {
+		return false;
+	};
+	let text = String::from_utf8_lossy(&output.stdout);
+	let Some(version) = text.split_whitespace().nth(1) else {
+		return false;
+	};
+	let mut parts = version.split(['.', '-']);
+	let major = parts.next().and_then(|part| part.parse::<u32>().ok());
+	let minor = parts.next().and_then(|part| part.parse::<u32>().ok());
+	matches!(
+		(major, minor),
+		(Some(major), Some(minor)) if major > 1 || (major == 1 && minor >= 100)
+	)
 }
 
 fn main() {

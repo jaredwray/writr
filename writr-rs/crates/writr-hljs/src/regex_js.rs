@@ -680,10 +680,10 @@ impl JsRegex {
 				let from = match prefilter {
 					// Leapfrog: no fancy match can start before the first
 					// prefilter candidate, so start the VM scan there.
-					Some(pre) => match pre.find_at(text, last_index) {
-						Some(candidate) => candidate.start(),
-						None => return None,
-					},
+					Some(pre) => {
+						let candidate = pre.find_at(text, last_index)?;
+						candidate.start()
+					}
 					None => last_index,
 				};
 				regex

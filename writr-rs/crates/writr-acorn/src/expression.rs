@@ -445,18 +445,17 @@ impl<'a> Parser<'a> {
 			|| (optional && self.ty != T::ParenL && self.ty != T::BackQuote)
 			|| self.eat(T::Dot)?
 		{
-			let private;
-			if computed {
+			let private = if computed {
 				self.parse_expression(ForInit::No, None)?;
 				self.expect(T::BracketR)?;
-				private = false;
+				false
 			} else if self.ty == T::PrivateId && !matches!(base.k, K::Super) {
 				self.parse_private_ident()?;
-				private = true;
+				true
 			} else {
 				self.parse_ident(true)?;
-				private = false;
-			}
+				false
+			};
 			return Ok((
 				Node::new(start, self.last_tok_end, K::Member { private, optional }),
 				true,
@@ -471,7 +470,8 @@ impl<'a> Parser<'a> {
 			self.await_ident_pos = 0;
 			let list = self.parse_expr_list(T::ParenR, true, false, Some(&mut rde))?;
 			if maybe_async_arrow
-				&& !optional && !self.can_insert_semicolon()
+				&& !optional
+				&& !self.can_insert_semicolon()
 				&& self.eat(T::Arrow)?
 			{
 				self.check_pattern_errors(Some(&rde), false)?;
@@ -587,9 +587,10 @@ impl<'a> Parser<'a> {
 					}
 					if id.is_ident("async")
 						&& self.ty == T::Name
-						&& !contains_esc && (!self.potential_arrow_in_for_await
-						|| !self.value_is("of")
-						|| self.contains_esc)
+						&& !contains_esc
+						&& (!self.potential_arrow_in_for_await
+							|| !self.value_is("of")
+							|| self.contains_esc)
 					{
 						id = self.parse_ident(false)?;
 						if self.can_insert_semicolon() || !self.eat(T::Arrow)? {
@@ -1192,8 +1193,10 @@ impl<'a> Parser<'a> {
 			self.check_params(
 				node.params,
 				!old_strict
-					&& !use_strict && !is_arrow_function
-					&& !is_method && is_simple_param_list(node.params),
+					&& !use_strict
+					&& !is_arrow_function
+					&& !is_method
+					&& is_simple_param_list(node.params),
 			)?;
 			if self.strict {
 				if let Some(id) = node.id {

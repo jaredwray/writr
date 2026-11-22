@@ -33,7 +33,8 @@ pub fn is_identifier_char(code: Option<u32>) -> bool {
 		None => false,
 		Some(c) if c < 128 => {
 			c == 36
-				|| c == 95 || (48..=57).contains(&c)
+				|| c == 95
+				|| (48..=57).contains(&c)
 				|| (65..=90).contains(&c)
 				|| (97..=122).contains(&c)
 		}
