@@ -1,0 +1,6 @@
+# Dependency cooldown: Cargo won't select a crates.io version published less than
+# 7 days ago, unless it is already in Cargo.lock. Requires Cargo >= 1.100.
+# Urgent fix: CARGO_RESOLVER_INCOMPATIBLE_PUBLISH_AGE=allow cargo update -p <crate> --precise <version>
+# https://doc.rust-lang.org/cargo/reference/config.html#registryglobal-min-publish-age
+[registry]
+global-min-publish-age = "7 days"
