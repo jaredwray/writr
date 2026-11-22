@@ -702,7 +702,8 @@ impl<'a> Parser<'a> {
 				if switch_u && (0xd800 as f64..=0xdbff as f64).contains(&lead) {
 					let lead_surrogate_end = state.pos;
 					if state.eat(0x5c)
-						&& state.eat(0x75) && self.regexp_eat_fixed_hex_digits(state, 4)
+						&& state.eat(0x75)
+						&& self.regexp_eat_fixed_hex_digits(state, 4)
 					{
 						let trail = state.last_int_value;
 						if (0xdc00 as f64..=0xdfff as f64).contains(&trail) {

@@ -34,13 +34,11 @@ fn one(node: &mdast::Node, include_image_alt: bool, out: &mut String) {
 				return;
 			}
 		}
-		mdast::Node::ImageReference(reference) => {
-			if !reference.alt.is_empty() {
-				if include_image_alt {
-					out.push_str(&reference.alt);
-				}
-				return;
+		mdast::Node::ImageReference(reference) if !reference.alt.is_empty() => {
+			if include_image_alt {
+				out.push_str(&reference.alt);
 			}
+			return;
 		}
 		_ => {}
 	}

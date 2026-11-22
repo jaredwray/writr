@@ -148,26 +148,45 @@ impl T {
 		matches!(
 			self,
 			BracketL
-				| BraceL | ParenL
-				| Comma | Semi
-				| Colon | Question
-				| Arrow | Ellipsis
+				| BraceL
+				| ParenL
+				| Comma
+				| Semi
+				| Colon
+				| Question
+				| Arrow
+				| Ellipsis
 				| DollarBraceL
-				| Eq | Assign
-				| Prefix | LogicalOr
-				| LogicalAnd | BitwiseOr
-				| BitwiseXor | BitwiseAnd
-				| Equality | Relational
-				| BitShift | PlusMin
-				| Modulo | Star
-				| Slash | Starstar
-				| Coalesce | Case
-				| Default | Do
-				| Else | Return
-				| Throw | New
-				| Extends | In
-				| Instanceof | Typeof
-				| Void | Delete
+				| Eq
+				| Assign
+				| Prefix
+				| LogicalOr
+				| LogicalAnd
+				| BitwiseOr
+				| BitwiseXor
+				| BitwiseAnd
+				| Equality
+				| Relational
+				| BitShift
+				| PlusMin
+				| Modulo
+				| Star
+				| Slash
+				| Starstar
+				| Coalesce
+				| Case
+				| Default
+				| Do
+				| Else
+				| Return
+				| Throw
+				| New
+				| Extends
+				| In
+				| Instanceof
+				| Typeof
+				| Void
+				| Delete
 				| JsxText
 		)
 	}
@@ -177,17 +196,29 @@ impl T {
 		matches!(
 			self,
 			Num | Regexp
-				| String | Name
-				| PrivateId | BracketL
-				| BraceL | ParenL
-				| BackQuote | DollarBraceL
-				| IncDec | Prefix
-				| PlusMin | Function
-				| New | This | Super
-				| Class | Import
-				| Null | True
-				| False | Typeof
-				| Void | Delete
+				| String
+				| Name
+				| PrivateId
+				| BracketL
+				| BraceL
+				| ParenL
+				| BackQuote
+				| DollarBraceL
+				| IncDec
+				| Prefix
+				| PlusMin
+				| Function
+				| New
+				| This
+				| Super
+				| Class
+				| Import
+				| Null
+				| True
+				| False
+				| Typeof
+				| Void
+				| Delete
 				| JsxTagStart
 		)
 	}
